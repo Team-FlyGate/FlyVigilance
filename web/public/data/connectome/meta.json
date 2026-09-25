@@ -1,0 +1,139 @@
+{
+ "source": "MaleCNS v1.0 (Janelia FlyEM, CC-BY 4.0), minconf 0.5",
+ "neurons": 49244,
+ "edges": 1051255,
+ "synapses": 24408178,
+ "cloudPoints": 443196,
+ "bbox": [
+  [
+   84.85671665785323,
+   50.249207558139545,
+   89.6972390697674
+  ],
+  [
+   672.4941622754501,
+   516.7977066666679,
+   888.3179023037865
+  ]
+ ],
+ "layers": [
+  {
+   "key": "sense",
+   "name": "Sensory Intake",
+   "brain": "Sensory neurons (ORN, GRN, JO, VPN)",
+   "agent": "Data stream intake skills",
+   "neurons": 13755
+  },
+  {
+   "key": "encode",
+   "name": "Feature Encoding",
+   "brain": "Antennal lobe projection neurons",
+   "agent": "Normalize \u00b7 dedupe \u00b7 rule gate",
+   "neurons": 1171
+  },
+  {
+   "key": "reflex",
+   "name": "Reflex Judgment",
+   "brain": "Lateral horn (innate)",
+   "agent": "Jev System-1 typed decisions",
+   "neurons": 2026
+  },
+  {
+   "key": "memory",
+   "name": "Signal Memory",
+   "brain": "Mushroom body (KC \u00b7 MBON \u00b7 DAN)",
+   "agent": "Disproportionality + label memory",
+   "neurons": 4501
+  },
+  {
+   "key": "deliberate",
+   "name": "Deliberation",
+   "brain": "Central complex",
+   "agent": "Nemotron System-2 assessment",
+   "neurons": 2950
+  },
+  {
+   "key": "critic",
+   "name": "Inhibitory Critic",
+   "brain": "GABAergic interneurons",
+   "agent": "3-tier critic (rules \u00b7 oracle \u00b7 judge)",
+   "neurons": 3965
+  },
+  {
+   "key": "assoc",
+   "name": "Association",
+   "brain": "Protocerebrum intrinsic",
+   "agent": "Context integration",
+   "neurons": 17717
+  },
+  {
+   "key": "action",
+   "name": "Action Output",
+   "brain": "Descending neurons",
+   "agent": "Escalate \u00b7 report \u00b7 monitor \u00b7 close",
+   "neurons": 1313
+  },
+  {
+   "key": "feedback",
+   "name": "Reviewer Feedback",
+   "brain": "Ascending neurons",
+   "agent": "Human-in-the-loop reinforcement",
+   "neurons": 1846
+  }
+ ],
+ "channels": [
+  {
+   "key": "none",
+   "name": "-",
+   "modality": "-",
+   "neurons": 0
+  },
+  {
+   "key": "faers",
+   "name": "FAERS spontaneous reports",
+   "modality": "olfactory",
+   "neurons": 2478
+  },
+  {
+   "key": "literature",
+   "name": "Literature (PubMed)",
+   "modality": "gustatory",
+   "neurons": 345
+  },
+  {
+   "key": "trials",
+   "name": "Clinical trials / SUSAR",
+   "modality": "mechanosensory",
+   "neurons": 1559
+  },
+  {
+   "key": "label",
+   "name": "Label & regulatory updates",
+   "modality": "hygro/thermo",
+   "neurons": 91
+  },
+  {
+   "key": "digital",
+   "name": "Digital & social media",
+   "modality": "visual projection",
+   "neurons": 9170
+  },
+  {
+   "key": "other",
+   "name": "Other sources",
+   "modality": "other sensory",
+   "neurons": 112
+  }
+ ],
+ "nt": {
+  "acetylcholine": 33829,
+  "glutamate": 7745,
+  "gaba": 5645,
+  "unclear": 1574,
+  "dopamine": 384,
+  "octopamine": 35,
+  "serotonin": 25,
+  "histamine": 6,
+  "unknown": 1
+ }
+}

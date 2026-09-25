@@ -1,0 +1,14 @@
+.env
+.env.*
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+node_modules/
+web/dist/
+.vercel/
+# 대용량 원천/파생 데이터는 스크립트로 재생성한다
+/data/
+*.duckdb
+*.duckdb.wal
+KakaoTalk_Photo_*

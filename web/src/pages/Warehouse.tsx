@@ -1,0 +1,97 @@
+import { useEffect, useState } from 'react'
+import { Card, HBars, Kpi, LineChart, Loading, PageHead } from '../components/ui'
+import { OCCP_LABEL, OUTCOME_LABEL, fmt, getJSON } from '../lib/data'
+import type { Overview, Schema } from '../lib/types'
+
+const LAYER_COL: Record<string, string> = { raw: '#4d8dff', core: '#37e6ff', ref: '#a58bff', sig: '#ff4fd8', ops: '#76b900', etl: '#ffb547' }
+const ORDER = ['raw', 'core', 'ref', 'sig', 'ops', 'etl']
+
+export default function Warehouse() {
+  const [ov, setOv] = useState<Overview | null>(null)
+  const [sc, setSc] = useState<Schema | null>(null)
+  const [open, setOpen] = useState<string | null>('sig_signal')
+  useEffect(() => { getJSON<Overview>('/data/faers/overview.json').then(setOv); getJSON<Schema>('/data/faers/schema.json').then(setSc) }, [])
+  if (!ov || !sc) return <div className="page"><Loading /></div>
+
+  const funnel = [
+    { label: '원천 보고 (raw_demo)', value: ov.raw_reports, color: '#4d8dff' },
+    { label: '고유 caseid', value: ov.distinct_caseids, color: '#37e6ff' },
+    { label: 'FDA 삭제 반영 후 케이스', value: ov.cases, color: '#3ddc97' },
+    { label: '의심약 × 반응 삼중항', value: ov.triplets, color: '#ff4fd8' },
+    { label: '약물-반응 쌍 (a ≥ 3)', value: ov.pairs, color: '#ffb547' },
+    { label: '3중 신호 (Evans ∧ ROR ∧ IC)', value: ov.all3, color: '#ff5d6c' },
+  ]
+  const qs = ov.per_quarter
+  const xt = qs.map((q, k) => ({ x: k, label: q.quarter.endsWith('Q1') ? q.quarter.slice(0, 4) : '' })).filter((t) => t.label)
+
+  return (
+    <div className="page">
+      <PageHead eyebrow="PV Data Warehouse · DuckDB"
+        title={<>원천부터 신호까지, <span style={{ color: 'var(--c-sense)' }}>감사 가능한 5계층</span></>}
+        lede={<>FDA FAERS 분기 파일 {ov.quarters}개({ov.first}–{ov.asof})를 증분 적재했다. 원문은 원천 계층에 VARCHAR 그대로 두고, 정제·참조·신호·운영 계층을 SQL로만 파생한다. 모든 신호 수치는 이 SQL을 다시 돌리면 같은 값이 나온다. DB 크기 {(sc.db_bytes / 1e9).toFixed(2)} GB.</>} />
+
+      <div className="grid g4" style={{ marginBottom: 16 }}>
+        <Kpi label="raw rows (demo+drug+reac)" value={ov.raw_reports + ov.raw_drug_rows + ov.raw_reac_rows} color="#4d8dff" sub={`${fmt.compact(ov.raw_drug_rows)} drug rows · ${fmt.compact(ov.raw_reac_rows)} reaction rows`} />
+        <Kpi label="unique cases" value={ov.cases} color="#37e6ff" sub={`${fmt.int(ov.deleted_cases)} FDA-deleted caseids excluded`} />
+        <Kpi label="drug names normalized" value={ov.drug_names_norm} color="#a58bff" sub={`from ${fmt.int(ov.drug_names_raw)} raw spellings`} />
+        <Kpi label="MedDRA preferred terms" value={ov.pts} color="#ff4fd8" sub={`${fmt.compact(ov.triplets)} case-drug-event triplets`} />
+      </div>
+
+      <Card title="계층 스키마" sub="클릭하면 컬럼이 펼쳐진다. 행 수는 빌드 시점 실측" style={{ marginBottom: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${ORDER.length}, minmax(0,1fr))`, gap: 12, position: 'relative' }}>
+          {ORDER.map((L) => (
+            <div key={L} className="stack" style={{ gap: 8 }}>
+              <div style={{ padding: '8px 10px', borderRadius: 10, background: `color-mix(in srgb, ${LAYER_COL[L]} 14%, transparent)`, border: `1px solid ${LAYER_COL[L]}55` }}>
+                <div className="mono" style={{ fontSize: 11, color: LAYER_COL[L], letterSpacing: 1.2 }}>{L.toUpperCase()}</div>
+                <div style={{ fontSize: 11.5, color: 'var(--text-2)' }}>{sc.layers[L]}</div>
+              </div>
+              {sc.tables.filter((t) => t.layer === L).map((t) => (
+                <div key={t.name} onClick={() => setOpen(open === t.name ? null : t.name)} style={{ cursor: 'pointer', padding: '8px 10px', borderRadius: 10, border: `1px solid ${open === t.name ? LAYER_COL[L] : 'var(--line)'}`, background: 'rgba(10,16,30,0.6)' }}>
+                  <div className="row between"><span className="mono" style={{ fontSize: 11.5 }}>{t.name}</span></div>
+                  <div className="num dim" style={{ fontSize: 10.5 }}>{fmt.int(t.rows)} rows · {t.columns.length} cols</div>
+                  {open === t.name && <div className="fade-in" style={{ marginTop: 6, borderTop: '1px solid var(--line)', paddingTop: 6 }}>
+                    {t.columns.map((c) => <div key={c.name} className="row between mono" style={{ fontSize: 10.5 }}><span>{c.name}</span><span className="dim">{c.type.toLowerCase()}</span></div>)}
+                  </div>}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      <div className="grid g2" style={{ marginBottom: 16 }}>
+        <Card title="정제 퍼널" sub="보고 → 케이스 → 신호. 각 단계는 SQL 한 단계">
+          <HBars data={funnel} labelWidth={200} fmt={fmt.compact} height={34} />
+        </Card>
+        <Card title="분기별 보고와 적재 시간" sub="원천 보고 수(파랑), 신속보고 EXP(분홍). 분기 zip 하나 적재 평균 시간은 아래">
+          <LineChart height={220} xTicks={xt} series={[
+            { key: 'rep', color: '#4d8dff', area: true, values: qs.map((q, k) => ({ x: k, y: q.reports })) },
+            { key: 'exp', color: '#ff4fd8', values: qs.map((q, k) => ({ x: k, y: q.expedited })) },
+          ]} />
+          <div className="row" style={{ gap: 16, marginTop: 8 }}>
+            <span className="chip">avg load {(ov.etl.reduce((a, e) => a + e.seconds, 0) / ov.etl.length).toFixed(1)} s / quarter</span>
+            <span className="chip">total {ov.etl.reduce((a, e) => a + e.seconds, 0).toFixed(0)} s for {ov.quarters} quarters</span>
+          </div>
+        </Card>
+      </div>
+
+      <div className="grid g3">
+        <Card title="결과 코드 분포" sub="core_outc · 케이스당 중복 허용">
+          <HBars data={Object.entries(ov.outcomes).map(([k, v]) => ({ label: `${OUTCOME_LABEL[k] ?? k} (${k})`, value: v, color: k === 'DE' ? '#ff5d6c' : k === 'LT' ? '#ff8f3a' : '#37e6ff' }))} fmt={fmt.compact} labelWidth={120} />
+        </Card>
+        <Card title="보고자 유형" sub="occp_cod">
+          <HBars data={Object.entries(ov.reporters).map(([k, v]) => ({ label: OCCP_LABEL[k] ?? k, value: v, color: '#a58bff' }))} fmt={fmt.compact} labelWidth={100} />
+        </Card>
+        <Card title="보고 국가 상위" sub="reporter_country">
+          <HBars data={ov.countries.slice(0, 9).map(([k, v]) => ({ label: k, value: v, color: '#76b900' }))} fmt={fmt.compact} labelWidth={60} />
+        </Card>
+        <Card title="의심약 상위" sub="PS/SS 기준 케이스 수" className="span2">
+          <HBars data={ov.top_drugs.slice(0, 14).map(([k, v]) => ({ label: k, value: v, color: '#ffb547' }))} fmt={fmt.compact} labelWidth={200} />
+        </Card>
+        <Card title="연령 분포" sub="age_years (보고된 경우)">
+          <HBars data={ov.age_bins.map(([b, v]) => ({ label: `${b}–${b + 9}`, value: v, color: '#4d8dff' }))} fmt={fmt.compact} labelWidth={60} height={20} />
+        </Card>
+      </div>
+    </div>
+  )
+}

@@ -1,0 +1,65 @@
+[
+ {
+  "name": "connectome-router",
+  "description": "Use when rendering or reasoning about FlyVigilante's routing topology — the MaleCNS central-brain subgraph (49,244 neurons, 1.05M signed edges) mapped to agent layers, with a browser rate model driven by agent decisions.",
+  "license": "Apache-2.0 (code) · MaleCNS data CC-BY 4.0 (Janelia FlyEM)",
+  "layer": "all",
+  "model": "",
+  "path": "skills/connectome-router/SKILL.md",
+  "body": "# Connectome Router\n\n- Build: `pipeline/connectome/select_subgraph.py` → `build_roi_meshes.py` → `build_web_connectome.py`.\n- Layer assignment by anatomy: sensory→intake channels, AL PN→encoding, LH→reflex, KC/MBON/DAN→memory, CX→deliberation, GABAergic intrinsic→critic, DN→action, AN→feedback.\n- Edge weight = synapses / post-synaptic input total, signed by predicted neurotransmitter (ACh +, GABA/Glu −).\n- Dynamics: `x ← 0.6x + 0.4·relu(tanh(8·Wx + I − 0.05 − 3a))`, adaptation `a ← a + 0.1(x − a)`.\n- Agent decisions inject current into the matching populations; propagation is the real wiring. It is a routing visualization, never clinical evidence."
+ },
+ {
+  "name": "faers-warehouse",
+  "description": "Use when building or refreshing the FlyVigilante FAERS warehouse — incremental quarterly ingest of FDA FAERS ASCII files into DuckDB, case de-duplication, drug-name normalization, and disproportionality tables.",
+  "license": "Apache-2.0",
+  "layer": "sense + encode",
+  "model": "",
+  "path": "skills/faers-warehouse/SKILL.md",
+  "body": "# FAERS Warehouse\n\nSensory Intake and Feature Encoding layers. Deterministic; no model is called.\n\n## Steps\n1. `scripts/download_faers.sh` — fetch new quarterly zips from fis.fda.gov (skips existing, validates zip).\n2. `.venv/bin/python pipeline/faers/load_quarters.py` — load each quarter into `raw_*` (VARCHAR, UTF-8 normalized, one transaction per quarter, audited in `etl_quarter`).\n3. `.venv/bin/python pipeline/faers/build_model.py` — run `pipeline/faers/model.sql` and export API/dashboard artifacts.\n\n## Rules\n- De-duplicate by `caseid`, keep highest `caseversion`, then latest `fda_dt`; drop every caseid in any DELETE file.\n- Drug = `prod_ai` first; learned brand→ingredient map for pre-2014Q3; strip salt/hydrate suffixes; group biosimilar suffixes.\n- Only PS/SS roles enter disproportionality. PRR/ROR/IC025 are computed in SQL; models never alter them."
+ },
+ {
+  "name": "pv-critic",
+  "description": "Use to verify any AI-written pharmacovigilance claim — tier 1 evidence-ID rules, tier 2 numeric oracle against the evidence bundle, tier 3 overclaim judgment (Jev) plus NVIDIA safety guard — and return the claim to its author with reasons when it fails.",
+  "license": "Apache-2.0",
+  "layer": "critic (GABAergic inhibition)",
+  "model": "",
+  "path": "skills/pv-critic/SKILL.md",
+  "body": "# PV Critic\n\n| Tier | Checks | Model |\n|---|---|---|\n| T1 rules | claim non-empty, has evidence IDs, every ID exists in the bundle | none |\n| T2 numeric oracle | every number in the claim matches a number in the case or bundle (±1.1%) | none |\n| T3 overclaim | per-claim `noul` \"violates a rule?\" + `choice` \"which rule\" over R1–R12 | Jev |\n| Guard | memo text → `nvidia/llama-3.1-nemotron-safety-guard-8b-v3`; \"Unauthorized Advice\" ⇒ R11 | NVIDIA NIM |\n\nRules R1–R12 live in `api/_fv/assess.py::OVERCLAIM_RULES` (disproportionality ≠ causation, no incidence from FAERS, no cross-drug ranking, …)."
+ },
+ {
+  "name": "pv-deliberate-assess",
+  "description": "Use when triage escalates a case to System-2 — NVIDIA Nemotron writes an evidence-bound case assessment (claims JSON with evidence IDs, narrative, open questions) that is then checked by the pv-critic skill.",
+  "license": "Apache-2.0",
+  "layer": "deliberate (central complex)",
+  "model": "nvidia/nemotron-3-super-120b-a12b (fallback ultra-550b, 3.5-lightning-30b)",
+  "path": "skills/pv-deliberate-assess/SKILL.md",
+  "body": "# PV Deliberate Assess\n\n- Called only for `expedite` / `signal_review` actions (or on explicit reviewer request).\n- Prompt carries the 12 interpretation rules; output is JSON only: `claims[{id,text,evidence[]}]`, `assessment`, `narrative`, `open_questions`.\n- Thinking disabled (`chat_template_kwargs.enable_thinking=false`) to keep latency bounded.\n- If the critic rejects, the issues are fed back once for a revision round.\n- `POST /api/assess` with `{case, triage}`."
+ },
+ {
+  "name": "pv-guardrail-policy",
+  "description": "Use when configuring the FlyVigilante content-safety policy — custom pharmacovigilance categories layered on NVIDIA Nemotron safety guard, following the nemotron-policy-generator skill's BYO-policy pattern.",
+  "license": "Apache-2.0",
+  "layer": "",
+  "model": "",
+  "path": "skills/pv-guardrail-policy/SKILL.md",
+  "body": "# PV Guardrail Policy\n\nCustom categories (in addition to the guard model's defaults):\n\n| ID | Category | Action |\n|---|---|---|\n| PV-1 | Individual treatment, dosing or discontinuation advice | block (R11) |\n| PV-2 | Causal claim from disproportionality alone | return to author (R1) |\n| PV-3 | Incidence/risk estimate from spontaneous reports | return to author (R2) |\n| PV-4 | Re-identification attempt of a reporter or patient | block |\n| PV-5 | Tool/network use outside allowed hosts | deny + audit |\n\nAllowed egress: `api.fda.gov`, `eutils.ncbi.nlm.nih.gov`, `api.typesafe.ai`, `integrate.api.nvidia.com`."
+ },
+ {
+  "name": "pv-reflex-triage",
+  "description": "Use when an ICSR needs an immediate triage decision — seriousness, expectedness, WHO-UMC causality, special situation, priority and next action — returned as typed calibrated probabilities from Jev (System-1) in one call.",
+  "license": "Apache-2.0",
+  "layer": "reflex (lateral horn)",
+  "model": "typesafe jev-latest",
+  "path": "skills/pv-reflex-triage/SKILL.md",
+  "body": "# PV Reflex Triage\n\n## Contract\n- Input: one case (`api/_fv/triage.py::case_state`).\n- Rule gate first: ICH minimum four elements are checked from structured fields (`validity`). Never ask a model what a rule can compute.\n- One Jev call with 7 typed questions: `serious`, `expected`, `deep` (noul) · `causality`, `special`, `route` (choice) · `priority` (score, 4 levels).\n- `route_policy` maps probabilities to an action with human-readable reasons:\n  - serious ≥ 0.5 and expected < 0.5 → `expedite` (System-2 + human)\n  - priority ≥ 2.5 → `expedite`\n  - route = signal_review, deep ≥ 0.5, or confidence < 0.55 → `signal_review` (System-2)\n  - otherwise `monitor` / `close`\n\n## Endpoint\n`POST /api/triage` with the case JSON.\n\n## Limits\nJev probabilities are population-calibrated, not certainty for one case (rule R10)."
+ },
+ {
+  "name": "pv-signal-memory",
+  "description": "Use when a drug–event pair needs evidence — FAERS 2x2 disproportionality from the warehouse, openFDA label sections that mention the reaction, and PubMed hits — each returned with a citable evidence ID.",
+  "license": "Apache-2.0",
+  "layer": "memory (mushroom body)",
+  "model": "",
+  "path": "skills/pv-signal-memory/SKILL.md",
+  "body": "# PV Signal Memory\n\nEvidence IDs (the only IDs a memo may cite):\n- `faers:2x2:<DRUG>:<pt>@<asof>` — a, expected, PRR (95% CI), ROR (95% CI), Yates χ², IC, IC025, Evans/ROR/IC flags\n- `label:<setid>#<section>` — quote around the reaction in boxed_warning / warnings_and_cautions / adverse_reactions …\n- `pubmed:<pmid>` — top relevance PMIDs for `\"<drug>\"[tiab] AND \"<pt>\"[tiab]`\n- `faers:case:<primaryid>` — the case itself\n\nImplementation: `api/_fv/evidence.py::bundle`. Allowed hosts: api.fda.gov, eutils.ncbi.nlm.nih.gov."
+ }
+]
