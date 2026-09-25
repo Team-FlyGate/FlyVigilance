@@ -12,3 +12,5 @@ web/dist/
 *.duckdb
 *.duckdb.wal
 KakaoTalk_Photo_*
+.vercel
+.env*

@@ -1,15 +1,29 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
   "buildCommand": "cd web && npm ci && npm run build",
   "outputDirectory": "web/dist",
-  "installCommand": "echo skip",
   "functions": {
-    "api/index.py": { "includeFiles": "api/_data/**", "maxDuration": 120 }
+    "api/index.py": {
+      "includeFiles": "api/{_data,_fv}/**",
+      "maxDuration": 120
+    }
   },
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index" }
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index"
+    }
   ],
   "headers": [
-    { "source": "/data/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400" }] }
+    {
+      "source": "/data/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        }
+      ]
+    }
   ]
 }

@@ -1,0 +1,9 @@
+/data
+.venv
+**/node_modules
+web/dist
+.env
+.env.*
+KakaoTalk_Photo_*
+docs/images
+scripts/shoot*.py
