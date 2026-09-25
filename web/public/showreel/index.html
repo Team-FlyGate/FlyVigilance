@@ -44,7 +44,7 @@
   .node .b { font-family: var(--mono); font-size: 14px; color: var(--t3); margin-top: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .bar { height: 18px; border-radius: 10px; background: rgba(120,170,255,.1); overflow: hidden; }
   .bar > i { display: block; height: 100%; border-radius: 10px; }
-  #hud { position: fixed; left: 0; right: 0; bottom: 0; padding: 12px 18px; display: flex; align-items: center; gap: 14px; background: linear-gradient(transparent, rgba(0,0,0,.85)); opacity: 0; transition: opacity .3s; font-family: var(--mono); font-size: 12px; color: #9fb0d6; z-index: 10; }
+  #hud { position: fixed; z-index: 10; left: 0; right: 0; bottom: 0; padding: 12px 18px; display: flex; align-items: center; gap: 14px; background: linear-gradient(transparent, rgba(0,0,0,.85)); opacity: 0; transition: opacity .3s; font-family: var(--mono); font-size: 12px; color: #9fb0d6; z-index: 10; }
   #wrap:hover + #hud, #hud:hover { opacity: 1; }
   #hud button { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15); color: #fff; border-radius: 8px; padding: 6px 12px; cursor: pointer; font: inherit; }
   #scrub { flex: 1; accent-color: #37e6ff; }
@@ -421,8 +421,10 @@
     scrub.value = T
     prog.style.width = `${(T / DUR) * 100}%`
   }
+  let manual = false
   function loop(now) {
     const dt = (now - last) / 1000; last = now
+    if (manual) { requestAnimationFrame(loop); return }
     if (playing) T = Math.min(DUR, T + dt)
     render(now)
     if (T >= DUR) playing = false
@@ -437,7 +439,9 @@
   addEventListener('keydown', (e) => { if (e.code === 'Space') { e.preventDefault(); document.getElementById('pp').click() } if (e.code === 'ArrowRight') T = Math.min(DUR, T + 5); if (e.code === 'ArrowLeft') T = Math.max(0, T - 5) })
   const ch = document.getElementById('chapters')
   SCENES.forEach((s) => { const sp = document.createElement('span'); sp.textContent = s.name; sp.onclick = () => { T = s.t0 + 0.01 }; ch.appendChild(sp) })
-  window.__reel = { seek: (t) => { T = t; playing = false }, play: () => { playing = true }, DUR }
+  // 프레임 단위 렌더링(영상 출력용): 루프를 멈추고 지정 시점을 그린다
+  const renderAt = (t) => { manual = true; playing = false; T = t; render(t * 1000) }
+  window.__reel = { seek: (t) => { T = t; playing = false }, play: () => { playing = true }, renderAt, DUR }
   if (params.get('paused')) playing = false
   requestAnimationFrame((n) => { last = n; loop(n) })
 })()

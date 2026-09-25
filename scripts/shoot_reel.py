@@ -10,7 +10,8 @@ async def main(out, ts):
         b = await p.chromium.launch(channel="chromium", args=["--use-angle=metal", "--ignore-gpu-blocklist", "--enable-gpu"])
         pg = await b.new_page(viewport={"width": 1920, "height": 1080})
         pg.on("pageerror", lambda e: print("pageerror", e))
-        await pg.goto("http://127.0.0.1:5173/showreel/index.html?paused=1")
+        await pg.goto("http://127.0.0.1:5173/showreel/index.html?paused=1", wait_until="domcontentloaded", timeout=60000)
+        await pg.evaluate("document.fonts.ready")
         await pg.wait_for_timeout(2500)
         for t in ts:
             await pg.evaluate(f"window.__reel.seek({t})")
