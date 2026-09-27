@@ -9,6 +9,19 @@
       "maxDuration": 120
     }
   },
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "flyvigilante.vercel.app"
+        }
+      ],
+      "destination": "https://flyvigilance.vercel.app/:path*",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/(.*)",

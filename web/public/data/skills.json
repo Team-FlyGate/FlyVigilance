@@ -1,7 +1,7 @@
 [
  {
   "name": "connectome-router",
-  "description": "Use when rendering or reasoning about FlyVigilante's routing topology — the MaleCNS central-brain subgraph (49,244 neurons, 1.05M signed edges) mapped to agent layers, with a browser rate model driven by agent decisions.",
+  "description": "Use when rendering or reasoning about FlyVigilance's routing topology — the MaleCNS central-brain subgraph (49,244 neurons, 1.05M signed edges) mapped to agent layers, with a browser rate model driven by agent decisions.",
   "license": "Apache-2.0 (code) · MaleCNS data CC-BY 4.0 (Janelia FlyEM)",
   "layer": "all",
   "model": "",
@@ -10,7 +10,7 @@
  },
  {
   "name": "faers-warehouse",
-  "description": "Use when building or refreshing the FlyVigilante FAERS warehouse — incremental quarterly ingest of FDA FAERS ASCII files into DuckDB, case de-duplication, drug-name normalization, and disproportionality tables.",
+  "description": "Use when building or refreshing the FlyVigilance FAERS warehouse — incremental quarterly ingest of FDA FAERS ASCII files into DuckDB, case de-duplication, drug-name normalization, and disproportionality tables.",
   "license": "Apache-2.0",
   "layer": "sense + encode",
   "model": "",
@@ -37,7 +37,7 @@
  },
  {
   "name": "pv-guardrail-policy",
-  "description": "Use when configuring the FlyVigilante content-safety policy — custom pharmacovigilance categories layered on NVIDIA Nemotron safety guard, following the nemotron-policy-generator skill's BYO-policy pattern.",
+  "description": "Use when configuring the FlyVigilance content-safety policy — custom pharmacovigilance categories layered on NVIDIA Nemotron safety guard, following the nemotron-policy-generator skill's BYO-policy pattern.",
   "license": "Apache-2.0",
   "layer": "",
   "model": "",

@@ -1,8 +1,8 @@
-# FlyVigilante 아키텍처
+# FlyVigilance 아키텍처
 
 작성일: 2026-09-25
 
-FlyVigilante는 모든 이상사례를 Jev System-1이 수백 밀리초 안에 판단하고, 필요한 케이스만 NVIDIA Nemotron System-2와 사람에게 올리는 약물감시 에이전트다. 층 구성은 초파리 MaleCNS 커넥텀의 기능 층을 그대로 따른다.
+FlyVigilance는 모든 이상사례를 Jev System-1이 수백 밀리초 안에 판단하고, 필요한 케이스만 NVIDIA Nemotron System-2와 사람에게 올리는 약물감시 에이전트다. 층 구성은 초파리 MaleCNS 커넥텀의 기능 층을 그대로 따른다.
 
 ## 1. 층 구성
 

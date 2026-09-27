@@ -3,7 +3,7 @@ name: pv-signal-memory
 description: Use when a drug–event pair needs evidence — FAERS 2x2 disproportionality from the warehouse, openFDA label sections that mention the reaction, and PubMed hits — each returned with a citable evidence ID.
 license: Apache-2.0
 metadata:
-  author: FlyVigilante
+  author: FlyVigilance
   layer: memory (mushroom body)
   tags: [pharmacovigilance, signal-detection, openfda, pubmed]
 ---

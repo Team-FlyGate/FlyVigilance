@@ -1,9 +1,9 @@
 ---
 name: pv-guardrail-policy
-description: Use when configuring the FlyVigilante content-safety policy — custom pharmacovigilance categories layered on NVIDIA Nemotron safety guard, following the nemotron-policy-generator skill's BYO-policy pattern.
+description: Use when configuring the FlyVigilance content-safety policy — custom pharmacovigilance categories layered on NVIDIA Nemotron safety guard, following the nemotron-policy-generator skill's BYO-policy pattern.
 license: Apache-2.0
 metadata:
-  author: FlyVigilante
+  author: FlyVigilance
   based_on: NVIDIA/skills nemotron-policy-generator
   tags: [guardrails, nemotron-content-safety, pharmacovigilance]
 ---

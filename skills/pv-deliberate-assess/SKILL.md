@@ -3,7 +3,7 @@ name: pv-deliberate-assess
 description: Use when triage escalates a case to System-2 — NVIDIA Nemotron writes an evidence-bound case assessment (claims JSON with evidence IDs, narrative, open questions) that is then checked by the pv-critic skill.
 license: Apache-2.0
 metadata:
-  author: FlyVigilante
+  author: FlyVigilance
   layer: deliberate (central complex)
   model: nvidia/nemotron-3-super-120b-a12b (fallback ultra-550b, 3.5-lightning-30b)
   endpoint: https://integrate.api.nvidia.com/v1/chat/completions

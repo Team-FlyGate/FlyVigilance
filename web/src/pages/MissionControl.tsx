@@ -111,10 +111,10 @@ export default function MissionControl() {
 
   return (
     <div className="page">
-      <PageHead eyebrow="FlyVigilante · Mission Control"
+      <PageHead eyebrow="FlyVigilance · Mission Control"
         title={<>초파리 커넥텀으로 라우팅되는 <span style={{ color: 'var(--c-sense)' }}>약물감시 에이전트</span></>}
         lede={<>분기마다 40만 건이 넘는 FAERS 이상사례가 쏟아진다. 초파리 뇌가 감각 입력을 반사, 기억, 숙고, 행동으로 나누듯
-          FlyVigilante는 모든 케이스를 <b style={{ color: 'var(--jev)' }}>Jev System-1</b>이 수백 밀리초 안에 판단하고,
+          FlyVigilance는 모든 케이스를 <b style={{ color: 'var(--jev)' }}>Jev System-1</b>이 수백 밀리초 안에 판단하고,
           꼭 필요한 케이스만 <b style={{ color: 'var(--nvidia)' }}>NVIDIA Nemotron System-2</b>와 사람에게 올린다.</>}
         right={<div className="row wrap" style={{ justifyContent: 'flex-end', maxWidth: 380 }}>
           <span className="chip">MaleCNS v1.0 · Janelia FlyEM</span><span className="chip jev">Jev · TypeSafe AI</span>

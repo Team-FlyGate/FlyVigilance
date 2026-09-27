@@ -77,7 +77,7 @@ export default function Problem() {
 
   return (
     <div className="page">
-      <PageHead eyebrow="Problem framing · why FlyVigilante"
+      <PageHead eyebrow="Problem framing · why FlyVigilance"
         title={<>약물감시의 병목은 <span style={{ color: 'var(--bad)' }}>양</span>이 아니라 <span style={{ color: 'var(--c-sense)' }}>배분</span>이다</>}
         lede="모든 이상사례를 같은 비용으로 읽는 구조가 문제다. 초파리 뇌는 16만 개 뉴런으로 이 문제를 이미 풀었다. 감각은 넓게 받고, 반사는 싸게, 기억은 희소하게, 숙고는 드물게, 행동은 좁은 병목으로 낸다. 우리는 그 배선 원리를 에이전트 라우팅에 옮겼다." />
 
@@ -98,7 +98,7 @@ export default function Problem() {
                 <div style={{ fontSize: 12.5, color: 'var(--text-2)' }}>{p.brain}</div>
               </div>
               <div>
-                <div className="eyebrow" style={{ color: 'var(--ok)' }}>FlyVigilante</div>
+                <div className="eyebrow" style={{ color: 'var(--ok)' }}>FlyVigilance</div>
                 <div style={{ fontSize: 12.5, margin: '4px 0 10px' }}>{p.fix}</div>
                 <div className="chip" style={{ whiteSpace: 'normal', lineHeight: 1.4 }}>{p.metric}</div>
               </div>

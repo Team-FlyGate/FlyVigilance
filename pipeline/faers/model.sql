@@ -1,4 +1,4 @@
--- FlyVigilante FAERS 웨어하우스: 원천(raw_*) -> 정제(core_*) -> 신호(sig_*)
+-- FlyVigilance FAERS 웨어하우스: 원천(raw_*) -> 정제(core_*) -> 신호(sig_*)
 -- DuckDB 에서 실행한다. load_quarters.py 로 raw_* 가 채워진 뒤 build_model.py 가 부른다.
 
 ------------------------------------------------------------------ 정제 계층

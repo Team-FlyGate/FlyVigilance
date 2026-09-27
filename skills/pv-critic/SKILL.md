@@ -3,7 +3,7 @@ name: pv-critic
 description: Use to verify any AI-written pharmacovigilance claim — tier 1 evidence-ID rules, tier 2 numeric oracle against the evidence bundle, tier 3 overclaim judgment (Jev) plus NVIDIA safety guard — and return the claim to its author with reasons when it fails.
 license: Apache-2.0
 metadata:
-  author: FlyVigilante
+  author: FlyVigilance
   layer: critic (GABAergic inhibition)
   tags: [pharmacovigilance, verification, guardrails]
 ---

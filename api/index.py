@@ -1,4 +1,4 @@
-"""FlyVigilante API. 로컬은 uvicorn, 배포는 Vercel Python Function 으로 같은 파일을 쓴다.
+"""FlyVigilance API. 로컬은 uvicorn, 배포는 Vercel Python Function 으로 같은 파일을 쓴다.
 
 GET  /api/health          키 설정 여부, 데이터 기준일
 GET  /api/cases           실제 FAERS 케이스 표본 (트리아지 데모용)
@@ -22,7 +22,7 @@ from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from _fv import assess as assess_mod  # noqa: E402
 from _fv import clients, config, evidence, triage as triage_mod  # noqa: E402
 
-app = FastAPI(title="FlyVigilante API", version="1.0")
+app = FastAPI(title="FlyVigilance API", version="1.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 # 공개 배포에서 유료 API 남용을 막는 간단한 IP 별 속도 제한

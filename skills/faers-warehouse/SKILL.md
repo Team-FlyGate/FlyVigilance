@@ -1,9 +1,9 @@
 ---
 name: faers-warehouse
-description: Use when building or refreshing the FlyVigilante FAERS warehouse — incremental quarterly ingest of FDA FAERS ASCII files into DuckDB, case de-duplication, drug-name normalization, and disproportionality tables.
+description: Use when building or refreshing the FlyVigilance FAERS warehouse — incremental quarterly ingest of FDA FAERS ASCII files into DuckDB, case de-duplication, drug-name normalization, and disproportionality tables.
 license: Apache-2.0
 metadata:
-  author: FlyVigilante
+  author: FlyVigilance
   layer: sense + encode
   tags: [pharmacovigilance, faers, duckdb, etl]
 ---

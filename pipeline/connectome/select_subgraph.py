@@ -1,4 +1,4 @@
-"""MaleCNS에서 FlyVigilante 라우터에 쓸 중앙뇌 부분그래프를 고른다.
+"""MaleCNS에서 FlyVigilance 라우터에 쓸 중앙뇌 부분그래프를 고른다.
 
 산출물 (data/derived/connectome/)
   neurons.parquet : 선택된 뉴런과 주석, 신경전달물질, 부호(+1/-1)

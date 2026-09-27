@@ -3,7 +3,7 @@ name: pv-reflex-triage
 description: Use when an ICSR needs an immediate triage decision — seriousness, expectedness, WHO-UMC causality, special situation, priority and next action — returned as typed calibrated probabilities from Jev (System-1) in one call.
 license: Apache-2.0
 metadata:
-  author: FlyVigilante
+  author: FlyVigilance
   layer: reflex (lateral horn)
   model: typesafe jev-latest
   tags: [pharmacovigilance, triage, jev, system-1]

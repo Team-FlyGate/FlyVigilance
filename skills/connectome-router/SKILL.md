@@ -1,9 +1,9 @@
 ---
 name: connectome-router
-description: Use when rendering or reasoning about FlyVigilante's routing topology — the MaleCNS central-brain subgraph (49,244 neurons, 1.05M signed edges) mapped to agent layers, with a browser rate model driven by agent decisions.
+description: Use when rendering or reasoning about FlyVigilance's routing topology — the MaleCNS central-brain subgraph (49,244 neurons, 1.05M signed edges) mapped to agent layers, with a browser rate model driven by agent decisions.
 license: Apache-2.0 (code) · MaleCNS data CC-BY 4.0 (Janelia FlyEM)
 metadata:
-  author: FlyVigilante
+  author: FlyVigilance
   layer: all
   tags: [connectome, drosophila, malecns, visualization]
 ---

@@ -38,7 +38,7 @@ export default function Skills() {
     <div className="page">
       <PageHead eyebrow="NVIDIA Agent Skills · Guardrails · Governance"
         title={<>에이전트의 능력은 <span style={{ color: 'var(--nvidia)' }}>SKILL.md</span>로, 경계는 규칙으로</>}
-        lede={<>build.nvidia.com의 Agent Skills 규격(<span className="mono">npx skills add NVIDIA/skills</span>)을 따라 FlyVigilante의 능력 7개를 스킬 패키지로 나눴다. 각 스킬은 입력·출력 계약, 허용 호스트, 쓰는 모델을 명시하고 저장소의 실제 코드를 가리킨다. 가드레일 스킬은 NVIDIA 공식 <span className="mono">nemotron-policy-generator</span>의 BYO 정책 방식을 따른다.</>} />
+        lede={<>build.nvidia.com의 Agent Skills 규격(<span className="mono">npx skills add NVIDIA/skills</span>)을 따라 FlyVigilance의 능력 7개를 스킬 패키지로 나눴다. 각 스킬은 입력·출력 계약, 허용 호스트, 쓰는 모델을 명시하고 저장소의 실제 코드를 가리킨다. 가드레일 스킬은 NVIDIA 공식 <span className="mono">nemotron-policy-generator</span>의 BYO 정책 방식을 따른다.</>} />
       <div className="grid" style={{ gridTemplateColumns: '360px minmax(0,1fr)', alignItems: 'start', marginBottom: 16 }}>
         <div className="stack" style={{ gap: 8 }}>
           {sk.map((s) => (

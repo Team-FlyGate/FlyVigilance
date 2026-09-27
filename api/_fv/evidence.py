@@ -113,7 +113,7 @@ async def pubmed(drug: str, pt: str, client: httpx.AsyncClient) -> dict:
 async def bundle(case: dict, suspect: str) -> dict:
     """케이스 하나에 대한 근거 묶음. 주 반응 3개까지."""
     pts = case.get("reactions", [])[:3]
-    async with httpx.AsyncClient(headers={"User-Agent": "FlyVigilante/1.0 (hackathon demo)"}) as c:
+    async with httpx.AsyncClient(headers={"User-Agent": "FlyVigilance/1.0 (hackathon demo)"}) as c:
         ps_route = next((d.get("route") for d in case.get("drugs", []) if d.get("drug") == suspect), None)
         label_t = label_lookup(suspect, pts, c, ps_route)
         pub_t = [pubmed(suspect, pt, c) for pt in pts]

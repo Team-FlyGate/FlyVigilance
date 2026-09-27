@@ -27,7 +27,7 @@ OVERCLAIM_RULES = [
     ("R12", "Quoted label text must actually appear in the cited label section."),
 ]
 
-SYSTEM = """You are the System-2 pharmacovigilance assessor inside FlyVigilante.
+SYSTEM = """You are the System-2 pharmacovigilance assessor inside FlyVigilance.
 Write a concise case-level safety assessment using ONLY the evidence bundle. Every claim must cite evidence IDs that
 exist in the bundle. Copy numbers exactly as given. Obey these interpretation limits:
 """ + "\n".join(f"{k}: {v}" for k, v in OVERCLAIM_RULES) + """
