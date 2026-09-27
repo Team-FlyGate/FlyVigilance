@@ -8,7 +8,7 @@ NVIDIA Korea Agentic AI Hackathon 2026 데모 프로젝트.
 | --- | --- |
 | 라이브 대시보드 | https://flyvigilante.vercel.app |
 | 쇼릴 (웹, 2:30) | https://flyvigilante.vercel.app/showreel/index.html |
-| 쇼릴 (MP4, 1080p) | [FlyVigilante_showreel.mp4](https://github.com/AwesomeZun/FlyVigilante/releases/download/v1.0/FlyVigilante_showreel.mp4) |
+| 쇼릴 (MP4, 1080p) | [FlyVigilante_showreel.mp4](https://github.com/AwesomeZun/FlyVigilance/releases/download/v1.0/FlyVigilante_showreel.mp4) |
 
 분기마다 40만 건이 넘는 FAERS 이상사례가 들어온다. 초파리 뇌가 감각 입력을 반사, 기억, 숙고, 행동으로 나누듯
 FlyVigilante는 모든 케이스를 **Jev System-1**이 수백 밀리초 안에 판단하고, 꼭 필요한 케이스만
