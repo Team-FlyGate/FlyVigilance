@@ -124,12 +124,16 @@ FDA FAERS 55개 분기(2012Q4–2026Q2)를 DuckDB 5계층(raw → core → ref �
 ## 실행
 
 ```bash
-# 1) 데이터 (약 5GB 다운로드, 적재·빌드 약 20분)
-./scripts/download_faers.sh
+# 1-A) 빠른 길: 빌드된 FAERS 웨어하우스(DuckDB)와 커넥텀 파생물을 릴리스 data-v1 에서 받는다
+./scripts/fetch_data.sh                     # zstd 필요
+
+# 1-B) 처음부터 재현 (약 8GB 다운로드, 적재·빌드 약 20분)
 python3 -m venv .venv && .venv/bin/pip install duckdb pandas pyarrow numpy scipy fastapi uvicorn httpx trimesh fast-simplification
+./scripts/download_faers.sh
 .venv/bin/python pipeline/faers/load_quarters.py
 .venv/bin/python pipeline/faers/build_model.py
-# 커넥텀 (MaleCNS flat-connectome, ROI, SWC 스켈레톤 필요)
+# 커넥텀 (MaleCNS flat-connectome, ROI, SWC 스켈레톤)
+./scripts/download_malecns.sh               # SWC 는 swc_ids.txt 가 있어야 받는다 (select_subgraph 뒤 재실행)
 .venv/bin/python pipeline/connectome/select_subgraph.py
 .venv/bin/python pipeline/connectome/build_roi_meshes.py
 .venv/bin/python pipeline/connectome/build_web_connectome.py
