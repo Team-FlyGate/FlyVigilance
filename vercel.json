@@ -11,6 +11,17 @@
   },
   "redirects": [
     {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "flyvigilante.vercel.app"
+        }
+      ],
+      "destination": "https://flyvigilance.vercel.app/",
+      "permanent": true
+    },
+    {
       "source": "/:path*",
       "has": [
         {
