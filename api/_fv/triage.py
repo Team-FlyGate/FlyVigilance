@@ -87,8 +87,28 @@ def validity(case: dict) -> dict:
     return {"valid": all(checks.values()), "checks": checks}
 
 
-def route_policy(ans: dict, valid: dict | None = None) -> dict:
-    """결정론적 라우팅 정책. 모델 확률 -> 행동. 모든 규칙을 사유 문자열로 남긴다."""
+# 규정 모드: 신속보고 요건이 나라마다 다릅니다
+REGIMES = {
+    "US": {"name": "미국 FDA", "expedite_rule": "serious_unexpected",
+           "deadline": "15 calendar days (21 CFR 314.80: serious and unexpected)"},
+    "KR": {"name": "한국 식약처", "expedite_rule": "serious",
+           "deadline": "15일 이내 (의약품 등의 안전에 관한 규칙 별표 4의3 제7호: 중대한 약물이상반응, '예상하지 못한' 요건 없음)"},
+}
+
+
+def route_policy(ans: dict, valid: dict | None = None, regime: str = "US") -> dict:
+    """결정론적 라우팅 정책입니다. 모델 확률을 행동으로 바꾸고, 모든 규칙을 사유 문자열로 남깁니다."""
+    d = _route(ans, valid, regime)
+    d["regime"] = regime
+    if d.pop("report15", False):
+        d["deadline"] = REGIMES[regime]["deadline"]
+    elif d["action"] == "expedite":
+        d["deadline"] = ("즉시 사람 검토 (규정상 15일 신속보고 요건에는 해당하지 않음)" if regime == "KR"
+                         else "Urgent human review (does not meet the 15-day expedited criteria)")
+    return d
+
+
+def _route(ans: dict, valid: dict | None, regime: str) -> dict:
     p = lambda k: ans[k]["noul"]
     serious, expected, deep = p("serious"), p("expected"), p("deep")
     pr = ans["priority"]
@@ -99,9 +119,12 @@ def route_policy(ans: dict, valid: dict | None = None) -> dict:
         missing = [k for k, v in valid["checks"].items() if not v]
         return {"action": "follow_up", "tier": "rule", "system2": False,
                 "reasons": [f"ICH minimum elements missing: {', '.join(missing)} -> request follow-up"]}
+    if regime == "KR" and serious >= 0.5:
+        reasons.append(f"[KR] serious={serious:.2f}: 중대한 약물이상반응 -> 15일 신속보고 후보 (expected={expected:.2f}와 무관)")
+        return {"action": "expedite", "tier": "human", "system2": True, "reasons": reasons, "report15": True}
     if serious >= 0.5 and expected < 0.5:
-        reasons.append(f"serious={serious:.2f} and expected={expected:.2f}: serious unexpected -> expedited candidate")
-        return {"action": "expedite", "tier": "human", "system2": True, "reasons": reasons}
+        reasons.append(f"[US] serious={serious:.2f} and expected={expected:.2f}: serious unexpected -> expedited candidate")
+        return {"action": "expedite", "tier": "human", "system2": True, "reasons": reasons, "report15": True}
     if pr["score"] >= 2.5:
         reasons.append(f"priority score {pr['score']:.2f} >= 2.5")
         return {"action": "expedite", "tier": "human", "system2": True, "reasons": reasons}
@@ -126,10 +149,10 @@ def principal_suspect(case: dict) -> str:
     return case["drugs"][0]["drug"] if case.get("drugs") else "the suspect drug"
 
 
-async def triage(case: dict, client=None) -> dict:
+async def triage(case: dict, client=None, regime: str = "US") -> dict:
     suspect = principal_suspect(case)
     state = case_state(case)
     valid = validity(case)
     res = await clients.jev(state, questions(suspect), client=client)
-    decision = route_policy(res["answers"], valid)
+    decision = route_policy(res["answers"], valid, regime if regime in REGIMES else "US")
     return {"state": state, "suspect": suspect, "validity": valid, "jev": res, "decision": decision}

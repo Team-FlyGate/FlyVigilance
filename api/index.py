@@ -5,6 +5,9 @@ GET  /api/cases           실제 FAERS 케이스 표본 (트리아지 데모용)
 POST /api/triage          Jev System-1 실시간 판단 + 라우팅
 POST /api/assess          근거 수집 + Nemotron System-2 메모 + 크리틱 3단
 POST /api/critic          주어진 주장만 크리틱에 통과 (과잉해석 주입 테스트)
+POST /api/triage?regime=KR 국내 신속보고 기준(중대 -> 15일)으로 라우팅
+POST /api/kr/intake       국내 보고서식·자유 서술 -> 구조화 (Nemotron)
+POST /api/kr/causality    한국형 인과성 평가 알고리즘 ver 2.0 (Jev) + WHO-UMC
 GET  /api/signals/{drug}  웨어하우스 불균형 지표 상위 반응
 """
 import gzip
@@ -20,14 +23,14 @@ from fastapi import FastAPI, HTTPException, Request  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 
 from _fv import assess as assess_mod  # noqa: E402
-from _fv import clients, config, evidence, triage as triage_mod  # noqa: E402
+from _fv import clients, config, evidence, kr as kr_mod, triage as triage_mod  # noqa: E402
 
 app = FastAPI(title="FlyVigilance API", version="1.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 # 공개 배포에서 유료 API 남용을 막는 간단한 IP 별 속도 제한
 _hits: dict[str, deque] = {}
-LIMIT = {"triage": (30, 60), "assess": (6, 60), "critic": (10, 60)}
+LIMIT = {"triage": (30, 60), "assess": (6, 60), "critic": (10, 60), "kr": (10, 60)}
 
 
 def _rate(req: Request, key: str):
@@ -71,8 +74,9 @@ def cases(limit: int = 60, bucket: str | None = None):
 async def triage(req: Request):
     _rate(req, "triage")
     case = await req.json()
+    regime = req.query_params.get("regime", "US").upper()
     try:
-        return await triage_mod.triage(case)
+        return await triage_mod.triage(case, regime=regime)
     except clients.NotConfigured as e:
         raise HTTPException(503, f"{e} not configured")
 
@@ -103,6 +107,30 @@ async def critic(req: Request):
     body = await req.json()
     try:
         return await assess_mod.critic_only(body["claims"], body["state"], body["bundle"])
+    except clients.NotConfigured as e:
+        raise HTTPException(503, f"{e} not configured")
+
+
+@app.post("/api/kr/intake")
+async def kr_intake(req: Request):
+    """국내 보고서식·자유 서술을 구조화합니다 (Nemotron)."""
+    _rate(req, "kr")
+    body = await req.json()
+    try:
+        return await kr_mod.intake(body["text"], body.get("form", "narrative"))
+    except clients.NotConfigured as e:
+        raise HTTPException(503, f"{e} not configured")
+    except (RuntimeError, ValueError) as e:
+        raise HTTPException(502, str(e))
+
+
+@app.post("/api/kr/causality")
+async def kr_causality(req: Request):
+    """한국형 인과성 평가 알고리즘 ver 2.0 (Jev 판단 + 규칙 합산)과 WHO-UMC 를 따로 냅니다."""
+    _rate(req, "kr")
+    body = await req.json()
+    try:
+        return await kr_mod.causality_kr(body["case"], triage_mod.case_state(body["case"]), body.get("narrative"))
     except clients.NotConfigured as e:
         raise HTTPException(503, f"{e} not configured")
 

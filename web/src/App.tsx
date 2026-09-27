@@ -10,6 +10,7 @@ import Warehouse from './pages/Warehouse'
 import Benchmarks from './pages/Benchmarks'
 import Problem from './pages/Problem'
 import Skills from './pages/Skills'
+import KoreanPV from './pages/KoreanPV'
 
 const I = (d: string) => (
   <svg className="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d={d} /></svg>
@@ -18,6 +19,7 @@ const I = (d: string) => (
 const PAGES: { id: string; label: string; en: string; icon: ReactNode; sec?: string; el: () => ReactNode }[] = [
   { id: 'mission', label: '관제 센터', en: 'Mission Control', sec: 'Operate', icon: I('M12 3a9 9 0 1 0 9 9M12 7a5 5 0 1 0 5 5M12 11a1 1 0 1 0 1 1M21 3l-7.5 7.5'), el: () => <MissionControl /> },
   { id: 'triage', label: '라이브 트리아지', en: 'Live Triage', icon: I('M3 12h4l3-8 4 16 3-8h4'), el: () => <LiveTriage /> },
+  { id: 'korea', label: '국내 보고 · 인과성', en: 'Korean PV Intake', icon: I('M4 4h16v16H4zM8 9h8M8 13h8M8 17h5'), el: () => <KoreanPV /> },
   { id: 'signals', label: '신호 연구실', en: 'Signal Lab', icon: I('M4 20V10M10 20V4M16 20v-7M22 20H2'), el: () => <SignalLab /> },
   { id: 'timemachine', label: '신호 타임머신', en: 'Signal Time Machine', icon: I('M12 7v5l3 2M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5'), el: () => <TimeMachine /> },
   { id: 'problem', label: '문제 정의', en: 'Why it matters', sec: 'Design', icon: I('M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z'), el: () => <Problem /> },

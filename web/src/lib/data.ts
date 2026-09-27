@@ -54,7 +54,7 @@ export interface TriageResult {
   state: string; suspect: string
   validity?: { valid: boolean; checks: Record<string, boolean> }
   jev: { answers: Record<string, Answer>; usage: { input_tokens: number; output_tokens: number }; model: string; latency_ms: number }
-  decision: { action: string; tier: string; system2?: boolean; reasons: string[] }
+  decision: { action: string; tier: string; system2?: boolean; reasons: string[]; regime?: string; deadline?: string }
 }
 
 export interface Claim { id: string; text: string; evidence: string[]; overclaim_p?: number }
