@@ -1,6 +1,6 @@
 import { useMemo, type CSSProperties } from 'react'
 
-// Project-FlyGate 에이전트 구성도입니다. docs/images/flygate_agent_diagram_v1.0.0.png 와 같은 배치로
+// Project-FlyGate 에이전트 구성도입니다. docs/images/flygate_agent_diagram_v1.1.0.png 와 같은 배치로
 // NemoClaw 과정의 네 층을 위에서 아래로 쌓습니다.
 // ① LLM 엔드포인트(NVIDIA NIM과 허용된 외부 API) ② OpenClaw 하네스(워크스페이스, 두 워크플로, 사람 승인)
 // ③ OpenShell 샌드박스(egress 허용 목록, Landlock, seccomp, non-root) ④ NemoClaw 블루프린트(하네스와 샌드박스 구성)
@@ -109,7 +109,7 @@ export default function AgentDiagram({ files, skills }: { files?: string[]; skil
   return (
     <div>
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block' }} role="img"
-        aria-label="Project-FlyGate 에이전트 구성도: ① LLM 엔드포인트 ② OpenClaw 하네스 ③ OpenShell 샌드박스 ④ NemoClaw 블루프린트. 하네스 안에서 STEP 1 FlyDiscovery와 STEP 2 FlyVigilance가 같은 분자를 다룹니다">
+        aria-label="Project-FlyGate 에이전트 구성도: ① LLM 엔드포인트 ② OpenClaw 하네스 ③ OpenShell 샌드박스 ④ NemoClaw 블루프린트. 하네스 안에서 STEP 1 FlyDiscovery는 시판 전 후보 물질을, STEP 2 FlyVigilance는 시판 후 허가 약물을 다룹니다(데모: 니라파립)">
         <defs>
           <filter id="ad-glow"><feGaussianBlur stdDeviation="2.5" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
           <marker id="ad-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="rgba(169,182,211,0.85)" /></marker>
@@ -208,10 +208,10 @@ export default function AgentDiagram({ files, skills }: { files?: string[]; skil
         <text x={488} y={321} fill="var(--text-3)" fontSize={12.5} style={KR}>시판 전 · 구조 예측 → 도킹 → 친화도, 단계마다 전통 기준으로 채점</text>
         <Lane steps={STEP1} y={y1} still={still} />
 
-        {/* 같은 분자: STEP 1 의 표적 상자에서 STEP 2 의 접수 상자로 이어집니다 */}
+        {/* 데모 약물: STEP 1 의 표적 상자에서 STEP 2 의 접수 상자로 이어집니다 */}
         <path d={`M${firstCx},${y1 + BOX_H} V${y2 - 3}`} stroke={C.human} strokeOpacity={0.65} strokeWidth={1.5} strokeDasharray="4 4" markerEnd="url(#ad-arrow)" />
         <rect x={firstCx + 12} y={429} width={176} height={24} rx={12} fill="#0b1122" stroke="rgba(244,247,255,0.45)" />
-        <text x={firstCx + 100} y={445} textAnchor="middle" fill="var(--text)" fontSize={12.5} style={KR}>같은 분자 · 니라파립</text>
+        <text x={firstCx + 100} y={445} textAnchor="middle" fill="var(--text)" fontSize={12.5} style={KR}>데모 약물 · 니라파립</text>
 
         {/* STEP 2 레인: 상자 위, 제목 아래 */}
         <rect x={296} y={458} width={852} height={122} rx={12} fill="rgba(118,185,0,0.035)" stroke="rgba(118,185,0,0.4)" />

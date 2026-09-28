@@ -10,7 +10,7 @@ import type { AgentInfo } from '../lib/types'
 // 파일이 없거나 일부 항목이 비어 있으면 그 부분만 건너뛰고 구성도는 그대로 보여 줍니다.
 
 const REPO = 'https://github.com/Team-FlyGate/Project-FlyGate'
-const IMG = '/images/flygate_agent_diagram_v1.0.0.png'
+const IMG = '/images/flygate_agent_diagram_v1.1.0.png'
 
 const clip = (t: string, n: number) => (t.length > n ? `${t.slice(0, n - 1)}…` : t)
 const arr = (v: unknown): string[] => (Array.isArray(v) ? v.map(String) : v === undefined || v === null || v === '' ? [] : [String(v)])

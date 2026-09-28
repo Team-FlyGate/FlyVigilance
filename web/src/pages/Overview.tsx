@@ -8,7 +8,7 @@ import type { Ablation, Bench, CriticProbe, DiscoveryMeasurements, DockEval, Esc
 
 const REPO = 'https://github.com/Team-FlyGate/Project-FlyGate'
 const REEL = '/showreel/FlyGate_showreel_v3.0.0.html'
-const DIAGRAM = '/images/flygate_agent_diagram_v1.0.0.png'
+const DIAGRAM = '/images/flygate_agent_diagram_v1.1.0.png'
 const MSA_SECONDS = 63.6 // MSA-Search 실측 시간입니다 (fly_discovery/README.md, measurements.json 에는 없는 값)
 
 type Kind = 'data' | 'nim' | 'jev' | 'rule' | 'critic' | 'human'
@@ -183,7 +183,7 @@ export default function Overview() {
         <Flow steps={step1} />
         <div className="row" style={{ gap: 12, margin: '14px 0' }}>
           <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, rgba(55,230,255,0.4))' }} />
-          <span className="chip" style={{ fontSize: 12, color: 'var(--text)', borderColor: 'var(--line-2)' }}>같은 분자 · 니라파립 · 시판 후 보고로 이어집니다 ↓</span>
+          <span className="chip" style={{ fontSize: 12, color: 'var(--text)', borderColor: 'var(--line-2)' }}>데모 약물 니라파립 · 시판 후 보고로 이어집니다 ↓</span>
           <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, rgba(118,185,0,0.4), transparent)' }} />
         </div>
         <div className="row between" style={{ marginBottom: 10 }}>
