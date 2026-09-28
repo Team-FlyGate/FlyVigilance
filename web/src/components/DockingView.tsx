@@ -10,7 +10,7 @@ import { ballStick, disposeAll, dust, glowSprite, makeRenderer, ribbon, setOpaci
 
 export interface RedockScene {
   drug: string; target: string; gene: string; pdb: string; chain: string; note: string; membrane: boolean
-  top1_rmsd: number; success: boolean; poses: { rank: number; confidence: number | null; rmsd: number | null }[]
+  top1_rmsd: number | null; success: boolean | null; poses: { rank: number; confidence: number | null; rmsd: number | null }[]
   ca: [number, number, number, number][]; pocket: Atom[]
   xtal: Ligand; pose: Ligand; alt_poses?: Ligand[]
 }
@@ -50,13 +50,14 @@ export default function DockingView({ scene, height = 600, playKey = 0, onSettle
     const ghost = ballStick(scene.xtal, 'ghost'); s3.add(ghost)
     const alts = (scene.alt_poses ?? []).map((p) => { const g = ballStick(p, 'faint'); s3.add(g); return g })
     const pose = ballStick(scene.pose, 'solid'); const pivot = new THREE.Group(); pivot.add(pose); s3.add(pivot)
-    const glow = glowSprite(scene.success ? 0x3ddc97 : 0xff5d6c); glow.scale.setScalar(12); s3.add(glow)
+    const tone = scene.success === null ? 0xffb547 : scene.success ? 0x3ddc97 : 0xff5d6c
+    const glow = glowSprite(tone); glow.scale.setScalar(12); s3.add(glow)
     const path = new THREE.CatmullRomCurve3([new THREE.Vector3(26, 18, -14), new THREE.Vector3(15, 3, 11), new THREE.Vector3(6, 7, 4), new THREE.Vector3(0, 0, 0)])
     const N = 50, trail = new THREE.Line(new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(new Array(N * 3).fill(0), 3)),
       new THREE.LineBasicMaterial({ color: 0xffb547, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending }))
     s3.add(trail)
 
-    const flash = new THREE.Color(scene.success ? 0x3ddc97 : 0xff5d6c), base = new THREE.Color(0x6c9cfa)
+    const flash = new THREE.Color(tone), base = new THREE.Color(0x6c9cfa)
     camera.position.set(34, 20, 42); controls.target.set(0, 0, 0)
     const near = new THREE.Vector3(12, 7, 15)
     const ro = new ResizeObserver(resize); ro.observe(el); resize()
