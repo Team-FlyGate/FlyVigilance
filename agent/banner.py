@@ -42,47 +42,85 @@ def render(width=100, color=True):
 
 
 def dashboard(root, model, nvidia=False, jev=False, width=100, color=True, session=''):
-    """Two-column terminal dashboard, sourced from the actual repository skills."""
-    import textwrap
+    """Compact text dashboard with terminal-cell-aware Korean wrapping."""
+    import unicodedata
     cyan='\033[38;2;55;230;255m' if color else ''
     lime='\033[38;2;166;228;48m' if color else ''
     reset='\033[0m' if color else ''
-    skills=sorted({p.parent.name for base in (root/'skills', root/'agent/skills') for p in base.glob('*/SKILL.md')})
-    tools=['discover    saved evidence / live docking','signals     disproportionality statistics','triage      case routing','grade       labels / literature / PV class','critic      evidence / numbers / interpretation','kr-causality Korean report assessment','watch       monitoring / review queue']
+    skills={p.parent.name for base in (root/'skills', root/'agent/skills') for p in base.glob('*/SKILL.md')}
+    maxw=max(8,min(width-2,116))
+    inner=maxw-4
+    def cells(text):
+        return sum(0 if unicodedata.combining(c) else 2 if unicodedata.east_asian_width(c) in ('W','F') else 1 for c in text)
+    def wrap(text, limit=inner):
+        line=''
+        for char in text:
+            if cells(line+char)>limit:
+                yield line
+                line=''
+            line+=char
+        yield line
     art=[
-        '       ▄▄             ▄▄       ',
-        '    ▄████▄           ▄████▄    ',
-        '  ▄████████▄       ▄████████▄  ',
-        ' ████████████▄   ▄████████████ ',
-        '  ▀███████▀  ██ ██  ▀███████▀  ',
-        '     ▀▀▀     █████     ▀▀▀     ',
-        '          ▄███ ███▄           ',
-        '         ██  █ █  ██          ',
-        '         ██  █ █  ██          ',
-        '          ▀███ ███▀           ',
-        '             █ █              ',
-        '             ▀▀▀              ',
+        '           ▄██▄  ▄██▄           ',
+        '          ████████████          ',
+        '           ▀████████▀           ',
+        '         ▄▄█▌██████▐█▄▄         ',
+        '     ███████▌██████▐███████     ',
+        ' ██████████▌▄██████▄▐██████████ ',
+        '███████████▌████████▐███████████',
+        '  ▀▀▀▀▀▀    ████████    ▀▀▀▀▀▀  ',
+        '             ▀████▀             ',
     ]
-    right=['AVAILABLE TOOLS',*tools,'','PROJECT SKILLS',*skills,'',f'7 tools / {len(skills)} skills', '/help commands /login credentials']
-    maxw=min(width-2,116)
-    if maxw < 76:
-        out=[f' {cyan}┌'+ '─'*max(1,maxw-2)+'┐'+reset]
-        lines=['FlyGate / NVIDIA Nemotron',f'NVIDIA: {"configured" if nvidia else "not connected"}',f'Jev: {"configured" if jev else "optional"}','',*right]
-        for line in lines:
-            for part in textwrap.wrap(line,max(10,maxw-4)) or ['']:
-                out.append(' '+cyan+'│'+reset+' '+part.ljust(maxw-4)+' '+cyan+'│'+reset)
-        out.append(' '+cyan+'└'+'─'*(maxw-2)+'┘'+reset)
+    # Pad the whole emblem, rather than centering each silhouette row separately.
+    left=[('', '')]+[(line.ljust(max(map(len, art))), lime) for line in art]+[
+        ('', ''),
+        ('FlyDiscovery + FlyVigilance', lime),
+        (model, lime),
+        (f'NVIDIA {"✓" if nvidia else "미설정"} · Jev {"✓" if jev else "선택"}', lime),
+    ]
+    right=[
+        ('SLASH COMMANDS · 7 tools', cyan),
+        ('/discover     저장 근거 조회 / 새 도킹 실행', ''),
+        ('/signals      이상사례 신호 통계', ''),
+        ('/triage       사례 분류', ''),
+        ('/grade        근거 등급 평가', ''),
+        ('/critic       근거·수치·해석 검토', ''),
+        ('/kr-causality 한국형 인과성 평가', ''),
+        ('/watch        모니터링·검토 대기열', ''),
+        ('', ''),
+        ('CHAT COMMANDS', cyan),
+        ('/help   명령과 예제 보기', ''),
+        ('/login  NVIDIA · Jev 키 설정', ''),
+        ('/last   마지막 분석 결과 전체 보기', ''),
+        ('/clear  대화와 마지막 결과 지우기', ''),
+        ('/exit   종료', ''),
+    ]
+    if maxw >= 76:
+        leftw=min(40,(maxw-7)//2)
+        rightw=maxw-7-leftw
+        def expand(rows, limit):
+            return [(part, shade) for text, shade in rows for part in wrap(text, limit)]
+        lrows, rrows=expand(left,leftw), expand(right,rightw)
+        def padded(row, limit, center=False):
+            text, shade=row
+            gap=limit-cells(text)
+            before=gap//2 if center else 0
+            return shade+' '*before+text+' '*(gap-before)+reset
+        out=[' '+cyan+'╭'+'─'*(leftw+2)+'┬'+'─'*(rightw+2)+'╮'+reset]
+        for i in range(max(len(lrows),len(rrows))):
+            l=lrows[i] if i<len(lrows) else ('','')
+            r=rrows[i] if i<len(rrows) else ('','')
+            out.append(' '+cyan+'│'+reset+' '+padded(l,leftw,True)+' '+cyan+'│'+reset+' '+padded(r,rightw)+' '+cyan+'│'+reset)
+        out.append(' '+cyan+'╰'+'─'*(leftw+2)+'┴'+'─'*(rightw+2)+'╯'+reset)
         return '\n'.join(out)
-    leftw=40;rightw=maxw-leftw-7
-    left=art+['','FlyDiscovery + FlyVigilance','',*textwrap.wrap(model,leftw),f'NVIDIA: {"configured" if nvidia else "not connected"}',f'Jev: {"configured" if jev else "optional / skip"}','',*textwrap.wrap(str(root),leftw),f'Session: {session}']
-    rlines=[]
-    for line in right:rlines.extend(textwrap.wrap(line,rightw) or [''])
+    rows=left[len(art)+1:]+[('','')]+right
     out=[' '+cyan+'╭'+'─'*(maxw-2)+'╮'+reset]
-    for i in range(max(len(left),len(rlines))):
-        l=left[i] if i<len(left) else '';r=rlines[i] if i<len(rlines) else ''
-        out.append(' '+cyan+'│'+reset+' '+lime+l.center(leftw)+reset+' '+cyan+'│'+reset+' '+r.ljust(rightw)+' '+cyan+'│'+reset)
+    for text, shade in rows:
+        for line in wrap(text):
+            out.append(' '+cyan+'│'+reset+' '+shade+line+' '*(inner-cells(line))+reset+' '+cyan+'│'+reset)
     out.append(' '+cyan+'╰'+'─'*(maxw-2)+'╯'+reset)
     return '\n'.join(out)
+
 
 
 def welcome(color=True):
@@ -90,8 +128,6 @@ def welcome(color=True):
     d='\033[38;2;160;175;197m' if color else ''
     r='\033[0m' if color else ''
     lines=['', '  FlyGate와 무엇을 살펴볼까요?', d+'  예: “PARP1 후보 근거를 보여줘” 또는 “이 결과를 설명해 줘”'+r, '']
-    for cmd,desc in [('/help','사용할 수 있는 명령과 예제 보기'),('/login','NVIDIA 연결 · Jev 키는 선택 사항'),('/run discover parp1','저장된 PARP1 근거 조회 · 실행 전에 확인'),('/last','마지막 분석 결과 전체 보기'),('/clear','현재 대화와 마지막 결과 지우기'),('/exit','대화 종료')]:
-        lines.append('  '+c+cmd.ljust(24)+r+d+desc+r)
     return '\n'.join(lines)+'\n'
 
 

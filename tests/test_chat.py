@@ -73,3 +73,15 @@ def test_banner_sizes_and_dashboard():
         box=dashboard(ROOT,'nvidia/nemotron-3-super-120b-a12b',True,False,width,False,'test')
         assert 'discover' in box and '7 tools' in box
         assert max(map(len,box.splitlines())) <= width
+
+
+@pytest.mark.parametrize('tool', sorted(chat.ALLOWED))
+def test_direct_slash_tools(monkeypatch, tool):
+    out, calls = session(monkeypatch, ['/'+tool+' --help', 'y', '/exit'])
+    assert calls == [[tool, '--help']]
+
+
+def test_direct_slash_quoted_args_and_decline(monkeypatch):
+    out, calls = session(monkeypatch, ['/signals "drug name"', 'y', '/discover parp1', 'n', '/exit'])
+    assert calls == [['signals', 'drug name']]
+    assert '실행하지 않았습니다' in out
