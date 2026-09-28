@@ -203,6 +203,8 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
     const farDir = new THREE.Vector3(0.62, 0.34, 0.71).normalize(), msaDir = new THREE.Vector3(18, 12, 24).normalize()
     const farAt = (k = 1) => protCenter.clone().add(farDir.clone().multiplyScalar(fitDist(k)))
     const nearPos = new THREE.Vector3(10, 6.5, 13)
+    // Boltz-2 는 억제제 4종이 같은 포켓에 겹쳐 보이도록 DiffDock 보다 1.7배 뒤에서 봅니다(분자가 화면을 덮지 않게)
+    const nearBz = nearPos.clone().multiplyScalar(1.7)
     camera.position.copy(farAt()); controls.target.copy(protCenter)
     const ro = new ResizeObserver(resize); ro.observe(el); resize()
     const v = new THREE.Vector3()
@@ -265,7 +267,7 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
       const inK = ease((camT - 12200) / 3200), outK = ease((camT - 26000) / 4000)
       const closeK2 = t >= 24500 ? inK : inK * (1 - outK)
       const farPos = farAt(st.id === 'critic' ? 0.5 : 1)
-      const want = t < 3000 ? protCenter.clone().add(msaDir.clone().multiplyScalar(fitDist())) : farPos.clone().lerp(nearPos, closeK2), tgt = t < 3000 ? protCenter.clone() : protCenter.clone().lerp(new THREE.Vector3(), closeK2)
+      const want = t < 3000 ? protCenter.clone().add(msaDir.clone().multiplyScalar(fitDist())) : farPos.clone().lerp(st.id === 'bz' ? nearBz : nearPos, closeK2), tgt = t < 3000 ? protCenter.clone() : protCenter.clone().lerp(new THREE.Vector3(), closeK2)
       // 크리틱: 오른쪽 절반에 Factor Xa 를 띄우므로 PARP1 장면을 왼쪽 절반 가운데로 옮깁니다
       const W = el.clientWidth, H = el.clientHeight
       if (st.id === 'critic') camera.setViewOffset(W, H, W * 0.25, 0, W, H); else camera.clearViewOffset()
