@@ -240,7 +240,8 @@ function Triggers({ rows, cli }: { rows: AgentInfo['triggers']; cli: AgentInfo['
   )
 }
 
-export default function Agent() {
+// embedded: 개요 화면의 '에이전트 구성' 자리에 넣을 때는 머리말 없이 본문만 보여 줍니다
+export default function Agent({ embedded = false }: { embedded?: boolean } = {}) {
   const [data, setData] = useState<AgentInfo | null>(null)
   const [missing, setMissing] = useState(false)
   useEffect(() => {
@@ -254,7 +255,8 @@ export default function Agent() {
   const skills = data?.skills ?? []
 
   return (
-    <div className="page">
+    <div className={embedded ? undefined : 'page'}>
+      {!embedded && <>
       <PageHead eyebrow="에이전트 · NemoClaw · OpenShell · OpenClaw"
         title={<>두 워크플로를 <span style={{ color: '#e2a74e' }}>샌드박스 안의 에이전트 하나</span>로 돌립니다</>}
         lede={<>NVIDIA <Term k="NemoClaw" /> 과정의 네 층 구조를 그대로 따릅니다. <Term k="OpenClaw" /> 하네스(에이전트 실행 틀)가 워크스페이스 파일과 <Term k="AgentSkills" />로 STEP 1 FlyDiscovery와
@@ -268,6 +270,7 @@ export default function Agent() {
             <a className="btn ghost" href={`${REPO}/blob/main/docs/AGENT.md`} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>AGENT.md</a>
           </div>
         </div>} />
+      </>}
 
       <Card style={{ marginBottom: 16, padding: '16px 16px 12px' }}>
         <AgentDiagram files={files.map((f) => f.file)} skills={skills.length || undefined} />
