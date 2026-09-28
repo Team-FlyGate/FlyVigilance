@@ -6,7 +6,7 @@
 # 필요: gh(로그인) 또는 curl, zstd
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-REPO="AwesomeZun/FlyVigilance"
+REPO="AwesomeZun/Project-FlyGate"   # 데이터 릴리스(5.3GB)는 이 저장소에 둡니다
 TAG="data-v1"
 TMP="$ROOT/data/.download"
 mkdir -p "$TMP"

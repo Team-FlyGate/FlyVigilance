@@ -10,6 +10,7 @@ NVIDIA Korea Agentic AI Hackathon 2026 · Team FlyGate
 | --- | --- |
 | 라이브 대시보드 | https://project-flygate.vercel.app |
 | 쇼릴 v3 (웹, 약 2분) | https://project-flygate.vercel.app/showreel/FlyGate_showreel_v3.0.0.html |
+| 쇼릴 v3 (MP4, 1080p, 소리 포함) | [FlyGate_showreel_v3.0.0.mp4](https://github.com/Team-FlyGate/Project-FlyGate/releases/download/v3.0/FlyGate_showreel_v3.0.0.mp4) |
 | 에이전트 구성 (NemoClaw · OpenShell · OpenClaw) | [docs/AGENT.md](docs/AGENT.md) · [agent/](agent/) |
 | 평가 보고서 | [docs/EVALUATION.md](docs/EVALUATION.md) |
 | 약사 검토 반영 내역 | [docs/PHARMACIST_REVIEW.md](docs/PHARMACIST_REVIEW.md) |
