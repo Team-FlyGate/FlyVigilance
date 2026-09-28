@@ -24,23 +24,24 @@ import zipfile
 
 import httpx
 
-from . import clients, config, molgeom as mg
+from . import clients, config, docking, molgeom as mg
 
 HEALTH = "https://health.api.nvidia.com/v1"
 ENDPOINTS = {
     "msa": f"{HEALTH}/biology/colabfold/msa-search/predict",
     "openfold3": f"{HEALTH}/biology/openfold/openfold3/predict",
-    "diffdock": f"{HEALTH}/biology/mit/diffdock",
+    # DiffDock 요청 본문·응답 검사·엔드포인트는 CLI 실행기(api/_fv/docking.py)와 한 벌로 씁니다
+    "diffdock": docking.ENDPOINT,
     "boltz2": f"{HEALTH}/biology/mit/boltz2/predict",
 }
-STATUS_URL = f"{HEALTH}/status/"
+STATUS_URL = docking.STATUS
 NIM_KINDS = tuple(ENDPOINTS)
 
 _BNAT = "https://github.com/NVIDIA-BioNeMo/bionemo-agent-toolkit/tree/main/nim-skills/"
 _NVSK = "https://github.com/NVIDIA/skills/tree/main/skills/"
 SKILLS = {
     "msa": [{"name": "bionemo-msa-structure-prediction-pipeline", "repo": "NVIDIA/skills", "url": _NVSK + "bionemo-msa-structure-prediction-pipeline",
-             "step": "Step 1: MSA-Search (Uniref30_2302 + colabfold_envdb_202108, e_value 1e-4, a3m)"},
+             "step": "Step 1: MSA-Search (Uniref30_2302, e_value 1e-4, a3m) → a3m 정렬을 2단계로 넘깁니다"},
             {"name": "msa-search-nim", "repo": "NVIDIA-BioNeMo/bionemo-agent-toolkit", "url": _BNAT + "msa-search-nim",
              "step": "hosted standard MSA · result.alignments[db].a3m.alignment"}],
     "openfold3": [{"name": "bionemo-msa-structure-prediction-pipeline", "repo": "NVIDIA/skills", "url": _NVSK + "bionemo-msa-structure-prediction-pipeline",
@@ -186,9 +187,16 @@ def ligand_of(key: str) -> dict:
     return lg
 
 
-def build_msa(target: str) -> dict:
+# 공식 스킬의 예시는 Uniref30_2302 + colabfold_envdb_202108 이지만, 호스팅 게이트웨이가 envdb 를 얹으면
+# 7초 만에 504 를 돌려주는 것을 2026-09-28 에 확인했습니다(요청 ID 도 상태 조회에 없습니다).
+# 구조 예측에 넣는 정렬은 Uniref30 이므로 기본값은 Uniref30_2302 하나로 두고, 나머지는 선택으로 둡니다.
+MSA_DATABASES = ["Uniref30_2302"]
+MSA_DATABASES_FULL = ["Uniref30_2302", "colabfold_envdb_202108"]
+
+
+def build_msa(target: str, databases: list[str] | None = None) -> dict:
     return {"sequence": target_of(target)["sequence"],
-            "databases": ["Uniref30_2302", "colabfold_envdb_202108"],
+            "databases": list(databases or MSA_DATABASES),
             "e_value": 0.0001, "output_alignment_formats": ["a3m"]}
 
 
@@ -205,9 +213,7 @@ def build_openfold3(target: str, ligand: str | None, a3m: str | None) -> dict:
 
 def build_diffdock(target: str, ligand: str, num_poses: int = MAX_POSES, protein: str | None = None) -> dict:
     rec = protein if protein is not None else target_of(target)["receptor_pdb"]
-    rec = "\n".join(ln for ln in rec.splitlines() if ln.startswith("ATOM"))
-    return {"protein": rec, "ligand": ligand_of(ligand)["smiles"], "ligand_file_type": "txt",
-            "num_poses": num_poses, "time_divisions": 20, "steps": 18, "save_trajectory": False}
+    return docking.build_body(rec, ligand_of(ligand)["smiles"], "txt", num_poses)
 
 
 def build_boltz2(target: str, ligand: str, a3m: str | None = None) -> dict:
@@ -344,10 +350,10 @@ def process_openfold3(resp: dict, req: dict) -> dict:
 
 def process_diffdock(resp: dict, req: dict) -> dict:
     """포즈마다 결정 리간드와의 대칭 고려 중원자 RMSD(정렬 없음)와 주머니 중심 거리를 냅니다."""
-    poses_sdf = resp.get("ligand_positions") or []
-    conf = resp.get("position_confidence") or []
-    if not poses_sdf:
-        raise RuntimeError(f"DiffDock 응답에 포즈가 없습니다: {str(resp.get('status'))[:80]}")
+    try:  # 응답 형태 검사는 CLI 실행기와 같은 함수를 씁니다(api/_fv/docking.py)
+        poses_sdf, conf = docking.validate_result(resp)
+    except (ValueError, TypeError) as e:
+        raise RuntimeError(f"DiffDock 응답을 쓸 수 없습니다: {e}") from None
     t = target_of(req["target"])
     xl = t.get("xtal_ligand")
     ref = [{"el": a[0], "xyz": (a[1], a[2], a[3])} for a in xl["atoms"]] if xl else []
@@ -476,7 +482,7 @@ def resolve_a3m(params: dict) -> str | None:
 def build_for(kind: str, params: dict) -> dict:
     t = params.get("target", "parp1")
     if kind == "msa":
-        return build_msa(t)
+        return build_msa(t, params.get("databases"))
     if kind == "openfold3":
         return build_openfold3(t, params.get("ligand"), resolve_a3m(params))
     if kind == "diffdock":
@@ -682,6 +688,17 @@ def default_claims(runs: dict) -> list[dict]:
     return out or [{"id": "c1", "text": "아직 실행 결과가 없습니다.", "evidence": [], "kind": "valid"}]
 
 
+ENTITY_NUMBERS = re.compile(
+    r"(?i)(boltz-?2|openfold-?[23]|alphafold-?\d|nemotron[\w.-]*|msa-search|diffdock|colabfold_envdb_\d+|uniref30_\d+|"
+    r"parp-?1|cox-?2|factor\s*xa|jak-?2|pd-?l?1|p?ic50|ec50|kd|ki|(?<![\d.])\b[1-9][a-z][a-z0-9]{2}\b(?![\d.])|"
+    r"chembl\d*|step\s*\d|\d+\s*단|3단)")
+
+
+def strip_entity_numbers(text: str) -> str:
+    """모델·타깃·구조 이름 안의 숫자를 지웁니다. 숫자 오라클이 이름을 측정값으로 오해하지 않게 하기 위해서입니다."""
+    return ENTITY_NUMBERS.sub(" ", text)
+
+
 async def tier3_nemotron(claims: list[dict], bundle: dict, deadline: float | None = None) -> dict:
     lines = "\n".join(f"{c['id']}: {c['text']}" for c in claims)
     ev = "\n".join(f"- {c['id']} :: {c['what']}" for c in bundle["catalog"])
@@ -704,7 +721,9 @@ async def critic(claims: list[dict], runs: dict, budget_s: float = 70.0) -> dict
     bundle = bundle_from_runs(runs)
     ids = set(bundle["ids"])
     t1 = assess_mod.tier1_rules(claims, ids)
-    t2 = assess_mod.tier2_oracle(claims, bundle["numbers"])
+    # 이름에 든 숫자(Boltz-2, PARP1, 4R6E, pIC50 …)는 측정값이 아니므로 숫자 오라클에서 뺍니다
+    t2 = assess_mod.tier2_oracle([{**c, "text": strip_entity_numbers(c.get("text", ""))} for c in claims],
+                                 bundle["numbers"])
     try:
         judge = await tier3_nemotron(claims, bundle, deadline=time.monotonic() + budget_s)
     except Exception as e:  # noqa: BLE001
