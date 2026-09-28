@@ -91,7 +91,7 @@ export default function DockingView({ scene, height = 600, playKey = 0, onSettle
       raf = requestAnimationFrame(loop)
     }
     raf = requestAnimationFrame(loop)
-    return () => { disposed = true; cancelAnimationFrame(raf); ro.disconnect(); controls.dispose(); disposeAll(s3); composer.dispose(); renderer.dispose(); renderer.domElement.remove() }
+    return () => { disposed = true; cancelAnimationFrame(raf); ro.disconnect(); controls.dispose(); disposeAll(s3); composer.dispose(); renderer.dispose(); renderer.forceContextLoss(); renderer.domElement.remove() }
   }, [scene, playKey])
 
   return <div ref={host} style={{ width: '100%', height, cursor: 'grab', borderRadius: 16, overflow: 'hidden' }}

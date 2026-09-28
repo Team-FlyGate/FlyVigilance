@@ -389,3 +389,6 @@ button.chip:nth-child(3n+2)::after, a.chip:nth-child(3n+2)::after { animation-de
 .gl-where { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 9px; align-items: center; }
 .gl-where a.chip { font-size: 10.5px; padding: 2px 8px; text-decoration: none; color: var(--text-2); }
 @media (max-width: 1100px) { .gl-list { grid-template-columns: 1fr; } }
+
+/* 사이드바가 길어도 메뉴 항목이 눌려 찌그러지지 않게 합니다(샤인 스윕의 overflow: hidden 과 함께 필요) */
+.nav > *, .nav .nav-item, .nav .nav-reel { flex-shrink: 0; }

@@ -119,6 +119,8 @@ function Big({ eyebrow, value, unit, lines, foot }: { eyebrow: string; value: st
 export type { StepId }
 export default function HeroDocking({ hero, extras, height = 560, only, nav }: { hero: HeroScene; extras: HeroExtras; height?: number; only?: StepId; nav?: Record<StepId, string> }) {
   const host = useRef<HTMLDivElement>(null)
+  // '전체 보기' 단추가 사용자가 돌리거나 확대한 시점을 자동 카메라로 되돌립니다
+  const resetCam = useRef<() => void>(() => {})
   const label = useRef<HTMLDivElement>(null)
   const clock = useRef({ t0: performance.now(), offset: only ? STEPS.find((s) => s.id === only)!.t0 : 0 })
   const [step, setStep] = useState<StepId>(only ?? 'msa')
@@ -191,12 +193,19 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
 
     // 단백질 전체가 들어오도록 경계 구 반지름으로 거리를 잡습니다
     const radius = Math.max(...ca.map((a) => a.p.distanceTo(protCenter)))
-    const msaPos = new THREE.Vector3(18, 12, 24)
-    const farPos = protCenter.clone().add(new THREE.Vector3(0.62, 0.34, 0.71).normalize().multiplyScalar(radius / Math.sin((36 / 2) * Math.PI / 180) * 0.92)), nearPos = new THREE.Vector3(10, 6.5, 13)
-    camera.position.copy(farPos); controls.target.copy(protCenter)
+    // 화면 비율과 관계없이 단백질 전체가 들어오도록, 가로 · 세로 시야각 중 좁은 쪽으로 거리를 잡습니다(여유 12%)
+    const fitDist = (aspectScale = 1) => {
+      const vHalf = (camera.fov / 2) * Math.PI / 180, hHalf = Math.atan(Math.tan(vHalf) * camera.aspect * aspectScale)
+      return (radius / Math.sin(Math.min(vHalf, hHalf))) * 1.12
+    }
+    const farDir = new THREE.Vector3(0.62, 0.34, 0.71).normalize(), msaDir = new THREE.Vector3(18, 12, 24).normalize()
+    const farAt = (k = 1) => protCenter.clone().add(farDir.clone().multiplyScalar(fitDist(k)))
+    const nearPos = new THREE.Vector3(10, 6.5, 13)
+    camera.position.copy(farAt()); controls.target.copy(protCenter)
     const ro = new ResizeObserver(resize); ro.observe(el); resize()
     const v = new THREE.Vector3()
     let lastStep = '', dragging = false, lastT = -1, userCam = false
+    resetCam.current = () => { userCam = false; controls.autoRotate = true }
 
     const loop = (now: number) => {
       if (disposed) return
@@ -253,7 +262,8 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
       // 카메라: 전체 → 결합 자리로 다가갔다가 다시 물러납니다
       const inK = ease((camT - 12200) / 3200), outK = ease((camT - 26000) / 4000)
       const closeK2 = t >= 24500 ? inK : inK * (1 - outK)
-      const want = t < 3000 ? msaPos : farPos.clone().lerp(nearPos, closeK2), tgt = t < 3000 ? new THREE.Vector3() : protCenter.clone().lerp(new THREE.Vector3(), closeK2)
+      const farPos = farAt(st.id === 'critic' ? 0.5 : 1)
+      const want = t < 3000 ? protCenter.clone().add(msaDir.clone().multiplyScalar(fitDist())) : farPos.clone().lerp(nearPos, closeK2), tgt = t < 3000 ? protCenter.clone() : protCenter.clone().lerp(new THREE.Vector3(), closeK2)
       // 크리틱: 오른쪽 절반에 Factor Xa 를 띄우므로 PARP1 장면을 왼쪽 절반 가운데로 옮깁니다
       const W = el.clientWidth, H = el.clientHeight
       if (st.id === 'critic') camera.setViewOffset(W, H, W * 0.25, 0, W, H); else camera.clearViewOffset()
@@ -273,7 +283,7 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
     controls.addEventListener('end', () => { dragging = false })
     raf = requestAnimationFrame(loop)
     const tk = setInterval(() => setTick((k) => k + 1), 500)
-    return () => { disposed = true; cancelAnimationFrame(raf); clearInterval(tk); ro.disconnect(); controls.dispose(); disposeAll(scene); composer.dispose(); renderer.dispose(); renderer.domElement.remove() }
+    return () => { disposed = true; cancelAnimationFrame(raf); clearInterval(tk); ro.disconnect(); controls.dispose(); disposeAll(scene); composer.dispose(); renderer.dispose(); renderer.forceContextLoss(); renderer.domElement.remove() }
   }, [hero, drug]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const done = (id: StepId) => STEPS.findIndex((s) => s.id === id) < STEPS.findIndex((s) => s.id === step)
@@ -335,7 +345,11 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
       <div className="grid" style={{ gridTemplateColumns: 'minmax(0, 1.35fr) minmax(320px, 1fr)', gap: 16, alignItems: 'start' }}>
         <div style={{ position: 'relative', height }}>
           <div ref={host} style={{ position: 'absolute', inset: 0, cursor: 'grab', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--line)' }}
-            aria-label="OpenFold3 가 예측한 PARP1 과 니라파립, DiffDock 포즈, 결정 구조 4R6E. 드래그로 회전합니다." />
+            aria-label="OpenFold3 가 예측한 PARP1 과 니라파립, DiffDock 포즈, 결정 구조 4R6E. 드래그로 회전, 휠로 확대 · 축소, 오른쪽 드래그로 이동합니다." />
+          {(step === 'of3' || step === 'dd' || step === 'bz') && <div className="row" style={{ position: 'absolute', right: 40, top: 14, zIndex: 3, gap: 8, alignItems: 'center' }}>
+            <button className="btn" style={{ padding: '6px 12px', fontSize: 12 }} onClick={() => resetCam.current()}
+              title="드래그로 회전 · 휠로 확대/축소 · 오른쪽 드래그로 이동합니다. 누르면 단백질 전체가 보이는 시점으로 돌아갑니다.">⤢ 전체 보기</button>
+          </div>}
           {step === 'critic' && (
             <div className="fade-in" style={{ position: 'absolute', top: 0, bottom: 0, right: 0, width: '50%', zIndex: 1, borderLeft: '1px solid var(--line2)', borderRadius: '0 14px 14px 0', overflow: 'hidden' }}>
               <SplitTarget key={drug} xa={{ ...hero.critic_split.xa, niraparib: D.xa.ligand, dd_conf: D.xa.dd_conf, vina: D.xa.vina ?? hero.critic_split.xa.vina }} />
