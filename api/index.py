@@ -27,6 +27,7 @@ from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 
 from _fv import assess as assess_mod  # noqa: E402
 from _fv import dock as dock_mod  # noqa: E402
+from _fv import discovery as disc_mod  # noqa: E402
 from _fv import clients, config, evidence, grade as grade_mod, knowledge, kr as kr_mod, literature, triage as triage_mod  # noqa: E402
 
 app = FastAPI(title="FlyVigilance API", version="1.0")
@@ -34,7 +35,8 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 
 # 공개 배포에서 유료 API 남용을 막는 간단한 IP 별 속도 제한
 _hits: dict[str, deque] = {}
-LIMIT = {"triage": (30, 60), "assess": (6, 60), "critic": (10, 60), "kr": (10, 60), "grade": (20, 60), "dock": (8, 60)}
+LIMIT = {"triage": (30, 60), "assess": (6, 60), "critic": (10, 60), "kr": (10, 60), "grade": (20, 60), "dock": (8, 60),
+         "discovery": (12, 60), "discovery_status": (60, 60)}
 
 
 def _rate(req: Request, key: str):
@@ -156,6 +158,70 @@ async def grade(req: Request, drug: str, pt: str, route: str | None = None):
     g = grade_mod.grade_pair(drug, pt, evidence.faers_2x2(drug, pt), lab, lit)
     g["axes"]["knowledge"] = kn
     return {**g, "literature": lit, "label": lab}
+
+
+@app.get("/api/discovery/catalog")
+def discovery_catalog():
+    """STEP 1 화면이 고를 수 있는 타깃·리간드·쌍과 따라간 NVIDIA 공식 스킬입니다."""
+    return disc_mod.catalog()
+
+
+@app.get("/api/discovery/scene/{target}")
+def discovery_scene(target: str):
+    """3D 배경(결정 구조 CA 골격, 결합 주머니, 공결정 리간드)입니다."""
+    try:
+        return disc_mod.scene(target)
+    except KeyError as e:
+        raise HTTPException(404, str(e))
+
+
+@app.get("/api/discovery/measured/{kind}")
+def discovery_measured(kind: str, target: str = "parp1", ligand: str | None = None):
+    """지난 측정만 돌려줍니다(NIM 을 부르지 않음). 단계 페이지가 실행 전 · 실패 시에도 비교 열을 채우는 데 씁니다."""
+    if kind not in disc_mod.NIM_KINDS:
+        raise HTTPException(404, f"unknown step {kind}")
+    return {"kind": kind, "measured": disc_mod.measured_for(kind, {"target": target, "ligand": ligand})}
+
+
+@app.post("/api/discovery/{kind}")
+async def discovery_run(kind: str, req: Request):
+    """NVIDIA BioNeMo NIM 을 실제로 부릅니다(kind: msa | openfold3 | diffdock | boltz2), 또는 크리틱을 돌립니다."""
+    _rate(req, "discovery")
+    body = await req.json() if await req.body() else {}
+    if kind == "critic":
+        claims = body.get("claims") or disc_mod.default_claims(body.get("runs") or {})
+        try:
+            return await disc_mod.critic(claims, body.get("runs") or {})
+        except clients.NotConfigured as e:
+            raise HTTPException(503, f"{e} not configured")
+    if kind not in disc_mod.NIM_KINDS:
+        raise HTTPException(404, f"unknown step {kind}")
+    try:
+        return await disc_mod.run(kind, body)
+    except clients.NotConfigured as e:
+        raise HTTPException(503, f"{e} not configured")
+    except KeyError as e:
+        raise HTTPException(400, str(e))
+    except RuntimeError as e:
+        raise HTTPException(502, str(e))
+
+
+@app.get("/api/discovery/status/{req_id}")
+async def discovery_status(req_id: str, req: Request, kind: str | None = None, target: str | None = None,
+                           ligand: str | None = None):
+    """계산 중인 NIM 요청을 이어서 묻습니다 (health.api.nvidia.com/v1/status/{req_id})."""
+    _rate(req, "discovery_status")
+    params = None
+    if kind:
+        params = {k: v for k, v in (("target", target), ("ligand", ligand)) if v}
+    try:
+        return await disc_mod.poll(req_id, kind, params)
+    except clients.NotConfigured as e:
+        raise HTTPException(503, f"{e} not configured")
+    except KeyError as e:
+        raise HTTPException(400, str(e))
+    except RuntimeError as e:
+        raise HTTPException(502, str(e))
 
 
 @app.get("/api/signals/{drug}")
