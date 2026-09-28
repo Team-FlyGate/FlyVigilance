@@ -41,7 +41,12 @@ export default function CliTutorial() {
   const command = commands.find(c => c.name === selected)!
   const visible = commands.filter(c => `${c.name} ${c.title} ${c.what}`.toLowerCase().includes(filter.toLowerCase()))
   return <div className="page cli-tutorial">
-    <PageHead eyebrow="AGENT TOOLKIT / FLYGATE CLI / GUIDE v1.0.0" title={<>한 줄로 시작하는 <span className="cli-accent">근거 탐색</span></>} lede="터미널이 처음이어도 괜찮습니다. 명령을 복사하고, 결과에서 무엇을 읽어야 하는지 차례로 살펴보세요. 저장된 결과 조회부터 NVIDIA API를 통한 새 도킹까지 안내합니다." right={<a className="btn ghost" href="#/agent">에이전트 구성 보기 ↗</a>} />
+    <PageHead eyebrow="AGENT TOOLKIT / FLYGATE CLI / GUIDE v1.1.0" title={<>한 줄로 시작하는 <span className="cli-accent">근거 탐색</span></>} lede="터미널이 처음이어도 괜찮습니다. 명령을 복사하고, 결과에서 무엇을 읽어야 하는지 차례로 살펴보세요. 저장된 결과 조회부터 NVIDIA API를 통한 새 도킹까지 안내합니다." right={<a className="btn ghost" href="#/agent">에이전트 구성 보기 ↗</a>} />
+    <Card title="터미널에서 대화로 시작하기" sub="설치를 마쳤다면 flygate만 입력하세요. 블록 로고와 대화 화면이 열립니다." className="cli-guide">
+      <Code text="flygate" label="대화형 FlyGate 시작" />
+      <p>첫 실행에서는 NVIDIA 공식 키 발급 페이지를 열고 터미널의 숨김 입력으로 연결합니다. Jev 키는 선택 사항이며 Enter로 건너뛸 수 있습니다. OS 보안 저장소에 저장하면 다음 실행부터 자동으로 불러옵니다.</p>
+      <p>“PARP1 후보 근거를 보여줘”처럼 질문하면 실행할 명령을 제안합니다. 확인 후 실행하며, <code>/help</code>는 도움말, <code>/login</code>은 키 연결, <code>/last</code>는 전체 결과, <code>/exit</code>는 종료입니다.</p>
+    </Card>
     <section className="cli-hero">
       <div><span className="cli-kicker">YOUR FIRST COMMAND</span><h2>질문은 짧게.<br />근거는 따라갈 수 있게.</h2><p>명령줄 인터페이스(Command-Line Interface, CLI)는 글로 누르는 버튼입니다. FlyGate CLI는 후보 탐색과 약물감시 기능을 한곳에 모은 리모컨처럼 작동합니다.</p><div className="cli-badges"><span>01 설치</span><span>02 실행</span><span>03 근거 읽기</span></div></div>
       <div className="cli-terminal"><div className="cli-terminal-top"><i /><i /><i /><span>LOCAL TERMINAL</span></div><code><span>$</span> flygate discover parp1</code><p>PARP1 후보 → 저장된 실측 → 근거 ID</p><div className="cli-terminal-note">이 페이지는 사용 안내입니다.<br />복사는 명령을 실행하지 않습니다.</div></div>

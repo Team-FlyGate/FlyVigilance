@@ -73,7 +73,10 @@ function Forest({ rows }: { rows: SignalRow[] }) {
 
 export default function SignalLab() {
   const [drugs, setDrugs] = useState<{ drug: string; n: number }[]>([])
-  const [drug, setDrug] = useState('NIRAPARIB')
+  // STEP 1 에서 넘어온 약물(#/signals?drug=…)이 있으면 그 약물로 시작합니다
+  const fromHash = () => new URLSearchParams(location.hash.split('?')[1] ?? '').get('drug')?.toUpperCase() || null
+  const [drug, setDrug] = useState(() => fromHash() ?? 'NIRAPARIB')
+  useEffect(() => { const on = () => { const d = fromHash(); if (d) setDrug(d) }; window.addEventListener('hashchange', on); return () => window.removeEventListener('hashchange', on) }, [])
   const [q, setQ] = useState('')
   const [data, setData] = useState<Resp | null>(null)
   const [err, setErr] = useState<string | null>(null)

@@ -3,6 +3,7 @@ import DockingView, { type RedockScene } from '../components/DockingView'
 import HeroDocking, { type HeroExtras, type HeroScene, type StepId } from '../components/HeroDocking'
 import { Card, Kpi, Loading, PageHead } from '../components/ui'
 import { getJSON } from '../lib/data'
+import Step2Handoff from '../components/Step2Handoff'
 import type { DiscoveryMeasurements, DockEval } from '../lib/types'
 import Term from '../components/Term'
 
@@ -249,7 +250,7 @@ export function DrugPanel({ panel }: { panel: PanelFile | null }) {
             const type = r.molecule_type === 'Small molecule' ? ['소분자', 'var(--c-sense)'] : r.molecule_type === 'Antibody' ? ['항체', 'var(--c-feedback)'] : r.molecule_type === 'Protein' ? ['단백질 · 펩타이드', 'var(--c-feedback)'] : ['기타', 'var(--text-3)']
             return (
               <div key={r.drug} style={{ display: 'grid', gridTemplateColumns: '1.3fr 0.7fr 0.8fr 2.4fr 1.3fr', gap: 12, fontSize: 12.5, padding: '8px 4px', borderTop: '1px solid var(--line)', alignItems: 'baseline' }}>
-                <b style={{ fontFamily: 'var(--font)' }}>{title(r.drug)}</b>
+                <span className="row" style={{ gap: 8 }}><b style={{ fontFamily: 'var(--font)' }}>{title(r.drug)}</b><Step2Handoff drug={r.drug.split('\\')[0].toLowerCase()} compact /></span>
                 <span className="num">{r.cases} <span className="dim">· {r.serious}</span></span>
                 <span style={{ color: type[1] }}>{type[0]}</span>
                 <span className="dim">{r.mechanism ?? '—'}</span>

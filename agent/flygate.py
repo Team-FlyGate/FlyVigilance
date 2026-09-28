@@ -562,6 +562,10 @@ def cmd_watch(a) -> dict:
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="flygate", description="FlyGate agent tools: every command prints JSON with evidence IDs.")
     sub = p.add_subparsers(dest="cmd", required=True)
+    sub.add_parser("login", help="open NVIDIA key setup and register securely")
+    s = sub.add_parser("chat", help="interactive FlyGate chat with ASCII banner")
+    s.add_argument("--plain", action="store_true", help="disable ANSI colors")
+    s.add_argument("--model", help="NVIDIA chat model ID")
     s = sub.add_parser("triage", help="reflex triage of one ICSR")
     s.add_argument("case", nargs="?", help="case JSON file (FAERS case format)")
     s.add_argument("--demo", type=int, help="use the N-th real case from api/_data/cases.json.gz")
@@ -615,7 +619,21 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv=None) -> int:
-    a = build_parser().parse_args(argv)
+    sys.path.insert(0, str(AGENT))
+    import auth
+    auth.load_key()
+    args = sys.argv[1:] if argv is None else argv
+    if not args:
+        if not sys.stdin.isatty():
+            build_parser().print_help()
+            return 0
+        args = ["chat"]
+    a = build_parser().parse_args(args)
+    if a.cmd == "login":
+        return 0 if auth.login() else 1
+    if a.cmd == "chat":
+        import chat
+        return chat.run(model=a.model, plain=a.plain)
     if a.cmd == "triage" and not a.case and a.demo is None:
         build_parser().error("triage needs a case file or --demo N")
     if a.cmd == "discover":
