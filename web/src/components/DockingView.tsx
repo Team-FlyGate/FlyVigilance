@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { TARGET_PALETTE, ballStick, chainGradient, disposeAll, dust, glowSprite, makeRenderer, ribbon, setOpacity, type Atom, type Ligand } from '../lib/molScene'
@@ -23,6 +23,8 @@ export default function DockingView({ scene, height = 600, playKey = 0, onSettle
   scene: RedockScene | null; height?: number; playKey?: number; onSettled?: () => void
 }) {
   const host = useRef<HTMLDivElement>(null)
+  // WebGL 컨텍스트가 강제로 죽으면 올려서 장면을 새로 만듭니다
+  const [epoch, setEpoch] = useState(0)
   const settledRef = useRef(onSettled)
   settledRef.current = onSettled
 
@@ -30,7 +32,7 @@ export default function DockingView({ scene, height = 600, playKey = 0, onSettle
     const el = host.current
     if (!el || !scene) return
     let disposed = false, raf = 0, dragging = false
-    const { renderer, scene: s3, camera, composer, bloom, film, resize, shown } = makeRenderer(el)
+    const { renderer, scene: s3, camera, composer, bloom, film, resize, shown } = makeRenderer(el, () => setEpoch((k) => k + 1))
     const controls = new OrbitControls(camera, renderer.domElement)
     controls.enableDamping = true; controls.autoRotate = true; controls.autoRotateSpeed = 0.6
     controls.minDistance = 10; controls.maxDistance = 120
@@ -92,7 +94,7 @@ export default function DockingView({ scene, height = 600, playKey = 0, onSettle
     }
     raf = requestAnimationFrame(loop)
     return () => { disposed = true; cancelAnimationFrame(raf); ro.disconnect(); controls.dispose(); disposeAll(s3); composer.dispose(); renderer.dispose(); renderer.forceContextLoss(); renderer.domElement.remove() }
-  }, [scene, playKey])
+  }, [scene, playKey, epoch])
 
   return <div ref={host} style={{ width: '100%', height, cursor: 'grab', borderRadius: 16, overflow: 'hidden' }}
     aria-label="결정 구조 수용체 리본과 포켓 원자, 결정 구조 리간드(흰 윤곽), DiffDock 포즈. 드래그로 회전합니다." />
