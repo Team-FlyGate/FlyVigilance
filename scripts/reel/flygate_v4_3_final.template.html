@@ -23,6 +23,8 @@
 </head>
 <body>
 <div id="wrap"><div id="stage"><canvas id="cv" width="1920" height="1080"></canvas></div></div>
+<script>(() => { const f = new URLSearchParams(location.search).get('fmt'), w = f === 'square' || f === 'vertical' ? 1080 : 1920, h = f === 'vertical' ? 1920 : 1080
+  for (const id of ['stage', 'cv']) { const e = document.getElementById(id); e.style.width = w + 'px'; e.style.height = h + 'px' } })()</script>
 <div id="hud"><button id="pp" type="button">❚❚</button><span id="clock">0:00</span><input id="scrub" type="range" min="0" max="260" step="0.05" value="0" /><div id="chapters"></div></div>
 <script>
 (() => {
@@ -36,6 +38,15 @@
   // =====================================================================
   const W = 1920, H = 1080, FPS = 30
   const Q = new URLSearchParams(location.search)
+  // 규격: ?fmt=square(1080×1080 · 링크드인 · 인스타그램 피드) · ?fmt=vertical(1080×1920 · 쇼츠 · 릴스 · 틱톡). 기본은 16:9(1920×1080)입니다.
+  // 장면은 늘 1920×1080 무대에 그리고, 규격에 맞게 줄여 놓은 뒤 남는 자리에 제목 · 자막 · 용어 풀이를 크게 둡니다
+  const FMT = ['square', 'vertical'].includes(Q.get('fmt')) ? Q.get('fmt') : 'wide'
+  const OW = FMT === 'wide' ? 1920 : 1080, OH = FMT === 'vertical' ? 1920 : 1080
+  const LAYOUT = {
+    wide: { k: 0.87, y: 4, subTop: 4 + 1080 * 0.87 + 2, subSize: 44, subSize2: 40, subLH: 50, subMaxW: 1680 },
+    square: { k: 0.5625, y: 150, subTop: 150 + 607.5 + 8, subSize: 42, subSize2: 42, subLH: 56, subMaxW: 980 },
+    vertical: { k: 0.5625, y: 520, subTop: 520 + 607.5 + 24, subSize: 52, subSize2: 52, subLH: 70, subMaxW: 960 },
+  }[FMT]
   const PAUSED = Q.has('paused')
   const cv = document.getElementById('cv'), X = cv.getContext('2d')
   let R = 1
@@ -2618,7 +2629,7 @@
     }
     text(`${NUM[sc.id]} — ${sc.label}`, m + 34, H - m - 18, { size: 15, weight: 500, fam: MONO, color: C.cream, track: 2 })
     // v4.4: 오른쪽 아래 고정 자리에 그 장면의 용어 풀이를 둡니다(약물감시 전문가가 아닌 시청자용). 장면이 바뀔 때만 바뀌고 움직이지 않습니다
-    const gl = (D.gloss || {})[sc.id]
+    const gl = FMT === 'wide' ? (D.gloss || {})[sc.id] : null   // 다른 규격은 바깥 자리에 크게 씁니다(frameOuter)
     if (gl) {
       const ga = seg(T, sc.t0 + 0.2, sc.t0 + 0.7) * (1 - seg(T, sc.t1 - 0.35, sc.t1))
       if (ga > 0.003) {
@@ -2641,28 +2652,64 @@
   const N_CLI = SCENES.filter((s) => s.id.startsWith('cli_')).length, I_CLI0 = SCENES.findIndex((s) => s.id.startsWith('cli_'))
   const CAM_IDX = (idx) => (I_CLI0 >= 0 && idx >= I_CLI0 + N_CLI ? idx - (N_CLI - 3) : idx)
   // ---------- 자막 띠 ----------
-  const STAGE_K = 0.87, STAGE_Y = 4, SUB_TOP = STAGE_Y + H * STAGE_K + 2
+  const STAGE_K = LAYOUT.k, STAGE_Y = LAYOUT.y, SUB_TOP = LAYOUT.subTop
   const SUBS = D.subs || []
+  // 16:9 가 아닌 규격에서는 자막 폭이 좁으므로, 빌더가 나눈 줄을 무시하고 폭에 맞춰 다시 나눕니다
+  function wrapSub(s, size, maxW) {
+    if (FMT === 'wide') return s.split('\n')
+    const words = s.replace(/\n/g, ' ').split(' '), out = []
+    let cur = ''
+    for (const w of words) { const t = cur ? cur + ' ' + w : w; if (cur && measure(t, size, 700, SANS) > maxW) { out.push(cur); cur = w } else cur = t }
+    if (cur) out.push(cur)
+    return out
+  }
+  // 16:9 가 아닌 규격의 바깥 자리: 위에는 브랜드와 장면 이름, 아래에는 용어 풀이를 크게 씁니다
+  function frameOuter(T) {
+    if (FMT === 'wide') return
+    const sc = SCENES.find((q) => T >= q.t0 && T < q.t1) ?? SCENES[SCENES.length - 1]
+    const a = seg(T, 0.3, 1.0) * (1 - seg(T, DUR - 0.9, DUR - 0.15))
+    if (a <= 0.003) return
+    const g = GA; GA = a
+    const top = FMT === 'vertical' ? 150 : 44
+    text('FlyGate', OW / 2, top + (FMT === 'vertical' ? 64 : 42), { size: FMT === 'vertical' ? 86 : 52, weight: 800, color: C.white, align: 'center' })
+    text(`${NUM[sc.id]} — ${sc.label}`, OW / 2, top + (FMT === 'vertical' ? 140 : 84), { size: FMT === 'vertical' ? 34 : 24, weight: 600, color: C.cyan, align: 'center', maxW: OW - 120 })
+    if (FMT === 'vertical') text(D.lang === 'en' ? 'From molecule to patient, evidence before inference.' : '분자에서 환자까지, 추론보다 근거가 먼저.', OW / 2, top + 210, { size: 30, weight: 500, color: C.t2, align: 'center', maxW: OW - 120 })
+    const gl = (D.gloss || {})[sc.id]
+    if (gl) {
+      const ga = seg(T, sc.t0 + 0.2, sc.t0 + 0.7) * (1 - seg(T, sc.t1 - 0.35, sc.t1))
+      const size = FMT === 'vertical' ? 30 : 22, lh = size * 1.45, parts = gl.split(' · ').reduce((acc, p) => { if (acc.length && !p.includes('=')) acc[acc.length - 1] += ' · ' + p; else acc.push(p); return acc }, []).flatMap((p) => wrapSub(p, size, OW - 140))   // '용어 = 풀이' 하나를 한 묶음으로 둡니다
+      const y0 = FMT === 'vertical' ? 1560 : OH - 30 - (parts.length - 1) * lh
+      if (FMT === 'vertical') { chip(OW / 2, y0 - 70, D.lang === 'en' ? 'Terms' : '용어', { kind: 'cyan', size: 24, h: 44, align: 'center', a: ga }) }
+      parts.forEach((ln, i) => text(ln, OW / 2, y0 + i * lh, { size, weight: 500, color: C.text, align: 'center', a: ga, maxW: OW - 100 }))
+    }
+    GA = g
+  }
   function subtitle(T) {
     X.save(); X.globalAlpha = 1
-    const gr = X.createLinearGradient(0, SUB_TOP - 6, 0, H); gr.addColorStop(0, 'rgba(3,5,10,0)'); gr.addColorStop(0.18, 'rgba(3,5,10,0.92)'); gr.addColorStop(1, 'rgba(3,5,10,0.98)')
-    X.fillStyle = gr; X.fillRect(0, SUB_TOP - 6, W, H - SUB_TOP + 6); X.restore()
+    if (FMT === 'wide') {
+      const gr = X.createLinearGradient(0, SUB_TOP - 6, 0, OH); gr.addColorStop(0, 'rgba(3,5,10,0)'); gr.addColorStop(0.18, 'rgba(3,5,10,0.92)'); gr.addColorStop(1, 'rgba(3,5,10,0.98)')
+      X.fillStyle = gr; X.fillRect(0, SUB_TOP - 6, OW, OH - SUB_TOP + 6)
+    }
+    X.restore()
     const cur = SUBS.find((q) => T >= q[0] && T < q[1])
     if (!cur) return
     const a = Math.min(seg(T, cur[0], cur[0] + 0.1), 1 - seg(T, cur[1] - 0.1, cur[1])) * (1 - seg(T, DUR - 0.6, DUR - 0.1))
     if (a <= 0.003) return
     const g = GA; GA = 1
-    const L = cur[2].split('\n'), lh = 50, cy = SUB_TOP + (H - SUB_TOP) / 2 + 2 - (L.length - 1) * lh / 2
-    L.forEach((ln, i) => text(ln, W / 2, cy + i * lh, { size: L.length > 1 ? 40 : 44, weight: 700, color: '#f4f7ff', a, align: 'center', base: 'middle', maxW: W - 240 }))
+    const size0 = cur[2].includes('\n') ? LAYOUT.subSize2 : LAYOUT.subSize
+    const L = wrapSub(cur[2], size0, LAYOUT.subMaxW), lh = LAYOUT.subLH
+    const cy = FMT === 'wide' ? SUB_TOP + (OH - SUB_TOP) / 2 + 2 - (L.length - 1) * lh / 2 : FMT === 'square' ? SUB_TOP + 40 : SUB_TOP + 60
+    L.forEach((ln, i) => text(ln, OW / 2, cy + i * lh, { size: size0, weight: 700, color: '#f4f7ff', a, align: 'center', base: 'middle', maxW: LAYOUT.subMaxW }))
     GA = g
   }
   function render(T) {
     X.setTransform(R, 0, 0, R, 0, 0)
     X.globalAlpha = 1; X.globalCompositeOperation = 'source-over'; X.shadowBlur = 0
-    X.drawImage(BG, 0, 0, W, H)
-    particles(T)
-    // 최종본: 무대(장면 + HUD)를 STAGE_K 배로 줄여 위에 두고, 아래 SUB_TOP 부터는 자막 띠로 씁니다
-    X.save(); X.translate((W - W * STAGE_K) / 2, STAGE_Y); X.scale(STAGE_K, STAGE_K)
+    X.drawImage(BG, 0, 0, OW, OH)
+    if (FMT === 'wide') particles(T)
+    // 최종본: 무대(장면 + HUD)를 STAGE_K 배로 줄여 두고, 남는 자리는 자막 · 제목 · 용어 풀이에 씁니다
+    X.save(); X.translate((OW - W * STAGE_K) / 2, STAGE_Y); X.scale(STAGE_K, STAGE_K)
+    if (FMT !== 'wide') { X.save(); X.beginPath(); X.rect(0, 0, W, H); X.clip(); X.drawImage(BG, 0, 0, W, H); particles(T); X.restore(); X.save(); X.beginPath(); X.rect(0, 0, W, H); X.clip() }
     SCENES.forEach((s, idx) => {
       if (T < s.t0 - 0.4 || T > s.t1 + 0.4) return
       let k = Math.min(seg(T, s.t0 - 0.3, s.t0 + 0.3, E.inOut3), 1 - seg(T, s.t1 - 0.3, s.t1 + 0.3, E.inOut3))
@@ -2677,14 +2724,16 @@
     })
     GA = 1
     hud(T)
+    if (FMT !== 'wide') { X.restore(); X.save(); X.globalAlpha = 0.5; X.strokeStyle = 'rgba(55,230,255,0.35)'; X.lineWidth = 2; X.strokeRect(0, 0, W, H); X.restore() }
     X.restore()
     glitchCut(T)
+    frameOuter(T)
     subtitle(T)
     // 필름 그레인
     if (!GRAIN_PAT) GRAIN_PAT = X.createPattern(GRAIN, 'repeat')
     const f = Math.floor(T * FPS)
     X.save(); X.globalAlpha = 0.035; X.globalCompositeOperation = 'overlay'; X.translate(-(hash(f) * 256) | 0, -(hash(f + 0.5) * 256) | 0)
-    X.fillStyle = GRAIN_PAT; X.fillRect(0, 0, W + 256, H + 256); X.restore()
+    X.fillStyle = GRAIN_PAT; X.fillRect(0, 0, OW + 256, OH + 256); X.restore()
   }
 
   // ---------- 재생기 ----------
@@ -2705,10 +2754,10 @@
   }
   const stage = document.getElementById('stage')
   function fit() {
-    const k = Math.min(innerWidth / W, innerHeight / H)
+    const k = Math.min(innerWidth / OW, innerHeight / OH)
     stage.style.transform = `translate(-50%, -50%) scale(${k})`
     const r = PAUSED ? 1 : clamp((devicePixelRatio || 1) * k, 1, 2)
-    if (Math.abs(r - R) > 0.01 || cv.width !== Math.round(W * r)) { R = r; cv.width = Math.round(W * R); cv.height = Math.round(H * R); GRAIN_PAT = null; MC.clear() }
+    if (Math.abs(r - R) > 0.01 || cv.width !== Math.round(OW * r)) { R = r; cv.width = Math.round(OW * R); cv.height = Math.round(OH * R); GRAIN_PAT = null; MC.clear() }
   }
   addEventListener('resize', fit); fit()
   pp.textContent = playing ? '❚❚' : '▶'

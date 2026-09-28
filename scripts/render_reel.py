@@ -1,4 +1,6 @@
-"""쇼릴을 30fps 프레임 단위로 렌더링해 MP4 로 만듭니다. 사용: render_reel.py OUT.mp4 [fps] [page_url]
+"""쇼릴을 30fps 프레임 단위로 렌더링해 MP4 로 만듭니다. 사용: render_reel.py OUT.mp4 [fps] [page_url] [wide|square|vertical]
+
+규격(v4.3.0 최종본부터): square 는 1080×1080, vertical 은 1080×1920 창으로 열고 ?fmt= 를 붙입니다.
 
 page_url 기본값은 개발 서버의 v3 쇼릴입니다. 쇼릴은 파일 하나로 완결되므로 file:// 주소를 그대로 줄 수 있습니다.
 """
@@ -11,13 +13,15 @@ from playwright.async_api import async_playwright
 OUT = sys.argv[1]
 FPS = int(sys.argv[2]) if len(sys.argv) > 2 else 30
 PAGE = sys.argv[3] if len(sys.argv) > 3 else "http://127.0.0.1:5173/showreel/FlyGate_showreel_v3.0.0.html"
+FMT = sys.argv[4] if len(sys.argv) > 4 else "wide"
+VW, VH = {"wide": (1920, 1080), "square": (1080, 1080), "vertical": (1080, 1920)}[FMT]
 
 
 async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(channel="chromium", args=["--use-angle=metal", "--ignore-gpu-blocklist", "--enable-gpu"])
-        pg = await b.new_page(viewport={"width": 1920, "height": 1080})
-        await pg.goto(f"{PAGE}?paused=1", wait_until="domcontentloaded", timeout=60000)
+        pg = await b.new_page(viewport={"width": VW, "height": VH})
+        await pg.goto(f"{PAGE}?paused=1" + ("" if FMT == "wide" else f"&fmt={FMT}"), wait_until="domcontentloaded", timeout=60000)
         await pg.evaluate("document.fonts.ready")
         await pg.wait_for_timeout(3000)
         await pg.add_style_tag(content="#hud{display:none!important}")
