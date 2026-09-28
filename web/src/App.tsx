@@ -93,9 +93,9 @@ export default function App() {
               ))}
             </div>
           ))}
-          <a className="nav-item nav-reel" href="/showreel/FlyGate_showreel_v3.0.0.html" target="_blank" rel="noreferrer">
+          <a className="nav-item nav-reel" href="/showreel/FlyGate_showreel_v4.0.0.html" target="_blank" rel="noreferrer">
             <svg className="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><circle cx="12" cy="12" r="9" /><path d="m10 8 6 4-6 4V8Z" fill="currentColor" /></svg>
-            <span className="lbl">쇼릴 영상<small>FlyGate · v3</small></span>
+            <span className="lbl">쇼릴 영상<small>FlyGate · v4 전체판</small></span>
           </a>
           <div className="nav-foot">
             <div className="status-row" title="Jev · TypeSafe AI"><span className={`dot ${health?.jev ? 'on pulse' : healthErr ? 'off' : ''}`} />비자기회귀 판단 모델 {live(health?.jev)}</div>

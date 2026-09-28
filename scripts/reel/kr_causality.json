@@ -1,0 +1,172 @@
+{
+ "source": "flygate kr-causality agent/examples/kr_report.txt --route · flygate triage (US)",
+ "intake_model": "nvidia/nemotron-3-super-120b-a12b",
+ "kr_form": {
+  "가_환자정보": {
+   "이니셜": null,
+   "나이": "62",
+   "성별": "여",
+   "체중": "52",
+   "원질환_병력": "난소암(BRCA 변이 없음) 1차 백금 기반 항암 후 유지요법 중",
+   "알레르기_과거력": "없음"
+  },
+  "나_이상사례정보": {
+   "이상사례명": [
+    "혈소판감소증",
+    "잇몸 출혈"
+   ],
+   "발현일": "2026-08-25",
+   "종료일": null,
+   "경과_결과": "니라파립 중단 및 혈소판 수혈 후 혈소판 회복 (148,000/μL), 퇴원",
+   "중대성": {
+    "사망": false,
+    "생명위협": false,
+    "입원_연장": true,
+    "장애": false,
+    "선천기형": false,
+    "기타_의학적중요": false
+   }
+  },
+  "다_의약품정보": {
+   "의심약물": [
+    {
+     "성분명": "니라파립",
+     "성분명_영문": "NIRAPARIB",
+     "제품명": "제줄라캡슐",
+     "용량_용법": "200 mg 1일 1회 경구",
+     "투여경로": "ORAL",
+     "투여기간": "2026-08-03부터 23일간",
+     "투여목적": "난소암 유지요법",
+     "조치": "중단",
+     "재투여": "N"
+    }
+   ],
+   "병용약물": [
+    {
+     "성분명": "온단세트론",
+     "성분명_영문": "ONDANSETRON",
+     "용량_용법": "8 mg 필요 시 경구",
+     "투여목적": "구역"
+    },
+    {
+     "성분명": "판토프라졸",
+     "성분명_영문": "PANTOPRAZOLE",
+     "용량_용법": "40 mg 1일 1회 경구",
+     "투여목적": null
+    }
+   ]
+  },
+  "라_보고자정보": {
+   "보고자_유형": "약사",
+   "소속_기관": "서울 소재 상급종합병원 약제부"
+  },
+  "마_보고서정보": {
+   "보고유형": "자발보고",
+   "최초_추가": "최초"
+  },
+  "바_종합의견": "니라파립 투여 후 발생한 중증 혈소판감소증으로, 중단 후 회복되어 약물과의 관련성이 높다고 판단합니다."
+ },
+ "missing": [],
+ "total": 11,
+ "range": [
+  -13,
+  19
+ ],
+ "grade": "가능성 높음",
+ "band": "6~11점",
+ "items": [
+  {
+   "name": "시간적 선후관계",
+   "label": "선후관계 합당",
+   "score": 3,
+   "confidence": 1.0,
+   "method": "jev"
+  },
+  {
+   "name": "감량 또는 중단",
+   "label": "감량 또는 중단 후 임상적 호전이 관찰됨",
+   "score": 3,
+   "confidence": 1.0,
+   "method": "jev"
+  },
+  {
+   "name": "이상사례의 과거력",
+   "label": "아니오",
+   "score": -1,
+   "confidence": 0.82,
+   "method": "jev"
+  },
+  {
+   "name": "병용약물",
+   "label": "병용약물 단독으로 유해사례를 설명할 수 없는 경우",
+   "score": 2,
+   "confidence": 0.76,
+   "method": "jev"
+  },
+  {
+   "name": "비약물요인",
+   "label": "비약물요인으로 유해사례가 설명되지 않음",
+   "score": 1,
+   "confidence": 1.0,
+   "method": "jev"
+  },
+  {
+   "name": "약물에 대해 알려진 정보",
+   "label": "허가사항(label, insert 등)에 반영되어 있음",
+   "score": 3,
+   "confidence": 1.0,
+   "method": "rule"
+  },
+  {
+   "name": "재투약",
+   "label": "재투약하지 않음",
+   "score": 0,
+   "confidence": 0.98,
+   "method": "jev"
+  },
+  {
+   "name": "특이적인 검사",
+   "label": "정보없음",
+   "score": 0,
+   "confidence": 0.92,
+   "method": "jev"
+  }
+ ],
+ "who_umc": {
+  "choice": "probable",
+  "confidence": 0.95,
+  "probabilities": {
+   "unassessable": 0.0,
+   "probable": 0.97,
+   "conditional": 0.0,
+   "unlikely": 0.0,
+   "possible": 0.0,
+   "certain": 0.03
+  }
+ },
+ "reaction": "thrombocytopenia",
+ "kr_routing": {
+  "action": "expedite",
+  "tier": "human",
+  "system2": true,
+  "reasons": [
+   "[KR] serious=0.97, WHO-UMC probable (conf 0.94, 인과관계 배제 불가): 중대한 약물이상반응 -> 15일 신속보고 후보 (expected=0.00와 무관)"
+  ],
+  "report15": true,
+  "regime": "KR",
+  "deadline": "15일 이내 (의약품 등의 안전에 관한 규칙 별표 4의3 제7호 나목: 중대한 약물이상반응, '예상하지 못한' 요건 없음)"
+ },
+ "us_routing": {
+  "action": "expedite",
+  "tier": "human",
+  "system2": true,
+  "reasons": [
+   "[US] serious=0.97 and expected=0.00 (openFDA label): serious unexpected -> expedited candidate"
+  ],
+  "report15": true,
+  "regime": "US",
+  "deadline": "15 calendar days (21 CFR 314.80: serious and unexpected)"
+ },
+ "us_latency_ms": 303.6,
+ "recorded": "2026-09-28 01:49"
+}
