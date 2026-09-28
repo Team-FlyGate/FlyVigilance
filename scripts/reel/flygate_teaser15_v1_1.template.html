@@ -1,0 +1,922 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FlyGate Teaser 15s</title>
+<meta name="description" content="Project-FlyGate 15초 티저: 시판 전 표적 결합(FlyDiscovery)부터 시판 후 이상사례(FlyVigilance)까지 에이전트 하나로 잇습니다" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: #000; overflow: hidden; }
+  body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif; color: #eef3ff; }
+  #wrap { position: fixed; inset: 0; overflow: hidden; }
+  /* 무대의 가운데를 창 가운데에 맞춘 뒤 창 크기에 맞게 줄입니다. 크기는 스크립트가 방향(가로·세로)에 맞춰 정합니다 */
+  #stage { position: absolute; left: 50%; top: 50%; overflow: hidden; background: #04060c; transform-origin: center center; transform: translate(-50%, -50%); }
+  #cv { position: absolute; left: 0; top: 0; display: block; }
+  #hud { position: fixed; z-index: 10; left: 0; right: 0; bottom: 0; padding: 12px 18px; display: flex; align-items: center; gap: 14px; background: linear-gradient(transparent, rgba(0,0,0,.85)); opacity: 0; transition: opacity .3s; font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: 12px; color: #9fb0d6; }
+  #wrap:hover + #hud, #hud:hover { opacity: 1; }
+  #hud button { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15); color: #fff; border-radius: 8px; padding: 6px 12px; cursor: pointer; font: inherit; }
+  #scrub { flex: 1; accent-color: #37e6ff; }
+</style>
+</head>
+<body>
+<div id="wrap"><div id="stage"><canvas id="cv"></canvas></div></div>
+<div id="hud"><button id="pp" type="button">❚❚</button><span id="clock">0.0</span><input id="scrub" type="range" min="0" max="15" step="0.02" value="0" /></div>
+<script>
+(() => {
+  'use strict'
+  // 빌드 스크립트(scripts/build_teaser15.py)가 실측 수치를 여기에 넣습니다
+  const D = /*__DATA__*/null
+
+  // =====================================================================
+  //  결정론적 타임라인: 모든 장면은 시간 t 의 순수 함수입니다.
+  //  render_reel.py 는 ?paused=1 로 열고 window.__reel.renderAt(t) 로 프레임을 하나씩 그립니다.
+  //  세로판(1080×1920)은 빌드가 VERT 를 true 로 바꾼 파일이거나, 이 파일에 ?v=1 을 붙여 엽니다.
+  // =====================================================================
+  const Q = new URLSearchParams(location.search)
+  const VERT = /*__VERT__*/false || Q.get('v') === '1'
+  const W = VERT ? 1080 : 1920, H = VERT ? 1920 : 1080, FPS = 30, CX = W / 2
+  const PAUSED = Q.has('paused')
+  const stage = document.getElementById('stage'), cv = document.getElementById('cv'), X = cv.getContext('2d')
+  stage.style.width = cv.style.width = W + 'px'; stage.style.height = cv.style.height = H + 'px'
+  let R = 1
+
+  // ---------- 수학 ----------
+  const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x))
+  const lerp = (a, b, t) => a + (b - a) * t
+  const inv = (a, b, x) => clamp((x - a) / (b - a))
+  const E = {
+    lin: (t) => t, out2: (t) => 1 - (1 - t) * (1 - t), out3: (t) => 1 - Math.pow(1 - t, 3), out5: (t) => 1 - Math.pow(1 - t, 5),
+    in3: (t) => t * t * t, inOut3: (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2),
+    expoOut: (t) => (t >= 1 ? 1 : 1 - Math.pow(2, -10 * t)),
+    backOut: (t) => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2) },
+  }
+  const seg = (t, a, b, e = E.out3) => e(inv(a, b, t))
+  const hash = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x) }
+  const fmtInt = (n) => Math.round(n).toLocaleString('en-US')
+  const SUP = { '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' }
+  const sup = (n) => String(n).split('').map((c) => SUP[c] ?? c).join('')
+  function pText(p) {
+    if (p >= 0.001) return `p = ${+p.toFixed(4)}`
+    let e = Math.floor(Math.log10(p)), m = Math.round(p / Math.pow(10, e))
+    if (m >= 10) { m = 1; e += 1 }
+    return `p ≈ ${m}×10${sup(e)}`
+  }
+
+  // ---------- 색 · 글꼴 (쇼릴 v3 와 같은 토큰) ----------
+  const C = {
+    bg: '#04060c', text: '#eef3ff', white: '#f4f7ff', t2: '#a9b6d3', t3: '#6f7d9e', line: 'rgba(120,170,255,0.16)', line2: 'rgba(120,170,255,0.30)',
+    cyan: '#37e6ff', blue: '#4d8dff', amber: '#ffb547', magenta: '#ff4fd8', nv: '#76b900', nvl: '#c8f36b', red: '#ff5d6c',
+    ok: '#3ddc97', violet: '#a58bff', cream: '#efe8da',
+  }
+  const SANS = 'system-ui, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Segoe UI", sans-serif'
+  const MONO = 'ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace'
+
+  // ---------- 그리기 도구 ----------
+  let GA = 1  // 전역 불투명도(장면 안에서 곱해 나갑니다)
+  const alpha = (a) => { X.globalAlpha = clamp(GA * a) }
+  function withA(k, fn) { const g = GA; GA = g * clamp(k); if (GA > 0.002) fn(); GA = g }
+  const font = (size, weight = 700, fam = SANS) => { X.font = `${weight} ${size}px ${fam}` }
+  const MC = new Map()
+  function measure(s, size, weight = 700, fam = SANS, track = 0) {
+    const key = `${s}|${size}|${weight}|${fam === MONO ? 'm' : 's'}|${track}`
+    let w = MC.get(key)
+    if (w === undefined) { X.save(); font(size, weight, fam); X.letterSpacing = track + 'px'; w = X.measureText(s).width; X.restore(); MC.set(key, w) }
+    return w
+  }
+  function text(s, x, y, o = {}) {
+    const { size = 32, weight = 700, fam = SANS, color = C.text, a = 1, align = 'left', base = 'alphabetic', track = 0, glow = 0, maxW = 0 } = o
+    if (!s || GA * a <= 0.003) return 0
+    let sz = size
+    if (maxW) { const w0 = measure(s, size, weight, fam, track); if (w0 > maxW) sz = size * maxW / w0 }
+    X.save(); font(sz, weight, fam); X.letterSpacing = track + 'px'; X.textAlign = align; X.textBaseline = base; alpha(a); X.fillStyle = color
+    if (glow) { X.shadowColor = color; X.shadowBlur = glow }
+    X.fillText(s, x, y); const w = X.measureText(s).width; X.restore(); return w
+  }
+  // 여러 색 조각을 한 줄로: [[문자열, 색, 굵기?], ...]
+  function rich(parts, x, y, o = {}) {
+    const { size = 32, weight = 700, fam = SANS, a = 1, align = 'left', maxW = 0, glow = 0 } = o
+    let sz = size
+    const total = () => parts.reduce((s, p) => s + measure(p[0], sz, p[2] ?? weight, fam), 0)
+    let tw = total()
+    if (maxW && tw > maxW) { sz = size * maxW / tw; tw = total() }
+    let cx = align === 'center' ? x - tw / 2 : align === 'right' ? x - tw : x
+    for (const p of parts) { text(p[0], cx, y, { size: sz, weight: p[2] ?? weight, fam, color: p[1] ?? C.text, a, glow }); cx += measure(p[0], sz, p[2] ?? weight, fam) }
+    return tw
+  }
+  // 글자별로 마스크 아래에서 솟아오르기(FDDD 쇼릴의 키네틱 타입). maxW 를 넘으면 글자 크기를 줄입니다.
+  function riseParts(parts, x, y, p, o = {}) {
+    const { weight = 800, stagger = 0.04, dur = 0.5, align = 'left', fam = SANS, glow = 0, maxW = 0 } = o
+    let size = o.size ?? 100
+    if (p <= 0 || GA <= 0.003) return 0
+    let total = parts.reduce((s, q) => s + measure(q[0], size, weight, fam), 0)
+    if (maxW && total > maxW) { size = size * maxW / total; total = maxW }
+    let cx = align === 'center' ? x - total / 2 : align === 'right' ? x - total : x
+    X.save(); X.beginPath(); X.rect(cx - 60, y - size * 1.15, total + 120, size * 1.5); X.clip()
+    font(size, weight, fam); X.letterSpacing = '0px'; X.textBaseline = 'alphabetic'; X.textAlign = 'left'
+    let i = 0
+    for (const [str, col] of parts) {
+      X.fillStyle = col
+      if (glow) { X.shadowColor = col; X.shadowBlur = glow }
+      for (const ch of [...str]) {
+        const k = E.expoOut(clamp((p - i * stagger) / dur))
+        alpha(clamp(k * 1.4)); X.fillText(ch, cx, y + (1 - k) * size * 1.1)
+        cx += X.measureText(ch).width; i++
+      }
+    }
+    X.restore(); return total
+  }
+  // 모노 타자기
+  function typeText(s, x, y, p, o = {}) {
+    const full = { fam: MONO, weight: 600, size: 20, color: C.t3, track: 5, ...o }
+    const n = Math.floor(clamp(p) * (s.length + 1))
+    if (n <= 0) return 0
+    const cur = p > 0 && p < 1.05 && Math.floor(p * 24) % 2 === 0 ? '▌' : ''
+    let x0 = x
+    if (full.align === 'center') x0 = x - measure(s, full.size, full.weight, full.fam, full.track) / 2
+    return text(s.slice(0, n) + cur, x0, y, { ...full, align: 'left' })
+  }
+  const rr = (x, y, w, h, r) => { X.beginPath(); X.roundRect(x, y, w, h, r) }
+  function panel(x, y, w, h, o = {}) {
+    const { r = 20, fill = 'rgba(10,16,32,0.80)', stroke = C.line, lw = 1, a = 1, glow = null, top = null } = o
+    if (GA * a <= 0.003) return
+    X.save(); alpha(a); rr(x, y, w, h, r); X.fillStyle = fill
+    if (glow) { X.shadowColor = glow; X.shadowBlur = 40 }
+    X.fill(); X.shadowBlur = 0
+    if (stroke) { X.strokeStyle = stroke; X.lineWidth = lw; X.stroke() }
+    if (top) { X.beginPath(); X.roundRect(x, y, w, 5, [r, r, 0, 0]); X.fillStyle = top; X.fill() }
+    X.restore()
+  }
+  function line(x1, y1, x2, y2, color, a = 1, w = 1, glow = 0) {
+    if (GA * a <= 0.003) return
+    X.save(); alpha(a); X.strokeStyle = color; X.lineWidth = w; X.lineCap = 'round'
+    if (glow) { X.shadowColor = color; X.shadowBlur = glow }
+    X.beginPath(); X.moveTo(x1, y1); X.lineTo(x2, y2); X.stroke(); X.restore()
+  }
+  function dot(x, y, r, color, a = 1, glow = 0) {
+    if (GA * a <= 0.003) return
+    X.save(); alpha(a); X.fillStyle = color; if (glow) { X.shadowColor = color; X.shadowBlur = glow }
+    X.beginPath(); X.arc(x, y, Math.max(0.1, r), 0, Math.PI * 2); X.fill(); X.restore()
+  }
+  function ring(x, y, r, color, a = 1, w = 2) {
+    if (GA * a <= 0.003) return
+    X.save(); alpha(a); X.strokeStyle = color; X.lineWidth = w; X.beginPath(); X.arc(x, y, Math.max(0.1, r), 0, Math.PI * 2); X.stroke(); X.restore()
+  }
+  function brackets(x, y, w, h, s = 18, color = '#ffffff', a = 0.5, lw = 1.5) {
+    if (GA * a <= 0.003) return
+    X.save(); alpha(a); X.strokeStyle = color; X.lineWidth = lw; X.beginPath()
+    X.moveTo(x, y + s); X.lineTo(x, y); X.lineTo(x + s, y); X.moveTo(x + w - s, y); X.lineTo(x + w, y); X.lineTo(x + w, y + s)
+    X.moveTo(x + w, y + h - s); X.lineTo(x + w, y + h); X.lineTo(x + w - s, y + h); X.moveTo(x + s, y + h); X.lineTo(x, y + h); X.lineTo(x, y + h - s)
+    X.stroke(); X.restore()
+  }
+  function check(x, y, s, color, a = 1, w = 3) {
+    if (GA * a <= 0.003) return
+    X.save(); alpha(a); X.strokeStyle = color; X.lineWidth = w; X.lineCap = 'round'; X.lineJoin = 'round'
+    X.beginPath(); X.moveTo(x - s * 0.5, y); X.lineTo(x - s * 0.12, y + s * 0.38); X.lineTo(x + s * 0.55, y - s * 0.42); X.stroke(); X.restore()
+  }
+  const CHIP = {
+    nv: { fg: '#c8f36b', bd: 'rgba(118,185,0,.70)', bg: 'rgba(118,185,0,.14)' }, cyan: { fg: '#9fefff', bd: 'rgba(55,230,255,.60)', bg: 'rgba(55,230,255,.10)' },
+    mag: { fg: '#ffa6ec', bd: 'rgba(255,79,216,.60)', bg: 'rgba(255,79,216,.10)' }, dim: { fg: '#a9b6d3', bd: 'rgba(120,170,255,.26)', bg: 'rgba(10,16,32,.66)' },
+  }
+  function chipW(label, size = 20, fam = MONO, h = 40) { return measure(label, size, 600, fam) + h * 0.9 }
+  function chip(x, y, label, o = {}) {
+    const { kind = 'dim', size = 20, h = 40, a = 1, align = 'left', fam = MONO } = o
+    const K = CHIP[kind], w = chipW(label, size, fam, h)
+    const x0 = align === 'center' ? x - w / 2 : align === 'right' ? x - w : x
+    if (GA * a <= 0.003) return w
+    X.save(); alpha(a); rr(x0, y, w, h, h / 2); X.fillStyle = K.bg; X.fill(); X.strokeStyle = K.bd; X.lineWidth = 1.4; X.stroke(); X.restore()
+    text(label, x0 + w / 2, y + h / 2 + 1, { size, weight: 600, fam, color: K.fg, a, align: 'center', base: 'middle' })
+    return w
+  }
+  function bar(x, y, w, h, frac, color, o = {}) {
+    const { a = 1, bg = 'rgba(120,170,255,0.10)', glow = 0 } = o
+    if (GA * a <= 0.003) return
+    X.save(); alpha(a); rr(x, y, w, h, h / 2); X.fillStyle = bg; X.fill()
+    if (frac > 0) { rr(x, y, Math.max(h, w * clamp(frac)), h, h / 2); X.fillStyle = color; if (glow) { X.shadowColor = color; X.shadowBlur = glow } X.fill() }
+    X.restore()
+  }
+  // 고무도장: 크게 찍혔다가 제자리로
+  function stamp(x, y, label, color, k, o = {}) {
+    if (k <= 0 || GA <= 0.003) return
+    const { size = 44, rot = -0.12, sub = '' } = o
+    const s = lerp(1.9, 1, E.backOut(clamp(k)))
+    X.save(); alpha(clamp(k * 2.2)); X.translate(x, y); X.rotate(rot); X.scale(s, s)
+    font(size, 900); X.letterSpacing = '2px'
+    const tw = X.measureText(label).width, w = tw + size * 0.9, h = size * (sub ? 1.8 : 1.4)
+    rr(-w / 2, -h / 2, w, h, 12); X.fillStyle = color + '22'; X.fill(); X.lineWidth = 4; X.strokeStyle = color; X.stroke()
+    X.fillStyle = color; X.textAlign = 'center'; X.textBaseline = 'middle'
+    X.fillText(label, 0, sub ? -size * 0.2 : 2)
+    if (sub) { font(size * 0.34, 700, MONO); X.letterSpacing = '4px'; X.fillText(sub, 0, size * 0.52) }
+    X.restore()
+  }
+  function glowBlob(x, y, r, color, a = 1) {
+    if (GA * a <= 0.003) return
+    X.save(); alpha(a); const g = X.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, color); g.addColorStop(1, 'rgba(0,0,0,0)')
+    X.fillStyle = g; X.fillRect(x - r, y - r, r * 2, r * 2); X.restore()
+  }
+  // 오도미터 숫자: 자리마다 굴러가며 멈춥니다(쇼릴 v3 · FDDD 쇼릴과 같은 방식)
+  function odometer(value, x, y, o = {}) {
+    const { size = 120, weight = 800, color = C.text, align = 'left', decimals = 0, final = null, a = 1, fam = SANS, glow = 0 } = o
+    if (GA * a <= 0.003) return 0
+    const v = Math.abs(value)
+    const intDigits = Math.max(1, Math.floor(Math.log10(Math.max(1, Math.abs(final ?? value)))) + 1)
+    let scaled = v * Math.pow(10, decimals); if (Math.abs(scaled - Math.round(scaled)) < 1e-6) scaled = Math.round(scaled)
+    const totalDigits = intDigits + decimals
+    X.save(); font(size, weight, fam); X.letterSpacing = '0px'
+    const dw = X.measureText('0').width, cw = X.measureText(',').width, pw = X.measureText('.').width
+    const cells = []
+    for (let k = totalDigits - 1; k >= 0; k--) {
+      cells.push({ k }); const intK = k - decimals
+      if (intK > 0 && intK % 3 === 0 && decimals === 0) cells.push({ sep: ',' })
+      if (k === decimals && decimals > 0) cells.push({ sep: '.' })
+    }
+    while (cells.length > 1) {
+      const c = cells[0]
+      if (c.sep === ',') { cells.shift(); continue }
+      if (c.sep || c.k <= decimals) break
+      if (Math.floor(scaled / Math.pow(10, c.k)) % 10 === 0 && scaled < Math.pow(10, c.k)) { cells.shift(); continue }
+      break
+    }
+    const width = cells.reduce((s, c) => s + (c.sep ? (c.sep === ',' ? cw : pw) : dw), 0)
+    let cx = align === 'center' ? x - width / 2 : align === 'right' ? x - width : x
+    X.restore()
+    // 숫자는 잘라 낸 작은 캔버스에 그린 뒤 붙입니다. 빛번짐은 붙일 때 입혀서 잘린 사각형 가장자리가 보이지 않게 합니다.
+    const pad = 20, ow = width + pad * 2, oh = size * 1.08, x0 = cx
+    if (ODO.width !== Math.ceil(ow * R) || ODO.height !== Math.ceil(oh * R)) { ODO.width = Math.ceil(ow * R); ODO.height = Math.ceil(oh * R) }
+    const g = ODO.getContext('2d')
+    g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, ODO.width, ODO.height); g.setTransform(R, 0, 0, R, 0, 0)
+    g.font = `${weight} ${size}px ${fam}`; g.letterSpacing = '0px'; g.fillStyle = color; g.textBaseline = 'alphabetic'; g.textAlign = 'left'
+    const by = size * 0.9
+    let gx = pad
+    for (const c of cells) {
+      if (c.sep) { g.fillText(c.sep, gx, by); gx += c.sep === ',' ? cw : pw; continue }
+      const dv = scaled / Math.pow(10, c.k), d = Math.floor(dv) % 10
+      const unit = Math.pow(10, c.k)
+      const r = c.k === 0 ? 0 : E.inOut3(clamp((dv - Math.floor(dv)) * unit - (unit - 1)))
+      const off = r * size * 0.92
+      g.fillText(String(d), gx + (dw - g.measureText(String(d)).width) / 2, by - off)
+      if (off > 0) g.fillText(String((d + 1) % 10), gx + (dw - g.measureText(String((d + 1) % 10)).width) / 2, by - off + size * 0.92)
+      gx += dw
+    }
+    X.save(); alpha(a)
+    if (glow) { X.shadowColor = color; X.shadowBlur = glow }
+    X.drawImage(ODO, 0, 0, ODO.width, ODO.height, x0 - pad, y - by, ODO.width / R, ODO.height / R)
+    X.restore(); return width
+  }
+  const ODO = document.createElement('canvas')
+  const odoW = (final, size, decimals = 0) => {
+    const s = decimals ? final.toFixed(decimals) : fmtInt(final)
+    return [...s].reduce((w, ch) => w + measure(/\d/.test(ch) ? '0' : ch, size, 800), 0)
+  }
+  const count = (lt, t0, dur = 0.8) => E.out5(inv(t0, t0 + dur, lt))
+
+  // ---------- 3D 투영 (단백질 · 리간드 · 뇌) ----------
+  function rot3(p, yaw, pitch) {
+    const cy = Math.cos(yaw), sy = Math.sin(yaw), cx = Math.cos(pitch), sx = Math.sin(pitch)
+    const x1 = p[0] * cy + p[2] * sy, z1 = -p[0] * sy + p[2] * cy
+    return [x1, p[1] * cx - z1 * sx, p[1] * sx + z1 * cx]
+  }
+  const prj = (q, cx, cy, s, f = 1100) => { const k = f / (f + q[2] * s); return [cx + q[0] * s * k, cy - q[1] * s * k, k] }
+  function molPrep(flat, el, bonds) {
+    const P = []; for (let i = 0; i < flat.length; i += 3) P.push([flat[i], flat[i + 1], flat[i + 2]])
+    const c = [0, 1, 2].map((k) => P.reduce((s, p) => s + p[k], 0) / P.length)
+    let B = bonds
+    if (!B) { B = []; for (let i = 0; i < P.length; i++) for (let j = i + 1; j < P.length; j++) if (Math.hypot(P[i][0] - P[j][0], P[i][1] - P[j][1], P[i][2] - P[j][2]) < 1.75) B.push([i, j, 1]) }
+    return { P, el: [...el], B, c }
+  }
+  const ELC = { C: '#f4efe4', N: '#6aa5ff', O: '#ff6b78', S: '#ffd24d' }
+  function drawMol(m, pivot, cx, cy, s, yaw, pitch, o = {}) {
+    const { a = 1, rAtom = 0.36, bw = 0.17, off = [0, 0, 0], glow = 0 } = o
+    if (GA * a <= 0.003) return
+    const S = m.P.map((p) => prj(rot3([p[0] - pivot[0] + off[0], p[1] - pivot[1] + off[1], p[2] - pivot[2] + off[2]], yaw, pitch), cx, cy, s))
+    const prims = []
+    m.B.forEach(([i, j, ord]) => prims.push({ k: (S[i][2] + S[j][2]) / 2 - 1e-4, b: [i, j, ord] }))
+    for (let i = 0; i < S.length; i++) prims.push({ k: S[i][2], i })
+    prims.sort((u, v) => u.k - v.k)
+    X.save(); X.lineCap = 'round'
+    if (glow) X.shadowBlur = glow
+    for (const pr of prims) {
+      if (pr.b) {
+        const [i, j, ord] = pr.b, A = S[i], B = S[j], w = bw * s * (A[2] + B[2]) / 2
+        const dx = B[0] - A[0], dy = B[1] - A[1], L = Math.hypot(dx, dy) || 1, nx = -dy / L, ny = dx / L
+        for (const d of ord === 2 ? [-w * 0.95, w * 0.95] : [0]) {
+          const mx = (A[0] + B[0]) / 2, my = (A[1] + B[1]) / 2
+          alpha(a); X.lineWidth = ord > 1 ? w * 0.8 : w
+          X.strokeStyle = ELC[m.el[i]] ?? '#ccc'; if (glow) X.shadowColor = X.strokeStyle
+          X.beginPath(); X.moveTo(A[0] + nx * d, A[1] + ny * d); X.lineTo(mx + nx * d, my + ny * d); X.stroke()
+          X.strokeStyle = ELC[m.el[j]] ?? '#ccc'; if (glow) X.shadowColor = X.strokeStyle
+          X.beginPath(); X.moveTo(mx + nx * d, my + ny * d); X.lineTo(B[0] + nx * d, B[1] + ny * d); X.stroke()
+        }
+      } else {
+        const q = S[pr.i], r = rAtom * s * q[2] * (m.el[pr.i] === 'C' ? 0.9 : 1.05)
+        alpha(a); X.fillStyle = ELC[m.el[pr.i]] ?? '#ccc'; if (glow) X.shadowColor = X.fillStyle
+        X.beginPath(); X.arc(q[0], q[1], r, 0, Math.PI * 2); X.fill()
+      }
+    }
+    X.restore()
+    return { x: S.reduce((u, q) => u + q[0], 0) / S.length, y: S.reduce((u, q) => u + q[1], 0) / S.length }
+  }
+  // Cα 튜브: Catmull-Rom 으로 매끄럽게 잇고 pLDDT 로 색칠합니다. 'lighter' 로 한 번 더 그어 빛나는 리본을 만듭니다.
+  function tubePrep(flat, b) {
+    const P = []; for (let i = 0; i < flat.length; i += 3) P.push([flat[i], flat[i + 1], flat[i + 2]])
+    const c = [0, 1, 2].map((k) => P.reduce((s, p) => s + p[k], 0) / P.length)
+    const S = [], SB = [], sub = 4, n = P.length
+    const cr = (p0, p1, p2, p3, t) => [0, 1, 2].map((k) => 0.5 * ((2 * p1[k]) + (-p0[k] + p2[k]) * t + (2 * p0[k] - 5 * p1[k] + 4 * p2[k] - p3[k]) * t * t + (-p0[k] + 3 * p1[k] - 3 * p2[k] + p3[k]) * t * t * t))
+    for (let i = 0; i < n - 1; i++) {
+      const p0 = P[Math.max(0, i - 1)], p1 = P[i], p2 = P[i + 1], p3 = P[Math.min(n - 1, i + 2)]
+      for (let k = 0; k < sub; k++) { S.push(cr(p0, p1, p2, p3, k / sub)); SB.push(lerp(b[i], b[i + 1], k / sub)) }
+    }
+    S.push(P[n - 1]); SB.push(b[n - 1])
+    return { S, SB, c }
+  }
+  const plddtCol = (b) => (b >= 90 ? '#37e6ff' : b >= 70 ? '#4d8dff' : b >= 50 ? '#ffcc4d' : '#ff8b45')
+  function drawTube(t, pivot, cx, cy, s, yaw, pitch, o = {}) {
+    const { a = 1, reveal = 1, width = 0.8 } = o
+    if (GA * a <= 0.003) return
+    const Qs = t.S.map((p) => prj(rot3([p[0] - pivot[0], p[1] - pivot[1], p[2] - pivot[2]], yaw, pitch), cx, cy, s))
+    const nSeg = Math.floor((t.S.length - 1) * clamp(reveal))
+    if (nSeg < 1) return
+    const idx = []; for (let i = 0; i < nSeg; i++) idx.push(i)
+    idx.sort((i, j) => (Qs[i][2] + Qs[i + 1][2]) - (Qs[j][2] + Qs[j + 1][2]))
+    let kmin = Infinity, kmax = -Infinity
+    for (const q of Qs) { if (q[2] < kmin) kmin = q[2]; if (q[2] > kmax) kmax = q[2] }
+    X.save(); X.lineCap = 'round'
+    X.globalCompositeOperation = 'lighter'
+    for (const i of idx) {
+      const k = (Qs[i][2] + Qs[i + 1][2]) / 2, d = (k - kmin) / (kmax - kmin + 1e-9)
+      alpha(a * 0.09 * (0.3 + 0.7 * d)); X.strokeStyle = plddtCol(t.SB[i]); X.lineWidth = width * s * k * 3.4
+      X.beginPath(); X.moveTo(Qs[i][0], Qs[i][1]); X.lineTo(Qs[i + 1][0], Qs[i + 1][1]); X.stroke()
+    }
+    X.globalCompositeOperation = 'source-over'
+    for (const i of idx) {
+      const k = (Qs[i][2] + Qs[i + 1][2]) / 2, d = (k - kmin) / (kmax - kmin + 1e-9)
+      alpha(a * (0.3 + 0.7 * d)); X.strokeStyle = plddtCol(t.SB[i]); X.lineWidth = width * s * k
+      X.beginPath(); X.moveTo(Qs[i][0], Qs[i][1]); X.lineTo(Qs[i + 1][0], Qs[i + 1][1]); X.stroke()
+    }
+    X.restore()
+    if (reveal < 1) { const q = Qs[nSeg]; dot(q[0], q[1], 6, '#ffffff', a, 24); ring(q[0], q[1], 14, C.cyan, a * 0.7, 2) }
+  }
+
+  // ---------- 에셋 ----------
+  const DS = D.disc, FV = D.fv, BL = D.blind, AU = D.auc, AG = D.agent, GD = D.guard
+  const TUBE = tubePrep(DS.ca, DS.b)
+  const LIG = molPrep(DS.lig, DS.lig_el.split(''), DS.lig_bonds)
+  const PIVOT = [TUBE.c[0] * 0.6 + LIG.c[0] * 0.4, TUBE.c[1] * 0.6 + LIG.c[1] * 0.4, TUBE.c[2] * 0.6 + LIG.c[2] * 0.4]
+  const TUBE_R = Math.max(...TUBE.S.map((p) => Math.hypot(p[0] - PIVOT[0], p[1] - PIVOT[1], p[2] - PIVOT[2])))
+  // 배경(그라디언트 + 격자 + 비네트)과 필름 그레인
+  const BG = (() => {
+    const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d')
+    g.fillStyle = C.bg; g.fillRect(0, 0, W, H)
+    let r = g.createRadialGradient(W * 0.75, 0, 0, W * 0.75, 0, Math.max(W, H) * 0.8); r.addColorStop(0, 'rgba(40,90,220,0.20)'); r.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = r; g.fillRect(0, 0, W, H)
+    r = g.createRadialGradient(0, H, 0, 0, H, Math.max(W, H) * 0.55); r.addColorStop(0, 'rgba(118,185,0,0.10)'); r.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = r; g.fillRect(0, 0, W, H)
+    g.strokeStyle = 'rgba(120,170,255,0.04)'; g.lineWidth = 1
+    for (let x = 0; x <= W; x += 60) { g.beginPath(); g.moveTo(x + 0.5, 0); g.lineTo(x + 0.5, H); g.stroke() }
+    for (let y = 0; y <= H; y += 60) { g.beginPath(); g.moveTo(0, y + 0.5); g.lineTo(W, y + 0.5); g.stroke() }
+    r = g.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.max(W, H) * 0.62); r.addColorStop(0, 'rgba(0,0,0,0)'); r.addColorStop(1, 'rgba(0,0,0,0.66)'); g.fillStyle = r; g.fillRect(0, 0, W, H)
+    return c
+  })()
+  const GRAIN = (() => {
+    const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d'), im = g.createImageData(256, 256)
+    for (let i = 0; i < 256 * 256; i++) { const v = Math.floor(hash(i * 0.37 + 1.3) * 255); im.data[i * 4] = im.data[i * 4 + 1] = im.data[i * 4 + 2] = v; im.data[i * 4 + 3] = 255 }
+    g.putImageData(im, 0, 0); return c
+  })()
+  let GRAIN_PAT = null
+
+  // ---------- 초파리 뇌 점구름(MaleCNS v1.0) → FlyGate 로고 ----------
+  const BR = (() => {
+    const b = D.brain, n = b.x.length, P = new Float32Array(n * 3)
+    for (let i = 0; i < n; i++) { P[i * 3] = b.x[i] / 1000; P[i * 3 + 1] = b.y[i] / 1000; P[i * 3 + 2] = b.z[i] / 1000 }
+    const c = [0, 1, 2].map((k) => { let lo = Infinity, hi = -Infinity, s = 0; for (let i = 0; i < n; i++) { const v = P[i * 3 + k]; lo = Math.min(lo, v); hi = Math.max(hi, v); s += v } return k === 2 ? s / n : (lo + hi) / 2 })
+    for (let i = 0; i < n; i++) for (let k = 0; k < 3; k++) P[i * 3 + k] -= c[k]
+    const LC = { sense: '#37e6ff', encode: '#4d8dff', reflex: '#ffb547', memory: '#ff4fd8', deliberate: '#76b900', critic: '#ff5d6c', assoc: '#6c7aa8', action: '#f4f7ff', feedback: '#a58bff' }
+    const groups = b.layers.map(() => [])
+    for (let i = 0; i < n; i++) groups[b.l[i]].push(i)
+    return { n, P, groups, col: b.layers.map((k) => LC[k] ?? '#8899bb') }
+  })()
+  const LOGO = VERT ? { y: 900, size: 236 } : { y: 520, size: 264 }
+  let TARGET = null   // 파티클마다 로고 위 목표점(처음 쓸 때 한 번 계산합니다)
+  function logoTargets() {
+    const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d')
+    g.font = `900 ${LOGO.size}px ${SANS}`; g.textBaseline = 'alphabetic'; g.textAlign = 'left'
+    const wF = g.measureText('Fly').width, wAll = g.measureText('FlyGate').width, x0 = CX - wAll / 2
+    g.fillStyle = '#fff'; g.fillText('FlyGate', x0, LOGO.y)
+    const im = g.getImageData(0, 0, W, H).data, pts = []
+    for (let y = 0; y < H; y += 3) for (let x = 0; x < W; x += 3) if (im[(y * W + x) * 4 + 3] > 140) pts.push([x, y])
+    const split = x0 + wF
+    // 뇌 점을 x 순서로, 로고 점도 x 순서로 줄 세워 짝을 지으면 왼쪽 뇌가 F 로, 오른쪽 뇌가 e 로 흘러갑니다
+    const bi = [...Array(BR.n).keys()].sort((a, b) => BR.P[a * 3] - BR.P[b * 3])
+    const step = pts.length / BR.n
+    const sub = []; for (let k = 0; k < BR.n; k++) sub.push(pts[Math.floor(k * step) % pts.length])
+    sub.sort((a, b) => a[0] - b[0])
+    const T = new Float32Array(BR.n * 2), gate = new Uint8Array(BR.n)
+    bi.forEach((i, r) => { const p = sub[r]; T[i * 2] = p[0] + (hash(i * 3.1) - 0.5) * 2; T[i * 2 + 1] = p[1] + (hash(i * 5.7) - 0.5) * 2; gate[i] = p[0] >= split ? 1 : 0 })
+    return { T, gate, x0, wF, wAll }
+  }
+  // m: 0 = 뇌, 1 = 로고. m 은 파티클마다 조금씩 늦게 출발합니다.
+  function cloud(lt, cx, cy, s, a, m = 0, o = {}) {
+    if (GA * a <= 0.003) return
+    const { yaw0 = 0, spin = 0.35, size = 2.2, pitch = -0.16 } = o
+    const yaw = yaw0 + spin * Math.sin(lt * 0.45), cyw = Math.cos(yaw), syw = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch)
+    if (m > 0 && !TARGET) TARGET = logoTargets()
+    const px = new Float32Array(BR.n), py = new Float32Array(BR.n), kk = new Float32Array(BR.n), sz = new Float32Array(BR.n)
+    for (let i = 0; i < BR.n; i++) {
+      const x = BR.P[i * 3], y = BR.P[i * 3 + 1], z = BR.P[i * 3 + 2]
+      const x1 = x * cyw + z * syw, z1 = -x * syw + z * cyw, y1 = y * cp - z1 * sp, z2 = y * sp + z1 * cp
+      const k = 3.2 / (3.2 + z2)
+      let X0 = cx + x1 * s * k, Y0 = cy - y1 * s * k, q = 0
+      if (m > 0) {
+        q = E.inOut3(clamp((m - hash(i * 1.37) * 0.38) / 0.62))
+        const tx = TARGET.T[i * 2], ty = TARGET.T[i * 2 + 1]
+        const sw = Math.sin(Math.PI * q) * 90 * (hash(i * 2.9) - 0.5) * 2
+        X0 = lerp(X0, tx, q) + sw * 0.4; Y0 = lerp(Y0, ty, q) + sw
+      }
+      px[i] = X0; py[i] = Y0; kk[i] = q; sz[i] = lerp(size * k, 2.4, q)
+    }
+    X.save(); X.globalCompositeOperation = 'lighter'
+    BR.groups.forEach((g, li) => {
+      X.fillStyle = BR.col[li]
+      for (const i of g) { const w = 1 - kk[i]; if (w <= 0.01) continue; X.globalAlpha = clamp(GA * a * 0.55 * w); X.fillRect(px[i], py[i], sz[i], sz[i]) }
+    })
+    if (m > 0) for (const [gi, col] of [[0, '#f4f7ff'], [1, C.cyan]]) {
+      X.fillStyle = col
+      for (let i = 0; i < BR.n; i++) { if (TARGET.gate[i] !== gi || kk[i] <= 0.01) continue; X.globalAlpha = clamp(GA * a * 0.8 * kk[i]); X.fillRect(px[i] - 1, py[i] - 1, sz[i], sz[i]) }
+    }
+    X.restore()
+  }
+  function logoText(a, glow = 30) {
+    if (GA * a <= 0.003) return
+    const wAll = measure('FlyGate', LOGO.size, 900), wF = measure('Fly', LOGO.size, 900), x0 = CX - wAll / 2
+    text('Fly', x0, LOGO.y, { size: LOGO.size, weight: 900, color: C.white, a, glow })
+    text('Gate', x0 + wF, LOGO.y, { size: LOGO.size, weight: 900, color: C.cyan, a, glow: glow * 1.4 })
+  }
+
+  // ---------- 오디오 큐 (scripts/reel/audio_teaser15.py 가 읽어 효과음을 합성합니다) ----------
+  const CUES = []
+  const cue = (t, type, p = {}) => CUES.push({ t: +t.toFixed(3), type, ...p })
+
+  // =====================================================================
+  //  장면: 120 BPM(한 박 0.5초) 격자 위에서 끊습니다.
+  // =====================================================================
+  const BEATS = [
+    { id: 'poster', t0: 0, t1: 0.5, label: 'Project-FlyGate' },
+    { id: 'hook', t0: 0.5, t1: 2.5, label: '시판 전 → 시판 후' },
+    { id: 'disc', t0: 2.5, t1: 5.0, label: 'STEP 1 · FlyDiscovery · 시판 전' },
+    { id: 'fv', t0: 5.0, t1: 7.5, label: 'STEP 2 · FlyVigilance · 시판 후' },
+    { id: 'serious', t0: 7.5, t1: 9.0, label: '결과 코드를 가린 비교' },
+    { id: 'work', t0: 9.0, t1: 10.25, label: '사람이 먼저 볼 사례' },
+    { id: 'auc', t0: 10.25, t1: 11.5, label: '공개 참조 세트 검증' },
+    { id: 'stack', t0: 11.5, t1: 13.0, label: 'NVIDIA 스택' },
+    { id: 'end', t0: 13.0, t1: 15.0, label: 'FlyGate' },
+  ]
+  const DUR = 15
+  const B0 = Object.fromEntries(BEATS.map((b) => [b.id, b.t0]))
+  const NUM = Object.fromEntries(BEATS.map((b, i) => [b.id, String(i).padStart(2, '0')]))
+  const M = 44   // HUD 여백
+
+  // ---------------- 00 포스터(첫 프레임 = 메신저 썸네일) ----------------
+  function sPoster(lt) { endCard(2.0, true) }
+
+  // ---------------- 01 훅 ----------------
+  function sHook(lt) {
+    cloud(lt + 3, CX, VERT ? 520 : 470, VERT ? 380 : 470, 0.32 * seg(lt, 0, 0.5), 0, { spin: 0.5 })
+    const size = VERT ? 92 : 104, y1 = VERT ? 700 : 300, y2 = y1 + (VERT ? 124 : 140)
+    const push = seg(lt, 1.15, 1.45, E.out3)   // 강조 문장이 들어오면 두 줄을 살짝 위로 밀고 흐리게 합니다
+    X.save(); X.translate(0, -push * (VERT ? 40 : 34))
+    withA(1 - push * 0.45, () => {
+      riseParts([['시판 전 ', C.cyan], ['표적 결합부터', C.white]], CX, y1, (lt - 0.02) * 2.4, { size, align: 'center', maxW: W - 150, glow: 18 })
+      riseParts([['시판 후 ', C.magenta], ['이상사례까지', C.white]], CX, y2, (lt - 0.5) * 2.4, { size, align: 'center', maxW: W - 150, glow: 18 })
+    })
+    X.restore()
+    // 강조: 크게 찍혔다가 제자리로
+    const k = seg(lt, 1.2, 1.5, E.expoOut)
+    if (lt > 1.2) {
+      const y3 = VERT ? 1050 : 596, s = lerp(1.7, 1, k)
+      X.save(); X.translate(CX, y3); X.scale(s, s)
+      rich([['에이전트 하나로 ', C.white, 900], ['잇습니다.', C.cyan, 900]], 0, 0, { size: VERT ? 78 : 88, align: 'center', a: clamp(k * 1.5), glow: 34, maxW: W - 150 })
+      X.restore()
+    }
+    // 여정 선: 표적 → FlyGate → 환자
+    const y = VERT ? 1330 : 830, x0 = VERT ? 150 : 380, x1 = W - x0
+    const d = seg(lt, 0.15, 0.9, E.inOut3)
+    line(x0, y, lerp(x0, x1, d), y, C.line2, 1, 2)
+    dot(x0, y, 8, C.cyan, seg(lt, 0.15, 0.3), 18)
+    text('시판 전 · 표적', x0, y + 50, { size: VERT ? 28 : 26, weight: 700, color: C.cyan, align: 'center', a: seg(lt, 0.2, 0.45) })
+    dot(x1, y, 8, C.magenta, seg(lt, 0.8, 0.95), 18)
+    text('시판 후 · 환자', x1, y + 50, { size: VERT ? 28 : 26, weight: 700, color: C.magenta, align: 'center', a: seg(lt, 0.8, 1.0) })
+    withA(seg(lt, 0.55, 0.8), () => {
+      line(CX - 12, y - 36, CX - 12, y + 36, C.cyan, 1, 4, 16); line(CX + 12, y - 36, CX + 12, y + 36, C.cyan, 1, 4, 16)
+      text('FLYGATE', CX, y - 52, { size: 16, weight: 700, fam: MONO, color: C.cyan, align: 'center', track: 5 })
+    })
+    for (let j = 0; j < 3; j++) {   // 불꽃 세 개가 차례로 지나갑니다
+      const u = inv(0.85 + j * 0.28, 1.75 + j * 0.28, lt)
+      if (u <= 0 || u >= 1) continue
+      const px = lerp(x0, x1, E.inOut3(u))
+      dot(px, y, 7, j === 1 ? C.nvl : C.amber, 1, 26)
+      line(Math.max(x0, px - 120), y, px, y, j === 1 ? C.nvl : C.amber, 0.5, 3, 12)
+      const pass = inv(CX - 4, CX + 170, px); if (pass > 0 && pass < 1) ring(CX, y, 16 + pass * 70, C.cyan, (1 - pass) * 0.8, 2)
+    }
+  }
+  cue(0.5, 'boom', { g: 0.9 }); cue(0.5, 'glitch', { d: 0.12 }); cue(0.52, 'whoosh', { d: 0.5 }); cue(1.0, 'whoosh', { d: 0.5 })
+  cue(1.7, 'hit', { g: 1 }); cue(1.35, 'riser', { d: 0.35 })
+
+  // ---------------- 02 STEP 1 FlyDiscovery ----------------
+  const CHAIN = [
+    ['MSA-Search', `상동 서열 ${DS.msa_n}개`],
+    ['OpenFold3', `pLDDT ${DS.plddt}`],
+    ['DiffDock', `재도킹 ${DS.dd_rmsd} Å`],
+    ['Boltz-2', `친화도 Spearman ${DS.boltz_rho.toFixed(2)}`],
+  ]
+  function sDisc(lt) {
+    const L = VERT
+      ? { tx: CX, ty: 300, al: 'center', cx: CX, cy: 800, rad: 330, rowX: 90, rowY: 1150, rowW: 900, rowH: 80, rowG: 96, foot: 1590 }
+      : { tx: 1020, ty: 222, al: 'left', cx: 540, cy: 560, rad: 380, rowX: 1020, rowY: 420, rowW: 780, rowH: 74, rowG: 90, foot: 860 }
+    // 리본(OpenFold3 PARP1 예측 구조, pLDDT 색)과 리간드 도킹
+    const s = L.rad / TUBE_R, yaw = 0.5 + lt * 0.55, pitch = -0.22 + 0.06 * Math.sin(lt * 1.3)
+    glowBlob(L.cx, L.cy, L.rad * 1.1, 'rgba(55,230,255,0.10)', seg(lt, 0, 0.5))
+    drawTube(TUBE, PIVOT, L.cx, L.cy, s, yaw, pitch, { reveal: seg(lt, 0.05, 1.25, E.inOut3), width: 0.85 })
+    const dk = seg(lt, 1.05, 1.6, E.out3)
+    if (lt > 1.05) {
+      const off = [(1 - dk) * 26, (1 - dk) * 22, (1 - dk) * -14]
+      const c = drawMol(LIG, PIVOT, L.cx, L.cy, s, yaw, pitch, { a: clamp(dk * 2), off, glow: 12, rAtom: 0.42, bw: 0.2 })
+      const pk = inv(1.55, 2.1, lt)
+      if (c && pk > 0 && pk < 1) { ring(c.x, c.y, 20 + pk * 120, C.nvl, (1 - pk) * 0.9, 3); ring(c.x, c.y, 10 + pk * 60, '#fff', (1 - pk) * 0.6, 2) }
+      if (c) withA(seg(lt, 1.6, 1.9), () => {
+        const lx = c.x + (VERT ? 150 : 170), ly = c.y - (VERT ? 150 : 170)
+        line(c.x + 14, c.y - 14, lx - 8, ly + 10, '#ffffff', 0.6, 1.5)
+        text('니라파립 · PARP1', lx, ly, { size: VERT ? 26 : 24, weight: 800, color: C.white })
+        text(`데모 약물 · 공결정 대비 ${DS.dd_rmsd} Å`, lx, ly + 30, { size: VERT ? 20 : 18, weight: 600, fam: MONO, color: C.nvl })
+      })
+    }
+    // 제목
+    typeText('STEP 1 · FLYDISCOVERY · 시판 전', L.tx, L.ty - 76, inv(0.02, 0.4, lt), { size: 22, color: C.cyan, align: L.al })
+    riseParts([['Fly', C.white], ['Discovery', C.cyan]], L.tx, L.ty + 20, (lt - 0.05) * 2.6, { size: VERT ? 108 : 104, align: L.al, glow: 24, stagger: 0.03 })
+    text('후보 물질의 표적 결합을 NVIDIA BioNeMo NIM으로', L.tx, L.ty + 76, { size: VERT ? 32 : 30, weight: 600, color: C.t2, align: L.al, a: seg(lt, 0.3, 0.6), maxW: VERT ? 940 : 820 })
+    // NIM 체인: 네 단계가 차례로 켜집니다
+    CHAIN.forEach(([name, val], i) => {
+      const t0 = 0.4 + i * 0.36, y = L.rowY + i * L.rowG, on = seg(lt, t0 + 0.18, t0 + 0.34)
+      const ap = seg(lt, t0, t0 + 0.2)
+      if (ap <= 0) return
+      X.save(); X.translate((1 - ap) * 60, 0)
+      withA(ap, () => {
+        panel(L.rowX, y, L.rowW, L.rowH, { r: 16, stroke: on > 0.5 ? 'rgba(118,185,0,.75)' : C.line, lw: on > 0.5 ? 2 : 1, glow: on > 0.5 ? 'rgba(118,185,0,.35)' : null })
+        chip(L.rowX + 20, y + L.rowH / 2 - 16, 'NIM', { kind: 'nv', size: 16, h: 32 })
+        text(name, L.rowX + 104, y + L.rowH / 2 + 10, { size: VERT ? 32 : 30, weight: 800, fam: MONO, color: C.white })
+        withA(on, () => {
+          text(val, L.rowX + L.rowW - 64, y + L.rowH / 2 + 10, { size: VERT ? 28 : 26, weight: 700, color: C.nvl, align: 'right', maxW: L.rowW * 0.5 })
+          check(L.rowX + L.rowW - 30, y + L.rowH / 2, 18, C.ok, 1, 3.4)
+        })
+      })
+      X.restore()
+      if (i < CHAIN.length - 1) {   // 다음 단계로 흐르는 패킷
+        const u = inv(t0 + 0.2, t0 + 0.38, lt)
+        if (u > 0 && u < 1) dot(L.rowX + 50, y + L.rowH + (L.rowG - L.rowH) * u, 5, C.nvl, 1, 16)
+      }
+    })
+    withA(seg(lt, 1.95, 2.2), () => {
+      const lbl = `공결정 재도킹 ${DS.redock_n}건 중 ${DS.redock_ok}건 2 Å 이내`
+      chip(VERT ? CX : L.rowX, L.foot, lbl, { kind: 'cyan', size: VERT ? 24 : 22, h: VERT ? 50 : 46, align: VERT ? 'center' : 'left' })
+    })
+  }
+  { const t = B0.disc; cue(t, 'hit', { g: 1 }); cue(t, 'glitch', { d: 0.1 }); cue(t + 0.05, 'scan', { d: 1.2 })
+    CHAIN.forEach((_, i) => cue(t + 0.4 + i * 0.36 + 0.2, 'lock', { f: 1 + i * 0.12 })); cue(t + 1.55, 'boom', { g: 0.5 }); cue(t + 1.95, 'tick', { f: 1.4 }) }
+
+  // ---------------- 03 STEP 2 FlyVigilance ----------------
+  function sFV(lt) {
+    const L = VERT
+      ? { tx: CX, ty: 290, al: 'center', ox: CX, oy: 600, oal: 'center', osz: 150, gy: 720, qx: 110, qy: 790, qw: 860, qh: 62, qg: 72, mx: CX, my: 1440, mal: 'center' }
+      : { tx: 120, ty: 222, al: 'left', ox: 120, oy: 520, oal: 'left', osz: 168, gx: 1010, qx: 1090, qy: 250, qw: 710, qh: 62, qg: 76, mx: 120, my: 820, mal: 'left' }
+    typeText('STEP 2 · FLYVIGILANCE · 시판 후', L.tx, L.ty - 76, inv(0.02, 0.4, lt), { size: 22, color: C.magenta, align: L.al })
+    riseParts([['Fly', C.white], ['Vigilance', C.magenta]], L.tx, L.ty + 20, (lt - 0.05) * 2.6, { size: VERT ? 108 : 104, align: L.al, glow: 24, stagger: 0.03 })
+    // 분기당 FAERS 보고 수
+    const c = count(lt, 0.2, 0.85)
+    withA(seg(lt, 0.15, 0.3), () => {
+      odometer(FV.q_reports * c, L.ox, L.oy, { size: L.osz, final: FV.q_reports, align: L.oal, color: C.white, glow: 22 })
+      text(`FAERS 보고 · ${FV.quarter} 한 분기`, L.ox, L.oy + 56, { size: VERT ? 32 : 30, weight: 700, color: C.t2, align: L.oal })
+    })
+    // 보고 입자가 게이트를 지나 7개 질문으로 흩어집니다
+    const src = VERT ? [CX, L.oy - 50] : [L.ox + 360, L.oy - 60]
+    const gate = VERT ? [CX, L.gy] : [L.gx, 520]
+    withA(seg(lt, 0.7, 0.9) * (1 - seg(lt, 2.1, 2.4)), () => {
+      if (VERT) { line(CX - 160, L.gy - 12, CX + 160, L.gy - 12, C.magenta, 0.9, 3, 14); line(CX - 160, L.gy + 12, CX + 160, L.gy + 12, C.magenta, 0.9, 3, 14) }
+      else { line(L.gx - 12, 310, L.gx - 12, 730, C.magenta, 0.9, 3, 14); line(L.gx + 12, 310, L.gx + 12, 730, C.magenta, 0.9, 3, 14) }
+      for (let i = 0; i < 70; i++) {
+        const st = 0.75 + hash(i) * 0.9, u = (lt - st) / 0.55
+        if (u <= 0 || u >= 1) continue
+        const qi = i % FV.qs.length
+        const tgt = VERT ? [L.qx + 24, L.qy + qi * L.qg + L.qh / 2] : [L.qx + 20, L.qy + qi * L.qg + L.qh / 2]
+        let x, y
+        if (u < 0.5) { const v = E.in3(u * 2); x = lerp(src[0] + (hash(i + 9) - 0.5) * 160, gate[0], v); y = lerp(src[1] + (hash(i + 7) - 0.5) * 60, gate[1], v) }
+        else { const v = E.out3((u - 0.5) * 2); x = lerp(gate[0], tgt[0], v); y = lerp(gate[1], tgt[1], v) }
+        dot(x, y, 3.2, i % 3 ? C.magenta : C.white, 1 - Math.abs(u - 0.5) * 0.6, 12)
+      }
+    })
+    // 사례 하나에 묻는 7개 질문(타입이 있는 판단)
+    FV.qs.forEach(([name, type], i) => {
+      const t0 = 0.95 + i * 0.08, y = L.qy + i * L.qg, a = seg(lt, t0, t0 + 0.2)
+      if (a <= 0) return
+      X.save(); X.translate((1 - E.out3(a)) * 50, 0)
+      withA(a, () => {
+        panel(L.qx, y, L.qw, L.qh, { r: 14, stroke: 'rgba(255,79,216,.40)' })
+        text(`Q${i + 1}`, L.qx + 22, y + L.qh / 2 + 9, { size: 22, weight: 800, fam: MONO, color: C.magenta })
+        text(name, L.qx + 84, y + L.qh / 2 + 10, { size: VERT ? 30 : 28, weight: 800, color: C.white, maxW: L.qw - 300 })
+        chip(L.qx + L.qw - 18, y + (L.qh - 36) / 2, type, { kind: 'mag', size: 18, h: 36, align: 'right', fam: SANS })
+      })
+      X.restore()
+    })
+    // 한 번의 호출로 7개 질문에 답합니다: 판단 지연 중앙값
+    const mk = seg(lt, 1.6, 1.85, E.expoOut)
+    if (lt > 1.6) {
+      const s = lerp(1.5, 1, mk)
+      X.save(); X.translate(L.mx, L.my); X.scale(s, s)
+      const w = rich([[String(FV.p50), C.nvl, 900], [' ms', C.nvl, 700]], 0, 0, { size: VERT ? 140 : 150, align: L.mal, a: clamp(mk * 1.6), glow: 30 })
+      X.restore()
+      withA(seg(lt, 1.75, 2.0), () => {
+        text(`질문 ${FV.qs.length}개를 한 번에 판단합니다 · 지연 중앙값`, L.mx, L.my + 52, { size: VERT ? 30 : 28, weight: 700, color: C.white, align: L.mal, maxW: VERT ? 940 : 820 })
+        text('비자기회귀 판단 모델 + NVIDIA Nemotron', L.mx, L.my + 94, { size: VERT ? 26 : 24, weight: 600, fam: MONO, color: C.nvl, align: L.mal, maxW: VERT ? 940 : 820 })
+      })
+    }
+  }
+  { const t = B0.fv; cue(t, 'hit', { g: 1 }); cue(t, 'glitch', { d: 0.1 }); cue(t + 0.2, 'count', { d: 0.85 }); cue(t + 0.75, 'whoosh', { d: 0.8 })
+    for (let i = 0; i < 7; i++) cue(t + 0.95 + i * 0.08 + 0.05, 'click', { f: 0.9 + i * 0.07 }); cue(t + 1.6, 'hit', { g: 0.9 }); cue(t + 1.62, 'lock', { f: 1.2 })
+    cue(t + 2.1, 'riser', { d: 0.4 }) }
+
+  // ---------------- 04 실측: 중대 사례 ----------------
+  function sSerious(lt) {
+    const y0 = VERT ? 520 : 196
+    typeText(`결과 코드를 가린 비교 · FAERS 사례 ${BL.n}건`, CX, y0, inv(0.02, 0.35, lt), { size: VERT ? 22 : 22, color: C.cyan, align: 'center', track: 3 })
+    riseParts([['중대 사례 ', C.white], [`${BL.serious}건`, C.amber], [' 중 검토에 도달한 사례', C.white]], CX, y0 + (VERT ? 92 : 90), (lt - 0.04) * 3, { size: VERT ? 52 : 56, align: 'center', stagger: 0.015, maxW: W - 140 })
+    // 큰 숫자 247 / 250
+    const bs = VERT ? 250 : 270, by = VERT ? 930 : 560
+    const w1 = odoW(BL.fv_reached, bs), w2 = measure(` / ${BL.serious}`, bs * 0.36, 800)
+    const x0 = CX - (w1 + w2) / 2, c = count(lt, 0.12, 0.7)
+    withA(seg(lt, 0.1, 0.2), () => {
+      odometer(BL.fv_reached * c, x0, by, { size: bs, final: BL.fv_reached, color: C.cyan, glow: 40 })
+      text(` / ${BL.serious}`, x0 + w1, by, { size: bs * 0.36, weight: 800, color: C.t2 })
+    })
+    // 비교 막대
+    const bx = VERT ? 110 : 520, bw = VERT ? 860 : 880, rows = [['FlyVigilance', BL.fv_reached, C.cyan, 0.35], ['판단 모델 단독 · 질문 하나', BL.base_reached, '#7c89a8', 0.5]]
+    rows.forEach(([lbl, v, col, t0], i) => withA(seg(lt, t0, t0 + 0.2), () => {
+      const y = (VERT ? 1060 : 650) + i * (VERT ? 120 : 76)
+      if (VERT) {
+        text(lbl, bx, y, { size: 28, weight: 800, color: i ? C.t2 : C.white })
+        text(String(v), bx + bw, y, { size: 34, weight: 900, color: col, align: 'right' })
+        bar(bx, y + 18, bw, 26, (v / BL.serious) * seg(lt, t0, t0 + 0.5), col, { glow: i ? 0 : 18 })
+      } else {
+        text(lbl, bx - 24, y + 24, { size: 26, weight: 800, color: i ? C.t2 : C.white, align: 'right' })
+        bar(bx, y, bw, 30, (v / BL.serious) * seg(lt, t0, t0 + 0.5), col, { glow: i ? 0 : 18 })
+        text(`${v} / ${BL.serious}`, bx + bw + 24, y + 26, { size: 30, weight: 900, color: col })
+      }
+    }))
+    stamp(VERT ? CX : 1500, VERT ? 1390 : 400, pText(BL.p_unrev), C.nvl, seg(lt, 0.8, 1.1, E.lin), { size: VERT ? 48 : 46, sub: 'MCNEMAR · PAIRED' })
+  }
+  { const t = B0.serious; cue(t, 'boom', { g: 1 }); cue(t, 'glitch', { d: 0.1 }); cue(t + 0.12, 'count', { d: 0.7 }); cue(t + 0.4, 'sweep', { d: 0.5 }); cue(t + 0.8, 'hit', { g: 0.8 }) }
+
+  // ---------------- 05 실측: 사람이 먼저 볼 사례 ----------------
+  function sWork(lt) {
+    const y0 = VERT ? 560 : 230
+    riseParts([['사람이 ', C.white], ['먼저', C.amber], [' 볼 사례', C.white]], CX, y0, (lt - 0.02) * 3, { size: VERT ? 72 : 72, align: 'center', stagger: 0.02 })
+    text('같은 440건 · 중대 사례를 덜 놓치면서 줄었습니다', CX, y0 + (VERT ? 70 : 64), { size: VERT ? 28 : 28, weight: 600, color: C.t2, align: 'center', a: seg(lt, 0.15, 0.35), maxW: W - 140 })
+    // 302 → 138
+    const bs = VERT ? 160 : 210, by = VERT ? 850 : 505
+    const wa = odoW(BL.base_human, bs), wr = measure(' → ', bs * 0.7, 800), wb = odoW(BL.base_human, bs)
+    const x0 = CX - (wa + wr + wb) / 2
+    withA(seg(lt, 0.05, 0.15), () => {
+      text(String(BL.base_human), x0, by, { size: bs, weight: 800, color: '#7c89a8' })
+      const sk = seg(lt, 0.35, 0.55)
+      if (sk > 0) line(x0 - 8, by - bs * 0.34, x0 - 8 + (wa + 16) * sk, by - bs * 0.34, C.red, 0.9, 8)
+      text(' → ', x0 + wa, by - bs * 0.1, { size: bs * 0.7, weight: 800, color: C.t2 })
+      const c = count(lt, 0.3, 0.6)
+      odometer(lerp(BL.base_human, BL.fv_human, c), x0 + wa + wr, by, { size: bs, final: BL.base_human, color: C.cyan, glow: 36 })
+    })
+    // 점 격자: 302개 중 138개만 남습니다
+    const cols = VERT ? 26 : 38, sp = VERT ? 32 : 24, gw = (cols - 1) * sp, gx = CX - gw / 2, gy = VERT ? 960 : 604
+    const drop = seg(lt, 0.35, 0.85, E.inOut3)
+    X.save(); X.globalCompositeOperation = 'lighter'
+    for (let i = 0; i < BL.base_human; i++) {
+      const a0 = seg(lt, 0.08 + (i / BL.base_human) * 0.2, 0.2 + (i / BL.base_human) * 0.2)
+      if (a0 <= 0) continue
+      const keep = i < BL.fv_human, x = gx + (i % cols) * sp, y = gy + Math.floor(i / cols) * sp
+      if (keep) dot(x, y, VERT ? 7 : 5.5, C.cyan, a0, 10)
+      else { const f = drop * (0.6 + hash(i) * 0.8); dot(x, y + f * 60, VERT ? 6 : 5, '#7c89a8', a0 * (1 - drop * 0.85)) }
+    }
+    X.restore()
+    withA(seg(lt, 0.7, 0.9), () => {
+      const y = VERT ? 1420 : 890
+      rich([['과잉 호출 ', C.t2, 700], [`${BL.base_over} → ${BL.fv_over}`, C.white, 900], ['   ·   ', C.t3, 400], [pText(BL.p_work), C.nvl, 700]], CX, y, { size: VERT ? 34 : 32, align: 'center', maxW: W - 140 })
+    })
+  }
+  { const t = B0.work; cue(t, 'hit', { g: 1 }); cue(t, 'glitch', { d: 0.08 }); cue(t + 0.3, 'count', { d: 0.6, down: 1 }); cue(t + 0.35, 'whoosh', { d: 0.5 }); cue(t + 0.7, 'tick', { f: 1.2 }) }
+
+  // ---------------- 06 검증: 지식 기반 판별 AUC ----------------
+  function sAUC(lt) {
+    const L = VERT ? { gx: CX, gy: 760, r: 250, tx: CX, ty: 1150, al: 'center', bx: 110, bw: 860 } : { gx: 560, gy: 560, r: 270, tx: 980, ty: 380, al: 'left', bx: 980, bw: 720 }
+    const f = seg(lt, 0.1, 0.8, E.out3)
+    // 게이지
+    X.save(); X.lineCap = 'round'
+    alpha(0.9); X.strokeStyle = 'rgba(120,170,255,0.12)'; X.lineWidth = 26; X.beginPath(); X.arc(L.gx, L.gy, L.r, 0, Math.PI * 2); X.stroke()
+    alpha(0.6); X.strokeStyle = '#7c89a8'; X.lineWidth = 8; X.beginPath(); X.arc(L.gx, L.gy, L.r - 34, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * AU.best * f); X.stroke()
+    alpha(1); X.strokeStyle = C.magenta; X.shadowColor = C.magenta; X.shadowBlur = 30; X.lineWidth = 26
+    X.beginPath(); X.arc(L.gx, L.gy, L.r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * AU.kb * f); X.stroke()
+    X.restore()
+    for (let k = 0; k < 40; k++) { const an = -Math.PI / 2 + (k / 40) * Math.PI * 2; line(L.gx + Math.cos(an) * (L.r + 26), L.gy + Math.sin(an) * (L.r + 26), L.gx + Math.cos(an) * (L.r + 36), L.gy + Math.sin(an) * (L.r + 36), '#ffffff', 0.18, 2) }
+    text('AUC', L.gx, L.gy - 82, { size: 28, weight: 700, fam: MONO, color: C.t2, align: 'center', track: 6, a: seg(lt, 0.05, 0.2) })
+    odometer(AU.kb * f, L.gx, L.gy + 52, { size: VERT ? 136 : 140, decimals: 3, final: AU.kb, align: 'center', color: C.white, glow: 26 })
+    // 설명
+    typeText(`공개 참조 세트 · ${AU.set} ${AU.n}쌍`, L.tx, L.ty - 60, inv(0.05, 0.35, lt), { size: 22, color: C.magenta, align: L.al, track: 3 })
+    riseParts([['지식 기반 ', C.white], ['판별', C.magenta]], L.tx, L.ty + 30, (lt - 0.08) * 3, { size: VERT ? 80 : 84, align: L.al, stagger: 0.02, glow: 16 })
+    text('약과 반응 이름으로 알려진 이상반응을 가려냅니다', L.tx, L.ty + 86, { size: VERT ? 30 : 28, weight: 600, color: C.t2, align: L.al, a: seg(lt, 0.25, 0.45), maxW: VERT ? 940 : 800 })
+    const rows = [['FlyGate · 지식 기반', AU.kb, C.magenta], [`통계 지표 최고 · ${AU.best_name}`, AU.best, '#7c89a8']]
+    rows.forEach(([lbl, v, col], i) => withA(seg(lt, 0.35 + i * 0.12, 0.55 + i * 0.12), () => {
+      const y = L.ty + (VERT ? 170 : 170) + i * 86
+      text(lbl, L.bx, y, { size: 26, weight: 800, color: i ? C.t2 : C.white })
+      text(v.toFixed(3), L.bx + L.bw, y, { size: 30, weight: 900, fam: MONO, color: col, align: 'right' })
+      bar(L.bx, y + 16, L.bw, 20, v * seg(lt, 0.35 + i * 0.12, 0.85 + i * 0.12), col, { glow: i ? 0 : 14 })
+    }))
+  }
+  { const t = B0.auc; cue(t, 'hit', { g: 1 }); cue(t, 'glitch', { d: 0.08 }); cue(t + 0.1, 'sweep', { d: 0.7 }); cue(t + 0.1, 'count', { d: 0.7 }); cue(t + 0.8, 'lock', { f: 1.4 }) }
+
+  // ---------------- 07 NVIDIA 스택 ----------------
+  const TILES = [
+    { title: 'NVIDIA Nemotron', big: `${GD.caught}/${GD.n}`, sub: ['근거를 넘는 주장 차단', 'PV 정책 가드 · 숙의 · 리랭커'] },
+    { title: 'BioNeMo NIM', big: '4', unit: '단계', sub: ['MSA-Search → OpenFold3', '→ DiffDock → Boltz-2'] },
+    { title: 'NVIDIA Agent Skills', big: String(AG.skills), unit: '개', sub: ['에이전트 스킬', '시판 전 · 시판 후 전 과정'] },
+    { title: 'NemoClaw · OpenShell', big: `${AG.smoke_pass}/${AG.smoke_total}`, sub: ['샌드박스 스모크 통과', '허용 목록 밖 네트워크 차단'] },
+  ]
+  function sStack(lt) {
+    const hy = VERT ? 400 : 214
+    if (VERT) {
+      riseParts([['NVIDIA 스킬', C.nvl], [' 위에 쌓은', C.white]], CX, hy, (lt - 0.02) * 3, { size: 76, align: 'center', stagger: 0.02, glow: 14 })
+      riseParts([['에이전트 워크플로', C.white]], CX, hy + 96, (lt - 0.12) * 3, { size: 76, align: 'center', stagger: 0.02 })
+    } else {
+      riseParts([['NVIDIA 스킬', C.nvl], [' 위에 쌓은 에이전트 워크플로', C.white]], CX, hy, (lt - 0.02) * 3, { size: 72, align: 'center', stagger: 0.015, glow: 14 })
+    }
+    text('비자기회귀 판단 모델과 NVIDIA Nemotron이 함께 판단합니다', CX, hy + (VERT ? 170 : 66), { size: VERT ? 32 : 30, weight: 600, color: C.t2, align: 'center', a: seg(lt, 0.2, 0.4), maxW: W - 140 })
+    const tw = VERT ? 460 : 404, th = VERT ? 400 : 390, gap = VERT ? 28 : 24
+    TILES.forEach((tl, i) => {
+      const col = VERT ? i % 2 : i, row = VERT ? Math.floor(i / 2) : 0, n = VERT ? 2 : 4
+      const x = CX - (n * tw + (n - 1) * gap) / 2 + col * (tw + gap), y = (VERT ? 700 : 350) + row * (th + gap)
+      const t0 = 0.25 + i * 0.13, k = seg(lt, t0, t0 + 0.25, E.expoOut)
+      if (k <= 0) return
+      X.save(); X.translate(x + tw / 2, y + th / 2); const s = lerp(1.25, 1, k); X.scale(s, s); X.translate(-(x + tw / 2), -(y + th / 2))
+      withA(clamp(k * 1.6), () => {
+        panel(x, y, tw, th, { r: 22, top: C.nv, stroke: 'rgba(118,185,0,.45)', lw: 1.5, glow: 'rgba(118,185,0,.25)' })
+        text(tl.title, x + 32, y + 64, { size: VERT ? 32 : 30, weight: 800, color: C.white, maxW: tw - 64 })
+        const bw = text(tl.big, x + 32, y + th * 0.6, { size: VERT ? 124 : 120, weight: 900, color: C.nvl, glow: 26 })
+        if (tl.unit) text(tl.unit, x + 40 + bw, y + th * 0.6, { size: 34, weight: 800, color: C.nvl })
+        tl.sub.forEach((ln, j) => text(ln, x + 32, y + th - 78 + j * 36, { size: j ? 21 : 25, weight: j ? 600 : 800, color: j ? C.t2 : C.white, fam: j ? MONO : SANS, maxW: tw - 64 }))
+      })
+      X.restore()
+    })
+  }
+  { const t = B0.stack; cue(t, 'hit', { g: 1 }); cue(t, 'glitch', { d: 0.08 }); TILES.forEach((_, i) => cue(t + 0.25 + i * 0.13, 'slam', { g: 0.7 + i * 0.1 }))
+    cue(t + 0.9, 'riser', { d: 0.6, up: 1 }) }
+
+  // ---------------- 08 마무리: 뇌 → FlyGate ----------------
+  function endCard(lt, poster = false) {
+    const bs = VERT ? 400 : 470, by = VERT ? LOGO.y - 70 : LOGO.y - 90
+    const m = poster ? 1 : seg(lt, 0.12, 1.1, E.lin)
+    cloud(lt + 3, CX, by, bs, poster ? 0.5 : 1, m, { spin: poster ? 0 : 0.4, yaw0: 0.1 })
+    const solid = poster ? 1 : seg(lt, 0.9, 1.25)
+    glowBlob(CX, LOGO.y - LOGO.size * 0.35, LOGO.size * 2.2, 'rgba(55,230,255,0.12)', solid)
+    logoText(solid, 40)
+    const t1 = poster ? 1 : seg(lt, 1.05, 1.3), t2 = poster ? 1 : seg(lt, 1.15, 1.4), t3 = poster ? 1 : seg(lt, 1.25, 1.5)
+    const y1 = LOGO.y + (VERT ? 110 : 96)
+    if (VERT) {
+      // 슬로건: 분자에서 환자까지, 추론보다 근거가 먼저. FlyGate. (FlyGate 는 위 로고)
+      text('분자에서 환자까지,', CX, y1, { size: 50, weight: 800, color: C.white, align: 'center', a: t1 })
+      rich([['추론보다 ', C.t2, 800], ['근거가 먼저.', C.cyan, 800]], CX, y1 + 70, { size: 50, align: 'center', a: t1 })
+    } else {
+      rich([['분자에서 환자까지, ', C.white, 800], ['추론보다 ', C.t2, 800], ['근거가 먼저.', C.cyan, 800]], CX, y1, { size: 48, align: 'center', a: t1 })
+    }
+    const y2 = y1 + (VERT ? 190 : 84)
+    text(D.meta.hack.toUpperCase(), CX, y2, { size: VERT ? 25 : 24, weight: 700, fam: MONO, color: C.nvl, align: 'center', track: VERT ? 3 : 5, a: t2, maxW: W - 120 })
+    const url = D.meta.live.replace(/^https?:\/\//, '')
+    withA(t3, () => {
+      const cw = chipW(url, VERT ? 34 : 32, MONO, VERT ? 70 : 66)
+      panel(CX - cw / 2, y2 + 40, cw, VERT ? 70 : 66, { r: 35, fill: 'rgba(55,230,255,0.10)', stroke: 'rgba(55,230,255,0.7)', lw: 2, glow: 'rgba(55,230,255,0.35)' })
+      text(url, CX, y2 + 40 + (VERT ? 35 : 33) + 1, { size: VERT ? 34 : 32, weight: 700, fam: MONO, color: C.white, align: 'center', base: 'middle' })
+    })
+    const cr = 'NVIDIA NIM (BioNeMo · Nemotron) · NVIDIA Agent Skills · NemoClaw · OpenShell · FDA FAERS · MaleCNS v1.0 (Janelia FlyEM, CC BY 4.0)'
+    const ca = poster ? 0.8 : seg(lt, 1.4, 1.7) * 0.8
+    if (VERT) {
+      text('NVIDIA NIM (BioNeMo · Nemotron) · NVIDIA Agent Skills · NemoClaw · OpenShell', CX, H - 190, { size: 16, weight: 500, fam: MONO, color: C.t3, align: 'center', a: ca, maxW: W - 140 })
+      text('FDA FAERS · MaleCNS v1.0 (Janelia FlyEM, CC BY 4.0)', CX, H - 164, { size: 16, weight: 500, fam: MONO, color: C.t3, align: 'center', a: ca, maxW: W - 140 })
+    } else text(cr, CX, H - 132, { size: 15, weight: 500, fam: MONO, color: C.t3, align: 'center', a: ca, maxW: W - 200 })
+  }
+  function sEnd(lt) { endCard(lt) }
+  { const t = B0.end; cue(t, 'boom', { g: 1.1, big: 1 }); cue(t, 'whoosh', { d: 1.1 }); cue(t + 0.9, 'lock', { big: 1 }); cue(t + 0.95, 'tail', { d: 1.0 }); cue(t + 1.25, 'tick', { f: 1.6 }) }
+
+  const DRAW = { poster: sPoster, hook: sHook, disc: sDisc, fv: sFV, serious: sSerious, work: sWork, auc: sAUC, stack: sStack, end: sEnd }
+
+  // ---------- 공통 HUD (FDDD 쇼릴의 프레임 언어) ----------
+  function hud(T, b) {
+    const g = GA; GA = 1
+    brackets(M, M, W - M * 2, H - M * 2, 22, '#ffffff', 0.3, 1.5)
+    const bw = text('PROJECT-FLYGATE', M + 30, M + 34, { size: 15, weight: 700, fam: MONO, color: C.cream, track: 4 })
+    text('/  TEASER 15s', M + 30 + bw + 12, M + 34, { size: 15, weight: 500, fam: MONO, color: C.t3, track: 2 })
+    const f = Math.floor(T * FPS + 1e-6), ss = Math.floor(f / FPS), ff = f % FPS
+    text(`TC 00:00:${String(ss).padStart(2, '0')}:${String(ff).padStart(2, '0')}`, W - M - 30, M + 34, { size: 15, weight: 500, fam: MONO, color: C.t3, align: 'right', track: 2 })
+    const step = b.id === 'disc' ? 1 : ['fv', 'serious', 'work', 'auc'].includes(b.id) ? 2 : 0
+    if (!VERT) {
+      let px = W - M - 260
+      for (const [l, n] of [['STEP 2 · 시판 후', 2], ['STEP 1 · 시판 전', 1]]) {
+        const w = chipW(l, 13, MONO, 26); px -= w
+        chip(px, M + 13, l, { kind: step === n ? (n === 1 ? 'cyan' : 'mag') : 'dim', size: 13, h: 26, a: step === n ? 1 : 0.5 }); px -= 10
+      }
+    }
+    text(`${NUM[b.id]} — ${b.label}`, M + 30, H - M - 20, { size: 15, weight: 500, fam: MONO, color: C.cream, track: 2, maxW: W * 0.55 })
+    text(`${W}×${H} · 30FPS · 실측 데이터`, W - M - 30, H - M - 20, { size: 14, weight: 500, fam: MONO, color: C.t3, align: 'right', track: 1 })
+    const x0 = M + 30, x1 = W - M - 30, y = H - M - 46
+    line(x0, y, x1, y, '#ffffff', 0.12, 1); line(x0, y, lerp(x0, x1, T / DUR), y, C.cyan, 0.9, 2)
+    for (const s of BEATS.slice(1)) line(lerp(x0, x1, s.t0 / DUR), y - 4, lerp(x0, x1, s.t0 / DUR), y + 4, '#ffffff', 0.35, 1)
+    GA = g
+  }
+
+  // ---------- 컷 효과: 글리치(RGB 분리 + 띠 밀림)와 섬광 ----------
+  const GB = [0, 1, 2].map(() => document.createElement('canvas'))
+  function glitchPost(k, seed) {
+    const cw = cv.width, ch = cv.height
+    for (const c of GB) if (c.width !== cw || c.height !== ch) { c.width = cw; c.height = ch }
+    const [org, rc, gbc] = GB.map((c) => c.getContext('2d'))
+    org.globalCompositeOperation = 'copy'; org.drawImage(cv, 0, 0)
+    for (const [g, col] of [[rc, '#ff0000'], [gbc, '#00ffff']]) {
+      g.globalCompositeOperation = 'copy'; g.drawImage(cv, 0, 0)
+      g.globalCompositeOperation = 'multiply'; g.fillStyle = col; g.fillRect(0, 0, cw, ch)
+    }
+    const dx = Math.round(k * 16 * R)
+    X.save(); X.setTransform(1, 0, 0, 1, 0, 0)
+    X.globalAlpha = 1; X.globalCompositeOperation = 'copy'; X.drawImage(GB[1], dx, 0)
+    X.globalCompositeOperation = 'lighter'; X.drawImage(GB[2], -dx, 0)
+    X.globalCompositeOperation = 'source-over'
+    const n = 3 + Math.floor(k * 7)
+    for (let i = 0; i < n; i++) {
+      const y = Math.floor(hash(seed * 13.1 + i) * ch), h = Math.floor((0.01 + hash(seed * 7.7 + i) * 0.06) * ch), sh = Math.round((hash(seed * 3.3 + i) - 0.5) * k * 180 * R)
+      X.drawImage(GB[0], 0, y, cw, h, sh, y, cw, h)
+    }
+    X.restore()
+  }
+
+  function render(T) {
+    X.setTransform(R, 0, 0, R, 0, 0)
+    X.globalAlpha = 1; X.globalCompositeOperation = 'source-over'; X.shadowBlur = 0
+    X.drawImage(BG, 0, 0, W, H)
+    const b = BEATS.find((s) => T >= s.t0 && T < s.t1) ?? BEATS[BEATS.length - 1]
+    const lt = T - b.t0
+    // 컷마다 살짝 당겨졌다가 제자리로 돌아오는 줌 펀치
+    const z = b.id === 'poster' ? 1 : 1 + 0.045 * (1 - E.out3(clamp(lt / 0.4)))
+    GA = 1; X.save(); X.translate(W / 2, H / 2); X.scale(z, z); X.translate(-W / 2, -H / 2)
+    DRAW[b.id](lt, T)
+    X.restore(); GA = 1
+    hud(T, b)
+    // 컷 직후 섬광
+    if (b.id !== 'poster' && lt < 0.1) { X.save(); X.globalAlpha = 0.14 * (1 - lt / 0.1); X.fillStyle = '#ffffff'; X.fillRect(0, 0, W, H); X.restore() }
+    // 필름 그레인
+    if (!GRAIN_PAT) GRAIN_PAT = X.createPattern(GRAIN, 'repeat')
+    const f = Math.floor(T * FPS)
+    X.save(); X.globalAlpha = 0.035; X.globalCompositeOperation = 'overlay'; X.translate(-(hash(f) * 256) | 0, -(hash(f + 0.5) * 256) | 0)
+    X.fillStyle = GRAIN_PAT; X.fillRect(0, 0, W + 256, H + 256); X.restore()
+    // 컷 앞뒤 두세 프레임에 글리치
+    for (const s of BEATS.slice(1)) {
+      const d = T - s.t0
+      if (d > -0.07 && d < 0.1) { glitchPost(d < 0 ? 1 + d / 0.07 * 0.5 : 1 - d / 0.1, Math.floor(T * FPS)); break }
+    }
+  }
+
+  // ---------- 재생기 ----------
+  let T = 0, playing = !PAUSED, last = performance.now(), manual = false
+  if (Q.get('t')) T = parseFloat(Q.get('t'))
+  const clock = document.getElementById('clock'), scrub = document.getElementById('scrub'), pp = document.getElementById('pp')
+  scrub.max = DUR
+  function frame(now) {
+    const dt = (now - last) / 1000; last = now
+    if (!manual) {
+      if (playing) { T += dt; if (T >= DUR) T = Q.has('once') ? DUR - 1e-3 : T - DUR }   // 소셜 피드처럼 반복 재생합니다
+      render(T)
+      clock.textContent = `${T.toFixed(1)} / ${DUR.toFixed(1)}`; scrub.value = T
+    }
+    requestAnimationFrame(frame)
+  }
+  function fit() {
+    const k = Math.min(innerWidth / W, innerHeight / H)
+    stage.style.transform = `translate(-50%, -50%) scale(${k})`
+    const r = PAUSED ? 1 : clamp((devicePixelRatio || 1) * k, 1, 2)
+    if (Math.abs(r - R) > 0.01 || cv.width !== Math.round(W * r)) { R = r; cv.width = Math.round(W * R); cv.height = Math.round(H * R); GRAIN_PAT = null; MC.clear() }
+  }
+  addEventListener('resize', fit); fit()
+  pp.textContent = playing ? '❚❚' : '▶'
+  pp.onclick = () => { manual = false; playing = !playing; pp.textContent = playing ? '❚❚' : '▶' }
+  scrub.oninput = () => { manual = false; T = parseFloat(scrub.value) }
+  addEventListener('keydown', (e) => {
+    if (e.code === 'Space') { e.preventDefault(); pp.click() }
+    if (e.code === 'ArrowRight') { manual = false; T = Math.min(DUR - 1e-3, T + 1) }
+    if (e.code === 'ArrowLeft') { manual = false; T = Math.max(0, T - 1) }
+  })
+  // 프레임 단위 렌더링(영상 출력용): 루프를 멈추고 지정 시점을 그립니다
+  const renderAt = (t) => { manual = true; playing = false; T = t; render(Math.min(t, DUR - 1e-6)) }
+  window.__reel = { seek: (t) => { manual = false; T = t; playing = false }, play: () => { manual = false; playing = true }, renderAt, DUR, W, H, vertical: VERT,
+    scenes: () => BEATS.map(({ id, t0, t1, label }) => ({ id, t0, t1, name: id, label })), cues: () => [...CUES].sort((a, b) => a.t - b.t) }
+  requestAnimationFrame((n) => { last = n; frame(n) })
+})()
+</script>
+</body>
+</html>

@@ -25,7 +25,7 @@
 | 라이브 대시보드 | https://project-flygate.vercel.app |
 | 쇼릴 v4.1 (전체판, 3분 29초 · 19장면) | [웹](https://project-flygate.vercel.app/showreel/FlyGate_showreel_v4.1.0.html) · [MP4](https://github.com/Team-FlyGate/Project-FlyGate/releases/download/v4.1/FlyGate_showreel_v4.1.0.mp4) · [내레이션 대본](docs/SHOWREEL_SCRIPT_v4.1.0.md) |
 | 쇼릴 v3 (이전 판, 2분 9초) | [웹](https://project-flygate.vercel.app/showreel/FlyGate_showreel_v3.0.0.html) · [MP4](https://github.com/Team-FlyGate/Project-FlyGate/releases/download/v3.0/FlyGate_showreel_v3.0.0.mp4) |
-| 티저 (15초) | [웹](https://project-flygate.vercel.app/showreel/FlyGate_teaser_15s_v1.0.0.html) · [MP4 가로 · 세로](https://github.com/Team-FlyGate/Project-FlyGate/releases/tag/teaser-v1.0) |
+| 티저 (15초) | [웹](https://project-flygate.vercel.app/showreel/FlyGate_teaser_15s_v1.1.0.html) · [MP4 가로 · 세로](https://github.com/Team-FlyGate/Project-FlyGate/releases/tag/teaser-v1.1) |
 | 에이전트 구성 (NemoClaw · OpenShell · OpenClaw) | [docs/AGENT.md](docs/AGENT.md) · [agent/](agent/) |
 | 평가 보고서 | [docs/EVALUATION.md](docs/EVALUATION.md) |
 | 약사 검토 반영 내역 | [docs/PHARMACIST_REVIEW.md](docs/PHARMACIST_REVIEW.md) |
