@@ -7,7 +7,7 @@ NVIDIA Korea Agentic AI Hackathon 2026 · Section 02 · 서비스 명: **Project
 - 쇼릴 (4분 10초): https://flygate.kr/showreel/FlyGate_showreel_v4.3.0.html
 - 제출한 PDF(7쪽): [docs/submission/NVIDIA_해커톤_FlyGate_Final_제출버전.pdf](submission/NVIDIA_해커톤_FlyGate_Final_제출버전.pdf)
 
-이 문서는 실제로 제출한 PDF의 문구를 그대로 옮긴 최종본입니다. 제출 전 초안은 `SUBMISSION_v1.0.0.md` ~ `SUBMISSION_v1.0.2.md`, 영어판은 `SUBMISSION_en_v1.0.0.md` 에 있습니다.
+이 문서는 실제로 제출한 PDF의 문구를 그대로 옮긴 최종본입니다. 제출 전 초안은 `SUBMISSION_v1.0.0.md` ~ `SUBMISSION_v1.0.2.md`, 영어판은 [`SUBMISSION_en_v1.1.0.md`](SUBMISSION_en_v1.1.0.md)(최종본 번역), 이전 초안 번역은 `SUBMISSION_en_v1.0.0.md` 에 있습니다.
 
 ## (1) 해결하고자 했던 문제 (Problem Definition)
 
