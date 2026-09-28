@@ -42,20 +42,35 @@ def summarize(folder, manifest):
             'note': 'DiffDock 포즈 신뢰도는 결합 친화도나 약효의 측정값이 아닙니다.'}
 
 
+def build_body(protein, ligand, kind='txt', num_poses=5):
+    """DiffDock NIM 요청 본문입니다. 수용체는 ATOM 줄만 남기고, SMILES 는 ligand_file_type='txt' 입니다
+    (NVIDIA BioNeMo Agent Toolkit `diffdock-nim` 규격). 웹 경로(api/_fv/discovery.py)도 같은 본문을 씁니다."""
+    protein = '\n'.join(x for x in protein.splitlines() if x.startswith(('ATOM  ', 'ATOM', 'TER', 'END'))) + '\n'
+    return {'protein': protein, 'ligand': ligand.strip(), 'ligand_file_type': kind,
+            'num_poses': num_poses, 'time_divisions': 20, 'steps': 18,
+            'save_trajectory': False, 'is_staged': False}
+
+
+def validate_result(data):
+    """NIM 응답에서 포즈와 신뢰도를 꺼냅니다. 형태가 어긋나면 ValueError 를 냅니다(성공으로 치지 않습니다)."""
+    if not isinstance(data, dict):
+        raise ValueError('object expected')
+    poses, confidence = data.get('ligand_positions'), data.get('position_confidence')
+    if data.get('status') not in (None, 'success', 'completed'):
+        raise ValueError('provider reported failure')
+    if not isinstance(poses, list) or not poses or not isinstance(confidence, list) or len(poses) != len(confidence):
+        raise ValueError('missing poses or scores')
+    if any(not isinstance(p, str) or 'M  END' not in p for p in poses):
+        raise ValueError('invalid SDF poses')
+    if any(not isinstance(c, (int, float)) or not math.isfinite(c) for c in confidence):
+        raise ValueError('invalid scores')
+    return poses, confidence
+
+
 def finish(response, folder, manifest):
     try:
         data = response.json()
-        if not isinstance(data, dict):
-            raise ValueError('object expected')
-        poses, confidence = data.get('ligand_positions'), data.get('position_confidence')
-        if data.get('status') not in (None, 'success', 'completed'):
-            raise ValueError('provider reported failure')
-        if not isinstance(poses, list) or not poses or not isinstance(confidence, list) or len(poses) != len(confidence):
-            raise ValueError('missing poses or scores')
-        if any(not isinstance(p, str) or 'M  END' not in p for p in poses):
-            raise ValueError('invalid SDF poses')
-        if any(not isinstance(c, (int, float)) or not math.isfinite(c) for c in confidence):
-            raise ValueError('invalid scores')
+        poses, confidence = validate_result(data)
     except (ValueError, TypeError):
         manifest.update(status='failed', error='NIM이 유효한 포즈·신뢰도 결과를 반환하지 않았습니다.')
         save(folder / 'manifest.json', manifest)
@@ -105,9 +120,7 @@ def execute(*, api_key, protein_path=None, ligand_path=None, smiles=None, num_po
             raise ValueError('올바른 SDF 파일이 아닙니다.')
         if kind == 'txt' and ('\n' in ligand.strip() or len(ligand.strip().split()) != 1):
             raise ValueError('SMILES는 이름 없이 한 줄의 분자 문자열로 입력하세요.')
-        body = {'protein': protein, 'ligand': ligand.strip(), 'ligand_file_type': kind,
-                'num_poses': num_poses, 'time_divisions': 20, 'steps': 18,
-                'save_trajectory': False, 'is_staged': False}
+        body = build_body(protein, ligand, kind, num_poses)
         run_id = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ') + '-' + uuid.uuid4().hex[:10]
         folder = pathlib.Path(output_root).resolve() / run_id
         folder.mkdir(parents=True, exist_ok=False, mode=0o700)
