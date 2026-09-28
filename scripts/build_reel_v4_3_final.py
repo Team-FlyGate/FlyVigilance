@@ -1,4 +1,14 @@
-"""Project-FlyGate 쇼릴 v4.3.0-pre 를 만듭니다(최종본 v4.3.0 은 build_reel_v4_3_final.py). v4.2.0 의 CLI 세 장면(18–20번)을 실제 터미널 캡처로 다시 짠 판입니다.
+"""Project-FlyGate 쇼릴 v4.3.0 최종본을 만듭니다. 제출 주소(https://flygate.kr/showreel/FlyGate_showreel_v4.3.0.html)가 이 파일입니다.
+
+먼저 나온 판은 v4.3.0-pre(build_reel_v4_3.py)로 남겨 두었고, 장면 · 내레이션 · 시간표는 그 판과 같습니다. 최종본에서 바뀐 점:
+  1) 화면 아래에 자막 띠를 두고 내레이션을 자막으로 띄웁니다. 장면 전체를 조금 줄여 위로 올리고, 자막은 한 번에 한 줄(최대 SUB_MAX 자)만 보입니다.
+     긴 문장은 쉼표 · 띄어쓰기 자리에서 나누고, 글자 수에 비례해 시간을 나눕니다. 읽기용 표기(플라이게이트 · 옹스트롬)는 원래 표기(FlyGate · Å)로 되돌립니다.
+  2) 장면마다 '용어' 풀이를 고정 자리에 띄웁니다(GLOSS). FAERS · PRR · SDR · RMSD 같은 약어를 전문가가 아닌 시청자도 읽을 수 있게 합니다.
+  3) 강조 틀은 중요한 순간(EMPHASIS)에만 제자리에서 나타났다 사라집니다. 옮겨 다니던 틀, 틀을 따라 돌던 빛,
+     CLI 창에서 줄마다 차례로 켜지던 강조는 없앴습니다. CLI 확대는 그대로 두고, 틀 · 스포트라이트는 grade · critic · dock 세 명령에서만 씁니다.
+  음원은 시간표가 같으므로 v4.3.0-pre 음원(FlyGate_showreel_v4.3.0_audio.m4a)을 그대로 씁니다.
+
+아래는 v4.3.0-pre 빌더의 설명입니다.
 
 v4.1.0 · v4.2.0 의 속도 규칙은 그대로입니다(내레이션 초당 6.3음절 · 꼬리 0.8초 이하 · 늘 움직이는 층 · 멈춘 구간 0% 목표).
 바뀐 점:
@@ -17,11 +27,11 @@ v4.1.0 · v4.2.0 의 속도 규칙은 그대로입니다(내레이션 초당 6.3
 v4.2.0 의 파일(build_reel_v4_2.py, flygate_v4_2.template.html, 타임라인 · 대본 · 음원)은 고치지 않습니다.
 
 사용:
-  .venv/bin/python scripts/build_reel_v4_3.py [출력 경로]
+  .venv/bin/python scripts/build_reel_v4_3_final.py [출력 경로]
 출력:
-  web/public/showreel/FlyGate_showreel_v4.3.0.html · scripts/reel/flygate_v4_3.timeline.json · docs/SHOWREEL_SCRIPT_v4.3.0.md
+  web/public/showreel/FlyGate_showreel_v4.3.0.html · scripts/reel/flygate_v4_3_final.timeline.json · docs/SHOWREEL_SCRIPT_v4.3.0.md
 음원:
-  .venv/bin/python scripts/reel/audio_v4_3.py
+  v4.3.0-pre 음원(scripts/reel/FlyGate_showreel_v4.3.0_audio.m4a)을 그대로 씁니다
 """
 import base64
 import datetime as dt
@@ -41,11 +51,11 @@ import build_reel_v4_2 as v42  # noqa: E402  CLI 실행 기록 · 약어 풀이 
 
 VERSION = "4.3.0"
 ROOT, PUB, REEL = v4.ROOT, v4.PUB, v4.REEL
-TEMPLATE = REEL / "flygate_v4_3.template.html"
-DEFAULT_OUT = PUB / f"showreel/FlyGate_showreel_v{VERSION}-pre.html"   # 최종본(v4.3.0)은 build_reel_v4_3_final.py 가 만듭니다
-TIMELINE_OUT = REEL / "flygate_v4_3.timeline.json"
-SCRIPT_OUT = ROOT / f"docs/SHOWREEL_SCRIPT_v{VERSION}-pre.md"
-AUDIO_REL = f"scripts/reel/FlyGate_showreel_v{VERSION}_audio.m4a"
+TEMPLATE = REEL / "flygate_v4_3_final.template.html"
+DEFAULT_OUT = PUB / f"showreel/FlyGate_showreel_v{VERSION}.html"
+TIMELINE_OUT = REEL / "flygate_v4_3_final.timeline.json"
+SCRIPT_OUT = ROOT / f"docs/SHOWREEL_SCRIPT_v{VERSION}.md"
+AUDIO_REL = "scripts/reel/FlyGate_showreel_v4.3.0_audio.m4a"   # v4.3.0-pre 와 시간표가 같습니다
 CAP_DIR = PUB / "cli/captures"
 CAP_MANIFEST = PUB / "cli/captures.json"
 FALLBACKS = v4.FALLBACKS
@@ -54,6 +64,81 @@ RATE, GAP, CLOSE_MAX = v41.RATE, v41.GAP, v41.CLOSE_MAX
 LEAD, TAIL = v41.LEAD, v41.TAIL
 ceil1 = v41.ceil1
 SLOGAN_PARTS, SIGN_OFF, slogan_read = v42.SLOGAN_PARTS, v42.SIGN_OFF, v42.slogan_read
+# 장면별 용어 풀이. 화면 오른쪽 아래 고정 자리에 뜨고, 대본의 '장면별 용어 풀이' 표도 이 값으로 만듭니다
+GLOSS = {
+    "problem": "약물감시(PV) = 시판된 약의 부작용 보고를 모아 새 위험 신호를 찾는 일",
+    "disc": "NIM = NVIDIA가 API로 제공하는 AI 모델 · RMSD = 예측 자리와 실제 결합 자리의 거리(2 Å 이하면 재현)",
+    "panel": "재도킹 = 이미 아는 결합 자리를 모델이 다시 찾아내는지 보는 검증 · Å(옹스트롬) = 100억분의 1 m",
+    "bridge": "시판 전 = 허가 전 후보 물질 · 시판 후 = 환자가 실제로 복용하는 약",
+    "warehouse": "FAERS = 미국 FDA 부작용 자발 보고 데이터베이스 · SDR = 다른 약보다 유독 많이 보고되는 약물–부작용 쌍",
+    "flow": "System-1 = 빠른 규칙 · 판단 모델 · System-2 = Nemotron의 숙고 · 크리틱 = 근거를 넘는 주장을 되돌리는 검사",
+    "triage": "트리아지 = 사례를 급한 순서로 나누는 분류 · 신속보고 = 중대하고 예상하지 못한 사례를 15일 안에 당국에 보고",
+    "korean": "WHO-UMC = 세계보건기구 인과성 평가 기준 · 15일 규칙 = 중대하고 예상하지 못한 이상사례의 보고 기한",
+    "signals": "SDR = 통계적으로 튀는 약물–부작용 쌍 · PRR = 다른 약 대비 보고 비율 · DME = 유럽 EMA가 지정한 특별 주의 이상사례",
+    "timemachine": "IC = 기대보다 얼마나 더 보고됐는지 나타내는 지표 · FDA 조치 = 허가 사항에 부작용이 추가된 시점",
+    "measure": "McNemar 검정 = 같은 사례를 두 방법으로 풀어 차이를 보는 검정 · p 값이 작을수록 우연이 아닙니다",
+    "validated": "AUC = 진짜 신호와 가짜를 가려내는 정확도(0.5 무작위 · 1 완벽) · OMOP · EU-ADR · Harpaz = 공개 정답 세트",
+    "nvskills": "Agent Skills = NVIDIA가 공개한 에이전트용 작업 절차 묶음 · 리랭커 = 검색 결과를 관련도 순으로 다시 매기는 모델",
+    "reviewed": "면허 약사 검토 = 실제 약사가 에이전트 출력을 확인하고 고친 내용을 규칙에 반영",
+    "arch": "커넥톰 = 초파리 뇌의 신경 연결 지도 · 라우팅 = 사례마다 어떤 판단 경로로 보낼지 정하는 일",
+    "agent": "NemoClaw · OpenShell = NVIDIA 샌드박스 실행 환경 · OpenClaw = 그 안에서 명령을 실행하는 에이전트",
+    "cli_open": "CLI = 터미널에서 명령어로 쓰는 도구 · 모든 출력은 근거 ID가 붙은 JSON입니다",
+    "cli_install": "설치 스크립트 = 가상환경을 만들고 flygate 명령을 PATH에 연결합니다",
+    "cli_triage": "triage = 사례 분류 · evidence_ids = 결론의 근거가 된 원본 기록 ID",
+    "cli_grade": "grade = 라벨 · 신호 · 문헌을 묶은 등급 · PRR = 다른 약 대비 보고 비율",
+    "cli_critic": "safe / flagged = Nemotron Safety Guard가 통과시킨 주장 / 되돌린 주장",
+    "cli_dock": "DiffDock = 약물이 단백질에 붙는 자세를 예측하는 NVIDIA NIM 모델",
+    "cli_kr": "WHO-UMC = 세계보건기구 인과성 기준 · 15일 규칙 = 중대하고 예상하지 못한 이상사례의 보고 기한",
+    "cli_watch": "watch = 분기마다 신호를 다시 계산해 검토 대기열에 올리는 상시 실행 · 당국 제출은 사람이 합니다",
+    "cli_same": "OpenShell 샌드박스 = 에이전트가 격리된 환경에서 같은 명령을 실행하는 곳",
+}
+# 강조 틀을 쓰는 순간(템플릿 buildFocus 의 KEEP, CLI_EMPH 와 같은 목록). 대본의 '강조 사용 위치' 표를 만듭니다
+EMPHASIS = [
+    ("disc", "재도킹 3/3 기준 통과(RMSD 2 Å 이하)"), ("disc", "크리틱이 근거를 넘는 주장을 되돌림"),
+    ("triage", "결정 · 사람 우선 신속보고 후보"), ("triage", "크리틱 1단이 주장 하나를 되돌림"),
+    ("korean", "국내 식약처 15일 보고 규칙"), ("timemachine", "FDA 조치보다 SDR이 먼저 선 기간(+592일)"),
+    ("measure", "검토에 닿은 중대 사례 247/250"), ("measure", "사람 우선 검토 업무량 302 → 138"),
+    ("validated", "공개 참조 세트 AUC"), ("validated", "2013년 라벨 변경 21/57을 미리 포착"),
+    ("nvskills", "평가 문장 정확도 향상(Nemotron Content Safety custom_policy)"),
+    ("cli_grade", "grade 출력 확대 줄"), ("cli_critic", "critic 의 safe / flagged 줄"), ("cli_dock", "DiffDock status · run 줄"),
+]
+
+# 자막: 한 번에 한 줄, SUB_MAX 자 이하. 읽기용 표기를 원래 표기로 되돌립니다
+SUB_MAX = 36
+SUB_FIX = [("프로젝트 플라이게이트", "Project-FlyGate"), ("플라이디스커버리", "FlyDiscovery"), ("플라이비질런스", "FlyVigilance"), ("플라이게이트", "FlyGate")]
+
+
+def sub_text(vo: str) -> str:
+    for a, b in SUB_FIX:
+        vo = vo.replace(a, b)
+    return re.sub(r"(\d)\s?옹스트롬", r"\1 Å", vo).replace("옹스트롬", "Å")
+
+
+def sub_split(s: str) -> list[str]:
+    """한 문장을 SUB_MAX 자 이하 조각으로 나눕니다. 마침표 · 쉼표 뒤를 먼저, 없으면 가운데에 가까운 띄어쓰기에서 자릅니다"""
+    s = s.strip()
+    if len(s) <= SUB_MAX:
+        return [s]
+    cuts = [m.end() for m in re.finditer(r"[.,?!]\s", s)] or [m.start() for m in re.finditer(r"\s", s)]
+    mid = len(s) / 2
+    best = min(cuts, key=lambda c: abs(c - mid))
+    return sub_split(s[:best]) + sub_split(s[best:])
+
+
+def subtitles(tl: list[dict]) -> list[list]:
+    out = []
+    for sc in tl:
+        for bt in sc["beats"]:
+            parts = [p.strip() for p in sub_split(sub_text(bt["vo"])) if p.strip()]
+            a, b = sc["t0"] + bt["a"], sc["t0"] + bt["b"]
+            tot = sum(len(p) for p in parts)
+            t = a
+            for p in parts:
+                d = (b - a) * len(p) / tot
+                out.append([round(t, 2), round(t + d, 2), p])
+                t += d
+    return out
+
 INSTALL_LINE = "git clone https://github.com/Team-FlyGate/Project-FlyGate && cd Project-FlyGate && ./scripts/install_flygate.sh"
 
 v4.LATIN.update({"kr-causality는": 8, "discover는": 5, "DiffDock": 4, "NIM에": 3, "OpenClaw도": 5, "OpenClaw": 4, "watch는": 3,
@@ -424,8 +509,8 @@ def write_script(tl: list[dict], dur: float, built: str, d: dict):
     lines = [
         f"# Project-FlyGate 쇼릴 v{VERSION} 내레이션 대본", "",
         f"- 영상: `web/public/showreel/FlyGate_showreel_v{VERSION}.html` (1920×1080, 30fps) · 음원 `{AUDIO_REL}`",
-        f"- **총 길이 {int(dur // 60)}분 {dur % 60:.0f}초 ({dur:.1f}초)** · 장면 {len(tl)}개 · 내레이션 {total_syl}음절(추정) · v4.2.0 의 CLI 세 장면을 실제 터미널 캡처로 다시 짠 'FlyGate Agent CLI' 구간 {len(cli)}장면({cli_s:.1f}초)으로 바꾼 판입니다",
-        f"- 이 대본은 `scripts/build_reel_v4_3.py` 가 영상과 같은 장면 시간표(`scripts/reel/flygate_v4_3.timeline.json`)로 생성합니다. 손으로 고치지 말고 빌더의 `narration()` 을 고친 뒤 다시 빌드합니다.",
+        f"- **총 길이 {int(dur // 60)}분 {dur % 60:.0f}초 ({dur:.1f}초)** · 장면 {len(tl)}개 · 내레이션 {total_syl}음절(추정) · v4.3.0-pre 와 같은 시간표에 화면 자막 · 장면별 용어 풀이를 더하고 강조 틀을 중요한 순간으로 줄인 최종본입니다 · CLI 구간 {len(cli)}장면({cli_s:.1f}초)",
+        f"- 이 대본은 `scripts/build_reel_v4_3_final.py` 가 영상과 같은 장면 시간표(`scripts/reel/flygate_v4_3_final.timeline.json`)로 생성합니다. 손으로 고치지 말고 빌더의 `narration()` 을 고친 뒤 다시 빌드합니다.",
         f"- 수치는 빌드 시점({built})의 저장소 JSON · 측정 파일 값입니다. CLI 구간의 터미널 화면은 `web/public/cli/captures/` 의 실제 캡처(촬영 {str(c.get('captured')).replace('T', ' ').replace('Z', ' UTC')})이고, 화면 설명과 내레이션의 수치도 그 캡처의 원본 터미널 바이트(`web/public/cli/captures/ansi/*.ans`)에 찍힌 JSON 에서 읽습니다. triage 걸린 시간은 캡처 기록(`captures.json` 의 seconds, 명령 실행 전체)입니다.",
         "- CLI 구간은 CC-statusline 모션 릴의 문법을 따릅니다: 명령마다 거대한 낱말 하나, 3D로 기울인 터미널 창의 실제 캡처, 핵심 줄로 확대, 글리치 · 타자 전환.",
         "- 마무리 구호는 빌더의 `SLOGAN_PARTS` 한 줄에서 옵니다. 화면 색 조각과 마무리 내레이션이 모두 이 값을 씁니다.",
@@ -444,6 +529,18 @@ def write_script(tl: list[dict], dur: float, built: str, d: dict):
             a, bb = s["t0"] + bt["a"], s["t0"] + bt["b"]
             syl = syllables(bt["vo"])
             lines.append(f"| {mmss(a)}–{mmss(bb)} | {bt['vis']} | {bt['vo']} | {syl}음절 · {syl / (bb - a):.1f}/초 |")
+    lines += ["", "## 장면별 용어 풀이", "", "화면 오른쪽 아래 고정 자리에 뜹니다. 장면이 바뀔 때만 바뀝니다.", "", "| 장면 | 용어 풀이 |", "| --- | --- |"]
+    for s in tl:
+        if s["id"] in GLOSS:
+            lines.append(f"| {s['label']} | {GLOSS[s['id']]} |")
+    lines += ["", "## 강조 사용 위치", "", "강조 틀은 아래 순간에만 제자리에서 나타났다 사라집니다. 중요한 것이 없는 장면에는 틀을 두지 않습니다.", "",
+              "| 장면 | 강조하는 것 |", "| --- | --- |"]
+    lab = {s["id"]: s["label"] for s in tl}
+    for sid, what in EMPHASIS:
+        lines.append(f"| {lab.get(sid, sid)} | {what} |")
+    subs = subtitles(tl)
+    lines += ["", "## 화면 자막", "", f"내레이션을 한 줄 {SUB_MAX}자 이하로 나눠 화면 아래 자막 띠에 띄웁니다(총 {len(subs)}줄, 가장 긴 줄 {max(len(x[2]) for x in subs)}자).", "",
+              "| 시간 | 자막 |", "| --- | --- |"] + [f"| {mmss(x[0])}–{mmss(x[1])} | {x[2]} |" for x in subs]
     lines += ["", "## CLI 구간에 넣은 실제 터미널 캡처", "", "| 장면 | 캡처 | 명령 | 촬영(UTC) · 실행 | 넣은 크기 | 강조 · 확대한 줄 |", "| --- | --- | --- | --- | --- | --- |"]
     for sid, n in pick.items():
         cp = caps[n]
@@ -472,7 +569,7 @@ def main():
         "disc": disc, "nir": v3.nir_part(), "fv": fv, "agent": v3.agent_part(fv["skills"]), "brain": v3.brain_part(),
         "panel": v4.panel_part(disc), "wh": v4.warehouse_part(), "triage": v4.triage_part(), "kr": v4.kr_part(), "pvc": v4.pv_class_part(),
         "bt": v4.backtest_part(), "nvs": v4.nvskills_part(disc), "arch": v4.arch_part(), "cli": v4.cli_part(), "cli2": v42.cli2_part(),
-        "slogan": SLOGAN_PARTS,
+        "slogan": SLOGAN_PARTS, "gloss": GLOSS,
     }
     data["caps"] = caps_part()
     data["cap_of"] = pick_caps(data["caps"])
@@ -483,6 +580,7 @@ def main():
     dur = tl[-1]["t1"]
     for s in data["fv"]["val"]["sets"]:
         s.pop("stat", None)
+    data["subs"] = subtitles(tl)
     data["tl"] = {"dur": dur, "scenes": [{k: s[k] for k in ("id", "t0", "t1", "name", "label", "step", "fresh", "old_t0", "old_t1", "warp")} for s in tl],
                   "beats": {s["id"]: [[bt["a"], bt["b"]] for bt in s["beats"]] for s in tl}}
     html = TEMPLATE.read_text()
