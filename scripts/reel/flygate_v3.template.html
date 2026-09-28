@@ -870,7 +870,7 @@
       ['03 · 근거', '라벨 근거', ['openFDA 라벨 절', `p50 ${FV.label_p50} ms`], C.cyan],
       ['04 · 반사', '반사 판단', [`비자기회귀 · ${FV.questions}문항`, `p50 ${Math.round(FV.jev_p50)} ms`], C.amber],
       ['05 · 숙고', '숙고', ['NVIDIA Nemotron', '근거 ID 메모'], C.nv],
-      ['06 · 억제', '3단 크리틱', ['근거 · 숫자 · 추론', '+ Safety Guard'], C.red],
+      ['06 · 억제', '3단 크리틱', ['근거 · 숫자 · 추론', '+ PV 정책 가드'], C.red],
       ['07 · 행동', '사람', ['평가자 · 담당자', '판정과 보고'], C.white],
     ]
     const nw = 220, gap = (1680 - 7 * nw) / 6, ny = 250, nh = 122
@@ -933,8 +933,8 @@
       text('기술 구성 · 역할 분담', x1 + 30, y0 + 46, { size: 26, weight: 800, color: C.white })
     })
     const RL = [
-      ['생성이 필요한 일', 'NVIDIA Nemotron', '숙고 메모 · 국내 서식 구조화 · Super / Ultra / 3.5 Lightning', 'nv'],
-      ['주장마다 안전 점검', 'Nemotron Safety Guard 8B v3', '주장마다 치료 조언을 막습니다 (R11)', 'nv'],
+      ['생성 · 검색이 필요한 일', 'NVIDIA Nemotron', '숙고 메모 · 국내 서식 · 문헌 리랭커 · Super / Ultra / Lightning', 'nv'],
+      ['주장마다 안전 점검', 'Safety Guard + Content Safety', 'PV 정책(nemotron-policy-generator) · 인과 단정 · 발생률 · 치료 조언 반려', 'nv'],
       ['확률만 필요한 일', '비자기회귀 판단 모델 · Jev (TypeSafe AI)', '반사 판단 · 과잉해석 판정 · 문헌 설계 분류', 'jev'],
     ]
     RL.forEach(([tag, nm, sub, kind], i) => withA(seg(lt, 8.8 + i * 0.5, 9.3 + i * 0.5), () => {
