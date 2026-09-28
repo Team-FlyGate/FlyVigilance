@@ -180,7 +180,7 @@ export function dust(n = 700, r = 120) {
     new THREE.PointsMaterial({ color: 0x4d8dff, size: 0.3, transparent: true, opacity: 0.16, depthWrite: false }))
 }
 
-export function makeRenderer(el: HTMLElement) {
+export function makeRenderer(el: HTMLElement, onDead?: () => void) {
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
   // 블룸 후처리가 붙은 캔버스가 한 화면에 2~3개라 레티나(DPR 2)에서 픽셀 수가 4배가 되어 프레임이 끊깁니다. 1.5 로 묶습니다
   renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5))
@@ -191,6 +191,16 @@ export function makeRenderer(el: HTMLElement) {
   // overflow:hidden 에 잘리고 왼쪽 위 1/4 만 보입니다(단백질이 오른쪽 아래로 치우쳐 잘림)
   renderer.domElement.style.cssText = 'display:block;width:100%;height:100%'
   el.appendChild(renderer.domElement)
+  // 컨텍스트를 잃으면 브라우저가 캔버스를 흰색으로 칠합니다. 그동안은 숨겨 카드 배경(어두운 색)이 보이게 하고,
+  // 2초 안에 되살아나지 않으면(한도 초과로 강제로 죽은 경우) onDead 로 장면을 새로 만듭니다.
+  // 컴포넌트가 치우며 일부러 끊은 경우는 그 사이 캔버스가 문서에서 빠지므로 다시 만들지 않습니다
+  if (!el.style.background) el.style.background = '#070b16'
+  const cv = renderer.domElement
+  cv.addEventListener('webglcontextlost', () => {
+    cv.style.visibility = 'hidden'
+    setTimeout(() => { if (cv.isConnected && renderer.getContext().isContextLost()) onDead?.() }, 2000)
+  })
+  cv.addEventListener('webglcontextrestored', () => { cv.style.visibility = '' })
   const scene = new THREE.Scene()
   // 후처리(블룸)를 거치면 투명 배경이 사라지므로 카드 배경과 같은 색을 깝니다
   scene.background = new THREE.Color(0x070b16)

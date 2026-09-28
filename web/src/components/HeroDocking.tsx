@@ -119,6 +119,8 @@ function Big({ eyebrow, value, unit, lines, foot }: { eyebrow: string; value: st
 export type { StepId }
 export default function HeroDocking({ hero, extras, height = 560, only, nav }: { hero: HeroScene; extras: HeroExtras; height?: number; only?: StepId; nav?: Record<StepId, string> }) {
   const host = useRef<HTMLDivElement>(null)
+  // WebGL 컨텍스트가 강제로 죽으면 올려서 장면을 새로 만듭니다
+  const [epoch, setEpoch] = useState(0)
   // '전체 보기' 단추가 사용자가 돌리거나 확대한 시점을 자동 카메라로 되돌립니다
   const resetCam = useRef<() => void>(() => {})
   const label = useRef<HTMLDivElement>(null)
@@ -151,7 +153,7 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
     const el = host.current
     if (!el) return
     let disposed = false, raf = 0
-    const { renderer, scene, camera, composer, bloom, film, resize, shown } = makeRenderer(el)
+    const { renderer, scene, camera, composer, bloom, film, resize, shown } = makeRenderer(el, () => setEpoch((k) => k + 1))
     const controls = new OrbitControls(camera, renderer.domElement)
     controls.enableDamping = true; controls.autoRotate = true; controls.autoRotateSpeed = 0.45
     controls.minDistance = 8; controls.maxDistance = 220; controls.enablePan = true; controls.enableZoom = true
@@ -284,7 +286,7 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
     raf = requestAnimationFrame(loop)
     const tk = setInterval(() => setTick((k) => k + 1), 500)
     return () => { disposed = true; cancelAnimationFrame(raf); clearInterval(tk); ro.disconnect(); controls.dispose(); disposeAll(scene); composer.dispose(); renderer.dispose(); renderer.forceContextLoss(); renderer.domElement.remove() }
-  }, [hero, drug]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [hero, drug, epoch]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const done = (id: StepId) => STEPS.findIndex((s) => s.id === id) < STEPS.findIndex((s) => s.id === step)
   const tNow = (performance.now() - clock.current.t0 + clock.current.offset) % LOOP
