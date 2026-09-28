@@ -40,6 +40,23 @@ TARGETS = [
     {"key": "mpro-7si9--nirmatrelvir", "drug": "nirmatrelvir", "target": "SARS-CoV-2 main protease",
      "gene": "Mpro (nsp5)", "pdb": "7SI9", "ligand": "4WI",
      "note": "공유결합 억제제. DiffDock 은 비공유 결합만 모사하므로 참고용이다"},
+    # 2차: structure_candidates.json 에서 고른 8종. PDB 와 리간드는 RCSB 에서 확인했다 (2026-09-28).
+    {"key": "parp1-7kk3--talazoparib", "drug": "talazoparib", "target": "PARP1 catalytic domain",
+     "gene": "PARP1", "pdb": "7KK3", "ligand": "2YQ", "note": "니라파립과 같은 PARP 억제제"},
+    {"key": "5ht2a-8zmg--pimavanserin", "drug": "pimavanserin", "target": "Serotonin 2A receptor",
+     "gene": "HTR2A", "pdb": "8ZMG", "ligand": "A1L11", "note": ""},
+    {"key": "5ht2a-7voe--aripiprazole", "drug": "aripiprazole", "target": "Serotonin 2A receptor",
+     "gene": "HTR2A", "pdb": "7VOE", "ligand": "9SC", "note": ""},
+    {"key": "sglt2-7vsi--empagliflozin", "drug": "empagliflozin", "target": "SGLT2 (SGLT2-MAP17)",
+     "gene": "SLC5A2", "pdb": "7VSI", "ligand": "7R3", "note": "cryo-EM 구조"},
+    {"key": "fxa-2p16--apixaban", "drug": "apixaban", "target": "Coagulation factor Xa",
+     "gene": "F10", "pdb": "2P16", "ligand": "GG2", "note": "케이스 스터디의 대조 약물과 같은 구조"},
+    {"key": "mor-8ef5--fentanyl", "drug": "fentanyl", "target": "Mu-opioid receptor (Gi complex)",
+     "gene": "OPRM1", "pdb": "8EF5", "ligand": "7V7", "note": "cryo-EM 구조"},
+    {"key": "pde5-1tbf--sildenafil", "drug": "sildenafil", "target": "PDE5A catalytic domain",
+     "gene": "PDE5A", "pdb": "1TBF", "ligand": "VIA", "note": ""},
+    {"key": "dhfr-1u72--methotrexate", "drug": "methotrexate", "target": "Dihydrofolate reductase",
+     "gene": "DHFR", "pdb": "1U72", "ligand": "MTX", "note": "보조인자 NADPH 는 수용체에 넣지 않았다 (ATOM 만 사용)"},
 ]
 
 
@@ -132,10 +149,30 @@ def diffdock(protein, smiles, num_poses=5):
             time.sleep(10 * 2 ** attempt)
 
 
+def fetch_structure(pdb_id):
+    """PDB 형식이 없는 큰 구조(최근 cryo-EM 등)는 mmCIF 를 받아 gemmi 로 PDB 형식으로 바꾼다."""
+    try:
+        return fetch(f"https://files.rcsb.org/download/{pdb_id}.pdb", CACHE / f"{pdb_id}.pdb")
+    except urllib.error.HTTPError as e:
+        if e.code != 404:
+            raise
+    import gemmi
+    cif = fetch(f"https://files.rcsb.org/download/{pdb_id}.cif", CACHE / f"{pdb_id}.cif")
+    st = gemmi.read_structure_string(cif) if hasattr(gemmi, "read_structure_string") else gemmi.make_structure_from_block(gemmi.cif.read_string(cif).sole_block())
+    st.shorten_chain_names()
+    # PDB 형식은 잔기 이름이 3글자라 4글자 이상 리간드 코드(A1L11 등)는 LIG 로 바꾼다
+    for model in st:
+        for chain in model:
+            for res in chain:
+                if len(res.name) > 3:
+                    res.name = "LIG"
+    return st.make_pdb_string()
+
+
 def run(t):
-    pdb_text = fetch(f"https://files.rcsb.org/download/{t['pdb']}.pdb", CACHE / f"{t['pdb']}.pdb")
+    pdb_text = fetch_structure(t["pdb"])
     smiles = ligand_smiles(t["ligand"])
-    chain, protein, lig_pdb = split_structure(pdb_text, t["ligand"])
+    chain, protein, lig_pdb = split_structure(pdb_text, t["ligand"] if len(t["ligand"]) <= 3 else "LIG")
     ref = crystal_ligand(lig_pdb, smiles)
     started = time.time()
     resp = diffdock(protein, smiles)
