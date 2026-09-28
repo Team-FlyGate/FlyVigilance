@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Card } from './ui'
 import { useBrain } from '../lib/brain'
 import {
@@ -17,8 +17,6 @@ const HOST: Record<StepKind | 'critic', string> = {
   msa: 'health.api.nvidia.com · MSA-Search', openfold3: 'health.api.nvidia.com · OpenFold3', diffdock: 'health.api.nvidia.com · DiffDock',
   boltz2: 'health.api.nvidia.com · Boltz-2', critic: 'integrate.api.nvidia.com · Nemotron 3 Super',
 }
-// 표적 · 리간드를 고를 수 있는 단계(나머지는 PARP1 고정)
-const PICK = new Set<StepKind | 'critic'>(['diffdock', 'boltz2'])
 
 type Row = [string, (r: never) => ReactNode]
 const n = (v: number | null | undefined, d = 2) => (v === null || v === undefined ? '–' : v.toFixed(d))
@@ -35,11 +33,12 @@ const ROWS: Record<StepKind, Row[]> = {
 export default function LiveRun({ step, drug }: { step: StepId; drug: string }) {
   const kind = KIND[step]
   const { sim } = useBrain()
-  const { runs, envs, customTarget, customLigand } = useDiscovery()
+  const { runs, envs, customTarget, customLigand, target: pickT, ligand: pickL } = useDiscovery()
   // 화면에서 단백질이나 약물을 찾아 골랐으면(검색) 그 값으로 부르고, 지난 측정 비교는 두지 않습니다
   const custom = !!(customTarget || customLigand)
   const [cat, setCat] = useState<Catalog | null>(null)
-  const [pair, setPair] = useState('')
+  // 마지막 응답을 받은 시각(같은 값이 와도 새로 받았다는 것을 보여 줍니다)
+  const [lastAt, setLastAt] = useState<Date | null>(null)
   const [fresh, setFresh] = useState(false)
   const [busy, setBusy] = useState(false)
   const [elapsed, setElapsed] = useState(0)
@@ -49,9 +48,6 @@ export default function LiveRun({ step, drug }: { step: StepId; drug: string }) 
   const [showReq, setShowReq] = useState(false)
 
   useEffect(() => { getCatalog().then(setCat).catch(() => setErr('라이브 서버에 닿지 못했습니다 · 지난 측정만 보여 줍니다')) }, [])
-  // 고른 PARP1 억제제가 라이브 목록에 있으면 그 약물로, 없으면(예: 탈라조파립) 니라파립으로 부릅니다
-  const ligand = cat?.ligands[drug] ? drug : 'niraparib'
-  useEffect(() => { if (cat) setPair(cat.pairs[`parp1--${ligand}`] ? `parp1--${ligand}` : Object.keys(cat.pairs)[0]) }, [cat, ligand])
   useEffect(() => {
     if (!busy) return
     const t0 = Date.now(), id = setInterval(() => setElapsed((Date.now() - t0) / 1000), 200)
@@ -59,9 +55,10 @@ export default function LiveRun({ step, drug }: { step: StepId; drug: string }) 
   }, [busy])
 
   const env = kind === 'critic' ? undefined : envs[kind]
-  // 지금 고른 표적 · 리간드의 요청 값(실행과 지난 측정 조회가 같은 값을 씁니다)
-  const target = PICK.has(kind) ? cat?.pairs[pair]?.target ?? 'parp1' : 'parp1'
-  const lig = PICK.has(kind) ? cat?.pairs[pair]?.ligand : kind === 'msa' ? undefined : ligand
+  // 위 표적 · 리간드 선택기(TargetPicker)에서 고른 값을 그대로 씁니다. 전에는 MSA · OpenFold3 가 PARP1 로 고정돼
+  // 선택기에서 Factor Xa 를 골라도 PARP1 을 다시 불러 '바뀌는 게 없어' 보였습니다
+  const target = pickT || 'parp1'
+  const lig = kind === 'msa' ? undefined : pickL || (cat?.ligands[drug] ? drug : 'niraparib')
   const [past, setPast] = useState<unknown>(null)
   useEffect(() => {
     if (kind === 'critic' || !cat) return
@@ -73,9 +70,13 @@ export default function LiveRun({ step, drug }: { step: StepId; drug: string }) 
   }, [kind, cat, target, lig, custom])
   // 이번 실행 결과는 지금 고른 쌍과 같을 때만 보여 줍니다(다른 쌍을 고르면 비웁니다)
   const sameParams = env && (custom ? !!(env.params?.custom_target || env.params?.custom_ligand) : (env.params?.target ?? 'parp1') === target && (kind === 'msa' || env.params?.ligand === lig))
-  const liveRes = sameParams ? env?.result : undefined
+  // 소요 시간은 결과 안에 없으면 봉투의 elapsed_s(서버가 잰 왕복 시간)로 채웁니다
+  const liveRes = sameParams && env?.result ? { ...env.result, seconds: (env.result as { seconds?: number | null }).seconds ?? env.elapsed_s } : undefined
   const pastRes = (sameParams ? env?.measured : null) ?? past
-  const pairs = useMemo(() => Object.entries(cat?.pairs ?? {}), [cat])
+  // 이번 실행과 지난 측정이 모든 지표에서 같은지(소요 시간 제외)
+  const same = kind !== 'critic' && liveRes && pastRes ? ROWS[kind].filter(([k]) => k !== '소요').every(([, f]) => String(f(liveRes as never)) === String(f(pastRes as never))) : false
+  const tLabel = customTarget ? customTarget.label : cat?.targets[target]?.label ?? target
+  const lLabel = customLigand ? customLigand.name : lig ? cat?.ligands[lig]?.ko ?? lig : null
 
   async function run() {
     setBusy(true); setErr(null); setElapsed(0)
@@ -92,12 +93,16 @@ export default function LiveRun({ step, drug }: { step: StepId; drug: string }) 
       params.no_cache = fresh
       // 앞 단계 MSA 를 이번 세션에서 돌렸으면 그 정렬을 넘기고, 아니면 지난 측정 정렬을 씁니다(OpenFold3 · Boltz-2)
       if (kind === 'openfold3' || kind === 'boltz2') {
-        if (runs.msa?.a3m) params.a3m = runs.msa.a3m
-        else if (runs.msa?.a3m_key) params.a3m_key = runs.msa.a3m_key
-        else if (kind === 'openfold3') params.a3m_measured = true
+        // 이번 세션 MSA 는 같은 표적일 때만 넘기고, 지난 측정 정렬은 PARP1 것이라 PARP1 일 때만 씁니다(다른 표적에 PARP1 정렬을 붙이지 않게)
+        // 표적을 바꾸면 저장소가 앞 단계 결과를 비우므로(selectTarget), 남아 있는 MSA 는 지금 표적(직접 찾은 단백질 포함)의 것입니다
+        const msaSame = Boolean(runs.msa) && (custom || (envs.msa?.params?.target ?? 'parp1') === target)
+        if (msaSame && runs.msa?.a3m) params.a3m = runs.msa.a3m
+        else if (msaSame && runs.msa?.a3m_key) params.a3m_key = runs.msa.a3m_key
+        else if (kind === 'openfold3' && !custom && target === 'parp1') params.a3m_measured = true
       }
       const out = await runStep(kind, params, (e) => saveRun(kind, e as Envelope))
       saveRun(kind, out as Envelope)
+      if (out.state === 'done') setLastAt(new Date())
       if (out.state === 'pending') setErr('NIM 계산이 5분 안에 끝나지 않았습니다 · 잠시 뒤 다시 누르면 이어서 받습니다')
       if (out.error) setErr(out.error)
       sim?.stimulate('layer', 'action', 0.9, 10)
@@ -120,21 +125,13 @@ export default function LiveRun({ step, drug }: { step: StepId; drug: string }) 
       {kind !== 'critic' && <div style={{ marginBottom: 12 }}><TargetPicker cat={cat} /></div>}
       <div className="grid" style={{ gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.4fr)', gap: 18, alignItems: 'start' }}>
         <div className="stack" style={{ gap: 10 }}>
-          {PICK.has(kind) && (
-            <label className="stack" style={{ gap: 4 }}>
-              <span className="mono dim" style={{ fontSize: 10.5, letterSpacing: 1.2 }}>표적 · 리간드</span>
-              <select id={`live-pair-${kind}`} value={pair} onChange={(e) => setPair(e.target.value)} disabled={busy || !cat}
-                style={{ background: 'var(--bg-2, #0b1222)', color: 'var(--text)', border: '1px solid var(--line)', borderRadius: 8, padding: '7px 9px', fontSize: 12.5 }}>
-                {pairs.map(([k, p]) => <option key={k} value={k}>{cat!.targets[p.target]?.label ?? p.target} · {cat!.ligands[p.ligand]?.ko ?? p.ligand} — {p.role}</option>)}
-              </select>
-            </label>
-          )}
-          {!PICK.has(kind) && kind !== 'critic' && (
-            <div className="dim" style={{ fontSize: 12.5 }}>PARP1 촉매 도메인{kind === 'openfold3' ? ` + ${cat?.ligands[ligand]?.ko ?? ligand}` : ''}
-              {drug !== ligand && <span className="mono" style={{ fontSize: 11 }}> · 고른 약물은 라이브 목록에 없어 니라파립으로 부릅니다</span>}</div>
+          {kind !== 'critic' && (
+            <div style={{ fontSize: 12.5 }}>이번에 부를 입력: <b>{tLabel}</b>{kind !== 'msa' && lLabel ? <> + <b>{lLabel}</b></> : null}
+              <span className="mono dim" style={{ fontSize: 11 }}> · 위 선택기에서 바꿉니다</span></div>
           )}
           {(kind === 'openfold3' || kind === 'boltz2') && (
-            <div className="mono dim" style={{ fontSize: 11 }}>MSA 입력: {runs.msa ? '이번 세션의 MSA-Search 결과' : '지난 측정 정렬(MSA 단계를 먼저 돌리면 그 결과를 넘깁니다)'}</div>
+            <div className="mono dim" style={{ fontSize: 11 }}>MSA 입력: {runs.msa && (custom || (envs.msa?.params?.target ?? 'parp1') === target) ? '이번 세션의 MSA-Search 결과'
+              : !custom && target === 'parp1' ? '지난 측정 정렬(MSA 단계를 먼저 돌리면 그 결과를 넘깁니다)' : '없음(단일 서열) · 이 표적으로 MSA 단계를 먼저 돌리면 그 정렬을 넘깁니다'}</div>
           )}
           {kind === 'critic' && (
             <label className="stack" style={{ gap: 4 }}>
@@ -157,12 +154,28 @@ export default function LiveRun({ step, drug }: { step: StepId; drug: string }) 
         <div className="stack" style={{ gap: 8 }}>
           {kind === 'critic' ? <CriticOut r={critic} /> : (
             <>
-              <div className="grid mono" style={{ gridTemplateColumns: 'minmax(0, 1.2fr) 1fr 1fr', gap: '6px 12px', fontSize: 12.5 }}>
+              <div key={lastAt?.getTime() ?? 0} className="grid mono fade-in" style={{ gridTemplateColumns: 'minmax(0, 1.2fr) 1fr 1fr', gap: '6px 12px', fontSize: 12.5 }}>
                 <span className="dim" style={{ fontSize: 10.5 }}>지표</span><span className="dim" style={{ fontSize: 10.5 }}>이번 실행</span><span className="dim" style={{ fontSize: 10.5 }}>지난 측정</span>
                 {ROWS[kind].map(([k, f]) => (
                   <Frag key={k} k={k} live={liveRes ? f(liveRes as never) : '–'} past={pastRes ? f(pastRes as never) : '–'} />
                 ))}
               </div>
+              {liveRes && lastAt && (
+                <div className="fade-in" style={{ fontSize: 12, lineHeight: 1.55 }}>
+                  <span className={`chip ${src?.cls ?? 'ok'}`} style={{ fontSize: 10, marginRight: 6 }}>{src?.text ?? '응답'}</span>
+                  {lastAt.toLocaleTimeString('ko-KR', { hour12: false })}에 받은 응답{env?.req_id ? <span className="mono dim"> · 요청 {env.req_id.slice(0, 8)}</span> : null}
+                  {env?.source === 'cache' && <div className="dim">같은 입력의 이전 라이브 결과를 캐시에서 꺼냈습니다. '캐시 무시'를 켜면 NIM 을 새로 부릅니다</div>}
+                  {kind === 'openfold3' && liveRes && (() => {
+                    const r = liveRes as unknown as Of3Result, rows = Number((env?.request as { molecules?: { msa_rows?: number }[] } | undefined)?.molecules?.[0]?.msa_rows ?? 0)
+                    const pl = r.scores.plddt ?? r.mean_plddt, ip = r.scores.iptm
+                    return <>
+                      {pl !== null && pl < 70 && rows <= 1 && <div style={{ color: 'var(--warn)' }}>MSA 없이 단일 서열로 예측해 신뢰도가 낮습니다(pLDDT {pl.toFixed(1)}). MSA 단계에서 이 표적을 먼저 돌리면 그 정렬을 넣어 다시 예측합니다</div>}
+                      {ip !== null && ip < 0.3 && <div style={{ color: 'var(--warn)' }}>ipTM {ip.toFixed(2)} · 단백질-리간드 접촉면 신뢰도가 낮습니다. 이 리간드가 이 단백질에 붙는다는 근거로 쓰면 안 됩니다</div>}
+                    </>
+                  })()}
+                  {same && env?.source !== 'cache' && <div className="dim">지난 측정과 값이 같습니다. 같은 서열 · 같은 데이터베이스 · 같은 설정이면 NIM 결과가 같게 나옵니다(재현성). 다른 표적을 골라 보면 값이 바뀝니다</div>}
+                </div>
+              )}
               {env?.request && (
                 <div>
                   <button className="chip" style={{ cursor: 'pointer', fontSize: 10.5 }} onClick={() => setShowReq((v) => !v)}>{showReq ? '요청 숨기기' : '보낸 요청 보기'}</button>
