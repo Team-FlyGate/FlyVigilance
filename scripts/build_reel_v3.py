@@ -39,7 +39,7 @@ GRADE_SNAPSHOT = REEL / "niraparib_grade.json"
 DEFAULT_OUT = PUB / "showreel/FlyGate_showreel_v3.0.0.html"
 
 REPO = "https://github.com/Team-FlyGate/Project-FlyGate"
-LIVE = "https://project-flygate.vercel.app"
+LIVE = "https://flygate.kr"
 
 FALLBACKS: list[str] = []  # 대체값을 쓴 항목(빌드 끝에 출력합니다)
 

@@ -43,7 +43,7 @@ for (const f of PAGE) cpSync(join(SRC, 'web', f), join(OUT, f))
 const page = join(OUT, 'index.html')
 writeFileSync(page, readFileSync(page, 'utf8')
   .replace('<head>', '<head>\n<base target="_top">')
-  .replaceAll('https://flyvigilance.vercel.app/#/', '/#/'))
+  .replaceAll('https://flyvigilance.vercel.app/#/', '/#/').replaceAll('https://flygate.kr/#/', '/#/'))
 
 let copied = PAGE.length
 for (const [to, from] of Object.entries(DATA)) {

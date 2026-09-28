@@ -36,22 +36,22 @@ const GROUPS: { step?: string; name?: string; color?: string; pages: Page[] }[] 
     { id: 'glossary', label: '용어 풀이', en: 'Glossary · 약어와 전문 용어', icon: I('M4 19.5V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2Zm0 0a2 2 0 0 0 2 2h13M9 8h6M9 12h4'), el: () => <Glossary /> },
   ] },
   { step: 'STEP 1 · 시판 전', name: 'FlyDiscovery', color: 'var(--c-sense)', pages: [
-    { id: 'discovery', label: '후보 탐색 개요', en: 'Discovery · 약물 패널', icon: I('M12 3l7.8 4.5v9L12 21l-7.8-4.5v-9ZM12 8.5l3 1.75v3.5L12 15.5l-3-1.75v-3.5Z'), el: () => <Discovery /> },
-    { id: 'd-msa', label: 'MSA-Search', en: '01 · 상동 서열 정렬', icon: I('M4 6h16M4 10h10M4 14h16M4 18h7'), el: () => <DiscoveryStep key="msa" step="msa" /> },
-    { id: 'd-of3', label: 'OpenFold3', en: '02 · 복합체 구조 예측', icon: I('M6 4c6 0 6 4 12 4M6 10c6 0 6 4 12 4M6 16c6 0 6 4 12 4'), el: () => <DiscoveryStep key="of3" step="of3" /> },
-    { id: 'd-diffdock', label: 'DiffDock', en: '03 · 도킹 · 재도킹', icon: I('M12 3a9 9 0 1 0 9 9M12 8a4 4 0 1 0 4 4M3 3l6 6'), el: () => <DiscoveryStep key="dd" step="dd" /> },
-    { id: 'd-boltz', label: 'Boltz-2', en: '04 · 친화도 예측 · 실측 대조', icon: I('M4 20 20 4M6 14l2 2M10 10l2 2M14 6l2 2'), el: () => <DiscoveryStep key="bz" step="bz" /> },
-    { id: 'd-critic', label: '크리틱', en: '05 · 근거를 넘는 주장 반려', icon: I('M9 12l2 2 4-4M12 3 4 7v6c0 4 3.5 7 8 8 4.5-1 8-4 8-8V7l-8-4Z'), el: () => <DiscoveryStep key="critic" step="critic" /> },
-    { id: 'd-evidence', label: '근거 검증', en: '06 · 검증 → 선택성 → 후보 카드', icon: I('M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14ZM21 21l-5-5M8 11l2 2 4-4'), el: () => <DiscoveryEvidence /> },
+    { id: 'discovery', label: '전체 프로세스', en: 'Discovery · 약물 패널', icon: I('M12 3l7.8 4.5v9L12 21l-7.8-4.5v-9ZM12 8.5l3 1.75v3.5L12 15.5l-3-1.75v-3.5Z'), el: () => <Discovery /> },
+    { id: 'd-msa', label: '1. MSA-Search', en: '상동 서열 정렬', icon: I('M4 6h16M4 10h10M4 14h16M4 18h7'), el: () => <DiscoveryStep key="msa" step="msa" /> },
+    { id: 'd-of3', label: '2. OpenFold3', en: '복합체 구조 예측', icon: I('M6 4c6 0 6 4 12 4M6 10c6 0 6 4 12 4M6 16c6 0 6 4 12 4'), el: () => <DiscoveryStep key="of3" step="of3" /> },
+    { id: 'd-diffdock', label: '3. DiffDock', en: '도킹 · 재도킹', icon: I('M12 3a9 9 0 1 0 9 9M12 8a4 4 0 1 0 4 4M3 3l6 6'), el: () => <DiscoveryStep key="dd" step="dd" /> },
+    { id: 'd-boltz', label: '4. Boltz-2', en: '친화도 예측 · 실측 대조', icon: I('M4 20 20 4M6 14l2 2M10 10l2 2M14 6l2 2'), el: () => <DiscoveryStep key="bz" step="bz" /> },
+    { id: 'd-critic', label: '5. 크리틱', en: '근거를 넘는 주장 반려', icon: I('M9 12l2 2 4-4M12 3 4 7v6c0 4 3.5 7 8 8 4.5-1 8-4 8-8V7l-8-4Z'), el: () => <DiscoveryStep key="critic" step="critic" /> },
+    { id: 'd-evidence', label: '6. 근거 검증', en: '검증 → 선택성 → 후보 카드', icon: I('M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14ZM21 21l-5-5M8 11l2 2 4-4'), el: () => <DiscoveryEvidence /> },
   ] },
   { step: 'STEP 2 · 시판 후', name: 'FlyVigilance', color: 'var(--nvidia)', pages: [
     { id: 'mission', label: '관제 센터', en: 'Mission Control', icon: I('M12 3a9 9 0 1 0 9 9M12 7a5 5 0 1 0 5 5M12 11a1 1 0 1 0 1 1M21 3l-7.5 7.5'), el: () => <MissionControl /> },
     { id: 'triage', label: '사례 분류 (트리아지)', en: 'Live Triage · 보고 한 건', icon: I('M3 12h4l3-8 4 16 3-8h4'), el: () => <LiveTriage /> },
     { id: 'korea', label: '국내 보고 · 인과성', en: 'Korean PV Intake', icon: I('M4 4h16v16H4zM8 9h8M8 13h8M8 17h5'), el: () => <KoreanPV /> },
-    { id: 'signals', label: '신호 연구실', en: 'Signal Lab', icon: I('M4 20V10M10 20V4M16 20v-7M22 20H2'), el: () => <SignalLab /> },
-    { id: 'timemachine', label: '신호 타임머신', en: 'Signal Time Machine', icon: I('M12 7v5l3 2M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5'), el: () => <TimeMachine /> },
+    { id: 'signals', label: '부작용 신호 연구실', en: 'Signal Lab', icon: I('M4 20V10M10 20V4M16 20v-7M22 20H2'), el: () => <SignalLab /> },
+    { id: 'timemachine', label: '부작용 신호 타임머신', en: 'Signal Time Machine', icon: I('M12 7v5l3 2M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5'), el: () => <TimeMachine /> },
     { id: 'validation', label: '검증', en: 'Reference Validation', icon: I('M9 12l2 2 4-4M4 4h16v16H4z'), el: () => <Validation /> },
-    { id: 'bench', label: '벤치마크', en: 'Measured Performance', icon: I('M3 3v18h18M7 15l4-4 3 3 6-7'), el: () => <Benchmarks /> },
+    { id: 'bench', label: '유의성 벤치마크', en: 'Measured Performance', icon: I('M3 3v18h18M7 15l4-4 3 3 6-7'), el: () => <Benchmarks /> },
     { id: 'warehouse', label: '데이터 웨어하우스', en: 'PV Warehouse', icon: I('M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3ZM4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6'), el: () => <Warehouse /> },
   ] },
   { step: '에이전트 · NVIDIA', name: 'NemoClaw', color: '#e2a74e', pages: [
@@ -90,13 +90,13 @@ export default function App() {
       <div className="app-bg" />
       <div className="shell">
         <nav className="nav">
-          <div className="brand">
+          <a className="brand" href="#/overview" onClick={() => go('overview')} title="홈(개요)으로" aria-label="FlyGate 홈으로" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
             <svg className="brand-mark" viewBox="0 0 64 64"><defs><radialGradient id="bm" cx="50%" cy="45%" r="55%"><stop offset="0" stopColor="#9ffcff" /><stop offset="0.55" stopColor="#2bd9ff" /><stop offset="1" stopColor="#0a1830" /></radialGradient></defs><rect width="64" height="64" rx="14" fill="#0a1122" /><ellipse cx="32" cy="30" rx="20" ry="15" fill="url(#bm)" opacity=".9" /><path d="M12 30c6-8 14-8 20 0s14 8 20 0" stroke="#76b900" strokeWidth="3" fill="none" strokeLinecap="round" /><circle cx="32" cy="46" r="4" fill="#ffb547" /></svg>
             <div>
               <div className="brand-name">FlyGate</div>
               <div className="brand-sub" style={{ letterSpacing: 0.4, textTransform: 'none' }}>Discovery → Vigilance</div>
             </div>
-          </div>
+          </a>
           {GROUPS.map((g, gi) => (
             <div key={gi} style={{ display: 'contents' }}>
               {g.step && <div className="nav-grp"><span>{g.step}</span><b style={{ color: g.color }}>{g.name}</b></div>}
