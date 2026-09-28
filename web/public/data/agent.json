@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-28 01:00",
+ "generated": "2026-09-28 01:30",
  "stack": [
   {
    "layer": "LLM endpoints",
@@ -68,67 +68,67 @@
   },
   {
    "name": "connectome-router",
-   "description": "Use when rendering or reasoning about FlyVigilance's routing topology — the MaleCNS central-brain subgraph (49,244 neurons, 1.05M signed edges) mapped to agent layers, with a browser rate model driven by agent decisions.",
+   "description": "Use when building, rendering or explaining the FlyVigilance routing topology: the MaleCNS central-brain subgraph (49,244 neurons, 1,051,255 signed edges) mapped to the agent's nine layers, with a browser rate model that agent decisions drive. Do not use for clinical, causal or regulatory conclusions; the connectome is a routing visualization.",
    "stage": "shared",
    "path": "skills/connectome-router/SKILL.md"
   },
   {
    "name": "faers-warehouse",
-   "description": "Use when building or refreshing the FlyVigilance FAERS warehouse — incremental quarterly ingest of FDA FAERS ASCII files into DuckDB, case de-duplication, drug-name normalization, and disproportionality tables.",
+   "description": "Use when building or refreshing the FlyVigilance FAERS warehouse: incremental quarterly ingest of FDA FAERS ASCII files into DuckDB, case de-duplication, drug-name normalization, disproportionality tables (PRR, ROR, chi-square, IC025) and the API/dashboard extracts. Do not use to interpret a signal or assess a single case.",
    "stage": "vigilance",
    "path": "skills/faers-warehouse/SKILL.md"
   },
   {
    "name": "pv-critic",
-   "description": "Use to verify any AI-written pharmacovigilance claim — tier 1 evidence-ID rules, tier 2 numeric oracle against the evidence bundle, tier 3 overclaim judgment (non-autoregressive judgment model) plus a per-claim NVIDIA safety guard — and return the claim to its author with reasons when it fails.",
+   "description": "Use to verify any AI-written pharmacovigilance claim: tier 1 evidence-ID rules, tier 2 numeric oracle against the evidence bundle, tier 3 overclaim judgment by the non-autoregressive judgment model plus two per-claim NVIDIA Nemotron safety guards (the stock Safety Guard and the pharmacovigilance BYO policy from pv-guardrail-policy). Returns the claim to its author with reasons when it fails. Do not use to write assessments or to decide causality.",
    "stage": "vigilance",
    "path": "skills/pv-critic/SKILL.md"
   },
   {
    "name": "pv-deliberate-assess",
-   "description": "Use when triage escalates a case to System-2 — NVIDIA Nemotron writes an evidence-bound case assessment (claims JSON with evidence IDs, narrative, open questions) that is then checked by the pv-critic skill.",
+   "description": "Use when triage escalates a case to System-2: NVIDIA Nemotron writes an evidence-bound case assessment (3 to 6 claims with evidence IDs, assessment, narrative, open questions) from the evidence bundle only, and the pv-critic skill checks it before a human sees it. Do not use for routine cases that triage closes or monitors, or for regulatory submission text.",
    "stage": "vigilance",
    "path": "skills/pv-deliberate-assess/SKILL.md"
   },
   {
    "name": "pv-evidence-grade",
-   "description": "Use when a drug–event pair needs a population-level evidence grade (A/B/C/L/D/U) built by fixed rules from label section, FAERS triple-criterion signal and literature, returned together with its basis (evidence IDs) and gaps.",
+   "description": "Use when a drug–event pair needs a population-level evidence classification: a PV class candidate (label status × SDR) and a one-letter grade (A/B/C/L/D/U) built by fixed rules from the openFDA label section, the FAERS triple-criterion SDR and PubMed literature, returned with its basis (evidence IDs), gaps and flags. Do not use as individual-case causality or as a regulatory classification.",
    "stage": "vigilance",
    "path": "skills/pv-evidence-grade/SKILL.md"
   },
   {
    "name": "pv-guardrail-policy",
-   "description": "Use when configuring the FlyVigilance content-safety policy — custom pharmacovigilance categories layered on NVIDIA Nemotron safety guard, following the nemotron-policy-generator skill's BYO-policy pattern.",
+   "description": "Use when configuring or changing the FlyVigilance content-safety policy: the pharmacovigilance BYO policy (PV-1..PV-5 on top of the relevant Nemotron Content Safety V2 categories) that runs on nvidia/nemotron-3.5-content-safety via chat_template_kwargs.custom_policy, next to the stock Llama-3.1 Nemotron Safety Guard 8B v3. Do not use to judge a claim by hand; the critic calls the guards.",
    "stage": "vigilance",
    "path": "skills/pv-guardrail-policy/SKILL.md"
   },
   {
    "name": "pv-kr-intake-causality",
-   "description": "Use when a Korean adverse event report (MFDS professional form, consumer report, or hospital/pharmacist narrative) must be structured into the MFDS form sections and a triage case, scored with the Korean causality algorithm ver 2.0, and routed under Korean expedited-reporting rules.",
+   "description": "Use when a Korean adverse event report (MFDS professional form, consumer report, or hospital/pharmacist narrative) must be structured into the MFDS form sections and a triage case, scored with the Korean causality algorithm ver 2.0 (seven items judged by the non-autoregressive judgment model, the known-information item by label/literature rules, score summed by rule), and routed under Korean expedited-reporting rules. Do not use as the final causality decision or as an MFDS submission.",
    "stage": "vigilance",
    "path": "skills/pv-kr-intake-causality/SKILL.md"
   },
   {
    "name": "pv-literature-reading",
-   "description": "Use when a drug–event pair needs its top PubMed articles read and typed — study design (PubMed publication type by rule, otherwise judgment-model choice), whether the article reports the association, dechallenge/rechallenge mentions and conclusion strength — with citable pubmed:<pmid>#<design> IDs.",
+   "description": "Use when a drug–event pair needs its top PubMed articles read and typed: the top 20 PubMed candidates are reordered by the NVIDIA Nemotron reranker, then the top 6 are typed for study design (PubMed publication type by rule, otherwise a judgment-model choice), whether the article actually studies the pair, design-specific items (dechallenge, rechallenge, onset, effect, comparator, dose) and support for the association, with citable pubmed:<pmid>#<design> IDs. Do not use as a systematic review or to count articles as evidence strength.",
    "stage": "vigilance",
    "path": "skills/pv-literature-reading/SKILL.md"
   },
   {
    "name": "pv-reference-validation",
-   "description": "Use to measure how signal-detection methods perform on public reference sets (OMOP, EU-ADR, Harpaz time-indexed incl. a pre-2013 prospective window from legacy AERS) — ROC/AUC with bootstrap CIs for PRR/ROR/chi2/IC025, the FlyVigilance knowledge-based mode (drug and event names), the FlyVigilance statistics-based mode (names hidden) and a single-question baseline.",
+   "description": "Use to measure how signal-detection methods perform on public reference sets (OMOP, EU-ADR, Harpaz time-indexed incl. a pre-2013 prospective window from legacy AERS): ROC/AUC with bootstrap CIs for report count, PRR, ROR025, chi-square and IC025, the FlyVigilance knowledge-based mode (drug and event names), the statistics-based mode (names hidden) and a single-question baseline. Do not use to judge causality in an individual case.",
    "stage": "vigilance",
    "path": "skills/pv-reference-validation/SKILL.md"
   },
   {
    "name": "pv-reflex-triage",
-   "description": "Use when an ICSR needs an immediate triage decision — seriousness, expectedness, WHO-UMC causality, special situation, priority and next action — returned as typed calibrated probabilities from the non-autoregressive judgment model (System-1) in one call.",
+   "description": "Use when an ICSR needs an immediate triage decision: seriousness, expectedness, WHO-UMC causality, special situation, priority and next action, returned as typed calibrated probabilities from the non-autoregressive judgment model (System-1) in one call, then routed by a deterministic policy with label grounding, an EMA DME safety net and US/KR expedited-reporting regimes. Do not use for a written case assessment or a final regulatory decision.",
    "stage": "vigilance",
    "path": "skills/pv-reflex-triage/SKILL.md"
   },
   {
    "name": "pv-signal-memory",
-   "description": "Use when a drug–event pair needs evidence — FAERS 2x2 disproportionality from the warehouse, openFDA label sections that mention the reaction, and PubMed hits — each returned with a citable evidence ID.",
+   "description": "Use when a drug–event pair or a case needs its evidence bundle: FAERS 2x2 disproportionality from the warehouse, openFDA label sections that list the reaction, PubMed articles, the evidence grade and reference-set metrics, each returned with a citable evidence ID that System-2 memos must use. Do not use to interpret the evidence; interpretation belongs to pv-evidence-grade, pv-deliberate-assess and the human reviewer.",
    "stage": "vigilance",
    "path": "skills/pv-signal-memory/SKILL.md"
   }
@@ -382,8 +382,8 @@
   {
    "id": "03c",
    "title": "상시 실행: 스킬, 하트비트, cron, 하위 에이전트",
-   "ours": "partial · 스킬 설치와 하트비트 점검(flygate watch)은 샌드박스 안에서 돌렸습니다. cron 등록과 하위 에이전트 위임은 배포 스크립트와 트리거 표에 정의했습니다.",
-   "where": "agent/workspace/HEARTBEAT.md · agent/deploy_nemoclaw.sh"
+   "ours": "implemented · 샌드박스 안 OpenClaw 게이트웨이에서 하트비트가 돌고, flygate-daily-watch cron(매일 07:00 서울, 격리 세션, 전달 없음)을 등록했습니다. 하트비트 점검 flygate watch 도 샌드박스 안에서 돌렸습니다. 하위 에이전트 위임은 트리거 표에 정의했습니다.",
+   "where": "agent/workspace/HEARTBEAT.md · agent/deploy_nemoclaw.sh · agent/evidence/openclaw_cron_2026-09-28.txt"
   },
   {
    "id": "04a",
