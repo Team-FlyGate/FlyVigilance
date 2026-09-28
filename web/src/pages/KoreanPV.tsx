@@ -5,6 +5,7 @@ import { useBrain } from '../lib/brain'
 import { api, fmt, type Case, type TriageResult } from '../lib/data'
 import { KR_SAMPLES, type KrSample } from '../lib/krSamples'
 import { ACTION_META } from './MissionControl'
+import Term from '../components/Term'
 
 type Form = KrSample['form']
 const FORM_LABEL: Record<Form, string> = {
@@ -103,9 +104,9 @@ export default function KoreanPV() {
     <div className="page">
       <PageHead eyebrow="Korean PV · 국내 보고서식 · 한국형 인과성 평가 · 국내 규정 모드"
         title={<>국내 보고 한 장이 <span style={{ color: 'var(--c-sense)' }}>구조화</span>되고 <span style={{ color: 'var(--jev)' }}>평가</span>되기까지</>}
-        lede={<>의약전문가용·일반인 보고서나 병원·약사의 사례 기사를 넣으면 NVIDIA Nemotron이 식약처 공고 제2023-057호 서식(가~바)과 트리아지용 케이스로 구조화합니다.
-          지역의약품안전센터가 쓰는 한국형 인과성 평가 알고리즘 ver 2.0의 8개 항목 중 7개는 FlyVigilance가 비자기회귀 판단 모델로 판단하고, '약물에 대해 알려진 정보' 항목은 모델이 고르지 않고 허가 라벨·문헌 조회 규칙으로만 정합니다. 점수는 규칙으로 합산하며,
-          국내 신속보고 기준(중대한 약물이상반응, 즉 인과관계를 배제할 수 없는 반응 → 15일)으로 라우팅합니다.</>} />
+        lede={<>의약전문가용·일반인 보고서나 병원·약사의 사례 기사를 넣으면 NVIDIA <Term k="Nemotron" />이 <Term k="MFDS">식약처</Term>(식품의약품안전처) 공고 제2023-057호 서식(가~바)과 <Term k="triage">트리아지</Term>(사례 분류)용 케이스로 구조화합니다.
+          <Term k="regional">지역의약품안전센터</Term>가 쓰는 <Term k="kralgo">한국형 인과성 평가 알고리즘 ver 2.0</Term>의 8개 항목 중 7개는 FlyVigilance가 <Term k="NAR">비자기회귀 판단 모델</Term>로 판단하고, '약물에 대해 알려진 정보' 항목은 모델이 고르지 않고 허가 <Term k="label">라벨</Term>·문헌 조회 규칙으로만 정합니다. 점수는 규칙으로 합산하며,
+          국내 <Term k="expedited">신속보고</Term> 기준(중대한 <Term k="ADR">약물이상반응</Term>, 즉 인과관계를 배제할 수 없는 반응 → 15일)으로 라우팅합니다.</>} />
 
       <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1.35fr) minmax(340px,1fr)', alignItems: 'start' }}>
         <div className="stack" style={{ gap: 16 }}>
@@ -148,7 +149,7 @@ export default function KoreanPV() {
           )}
 
           {caus && (
-            <Card title={<>3. 한국형 인과성 평가 알고리즘 ver 2.0 <span className="chip jev" style={{ marginLeft: 8 }}>비자기회귀 판단 {fmt.ms(caus.latency_ms)} · 7문항 + WHO-UMC 1회 호출</span></>}
+            <Card title={<>3. 한국형 인과성 평가 알고리즘 ver 2.0 <span className="chip jev" style={{ marginLeft: 8 }}>비자기회귀 판단 {fmt.ms(caus.latency_ms)} · 7문항 + <Term k="WHOUMC" /> 1회 호출</span></>}
               sub="7개 항목 선택은 비자기회귀 판단 모델이, '약물에 대해 알려진 정보'는 조회 규칙이, 점수 합산과 등급 구간은 규칙이 정합니다. 신뢰도 0.55 미만 항목과 '알려진 정보' 항목은 평가자 검토 대상으로 표시합니다">
               <table className="tbl">
                 <thead><tr><th>항목</th><th>판단</th><th className="r">점수</th><th>근거</th><th className="r">신뢰도</th></tr></thead>
@@ -178,7 +179,7 @@ export default function KoreanPV() {
                   <div className="pbar" style={{ marginTop: 10 }}><i style={{ width: `${((caus.total - caus.min) / (caus.max - caus.min)) * 100}%`, background: GRADE_COLOR[caus.grade] }} /></div>
                 </div>
                 <div style={{ padding: 16, borderRadius: 14, border: '1px solid var(--line-2)' }}>
-                  <div className="eyebrow" style={{ color: 'var(--text-2)' }}>WHO-UMC (별도 체계)</div>
+                  <div className="eyebrow" style={{ color: 'var(--text-2)' }}><Term k="WHOUMC" /> (별도 체계)</div>
                   <div className="row" style={{ gap: 10, marginTop: 6 }}><b style={{ fontSize: 18, fontFamily: 'var(--font-kr)' }}>{WHO_KR[caus.who_umc.choice] ?? caus.who_umc.choice}</b><span className="chip">conf {caus.who_umc.confidence.toFixed(2)}</span></div>
                   <div className="note" style={{ marginTop: 8 }}>{caus.note}</div>
                 </div>
@@ -231,11 +232,11 @@ export default function KoreanPV() {
           </Card>
           <Card title="국내 약물감시 흐름" sub="팀 문서 「국내 PV 흐름 설명」 요약">
             <ol style={{ margin: 0, paddingLeft: 18, fontSize: 12.5, lineHeight: 1.8, color: 'var(--text-2)' }}>
-              <li><b>보고</b>: 품목허가를 받은 자(제약사) 의무, 중대한 약물이상반응은 의약품도매상·약국개설자·의료기관개설자도 15일 이내 보고 의무, 의사·약사·환자는 자율 (KAERS · 1644-6223)</li>
+              <li><b>보고</b>: 품목허가를 받은 자(제약사) 의무, 중대한 약물이상반응은 의약품도매상·약국개설자·의료기관개설자도 15일 이내 보고 의무, 의사·약사·환자는 자율 (<Term k="KAERS" ko /> · 1644-6223)</li>
               <li><b>지역의약품안전센터 28곳</b>: 개별 사례 인과성 평가 (WHO-UMC, 한국형 알고리즘 ver 2.0)</li>
-              <li><b>KIDS · KAERS</b>: 통계적 탐지(PRR·ROR·IC) + 사례 분석 + 허가정보·문헌 검토 → 실마리정보</li>
+              <li><b><Term k="KIDS" /> · KAERS</b>: 통계적 탐지(<Term k="PRR" />·<Term k="ROR" />·<Term k="IC025">IC</Term>) + 사례 분석 + 허가정보·문헌 검토 → <Term k="kr_signal">실마리정보</Term></li>
               <li><b>식약처</b>: 성분 단위 허가사항 변경 명령(3개월 내 반영), 안전성 서한, 회수</li>
-              <li><b>공개·국제</b>: 실마리정보 알리미, WHO VigiBase</li>
+              <li><b>공개·국제</b>: 실마리정보 알리미, WHO <Term k="VigiBase" /></li>
             </ol>
             <div className="note" style={{ marginTop: 8 }}>FlyVigilance는 2단계(개별 평가)의 준비 작업과 3단계(신호 탐지)를 돕고, 판정과 보고는 평가자와 담당자가 합니다.</div>
           </Card>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api, fmt } from '../lib/data'
 import type { EvidenceGrade, LitArticle } from '../lib/types'
+import Term from './Term'
 
 // 한 글자 등급은 팀 시제품 호환용입니다. 화면의 중심은 PV 분류(라벨 상태 × SDR)입니다
 export const GRADE_COLOR: Record<string, string> = { A: '#ff5d6c', B: '#ffb547', C: '#ffe066', L: '#37e6ff', D: '#6c7aa8', U: '#4a5878' }
@@ -26,7 +27,7 @@ export function GradeLegend() {
         ))}
       </div>
       <div className="dim" style={{ fontSize: 10.5 }}>
-        숫자는 PV 검토 우선순위입니다. SDR(불균형 보고 신호)은 통계 기준을 넘은 상태이며, 검증을 거쳐야 검증된 신호가 됩니다(EU GVP Module IX).
+        숫자는 <Term k="pvclass">PV 분류</Term>의 검토 우선순위입니다. <Term k="SDR" ko />은 통계 기준을 넘은 상태이며, 검증을 거쳐야 검증된 <Term k="signal">신호</Term>가 됩니다(EU <Term k="GVP">GVP Module IX</Term>).
         분류는 모두 '후보'이고 실제 분류는 허가권자와 규제기관이 정합니다.
       </div>
     </div>
@@ -37,7 +38,7 @@ function Articles({ arts }: { arts: LitArticle[] }) {
   if (!arts.length) return null
   return (
     <table className="tbl" style={{ fontSize: 11 }}>
-      <thead><tr><th>PMID</th><th>설계</th><th>다루는가</th><th className="r">연관 보고 p</th></tr></thead>
+      <thead><tr><th><Term k="PubMed">PMID</Term></th><th><Term k="design">설계</Term></th><th>다루는가</th><th className="r">연관 보고 p</th></tr></thead>
       <tbody>{arts.map((a) => (
         <tr key={a.pmid} title={a.title} style={{ opacity: a.addresses === 'passing' || a.addresses === 'unrelated' ? 0.5 : 1 }}>
           <td><a href={`https://pubmed.ncbi.nlm.nih.gov/${a.pmid}/`} target="_blank" rel="noreferrer">{a.pmid}</a> <span className="dim">{a.year}</span></td>
@@ -69,10 +70,10 @@ export function GradeView({ g, compact = false }: { g: EvidenceGrade; compact?: 
         </div>
       </div>
       <div className="row wrap" style={{ gap: 6 }}>
-        {g.flags?.severity_boxed && <span className="chip bad" style={{ fontSize: 10 }}>심각성 · 박스 경고</span>}
-        {g.flags?.dme && <span className="chip bad" style={{ fontSize: 10 }}>EMA DME · 1건만으로도 검토</span>}
-        {bias && (bias.flag_lawyer || bias.flag_consumer) && <span className="chip warn" style={{ fontSize: 10 }}>보고 편향 의심 · {bias.flag_lawyer ? `변호사 ${fmt.pct(bias.lawyer_share, 0)}` : `소비자 ${fmt.pct(bias.consumer_share, 0)}`}</span>}
-        {g.flags?.indication_term && <span className="chip warn" style={{ fontSize: 10 }}>적응증 용어와 겹침</span>}
+        {g.flags?.severity_boxed && <span className="chip bad" style={{ fontSize: 10 }}>심각성 · <Term k="boxed">박스 경고</Term></span>}
+        {g.flags?.dme && <span className="chip bad" style={{ fontSize: 10 }}>EMA <Term k="DME" /> · 1건만으로도 검토</span>}
+        {bias && (bias.flag_lawyer || bias.flag_consumer) && <span className="chip warn" style={{ fontSize: 10 }}><Term k="bias">보고 편향</Term> 의심 · {bias.flag_lawyer ? `변호사 ${fmt.pct(bias.lawyer_share, 0)}` : `소비자 ${fmt.pct(bias.consumer_share, 0)}`}</span>}
+        {g.flags?.indication_term && <span className="chip warn" style={{ fontSize: 10 }}><Term k="indication">적응증</Term> 용어와 겹침</span>}
       </div>
       <div className="grid g3" style={{ gap: 8 }}>
         <div style={{ padding: 8, borderRadius: 10, border: '1px solid var(--line)' }}>
@@ -94,7 +95,7 @@ export function GradeView({ g, compact = false }: { g: EvidenceGrade; compact?: 
       </div>
       {kn?.p != null && (
         <div className="row" style={{ gap: 10, alignItems: 'center', padding: 8, borderRadius: 10, border: '1px solid var(--line)' }}>
-          <span className="dim mono" style={{ fontSize: 9.5, whiteSpace: 'nowrap' }}>지식 기반 판별 · 참고</span>
+          <span className="dim mono" style={{ fontSize: 9.5, whiteSpace: 'nowrap' }}><Term k="kbmode">지식 기반 판별</Term> · 참고</span>
           <div className="bar" style={{ flex: 1, height: 6 }}><i style={{ width: `${kn.p * 100}%`, background: 'var(--jev)' }} /></div>
           <span className="num" style={{ fontSize: 12 }}>{kn.p.toFixed(2)}</span>
           <span className="dim" style={{ fontSize: 10.5 }}>공인된 연관일 확률{kn.latency_ms ? ` · ${Math.round(kn.latency_ms)} ms` : ''}</span>

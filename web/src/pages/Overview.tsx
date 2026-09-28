@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { Card, PageHead } from '../components/ui'
 import { api, fmt, getJSON, type SignalRow } from '../lib/data'
 import type { Ablation, Bench, CriticProbe, DiscoveryMeasurements, DockEval, Escalation, LiteratureEval, Validation } from '../lib/types'
+import Term from '../components/Term'
 
 // 개요: STEP 1 시판 전(후보 물질)과 STEP 2 시판 후(허가 약물)를 데모 약물 니라파립으로 이어 시판 전 탐색에서 STEP 2 시판 후 감시까지 한 화면에 보여 줍니다.
 // 수치는 정적 데이터(/data, /discovery/data)나 API 에서 읽습니다. 파일이 없으면 '…' 로 남깁니다.
@@ -59,13 +60,13 @@ function Versus({ label, fv, raw, p, sub }: { label: string; fv: ReactNode; raw:
         <span className="dim" style={{ fontSize: 12 }}>vs</span>
         <span className="num" style={{ fontSize: 18, color: 'var(--text-2)' }}>{raw}</span>
       </div>
-      {p !== undefined && <span className="chip ok" style={{ fontSize: 10.5, padding: '1px 8px', margin: '4px 0 2px' }}>McNemar {fmtP(p)}</span>}
+      {p !== undefined && <span className="chip ok" style={{ fontSize: 10.5, padding: '1px 8px', margin: '4px 0 2px' }}><Term k="McNemar">McNemar</Term> {fmtP(p)}</span>}
       {sub && <div style={{ fontSize: 11.5, color: 'var(--text-2)', lineHeight: 1.45, marginTop: 2 }}>{sub}</div>}
     </div>
   )
 }
 
-function Fact({ value, label, sub, color }: { value: ReactNode; label: string; sub: ReactNode; color: string }) {
+function Fact({ value, label, sub, color }: { value: ReactNode; label: ReactNode; sub: ReactNode; color: string }) {
   return (
     <div style={{ ...tile, boxShadow: `inset 3px 0 0 ${color}` }}>
       <div className="mono dim" style={{ fontSize: 10.5, letterSpacing: 0.6 }}>{label}</div>
@@ -137,32 +138,32 @@ export default function Overview() {
 
   const d = (x: number | undefined, digits = 2) => (x === undefined ? '…' : x.toFixed(digits))
   const step1: Step[] = [
-    { name: '표적 · PARP1', tech: 'PDB 4R6E', kind: 'data', val: '니라파립 공결정 구조' },
-    { name: 'MSA-Search', tech: 'BioNeMo NIM', kind: 'nim', val: <>상동 서열 {of3?.msa_homologs ?? '…'}개 · {MSA_SECONDS}초</> },
-    { name: 'OpenFold3', tech: 'BioNeMo NIM', kind: 'nim', val: <>pLDDT {of3?.plddt ?? '…'} · CA {d(of3?.ca_rmsd_vs_4R6E, 1)} Å</> },
-    { name: 'DiffDock', tech: 'BioNeMo NIM', kind: 'nim', val: <>재도킹 RMSD {nirDock?.rmsd_xtal ?? '…'} Å</> },
-    { name: 'Boltz-2', tech: 'BioNeMo NIM', kind: 'nim', val: <>ChEMBL 대비 ρ {d(bm?.spearman, 3)} · {bm?.n ?? '…'}종</> },
+    { name: '표적 · PARP1', tech: 'PDB 4R6E', kind: 'data', val: <>니라파립 <Term k="cocrystal">공결정 구조</Term> · <Term k="PDB">PDB</Term></> },
+    { name: 'MSA-Search', tech: 'BioNeMo NIM', kind: 'nim', val: <><Term k="MSA">상동 서열</Term> {of3?.msa_homologs ?? '…'}개 · {MSA_SECONDS}초</> },
+    { name: 'OpenFold3', tech: 'BioNeMo NIM', kind: 'nim', val: <><Term k="pLDDT" /> {of3?.plddt ?? '…'} · <Term k="CA">CA</Term> {d(of3?.ca_rmsd_vs_4R6E, 1)} Å</> },
+    { name: 'DiffDock', tech: 'BioNeMo NIM', kind: 'nim', val: <><Term k="docking">재도킹</Term> <Term k="RMSD" /> {nirDock?.rmsd_xtal ?? '…'} <Term k="angstrom">Å</Term></> },
+    { name: 'Boltz-2', tech: 'BioNeMo NIM', kind: 'nim', val: <><Term k="ChEMBL" /> 대비 <Term k="spearman">ρ</Term> {d(bm?.spearman, 3)} · {bm?.n ?? '…'}종</> },
     { name: '전통 기준 채점', tech: '규칙', kind: 'rule', val: <>포즈 ≤ 2 Å {redock.filter((x) => (x.rmsd_xtal ?? 9) <= 2).length}/{redock.length || '…'}</> },
-    { name: '크리틱', tech: 'Nemotron 3 Super', kind: 'critic', val: <>과잉해석 {critic1 ? `${critic1.caught}/${critic1.n_over}` : '…'} 반려</> },
+    { name: '크리틱', tech: 'Nemotron 3 Super', kind: 'critic', val: <><Term k="overclaim">과잉해석</Term> {critic1 ? `${critic1.caught}/${critic1.n_over}` : '…'} 반려</> },
   ]
   const step2: Step[] = [
     { name: '접수 · FAERS', tech: 'DuckDB SQL', kind: 'data', val: nirTp ? <>니라파립 × 혈소판감소증 {fmt.int(nirTp.a)}건</> : 'FAERS 2012Q4–2026Q2' },
-    { name: '규칙 게이트', tech: '규칙', kind: 'rule', val: 'ICH 최소 4요소' },
-    { name: '라벨 근거', tech: 'openFDA 조회', kind: 'data', val: '라벨 절을 조회해 주입' },
-    { name: '타입 판단 7문항', tech: '비자기회귀 판단 모델', kind: 'jev', val: <>한 번 호출 · p50 {jt ? Math.round(jt.latency_ms.p50) : '…'} ms</> },
-    { name: '결정 정책', tech: '규칙', kind: 'rule', val: '신속보고 기한 US · KR' },
-    { name: 'Nemotron 숙고', tech: 'Nemotron 3 Super', kind: 'nim', val: '근거 ID 붙은 주장 메모' },
+    { name: '규칙 게이트', tech: '규칙', kind: 'rule', val: <Term k="ICH4" /> },
+    { name: '라벨 근거', tech: 'openFDA 조회', kind: 'data', val: <><Term k="label">라벨</Term> 절을 조회해 주입</> },
+    { name: '타입 판단 7문항', tech: '비자기회귀 판단 모델', kind: 'jev', val: <>한 번 호출 · <Term k="pct">p50</Term> {jt ? Math.round(jt.latency_ms.p50) : '…'} ms</> },
+    { name: '결정 정책', tech: '규칙', kind: 'rule', val: <><Term k="expedited">신속보고</Term> 기한 US · KR</> },
+    { name: 'Nemotron 숙고', tech: 'Nemotron 3 Super', kind: 'nim', val: <><Term k="evidenceId">근거 ID</Term> 붙은 주장 메모</> },
     { name: '크리틱 3단', tech: '규칙 · 판단 · Safety Guard', kind: 'critic', val: <>틀린 주장 {probe ? `${wrong.ok}/${wrong.n}` : '…'} 반려</> },
-    { name: '사람 검토 큐', tech: '사람', kind: 'human', val: '보고 · 인과성 최종 판정' },
+    { name: '사람 검토 큐', tech: '사람', kind: 'human', val: <>보고 · <Term k="causality">인과성</Term> 최종 판정</> },
   ]
 
   return (
     <div className="page">
       <PageHead eyebrow="Project-FlyGate · NVIDIA Korea Agentic AI Hackathon 2026"
         title={<>시판 전 <span style={{ color: 'var(--c-sense)' }}>표적 결합</span>부터 <span style={{ color: 'var(--nvidia)' }}>시판 후 이상사례</span>까지, 약물 전 주기의 근거를 봅니다</>}
-        lede={<><b>STEP 1 FlyDiscovery</b>는 시판 전 후보 물질의 표적 결합을 BioNeMo NIM으로 예측해 전통 기준으로 채점하고,
-          <b> STEP 2 FlyVigilance</b>는 시판 후 허가 약물의 FAERS 이상사례 보고를 분류하고 신호를 평가합니다. 데모에서는 이미 허가된 니라파립으로 시판 전 단계를 되짚어 재현하고, 같은 약의 실제 시판 후 보고로 이어 봅니다. NVIDIA 스킬(build.nvidia.com NIM, Agent Skills, NemoClaw · OpenShell · OpenClaw) 위에 만든
-          에이전트 워크플로이며, NVIDIA Nemotron과 함께 <b style={{ color: 'var(--jev)' }}>비자기회귀 판단 모델</b>을 써서 빠른 속도와 통계적으로 유의한 개선을 얻었습니다.</>}
+        lede={<><b>STEP 1 FlyDiscovery</b>는 시판 전 후보 물질이 <Term k="target">표적</Term>(약이 붙어 작용하는 단백질)에 붙는지를 BioNeMo <Term k="NIM" ko />로 예측해 전통 기준으로 채점하고,
+          <b> STEP 2 FlyVigilance</b>는 시판 후 허가 약물의 <Term k="FAERS" ko /> 이상사례 보고를 분류하고 신호를 평가합니다. 데모에서는 이미 허가된 <Term k="niraparib">니라파립</Term>(PARP1 억제 항암제)으로 시판 전 단계를 되짚어 재현하고, 같은 약의 실제 시판 후 보고로 이어 봅니다. NVIDIA 스킬(build.nvidia.com NIM, <Term k="AgentSkills" />, <Term k="NemoClaw" /> · <Term k="OpenShell" /> · <Term k="OpenClaw" />) 위에 만든
+          에이전트 워크플로이며, NVIDIA <Term k="Nemotron" />과 함께 <b style={{ color: 'var(--jev)' }}><Term k="NAR">비자기회귀 판단 모델</Term></b>(글을 생성하지 않고 확률을 한 번에 돌려주는 모델)을 써서 빠른 속도와 통계적으로 유의한 개선을 얻었습니다.</>}
         right={<div className="stack" style={{ gap: 8, alignItems: 'flex-end' }}>
           <a className="btn primary" href={REEL} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>▶ 쇼릴 영상 v4.1</a>
           <div className="row" style={{ gap: 8 }}>
@@ -176,7 +177,7 @@ export default function Overview() {
           <div className="row" style={{ gap: 10 }}>
             <span className="chip" style={{ color: 'var(--c-sense)', borderColor: 'rgba(55,230,255,0.45)' }}>STEP 1 · 시판 전</span>
             <b style={{ fontFamily: 'var(--font)', fontSize: 15 }}>FlyDiscovery</b>
-            <span className="dim" style={{ fontSize: 12.5 }}>후보가 표적에 붙는지 구조 예측 → 도킹 → 친화도 순서로 잽니다</span>
+            <span className="dim" style={{ fontSize: 12.5 }}>후보가 표적에 붙는지 구조 예측 → <Term k="docking">도킹</Term> → <Term k="affinity">친화도</Term> 순서로 잽니다</span>
           </div>
           <a href="#/discovery" style={{ fontSize: 12.5, textDecoration: 'none' }}>워크벤치 열기 →</a>
         </div>
@@ -191,8 +192,8 @@ export default function Overview() {
             <span className="chip nv">STEP 2 · 시판 후</span>
             <b style={{ fontFamily: 'var(--font)', fontSize: 15 }}>FlyVigilance</b>
             <span className="dim" style={{ fontSize: 12.5 }}>
-              보고마다 반사 판단으로 경로를 정하고, 필요한 건만 Nemotron 숙고와 사람에게 올립니다
-              {nirTp && <> · 니라파립 × 혈소판감소증 PRR {nirTp.prr.toFixed(2)}, IC₀₂₅ {nirTp.ic025.toFixed(2)}{nirTp.evans && nirTp.ror_sig && nirTp.ic_sig ? ' (3중 기준 SDR)' : ''}</>}
+              보고마다 <Term k="reflex">반사 판단</Term>으로 경로를 정하고, 필요한 건만 Nemotron 숙고(<Term k="System2" />)와 사람에게 올립니다
+              {nirTp && <> · 니라파립 × 혈소판감소증 <Term k="PRR" /> {nirTp.prr.toFixed(2)}, <Term k="IC025" /> {nirTp.ic025.toFixed(2)}{nirTp.evans && nirTp.ror_sig && nirTp.ic_sig ? <> (<Term k="triple">3중 기준</Term> <Term k="SDR" ko />)</> : ''}</>}
             </span>
           </div>
           <a href="#/triage" style={{ fontSize: 12.5, textDecoration: 'none' }}>사례 분류(트리아지) 실행 →</a>
@@ -206,23 +207,24 @@ export default function Overview() {
       </Card>
 
       <Card title="실측 결과" style={{ marginBottom: 16 }}
-        sub={ab ? <>{blind ? '결과 코드를 가린 트리아지' : '결과 코드를 보여 준 트리아지'} · FAERS {bench?.dataset.source.split(' ')[1] ?? ''} 실제 사례 {ab.n}건{serious !== undefined ? `, 중대 ${serious}건` : ''} ·
+        sub={ab ? <>{blind ? <><Term k="blind">결과 코드를 가린</Term> <Term k="triage">트리아지</Term>(사례 분류)</> : '결과 코드를 보여 준 트리아지'} · FAERS {bench?.dataset.source.split(' ')[1] ?? ''} 실제 사례 {ab.n}건{serious !== undefined ? `, 중대 ${serious}건` : ''} ·
           FlyVigilance <span style={{ color: 'var(--c-sense)' }}>■</span> vs 모델 단독 · 질문 하나 <span style={{ color: 'var(--text-2)' }}>■</span></> : '불러오는 중'}
         right={bench?.ablation_generated ? <span className="chip">{bench.ablation_generated}</span> : undefined}>
         <div className="grid g4" style={{ gap: 12 }}>
           <Versus label="검토에 도달한 중대 사례" fv={fvReach !== undefined ? `${fvReach}/${serious}` : '…'} raw={rawReach !== undefined ? `${rawReach}/${serious}` : '…'}
             p={t?.serious_unreviewed_fv_vs_raw?.p}
-            sub={fvReach !== undefined && rawReach !== undefined && serious !== undefined ? <>자동 큐(종결 · 모니터링)에 남은 중대 사례 {serious - fvReach}건 vs {serious - rawReach}건</> : undefined} />
+            sub={fvReach !== undefined && rawReach !== undefined && serious !== undefined ? <><Term k="autoqueue">자동 큐</Term>(종결 · 모니터링)에 남은 중대 사례 {serious - fvReach}건 vs {serious - rawReach}건</> : undefined} />
           <Versus label="사람에게 바로 올린 비중대 사례" fv={ab?.flyvigilance.over_escalated ?? '…'} raw={ab?.raw_jev.over_escalated ?? '…'} p={t?.over_escalation_fv_vs_raw?.p}
             sub="검토자가 먼저 볼 필요가 없는 보고를 걸러 냅니다" />
           <Versus label="사람 우선 검토량" fv={ab?.flyvigilance.escalated ?? '…'} raw={ab?.raw_jev.escalated ?? '…'} p={t?.workload_fv_vs_raw?.p}
-            sub="나머지 중대 사례는 System-2(Nemotron 숙고) 검토로 갑니다" />
-          <Fact color="#ffb547" label="반사 트리아지 · 7문항 지연 p50" value={jt ? `${fmt.int(Math.round(jt.latency_ms.p50))} ms` : '…'}
-            sub={nt ? <>타입 판단 한 번 호출 · 같은 7문항을 자기회귀로 생성하면 {fmt.int(Math.round(nt.triage.latency_ms.p50))} ms (Nemotron 3.5 Lightning, n={nt.triage.n})</> : '…'} />
+            sub={<>나머지 중대 사례는 <Term k="System2" />(숙고 단계) 검토로 갑니다</>} />
+          <Fact color="#ffb547" label={<>반사 트리아지 · <Term k="q7">7문항</Term> 지연 <Term k="pct">p50</Term></>} value={jt ? `${fmt.int(Math.round(jt.latency_ms.p50))} ms` : '…'}
+            sub={nt ? <>타입 판단 한 번 호출 · 같은 7문항을 <Term k="AR">자기회귀</Term>로 생성하면 {fmt.int(Math.round(nt.triage.latency_ms.p50))} ms (Nemotron 3.5 Lightning, n={nt.triage.n})</> : '…'} />
         </div>
         <div className="grid g4" style={{ gap: 12, marginTop: 12 }}>
           <div style={{ ...tile, boxShadow: 'inset 3px 0 0 #4d8dff' }}>
-            <div className="mono dim" style={{ fontSize: 10.5, letterSpacing: 0.6 }}>참조 세트 AUC · {knowLabel}</div>
+            <div className="mono dim" style={{ fontSize: 10.5, letterSpacing: 0.6 }}><Term k="refset">참조 세트</Term> <Term k="AUC" /> · {knowLabel}</div>
+            <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2 }}>AUC 0.5 무작위 · 1 완벽</div>
             <div className="stack" style={{ gap: 3, marginTop: 6 }}>
               {know.length ? know.map(({ k, m, best }) => (
                 <div key={k} className="row" style={{ gap: 8, fontSize: 12 }}>
@@ -233,17 +235,17 @@ export default function Overview() {
               )) : '…'}
             </div>
           </div>
-          <Fact color="#ff4fd8" label="전향 검증 · 2013년 이전 보고만 · 3중 기준 SDR" value={pro ? `${pro.points.triple.tp}/${pro.pos}` : '…'}
-            sub={pro ? <>2013년 라벨 변경을 미리 표시 · 오경보 {pro.points.triple.fp}/{pro.neg} · PPV {fmt.f(pro.points.triple.ppv ?? 0, 2)}</> : '…'} />
-          <Fact color="#ffb547" label="문헌 설계 분류 · MEDLINE 색인과 일치" value={lit ? fmt.pct(lit.accuracy, 1) : '…'}
+          <Fact color="#ff4fd8" label={<><Term k="prospective">전향 검증</Term> · 2013년 이전 보고만 · 3중 기준 SDR</>} value={pro ? `${pro.points.triple.tp}/${pro.pos}` : '…'}
+            sub={pro ? <>2013년 라벨 변경을 미리 표시 · 오경보 {pro.points.triple.fp}/{pro.neg} · <Term k="PPV" />(양성 예측도) {fmt.f(pro.points.triple.ppv ?? 0, 2)}</> : '…'} />
+          <Fact color="#ffb547" label={<>문헌 설계 분류 · <Term k="PubMed">MEDLINE</Term> 색인과 일치</>} value={lit ? fmt.pct(lit.accuracy, 1) : '…'}
             sub={lit ? <>{fmt.int(lit.n)}편 · 호출당 초록 {lit.articles_per_call}편</> : '…'} />
-          <Fact color="#ff5d6c" label="크리틱 주입 시험 · 틀린 주장 반려" value={probe ? `${wrong.ok}/${wrong.n}` : '…'}
-            sub={<>정상 대조 {ctrl ? `${ctrl.correct}/${ctrl.n}` : '…'} 통과 · 근거 ID · 숫자 대조 · 과잉해석 규칙 · Safety Guard</>} />
+          <Fact color="#ff5d6c" label={<><Term k="critic">크리틱</Term> 주입 시험 · 틀린 주장 반려</>} value={probe ? `${wrong.ok}/${wrong.n}` : '…'}
+            sub={<>정상 대조 {ctrl ? `${ctrl.correct}/${ctrl.n}` : '…'} 통과 · 근거 ID · 숫자 대조 · 과잉해석 규칙 · <Term k="guard">Safety Guard</Term></>} />
         </div>
       </Card>
 
       <div className="grid" style={{ gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)', gap: 16, marginBottom: 16, alignItems: 'stretch' }}>
-        <Card title="에이전트 구성도" sub="NemoClaw 네 층: LLM 엔드포인트 · OpenClaw 하네스 · OpenShell 샌드박스 · NemoClaw 블루프린트"
+        <Card title="에이전트 구성도" sub={<>NemoClaw 네 층: <Term k="LLM" /> 엔드포인트 · OpenClaw 하네스 · OpenShell <Term k="sandbox">샌드박스</Term> · NemoClaw 블루프린트</>}
           right={<a href="#/agent" style={{ fontSize: 12.5, textDecoration: 'none' }}>에이전트 구성 →</a>}>
           <a href={DIAGRAM} target="_blank" rel="noreferrer" style={{ display: 'block' }}>
             <img src={DIAGRAM} alt="Project-FlyGate 에이전트 구성도: NVIDIA NIM 엔드포인트, egress 허용 목록, OpenShell 샌드박스 안의 OpenClaw 하네스와 두 워크플로, NemoClaw 블루프린트"
@@ -290,14 +292,14 @@ export default function Overview() {
 
         <Card title="전문가 검토로 강화한 부분" sub="면허 약사의 검토 의견을 반영해 규칙과 평가를 보강했습니다">
           <div className="stack" style={{ gap: 6, fontSize: 12.5, color: 'var(--text-2)', lineHeight: 1.5 }}>
-            {[
-              ['SDR 용어 · PV 분류', '불균형 신호를 SDR로 부르고, 라벨 상태 × SDR로 검토 우선순위를 나눕니다'],
-              ['EMA DME 안전망', '지정 의학적 사건(DME) 62개 PT를 안전망으로 따로 표시합니다'],
-              ['보고자 편향 표시', '예: 이소트레티노인 × 염증성 장질환 보고의 95%가 변호사 보고임을 표시합니다'],
-              ['라벨 대조', '금기는 “라벨에 있음”으로 세지 않습니다'],
+            {([
+              ['SDR 용어 · PV 분류', <>불균형 신호를 SDR로 부르고, 라벨 상태 × SDR로 검토 우선순위를 나눕니다(<Term k="pvclass">PV 분류</Term>)</>],
+              ['EMA DME 안전망', <><Term k="EMA" />가 지정한 특별 주의 이상사례(<Term k="DME" />) 62개 <Term k="MedDRA">PT</Term>(이상반응 표준 용어)를 안전망으로 따로 표시합니다</>],
+              ['보고자 편향 표시', <>예: 이소트레티노인 × 염증성 장질환 보고의 95%가 변호사 보고임을 표시합니다(<Term k="bias">보고 편향</Term>)</>],
+              ['라벨 대조', <><Term k="contraindication">금기</Term>는 “라벨에 있음”으로 세지 않습니다</>],
               ['국내 15일 규칙', '15일 신속보고는 인과성이 배제되지 않을 때 적용합니다'],
               ['평가 설계', '결과 코드를 가린 조건으로 트리아지를 잽니다'],
-            ].map(([k, v]) => (
+            ] as [string, ReactNode][]).map(([k, v]) => (
               <div key={k} style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: 10 }}>
                 <b style={{ color: 'var(--text)', fontWeight: 600 }}>{k}</b><span>{v}</span>
               </div>

@@ -3,6 +3,7 @@ import * as d3 from 'd3'
 import { Card, Loading, PageHead } from '../components/ui'
 import GradeCard, { GradeLegend } from '../components/GradeCard'
 import { api, fmt, getJSON, type SignalRow } from '../lib/data'
+import Term from '../components/Term'
 
 interface Resp { drug: string; asof: string; rows: SignalRow[] }
 // 니라파립은 FlyDiscovery(PARP1 결합)에서 FlyVigilance(시판 후 이상사례)로 이어지는 Project-FlyGate 의 공통 분자입니다
@@ -90,7 +91,7 @@ export default function SignalLab() {
     <div className="page">
       <PageHead eyebrow="Signal Lab · disproportionality"
         title={<>통계가 먼저, 모델은 그 다음 <span style={{ color: 'var(--c-memory)' }}>Signal Memory</span></>}
-        lede="PRR, ROR, IC₀₂₅는 DuckDB 웨어하우스가 전 기간 중복 제거된 케이스로 계산합니다. 모델은 이 숫자를 만들지도 고치지도 않고, 크리틱의 숫자 오라클이 모델 문장의 모든 숫자를 이 표와 대조합니다. 세 기준(Evans ∧ ROR₀₂₅>1 ∧ IC₀₂₅>0)을 모두 넘으면 SDR(불균형 보고 신호)로 표시합니다. SDR은 검증된 신호가 아니라 검토를 시작할 이유입니다(EU GVP Module IX)."
+        lede={<><Term k="disproportionality">불균형 분석</Term>은 특정 약과 반응이 함께 보고된 비율을 다른 약 전체와 비교합니다. <Term k="PRR" ko />, <Term k="ROR" ko />, <Term k="IC025" ko />는 <Term k="SQL">DuckDB</Term> <Term k="warehouse">웨어하우스</Term>가 전 기간 중복 제거된 케이스로 계산합니다. 모델은 이 숫자를 만들지도 고치지도 않고, <Term k="critic">크리틱</Term>의 <Term k="oracle">숫자 오라클</Term>이 모델 문장의 모든 숫자를 이 표와 대조합니다. 세 기준(<Term k="evans">Evans</Term> ∧ ROR₀₂₅&gt;1 ∧ IC₀₂₅&gt;0)을 모두 넘으면 <Term k="SDR" ko />로 표시합니다. SDR은 검증된 <Term k="signal">신호</Term>가 아니라 검토를 시작할 이유입니다(EU <Term k="GVP">GVP Module IX</Term>).</>}
         right={<div className="row" style={{ gap: 8 }}>
           <span className="chip" style={{ color: SIGCOL[3] }}>● 3/3 = SDR</span><span className="chip" style={{ color: SIGCOL[2] }}>● 2/3</span>
           <span className="chip" style={{ color: SIGCOL[1] }}>● 1/3</span><span className="chip" style={{ color: SIGCOL[0] }}>● 0/3</span></div>} />
@@ -118,22 +119,22 @@ export default function SignalLab() {
             sub="점 크기 = log₂ PRR. 오른쪽 위일수록 보고 건수가 많고 베이지안 하한이 높은 반응입니다">
             <Scatter rows={rows} sel={sel} onSel={setSel} />
             {selRow && <div className="fade-in" style={{ marginTop: 10, padding: 12, borderRadius: 12, border: '1px solid var(--line-2)', display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 10 }}>
-              <div style={{ gridColumn: 'span 2' }}><div className="dim mono" style={{ fontSize: 10 }}>PT</div><b>{selRow.pt}</b></div>
-              <div><div className="dim mono" style={{ fontSize: 10 }}>a / E</div><span className="num">{fmt.int(selRow.a)} / {fmt.f(selRow.expected, 1)}</span></div>
-              <div><div className="dim mono" style={{ fontSize: 10 }}>PRR [95% CI]</div><span className="num">{fmt.f(selRow.prr)} [{fmt.f(selRow.prr_lo)}–{fmt.f(selRow.prr_hi)}]</span></div>
-              <div><div className="dim mono" style={{ fontSize: 10 }}>ROR₀₂₅ · χ²</div><span className="num">{fmt.f(selRow.ror_lo)} · {fmt.f(selRow.chi2, 0)}</span></div>
+              <div style={{ gridColumn: 'span 2' }}><div className="dim mono" style={{ fontSize: 10 }}><Term k="MedDRA">PT</Term></div><b>{selRow.pt}</b></div>
+              <div><div className="dim mono" style={{ fontSize: 10 }}><Term k="aE">a / E</Term></div><span className="num">{fmt.int(selRow.a)} / {fmt.f(selRow.expected, 1)}</span></div>
+              <div><div className="dim mono" style={{ fontSize: 10 }}>PRR [<Term k="CI">95% CI</Term>]</div><span className="num">{fmt.f(selRow.prr)} [{fmt.f(selRow.prr_lo)}–{fmt.f(selRow.prr_hi)}]</span></div>
+              <div><div className="dim mono" style={{ fontSize: 10 }}>ROR₀₂₅ · <Term k="chi2">χ²</Term></div><span className="num">{fmt.f(selRow.ror_lo)} · {fmt.f(selRow.chi2, 0)}</span></div>
               <div><div className="dim mono" style={{ fontSize: 10 }}>IC · IC₀₂₅</div><span className="num">{fmt.f(selRow.ic)} · {fmt.f(selRow.ic025)}</span></div>
             </div>}
           </Card>
-          <Card title={<>PV 분류 · 근거 등급 <span className="dim" style={{ fontSize: 12, fontWeight: 400 }}>· {sel ? `${data.drug} × ${sel}` : '산점도나 표에서 반응을 고르세요'}</span></>}
-            sub="규칙으로 매깁니다: 라벨 상태(규제 축) × FAERS 3중 기준 SDR(통계 축). 문헌은 비자기회귀 판단 모델이 읽어 참고 축으로 붙입니다" className="span2">
+          <Card title={<><Term k="pvclass">PV 분류</Term> · 근거 등급 <span className="dim" style={{ fontSize: 12, fontWeight: 400 }}>· {sel ? `${data.drug} × ${sel}` : '산점도나 표에서 반응을 고르세요'}</span></>}
+            sub={<>규칙으로 매깁니다: <Term k="label">라벨</Term> 상태(규제 축) × <Term k="FAERS" /> <Term k="triple">3중 기준</Term> SDR(통계 축). 문헌은 <Term k="NAR">비자기회귀 판단 모델</Term>이 읽어 참고 축으로 붙입니다</>} className="span2">
             <GradeLegend />
             <div style={{ marginTop: 12 }}>{sel ? <GradeCard drug={data.drug} pt={sel} /> : <div className="note">팀 시제품(A~D)을 이어받아, 라벨에는 있으나 SDR이 없는 조합(L)과 판정 불가(U)를 나눴습니다. 인과 미확립 단서는 그 반응이 언급된 문장 주변에서만 찾습니다.</div>}</div>
           </Card>
-          <Card title="Forest · PRR with 95% CI" sub="보고 건수 상위 반응입니다. 점선 = PRR 2 (Evans)">
+          <Card title={<>Forest · PRR with <Term k="CI">95% CI</Term></>} sub={<>보고 건수 상위 반응입니다. 점선 = PRR 2 (<Term k="evans">Evans</Term>)</>}>
             <Forest rows={top} />
           </Card>
-          <Card title="Disproportionality table" className="span2" sub="SQL 산출값 그대로입니다. 해석 기준: 불균형은 보고 연관성이며, 인과와 발생률은 따로 평가합니다 (R1, R2)">
+          <Card title={<><Term k="disproportionality">Disproportionality</Term> table</>} className="span2" sub={<>SQL 산출값 그대로입니다. 해석 기준: 불균형은 보고 연관성이며, 인과와 발생률은 따로 평가합니다 (<Term k="overclaim">R1, R2</Term>)</>}>
             <div style={{ maxHeight: 420, overflow: 'auto' }}>
               <table className="tbl">
                 <thead><tr><th>PT</th><th className="r">a</th><th className="r">E</th><th className="r">PRR</th><th className="r">95% CI</th><th className="r">ROR₀₂₅</th><th className="r">χ²</th><th className="r">IC₀₂₅</th><th>SDR criteria</th></tr></thead>

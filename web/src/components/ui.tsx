@@ -46,14 +46,16 @@ export function useCountUp(target: number, ms = 1200) {
   return v
 }
 
-export function Kpi({ label, value, sub, color = 'var(--c-sense)', format = (n: number) => Math.round(n).toLocaleString('en-US') }: {
-  label: string; value: number; sub?: ReactNode; color?: string; format?: (n: number) => string
+// hint 는 라벨이 좁아 풀어 쓰기 어려울 때 라벨 아래에 붙이는 한 줄 쉬운 풀이입니다
+export function Kpi({ label, value, sub, hint, color = 'var(--c-sense)', format = (n: number) => Math.round(n).toLocaleString('en-US') }: {
+  label: ReactNode; value: number; sub?: ReactNode; hint?: ReactNode; color?: string; format?: (n: number) => string
 }) {
   const v = useCountUp(value)
   return (
     <div className="card kpi fade-in">
       <div className="k-accent" style={{ background: color, boxShadow: `0 0 16px ${color}` }} />
       <div className="k-label">{label}</div>
+      {hint && <div className="k-hint">{hint}</div>}
       <div className="k-value">{format(v)}</div>
       {sub && <div className="k-sub">{sub}</div>}
     </div>

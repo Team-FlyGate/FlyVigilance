@@ -3,21 +3,22 @@ import HeroDocking, { type StepId } from '../components/HeroDocking'
 import DockPlayground from '../components/DockPlayground'
 import { Card, Loading, PageHead } from '../components/ui'
 import { CriticStream, MissingCard, RedockBench, STEP_PAGES, Tile, title, useDiscoveryData } from './Discovery'
+import Term from '../components/Term'
 
 // STEP 1 FlyDiscovery 의 다섯 단계 페이지. 가운데 3D 장면(HeroDocking)은 그 단계에 고정되고,
 // 위 단계 표시를 누르면 다른 단계 페이지로 갑니다. 왼쪽 위 초파리 커넥텀은 단계마다 다른 층을 자극합니다.
 
 const HEAD: Record<StepId, { no: string; name: string; title: ReactNode; lede: ReactNode }> = {
   msa: { no: '01', name: 'MSA-Search', title: <>표적 서열의 <span style={{ color: 'var(--c-sense)' }}>진화적 이웃</span>을 모읍니다</>,
-    lede: <>PARP1 촉매 도메인 서열로 상동 서열을 찾아 정렬합니다. 이 정렬이 다음 단계 OpenFold3 의 입력이 되며, NVIDIA 공식 스킬 <span className="mono">bionemo-msa-structure-prediction-pipeline</span> 이 제시하는 MSA-Search → OpenFold3 규격을 그대로 따랐습니다.</> },
+    lede: <><Term k="PARP1" /> 촉매 도메인 서열로 <Term k="MSA">상동 서열</Term>(진화적으로 닮은 서열)을 찾아 정렬(MSA)합니다. 이 정렬이 다음 단계 <Term k="OpenFold3" /> 의 입력이 되며, NVIDIA 공식 스킬 <span className="mono">bionemo-msa-structure-prediction-pipeline</span> 이 제시하는 MSA-Search → OpenFold3 규격을 그대로 따랐습니다.</> },
   of3: { no: '02', name: 'OpenFold3', title: <>단백질과 약물을 <span style={{ color: 'var(--c-sense)' }}>함께 접어</span> 복합체를 예측합니다</>,
-    lede: <>OpenFold3 NIM 이 PARP1 과 니라파립을 한 번에 예측했습니다. 리본 색은 잔기별 예측 신뢰도(pLDDT)이고, 공개 결정 구조 4R6E 와 Kabsch 로 겹쳐 Cα RMSD 를 쟀습니다. OpenFold2 엔드포인트는 측정 당시 서버 오류로 실패해 OpenFold3 로 갔습니다.</> },
+    lede: <>OpenFold3 <Term k="NIM" /> 이 PARP1 과 니라파립을 한 번에 예측했습니다. 리본 색은 잔기별 예측 신뢰도(<Term k="pLDDT" />)이고, 공개 <Term k="cocrystal">결정 구조</Term> <Term k="PDB">4R6E</Term> 와 <Term k="Kabsch">Kabsch</Term> 로 겹쳐 <Term k="CA">Cα</Term> <Term k="RMSD" />(결정 구조와의 거리)를 쟀습니다. OpenFold2 엔드포인트는 측정 당시 서버 오류로 실패해 OpenFold3 로 갔습니다.</> },
   dd: { no: '03', name: 'DiffDock', title: <>약물이 <span style={{ color: 'var(--jev)' }}>어느 자세로</span> 붙는지 도킹합니다</>,
-    lede: <>DiffDock NIM 은 포즈 5개와 신뢰도를 돌려줍니다. 결정 구조에 원래 리간드를 다시 넣는 재도킹으로 1순위 포즈가 정답 자리에서 몇 Å 떨어졌는지 잽니다(기준 ≤ 2 Å). 위는 니라파립, 아래는 STEP 2 가 감시하는 FAERS 데모 케이스 약물들입니다.</> },
+    lede: <><Term k="DiffDock" /> NIM 은 <Term k="pose">포즈</Term>(약물이 붙는 위치와 자세) 5개와 신뢰도를 돌려줍니다. 결정 구조에 원래 <Term k="ligand">리간드</Term>를 다시 넣는 <Term k="docking">재도킹</Term>으로 1순위 포즈가 정답 자리에서 몇 <Term k="angstrom">Å</Term> 떨어졌는지 잽니다(기준 ≤ 2 Å). 위는 니라파립, 아래는 STEP 2 가 감시하는 FAERS 데모 케이스 약물들입니다.</> },
   bz: { no: '04', name: 'Boltz-2', title: <>붙는 세기를 예측하고 <span style={{ color: 'var(--jev)' }}>실측과 대조</span>합니다</>,
-    lede: <>Boltz-2 NIM 이 예측한 pIC50 를 ChEMBL 실측 중앙값과 비교합니다. 활성 범위가 고루 퍼지도록 고른 PARP1 억제제 39종으로 벤치마크했습니다. 예측값은 측정된 친화도가 아니며, 이 둘을 섞는 주장은 크리틱이 반려합니다.</> },
+    lede: <><Term k="Boltz2" /> NIM 이 예측한 <Term k="pIC50" />(억제 효력) 를 <Term k="ChEMBL" /> 실측 중앙값과 비교합니다. 활성 범위가 고루 퍼지도록 고른 PARP1 억제제 39종으로 벤치마크했습니다. 예측값은 측정된 친화도가 아니며, 이 둘을 섞는 주장은 크리틱이 반려합니다.</> },
   critic: { no: '05', name: '크리틱', title: <>숫자가 다 맞아도 <span style={{ color: 'var(--bad)' }}>결론이 근거를 넘으면</span> 반려합니다</>,
-    lede: <>에이전트가 쓴 주장은 사람에게 가기 전에 세 번 걸러집니다. 1단 근거 ID, 2단 원본 로그와 숫자 대조는 모델 없이 규칙으로, 3단 추론 검사만 Nemotron 이 합니다. 가운데 장면은 결정 구조(흰 선 · 흰 윤곽)를 겹쳐 주장을 검증하는 모습입니다.</> },
+    lede: <>에이전트가 쓴 주장은 사람에게 가기 전에 세 번 걸러집니다. 1단 <Term k="evidenceId">근거 ID</Term>, 2단 원본 로그와 숫자 대조는 모델 없이 규칙으로, 3단 추론 검사만 <Term k="Nemotron" /> 이 합니다. 가운데 장면은 결정 구조(흰 선 · 흰 윤곽)를 겹쳐 주장을 검증하는 모습입니다.</> },
 }
 
 function Scatter({ pairs }: { pairs: [number, number][] }) {

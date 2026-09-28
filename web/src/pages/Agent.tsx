@@ -3,6 +3,7 @@ import AgentDiagram from '../components/AgentDiagram'
 import { Card, Loading, PageHead } from '../components/ui'
 import { getJSON } from '../lib/data'
 import type { AgentInfo } from '../lib/types'
+import Term from '../components/Term'
 
 // 에이전트 구성: NemoClaw 과정의 네 층(LLM 엔드포인트, OpenClaw 하네스, OpenShell 샌드박스, NemoClaw 블루프린트)에
 // FlyGate 를 대응시킨 구성도와, agent/export_agent_json.py 가 만든 /data/agent.json 의 내용을 보여 줍니다.
@@ -42,7 +43,7 @@ function Section({ id, title, sub, right, children }: { id?: string; title: Reac
 function Modules({ rows }: { rows: AgentInfo['modules'] }) {
   const counts = rows.reduce<Record<string, number>>((a, r) => { const k = splitStatus(r.ours).key || 'other'; a[k] = (a[k] ?? 0) + 1; return a }, {})
   return (
-    <Section title="NemoClaw 과정 모듈 체크리스트" sub="NVIDIA DLI 'Securing Agents with NemoClaw and OpenShell' 01a–04c를 FlyGate의 어디에 적용했는지"
+    <Section title="NemoClaw 과정 모듈 체크리스트" sub="NVIDIA DLI(Deep Learning Institute, NVIDIA 교육 과정) 'Securing Agents with NemoClaw and OpenShell' 01a–04c를 FlyGate의 어디에 적용했는지"
       right={<div className="row" style={{ gap: 6 }}>{Object.entries(STATUS).filter(([k]) => counts[k]).map(([k, s]) => <span key={k} className="chip" style={{ color: s.c }}>{s.t} {counts[k]}</span>)}</div>}>
       <table className="tbl">
         <thead><tr><th style={{ width: 52 }}>모듈</th><th>주제 · FlyGate 적용</th><th style={{ width: 84 }}>상태</th><th>위치</th></tr></thead>
@@ -69,7 +70,7 @@ function Trifecta({ t }: { t: AgentInfo['trifecta'] }) {
     ['비공개 데이터 접근', '#ff4fd8', t.private_data], ['신뢰할 수 없는 입력', '#ffb547', t.untrusted_input], ['외부 통신', '#37e6ff', t.external_comm],
   ]
   return (
-    <Section title="치명적 삼박자와 차단" sub="세 조건이 한 에이전트에 모이면 데이터가 새어 나갈 수 있습니다. FlyGate가 각 조건을 어떻게 다루는지">
+    <Section title={<><Term k="trifecta">치명적 삼박자</Term>와 차단</>} sub="세 조건이 한 에이전트에 모이면 데이터가 새어 나갈 수 있습니다. FlyGate가 각 조건을 어떻게 다루는지">
       <div className="grid g3" style={{ gap: 10 }}>
         {parts.map(([k, c, v]) => (
           <div key={k} style={{ padding: '10px 12px', borderRadius: 11, border: '1px solid var(--line)', background: 'rgba(8,13,26,0.55)', boxShadow: `inset 3px 0 0 ${c}` }}>
@@ -128,7 +129,7 @@ function Policy({ p }: { p: AgentInfo['policy'] }) {
       right={<div className="seg"><button className={view === 'table' ? 'on' : ''} onClick={() => setView('table')}>표로 보기</button><button className={view === 'yaml' ? 'on' : ''} onClick={() => setView('yaml')} disabled={!p.yaml}>YAML 원문</button></div>}>
       {view === 'yaml' && p.yaml ? <pre className="codebox" style={{ maxHeight: 560 }}>{p.yaml}</pre> : (
         <>
-          <div className="mono dim" style={{ fontSize: 10.5, letterSpacing: 0.8, marginBottom: 6 }}>EGRESS 허용 목록 · {egress.length}개 호스트</div>
+          <div className="mono dim" style={{ fontSize: 10.5, letterSpacing: 0.8, marginBottom: 6 }}><Term k="egress">EGRESS 허용 목록</Term>(밖으로 나가는 연결을 허용한 곳) · {egress.length}개 호스트</div>
           <table className="tbl">
             <thead><tr><th>호스트</th><th style={{ width: 60 }}>포트</th><th style={{ width: 110 }}>메서드</th><th>경로</th><th>바이너리</th></tr></thead>
             <tbody>
@@ -146,7 +147,7 @@ function Policy({ p }: { p: AgentInfo['policy'] }) {
           <div className="grid g3" style={{ gap: 12, marginTop: 14 }}>
             {([['읽기 전용 경로', arr(p.filesystem?.read_only), 'var(--text-2)'], ['읽기 · 쓰기 경로', arr(p.filesystem?.read_write), '#e2a74e']] as [string, string[], string][]).map(([k, v, c]) => (
               <div key={k} style={{ padding: '10px 12px', borderRadius: 11, border: '1px solid var(--line)', background: 'rgba(8,13,26,0.5)' }}>
-                <div className="mono dim" style={{ fontSize: 10.5, letterSpacing: 0.8 }}>LANDLOCK · {k}</div>
+                <div className="mono dim" style={{ fontSize: 10.5, letterSpacing: 0.8 }}><Term k="landlock">LANDLOCK</Term> · {k}</div>
                 <div className="mono" style={{ fontSize: 11.5, lineHeight: 1.65, marginTop: 4, color: c }}>{v.length ? v.map((x) => <div key={x}>{x}</div>) : '–'}</div>
               </div>
             ))}
@@ -154,7 +155,7 @@ function Policy({ p }: { p: AgentInfo['policy'] }) {
               <div className="mono dim" style={{ fontSize: 10.5, letterSpacing: 0.8 }}>프로세스</div>
               <div style={{ fontSize: 12.5, lineHeight: 1.7, marginTop: 4 }}>
                 <div>실행 사용자 <span className="mono" style={{ color: 'var(--text)' }}>{p.process?.user ?? '–'}</span></div>
-                <div>seccomp <span className="mono" style={{ color: 'var(--text)' }}>{typeof p.process?.seccomp === 'boolean' ? (p.process.seccomp ? '적용' : '미적용') : (p.process?.seccomp ?? '–')}</span></div>
+                <div><Term k="landlock">seccomp</Term> <span className="mono" style={{ color: 'var(--text)' }}>{typeof p.process?.seccomp === 'boolean' ? (p.process.seccomp ? '적용' : '미적용') : (p.process?.seccomp ?? '–')}</span></div>
               </div>
             </div>
           </div>
@@ -169,7 +170,7 @@ function Workspace({ files, skills }: { files: AgentInfo['workspace']; skills: A
   const f = files[Math.min(sel, files.length - 1)]
   const stages = skills.reduce<Record<string, AgentInfo['skills']>>((a, s) => { (a[s.stage || '공통'] ??= []).push(s); return a }, {})
   return (
-    <Section title="OpenClaw 워크스페이스" sub="에이전트가 세션마다 읽는 파일입니다. 성격 · 작업 규칙 · 도구 · 하트비트 점검 목록 · 기억을 파일로 둡니다">
+    <Section title={<><Term k="OpenClaw" /> 워크스페이스</>} sub={<>에이전트가 세션마다 읽는 파일입니다. 성격 · 작업 규칙 · 도구 · <Term k="heartbeat">하트비트</Term> 점검 목록 · 기억을 파일로 둡니다</>}>
       {files.length > 0 && (
         <>
           <div className="tabs" style={{ marginBottom: 8 }}>
@@ -204,7 +205,7 @@ function Triggers({ rows, cli }: { rows: AgentInfo['triggers']; cli: AgentInfo['
   return (
     <div className="stack" style={{ gap: 16 }}>
       {rows.length > 0 && (
-        <Section title="작업을 시작하는 방법" sub="사람의 메시지 말고도 하트비트, 예약 실행(cron), 하위 에이전트가 일을 시작합니다">
+        <Section title="작업을 시작하는 방법" sub={<>사람의 메시지 말고도 하트비트, 예약 실행(<Term k="heartbeat">cron</Term>), 하위 에이전트가 일을 시작합니다</>}>
           <table className="tbl">
             <thead><tr><th>이름</th><th>트리거</th><th>세션</th><th>지시</th></tr></thead>
             <tbody>
@@ -221,7 +222,7 @@ function Triggers({ rows, cli }: { rows: AgentInfo['triggers']; cli: AgentInfo['
         </Section>
       )}
       {cli.length > 0 && (
-        <Section title="flygate CLI" sub="에이전트가 도구로 부르는 명령입니다. 모두 근거 ID가 붙은 JSON을 돌려줍니다">
+        <Section title={<>flygate <Term k="CLI" /></>} sub={<>에이전트가 도구로 부르는 명령입니다. 모두 <Term k="evidenceId">근거 ID</Term>가 붙은 <Term k="JSON" />을 돌려줍니다</>}>
           <table className="tbl">
             <thead><tr><th>명령</th><th>하는 일</th></tr></thead>
             <tbody>
@@ -256,9 +257,9 @@ export default function Agent() {
     <div className="page">
       <PageHead eyebrow="에이전트 · NemoClaw · OpenShell · OpenClaw"
         title={<>두 워크플로를 <span style={{ color: '#e2a74e' }}>샌드박스 안의 에이전트 하나</span>로 돌립니다</>}
-        lede={<>NVIDIA NemoClaw 과정의 네 층 구조를 그대로 따릅니다. OpenClaw 하네스가 워크스페이스 파일과 Agent Skills로 STEP 1 FlyDiscovery와
-          STEP 2 FlyVigilance를 실행하고, OpenShell 샌드박스는 정책이 허용한 호스트 · 경로 · 시스템 호출만 통과시키며, NemoClaw 블루프린트가 둘을 한 벌로 구성합니다.
-          보고와 인과성의 최종 판정은 사람이 합니다.</>}
+        lede={<>NVIDIA <Term k="NemoClaw" /> 과정의 네 층 구조를 그대로 따릅니다. <Term k="OpenClaw" /> 하네스(에이전트 실행 틀)가 워크스페이스 파일과 <Term k="AgentSkills" />로 STEP 1 FlyDiscovery와
+          STEP 2 FlyVigilance를 실행하고, <Term k="OpenShell" /> <Term k="sandbox">샌드박스</Term>(외부와 격리된 실행 공간)는 정책이 허용한 호스트 · 경로 · 시스템 호출만 통과시키며, NemoClaw 블루프린트가 둘을 한 벌로 구성합니다.
+          보고와 <Term k="causality">인과성</Term>의 최종 판정은 사람이 합니다.</>}
         right={<div className="stack" style={{ gap: 8, alignItems: 'flex-end' }}>
           <a className="btn ghost" href="#/cli">CLI 튜토리얼 →</a>
           <a className="btn ghost" href={IMG} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>구성도 이미지 ↗</a>

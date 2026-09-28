@@ -4,6 +4,7 @@ import { Card, Kpi, PageHead, Spark } from '../components/ui'
 import { useBrain } from '../lib/brain'
 import { CHANNEL_COLOR, LAYER_COLOR, fmt, getJSON } from '../lib/data'
 import type { Overview, Bench } from '../lib/types'
+import Term from '../components/Term'
 
 const ACTION_META: Record<string, { label: string; color: string; layers: string[] }> = {
   close: { label: '종결', color: '#6c7aa8', layers: ['reflex'] },
@@ -155,15 +156,15 @@ export default function MissionControl() {
   return (
     <div className="page">
       <PageHead eyebrow="Project-FlyGate · STEP 2 FlyVigilance · Mission Control"
-        title={<>초파리 커넥텀으로 라우팅되는 <span style={{ color: 'var(--c-sense)' }}>약물감시 에이전트</span></>}
-        lede={<>분기마다 40만 건이 넘는 FAERS 이상사례가 들어옵니다. FlyVigilance는 <b style={{ color: 'var(--nvidia)' }}>NVIDIA 스킬</b>(build.nvidia.com NIM · Agent Skills · NemoClaw/OpenShell/OpenClaw) 위에 짠 약물감시 워크플로입니다.
+        title={<>초파리 <Term k="connectome">커넥텀</Term>으로 라우팅되는 <span style={{ color: 'var(--c-sense)' }}><Term k="PV">약물감시</Term> 에이전트</span></>}
+        lede={<>분기마다 40만 건이 넘는 <Term k="FAERS" ko /> 이상사례가 들어옵니다. FlyVigilance는 <b style={{ color: 'var(--nvidia)' }}>NVIDIA 스킬</b>(build.nvidia.com <Term k="NIM" /> · <Term k="AgentSkills" /> · <Term k="NemoClaw" />/<Term k="OpenShell" />/<Term k="OpenClaw" />) 위에 짠 약물감시 워크플로입니다.
           초파리 뇌가 감각 입력을 반사, 기억, 숙고, 행동으로 나누듯, 모든 케이스를 규칙·라벨 근거·결정 정책으로 된 반사 층에서 수백 밀리초 안에 판단하고
-          꼭 필요한 케이스만 <b style={{ color: 'var(--nvidia)' }}>NVIDIA Nemotron System-2</b>와 사람에게 올립니다. 반사 층의 확률 판단에는 <b style={{ color: 'var(--jev)' }}>비자기회귀 판단 모델(Jev, TypeSafe AI)</b>을 함께 씁니다.</>}
+          꼭 필요한 케이스만 <b style={{ color: 'var(--nvidia)' }}>NVIDIA <Term k="Nemotron" /> <Term k="System2" /></b>(숙고 단계)와 사람에게 올립니다. <Term k="reflex">반사 층</Term>의 확률 판단에는 <b style={{ color: 'var(--jev)' }}><Term k="NAR">비자기회귀 판단 모델</Term>(<Term k="Jev" />, TypeSafe AI)</b>을 함께 씁니다.</>}
         right={<div className="row wrap" style={{ justifyContent: 'flex-end', maxWidth: 380 }}>
           <span className="chip nv">NVIDIA NIM · Nemotron 3</span><span className="chip nv">NVIDIA Agent Skills</span>
           <span className="chip nv">NemoClaw · OpenShell · OpenClaw</span>
           <span className="chip jev">비자기회귀 판단 모델 · Jev (TypeSafe AI)</span>
-          <span className="chip">MaleCNS v1.0 · Janelia FlyEM</span><span className="chip">openFDA · DailyMed · PubMed</span>
+          <span className="chip"><Term k="MaleCNS">MaleCNS v1.0</Term> · Janelia FlyEM</span><span className="chip">openFDA · DailyMed · PubMed</span>
         </div>} />
 
       <div className="grid" style={{ gridTemplateColumns: 'minmax(0, 1.75fr) minmax(320px, 1fr)', marginBottom: 16 }}>
@@ -198,7 +199,7 @@ export default function MissionControl() {
         </Card>
 
         <div className="stack" style={{ gap: 16 }}>
-          <Card title="Reflex Stream" sub="FAERS 2026Q2 실제 사례 440건을 층이 번갈아 나오게 재생합니다. 판단 입력에서는 결과 코드를 가렸고, 왼쪽 태그가 정답(결과 코드)입니다"
+          <Card title="Reflex Stream" sub={<>FAERS 2026Q2 실제 사례 440건을 층이 번갈아 나오게 재생합니다. 판단 입력에서는 <Term k="outcome">결과 코드</Term>(사망 · 입원 같은 결과 표시)를 가렸고, 왼쪽 태그가 정답(결과 코드)입니다</>}
             right={<span className="chip jev"><span className="dot on pulse" style={{ background: 'var(--jev)' }} />live replay</span>}>
             {stream ? <Stream data={stream} /> : <div className="shimmer" style={{ height: 300 }} />}
           </Card>
@@ -206,13 +207,13 @@ export default function MissionControl() {
       </div>
 
       <div className="grid g4" style={{ marginBottom: 16 }}>
-        <Kpi label="FAERS reports ingested" value={ov?.raw_reports ?? 0} color="var(--c-sense)"
+        <Kpi label={<><Term k="FAERS" /> reports ingested</>} hint="FAERS에서 적재한 원천 보고 수" value={ov?.raw_reports ?? 0} color="var(--c-sense)"
           sub={ov ? `${ov.first} – ${ov.asof} · ${ov.quarters} quarters` : '…'} />
-        <Kpi label="Unique cases after dedupe" value={ov?.cases ?? 0} color="var(--c-encode)"
+        <Kpi label={<>Unique cases after <Term k="caseid">dedupe</Term></>} hint="같은 사례의 옛 버전과 FDA 삭제분을 뺀 고유 사례 수" value={ov?.cases ?? 0} color="var(--c-encode)"
           sub={ov ? `${fmt.int(ov.raw_reports - ov.cases)} versions & deletions removed` : '…'} />
-        <Kpi label="SDRs · Evans ∧ ROR ∧ IC025" value={ov?.all3 ?? 0} color="var(--c-memory)"
+        <Kpi label={<><Term k="SDR">SDRs</Term> · <Term k="evans">Evans</Term> ∧ <Term k="ROR" /> ∧ <Term k="IC025">IC025</Term></>} hint="불균형 보고 신호: 세 통계 기준을 모두 넘은 약물–반응 쌍" value={ov?.all3 ?? 0} color="var(--c-memory)"
           sub={ov ? `of ${fmt.int(ov.pairs)} drug–event pairs (a ≥ 3) · SDR ≠ validated signal` : '…'} />
-        <Kpi label="FlyVigilance reflex p50" value={jt?.latency_ms?.p50 ?? 0} color="var(--jev)" format={(n) => `${Math.round(n)} ms`}
+        <Kpi label={<>FlyVigilance <Term k="reflex">reflex</Term> <Term k="pct">p50</Term></>} hint="보고 한 건을 1차 분류하는 데 걸린 시간의 중앙값" value={jt?.latency_ms?.p50 ?? 0} color="var(--jev)" format={(n) => `${Math.round(n)} ms`}
           sub={jt ? `비자기회귀 판단 7문항을 1회 호출로 · 같은 7문항을 자기회귀로 생성하면 p50 ${nt ? fmt.ms(nt.p50) : '…'}` : '…'} />
       </div>
 
@@ -237,7 +238,7 @@ export default function MissionControl() {
                   <div className="dim" style={{ fontSize: 11 }}>System-2 호출 없이 처리</div></div>
                 <div><div className="k-label mono dim" style={{ fontSize: 10.5 }}>REFLEX COST / QUARTER</div>
                   <div className="num" style={{ fontSize: 22 }}>{fmt.usd((jt.usd_per_case ?? 0) * funnel.cases)}</div>
-                  <div className="dim" style={{ fontSize: 11 }}>입력 {jt.tokens_in_mean} tok/case × $0.042/M</div></div>
+                  <div className="dim" style={{ fontSize: 11 }}>입력 {jt.tokens_in_mean} <Term k="token">tok</Term>/case × $0.042/M</div></div>
                 <div><div className="k-label mono dim" style={{ fontSize: 10.5 }}>REFLEX WALL-CLOCK</div>
                   <div className="num" style={{ fontSize: 22 }}>{(funnel.cases / jt.throughput_cases_per_s / 3600).toFixed(1)} h</div>
                   <div className="dim" style={{ fontSize: 11 }}>동시성 {jt.concurrency}, 실측 처리량 기준</div></div>
@@ -252,7 +253,7 @@ export default function MissionControl() {
             <div className="grid g3" style={{ marginTop: 14 }}>
               <div><div className="dim mono" style={{ fontSize: 10.5 }}>SERIOUS</div><div className="num" style={{ fontSize: 18 }}>{fmt.compact(ov.serious_cases)}</div></div>
               <div><div className="dim mono" style={{ fontSize: 10.5 }}>DEATH</div><div className="num" style={{ fontSize: 18, color: 'var(--bad)' }}>{fmt.compact(ov.death_cases)}</div></div>
-              <div><div className="dim mono" style={{ fontSize: 10.5 }}>MEDDRA PTs</div><div className="num" style={{ fontSize: 18 }}>{fmt.int(ov.pts)}</div></div>
+              <div><div className="dim mono" style={{ fontSize: 10.5 }}><Term k="MedDRA">MEDDRA PTs</Term></div><div className="num" style={{ fontSize: 18 }}>{fmt.int(ov.pts)}</div></div>
             </div>
           </>}
         </Card>
