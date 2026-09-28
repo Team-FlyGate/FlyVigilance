@@ -1,6 +1,6 @@
 """FlyDiscovery 도킹 검증 관문: 도킹 결과를 믿어도 되는지 구조 품질 · 반복 수렴 · 결정 포즈 대조로 판정한다.
 
-- 표적: 재도킹한 결정 구조 14개(redock.py TARGETS 13개 + 니라파립 4R6E)
+- 표적: 재도킹한 결정 구조 15개(redock.py TARGETS 13개 + 니라파립 4R6E + 루카파립 6VKK)
 - 구조 품질: RCSB 에서 실험 방법, 해상도, 생물종, 결합 자리 근처 잔기 번호 끊김을 읽어 도킹 가능 / 주의로 나눈다
 - 반복 수렴: 같은 입력으로 DiffDock NIM 을 RUNS 번 부르고(매번 확산 샘플링이 달라진다), 1순위 포즈끼리의 RMSD 로 수렴을 본다.
   결정 구조가 없는 새 표적에서도 계산할 수 있는 신호다
@@ -28,6 +28,8 @@ from redock import (OUT, TARGETS, crystal_ligand, diffdock, fetch, fetch_structu
 NIRAPARIB = {"key": "parp1-4r6e--niraparib", "drug": "niraparib", "target": "PARP1 catalytic domain",
              "gene": "PARP1", "pdb": "4R6E", "ligand": "3JD", "note": "FlyGate 데모 약물"}
 # 표적의 원래 생물종. 사람 약의 표적이 사람이 아니면 주의로 본다(Mpro 는 바이러스 표적이 맞다)
+RUCAPARIB = {"key": "parp1-6vkk--rucaparib", "drug": "rucaparib", "target": "PARP1 catalytic domain",
+             "gene": "PARP1", "pdb": "6VKK", "ligand": "RPB", "note": "STEP 1 장면에서 고를 수 있는 PARP1 억제제"}
 HOST = {"parp1-4r6e--niraparib": "Homo sapiens", "mpro-7si9--nirmatrelvir": "Severe acute respiratory syndrome coronavirus 2"}
 SUCCESS_A = 2.0
 CONVERGED_A = 3.0  # 같은 자리에 모였는지(정확히 같은 자세인지가 아니라)
@@ -149,7 +151,7 @@ def main():
         out.update({"converged_A": CONVERGED_A, "rules": GRADE_RULES})
         path.write_text(json.dumps(out, ensure_ascii=False, indent=1) + "\n")
         return
-    targets = [t for t in [*TARGETS, NIRAPARIB] if not args.only or t["drug"] in args.only]
+    targets = [t for t in [*TARGETS, NIRAPARIB, RUCAPARIB] if not args.only or t["drug"] in args.only]
     for t in targets:
         try:
             res = validate(t, args.runs)
