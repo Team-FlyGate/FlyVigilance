@@ -7,15 +7,15 @@ NVIDIA Korea Agentic AI Hackathon 2026 · Section 02 · 서비스 명: **Project
 
 ## (1) 해결하고자 했던 문제 (Problem Definition, 300자 내외)
 
-약물 안전성 검토자는 흩어진 근거를 모아 판단을 씁니다. 시판 전의 결합 예측(도킹) 점수와 친화도, 시판 후의 허가 라벨·이상사례 보고·문헌입니다. 미국 FDA 이상사례 보고(FAERS)에만 한 분기 42만 건이 넘는 보고가 들어옵니다. 생성형 언어 모델(LLM)에 전량을 읽히면 느리고 비싸고, 질문 하나로 거르면 중대 사례를 놓치거나 사람에게 과하게 넘깁니다. 숫자와 출처는 맞는데 결론만 근거를 넘는 주장도 있습니다. 서로 다른 단백질의 도킹 점수로 선택성을 말하거나, 보고 비율 지표를 인과로 읽는 식입니다. 빠르면서도 근거를 지키는 에이전트가 필요합니다.
+약물 안전성 검토자는 흩어진 근거를 모아 판단을 씁니다. 시판 전에는 표적 결합 예측(도킹) 점수와 친화도, 시판 후에는 허가 라벨·이상사례 보고·문헌입니다. 미국 FDA 이상사례 보고(FAERS)에만 한 분기 42만 건이 넘는 보고가 들어옵니다. 생성형 언어 모델(LLM)로 전량을 읽으면 느리고 비싸며, 질문 하나로 거르면 중대 사례를 놓치거나 사람에게 과하게 넘깁니다. 숫자와 출처는 맞는데 결론만 근거를 넘는 주장도 형식 검사로는 걸러지지 않습니다. 다른 단백질의 도킹 점수로 선택성을 말하거나 보고 비율을 인과로 읽는 식입니다.
 
-<sub>공백 포함 316자</sub>
+<sub>공백 포함 300자 · 제한 300자 이내</sub>
 
 ## (2) 서비스 소개 및 주요 기능 (Solution, 500자 내외)
 
-Project-FlyGate는 시판 전 표적 결합과 시판 후 이상사례를 함께 보는 약물 안전성 에이전트입니다. STEP 1 FlyDiscovery는 NVIDIA BioNeMo NIM(MSA-Search→OpenFold3→DiffDock→Boltz-2)으로 항암 표적 PARP1 결합을 예측하고 근거를 넘는 주장을 반려합니다. STEP 2 FlyVigilance는 FAERS 사례마다 규칙 게이트→FDA 라벨 원문 조회→7문항 판단→결정 정책→유럽 지정 중대 이상반응(DME) 안전망을 거쳐 사람 우선·숙고(System-2) 등으로 보냅니다. 여기서 Nemotron이 근거 ID를 붙여 평가하고 3단 검증과 Safety Guard가 과잉해석을 막습니다. 확률만 내는 비자기회귀 판단 모델을 병용해 7문항 판단이 296 ms에 끝나고, 사망·입원 등 결과 표시를 가린 440건에서 중대 사례 247/250이 검토에 닿았습니다(질문 하나 234, p=0.004). 사람 업무량은 302건→138건으로 줄었습니다. 에이전트는 OpenShell 샌드박스의 OpenClaw로 돕니다.
+Project-FlyGate는 시판 전 표적 결합과 시판 후 이상사례를 함께 보는 약물 안전성 에이전트입니다. STEP 1 FlyDiscovery는 NVIDIA BioNeMo NIM(MSA-Search→OpenFold3→DiffDock→Boltz-2)으로 표적 결합을 예측하고 근거를 넘는 주장을 반려합니다. STEP 2 FlyVigilance는 FAERS 사례를 규칙 게이트→FDA 라벨 조회→7문항 판단→결정 정책으로 분류하고, 필요한 사례만 Nemotron이 근거 ID를 붙여 평가하며 3단 검증과 Safety Guard가 과잉해석을 막습니다. 비자기회귀 판단 모델을 병용해 판단이 296 ms에 끝나고, 결과 표시를 가린 440건에서 중대 사례 247/250이 검토에 닿았으며(질문 하나 234, p=0.004) 사람 업무량은 302건→138건으로 줄었습니다. 모든 기능은 한 줄 설치 flygate CLI로 부르고, OpenShell 샌드박스의 OpenClaw도 같은 명령을 씁니다.
 
-<sub>공백 포함 544자</sub>
+<sub>공백 포함 499자 · 제한 500자 이내</sub>
 
 ## (3) 활용한 핵심 기술 및 AI 모델 (Tech Stack)
 
@@ -27,7 +27,8 @@ Project-FlyGate는 시판 전 표적 결합과 시판 후 이상사례를 함께
 - NVIDIA BioNeMo NIM (health.api.nvidia.com): MSA-Search(상동 서열 정렬, 상동 서열 101개), OpenFold3(PARP1 CA RMSD 1.0 Å, RMSD는 결정 구조와의 거리), DiffDock(재도킹 0.71 Å), Boltz-2(ChEMBL 39종 Spearman 0.767, Spearman은 순위 상관)
 
 **NVIDIA 에이전트 스택**
-- NemoClaw v0.0.124 · OpenShell 0.0.116 · OpenClaw: OpenClaw 작업 공간(SOUL · AGENTS · IDENTITY · USER · TOOLS · HEARTBEAT · MEMORY), `flygate` CLI(명령줄 인터페이스) 도구 7종(triage, grade, signals, kr-causality, critic, discover, watch), 하트비트(정기 자가 점검) 감시 작업. OpenShell 정책은 deny-by-default(기본 차단, 허용 목록만 개방) 네트워크(호스트·메서드·경로·실행 파일 단위), Landlock(리눅스 파일 경로 접근 제한) 파일 시스템, 비루트 실행이며, 보고서를 밖으로 보내는 경로는 열지 않습니다. 실제 샌드박스 스모크(기본 동작 점검) 20/20 통과
+- NemoClaw v0.0.124 · OpenShell 0.0.116 · OpenClaw: OpenClaw 작업 공간(SOUL · AGENTS · IDENTITY · USER · TOOLS · HEARTBEAT · MEMORY), 하트비트(정기 자가 점검) 감시 작업. OpenShell 정책은 deny-by-default(기본 차단, 허용 목록만 개방) 네트워크(호스트·메서드·경로·실행 파일 단위), Landlock(리눅스 파일 경로 접근 제한) 파일 시스템, 비루트 실행이며, 보고서를 밖으로 보내는 경로는 열지 않습니다. 실제 샌드박스 스모크(기본 동작 점검) 20/20 통과
+- FlyGate Agent CLI(`flygate`, 명령줄 인터페이스): 저장소를 받은 뒤 `./scripts/install_flygate.sh` 한 줄로 설치합니다. 명령 9개(login, chat, triage, grade, signals, kr-causality, critic, discover, watch)가 모두 근거 ID가 붙은 JSON을 출력합니다. `flygate`만 입력하면 대화형 모드가 열려 "PARP1 후보 근거를 보여줘" 같은 요청에 실행할 명령을 제안하고 확인을 받은 뒤 실행합니다. NVIDIA 키는 `flygate login`으로 OS 보안 저장소에 저장합니다. `flygate discover --live`는 DiffDock NIM을 실시간으로 부르며, 사람과 OpenShell 샌드박스의 OpenClaw 에이전트가 같은 명령을 씁니다
 - NVIDIA Agent Skills(github.com/NVIDIA/skills): 우리 역량 11개를 공식 규격 SKILL.md와 스킬 카드(skill-card-generator)로 패키징하고, 공식 스킬 bionemo-msa-structure-prediction-pipeline · nemotron-policy-generator · nemotron-retrieval-recipes를 실제 파이프라인에 적용
 
 **비자기회귀 판단 모델** (글을 생성하지 않고 정해진 질문의 확률을 한 번에 돌려주는 모델)
