@@ -36,7 +36,7 @@
   //  영어판은 빌드가 D.lang 을 'en' 으로 넣은 파일입니다. 화면 글자는 모두 L(한국어, 영어) 로 고릅니다.
   // =====================================================================
   const Q = new URLSearchParams(location.search)
-  const SQ = false || Q.get('fmt') === 'square'
+  const SQ = true || Q.get('fmt') === 'square'
   const VERT = !SQ && (false || Q.get('v') === '1' || Q.get('fmt') === 'vertical')
   const W = SQ ? 1080 : VERT ? 1080 : 1920, H = SQ ? 1080 : VERT ? 1920 : 1080, FPS = 30, CX = W / 2
   const EN = D.lang === 'en'

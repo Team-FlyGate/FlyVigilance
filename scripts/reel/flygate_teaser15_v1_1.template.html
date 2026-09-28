@@ -31,11 +31,18 @@
   // =====================================================================
   //  결정론적 타임라인: 모든 장면은 시간 t 의 순수 함수입니다.
   //  render_reel.py 는 ?paused=1 로 열고 window.__reel.renderAt(t) 로 프레임을 하나씩 그립니다.
-  //  세로판(1080×1920)은 빌드가 VERT 를 true 로 바꾼 파일이거나, 이 파일에 ?v=1 을 붙여 엽니다.
+  //  세로판(1080×1920)은 빌드가 VERT 를 true 로 바꾼 파일이거나, 이 파일에 ?v=1 · ?fmt=vertical 을 붙여 엽니다.
+  //  정사각판(1080×1080)은 빌드가 SQ 를 true 로 바꾼 파일이거나, ?fmt=square 를 붙여 엽니다.
+  //  영어판은 빌드가 D.lang 을 'en' 으로 넣은 파일입니다. 화면 글자는 모두 L(한국어, 영어) 로 고릅니다.
   // =====================================================================
   const Q = new URLSearchParams(location.search)
-  const VERT = /*__VERT__*/false || Q.get('v') === '1'
-  const W = VERT ? 1080 : 1920, H = VERT ? 1920 : 1080, FPS = 30, CX = W / 2
+  const SQ = /*__SQ__*/false || Q.get('fmt') === 'square'
+  const VERT = !SQ && (/*__VERT__*/false || Q.get('v') === '1' || Q.get('fmt') === 'vertical')
+  const W = SQ ? 1080 : VERT ? 1080 : 1920, H = SQ ? 1080 : VERT ? 1920 : 1080, FPS = 30, CX = W / 2
+  const EN = D.lang === 'en'
+  const L = (ko, en) => (EN ? en : ko)
+  // 규격별 값 고르기: 가로 · 세로 · 정사각
+  const P3 = (w, v, s) => (SQ ? s : VERT ? v : w)
   const PAUSED = Q.has('paused')
   const stage = document.getElementById('stage'), cv = document.getElementById('cv'), X = cv.getContext('2d')
   stage.style.width = cv.style.width = W + 'px'; stage.style.height = cv.style.height = H + 'px'
@@ -393,7 +400,7 @@
     for (let i = 0; i < n; i++) groups[b.l[i]].push(i)
     return { n, P, groups, col: b.layers.map((k) => LC[k] ?? '#8899bb') }
   })()
-  const LOGO = VERT ? { y: 900, size: 236 } : { y: 520, size: 264 }
+  const LOGO = P3({ y: 520, size: 264 }, { y: 900, size: 236 }, { y: 500, size: 200 })
   let TARGET = null   // 파티클마다 로고 위 목표점(처음 쓸 때 한 번 계산합니다)
   function logoTargets() {
     const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d')
@@ -459,13 +466,13 @@
   // =====================================================================
   const BEATS = [
     { id: 'poster', t0: 0, t1: 0.5, label: 'Project-FlyGate' },
-    { id: 'hook', t0: 0.5, t1: 2.5, label: '시판 전 → 시판 후' },
-    { id: 'disc', t0: 2.5, t1: 5.0, label: 'STEP 1 · FlyDiscovery · 시판 전' },
-    { id: 'fv', t0: 5.0, t1: 7.5, label: 'STEP 2 · FlyVigilance · 시판 후' },
-    { id: 'serious', t0: 7.5, t1: 9.0, label: '결과 코드를 가린 비교' },
-    { id: 'work', t0: 9.0, t1: 10.25, label: '사람이 먼저 볼 사례' },
-    { id: 'auc', t0: 10.25, t1: 11.5, label: '공개 참조 세트 검증' },
-    { id: 'stack', t0: 11.5, t1: 13.0, label: 'NVIDIA 스택' },
+    { id: 'hook', t0: 0.5, t1: 2.5, label: L('시판 전 → 시판 후', 'Pre-market → post-market') },
+    { id: 'disc', t0: 2.5, t1: 5.0, label: L('STEP 1 · FlyDiscovery · 시판 전', 'STEP 1 · FlyDiscovery · pre-market') },
+    { id: 'fv', t0: 5.0, t1: 7.5, label: L('STEP 2 · FlyVigilance · 시판 후', 'STEP 2 · FlyVigilance · post-market') },
+    { id: 'serious', t0: 7.5, t1: 9.0, label: L('결과 코드를 가린 비교', 'Blind test, outcomes hidden') },
+    { id: 'work', t0: 9.0, t1: 10.25, label: L('사람이 먼저 볼 사례', 'Cases sent to humans first') },
+    { id: 'auc', t0: 10.25, t1: 11.5, label: L('공개 참조 세트 검증', 'Public benchmark check') },
+    { id: 'stack', t0: 11.5, t1: 13.0, label: L('NVIDIA 스택', 'NVIDIA stack') },
     { id: 'end', t0: 13.0, t1: 15.0, label: 'FlyGate' },
   ]
   const DUR = 15
@@ -478,31 +485,31 @@
 
   // ---------------- 01 훅 ----------------
   function sHook(lt) {
-    cloud(lt + 3, CX, VERT ? 520 : 470, VERT ? 380 : 470, 0.32 * seg(lt, 0, 0.5), 0, { spin: 0.5 })
-    const size = VERT ? 92 : 104, y1 = VERT ? 700 : 300, y2 = y1 + (VERT ? 124 : 140)
+    cloud(lt + 3, CX, P3(470, 520, 400), P3(470, 380, 330), 0.32 * seg(lt, 0, 0.5), 0, { spin: 0.5 })
+    const size = P3(104, 92, 80), y1 = P3(300, 700, 290), y2 = y1 + P3(140, 124, 106)
     const push = seg(lt, 1.15, 1.45, E.out3)   // 강조 문장이 들어오면 두 줄을 살짝 위로 밀고 흐리게 합니다
     X.save(); X.translate(0, -push * (VERT ? 40 : 34))
     withA(1 - push * 0.45, () => {
-      riseParts([['시판 전 ', C.cyan], ['표적 결합부터', C.white]], CX, y1, (lt - 0.02) * 2.4, { size, align: 'center', maxW: W - 150, glow: 18 })
-      riseParts([['시판 후 ', C.magenta], ['이상사례까지', C.white]], CX, y2, (lt - 0.5) * 2.4, { size, align: 'center', maxW: W - 150, glow: 18 })
+      riseParts(L([['시판 전 ', C.cyan], ['표적 결합부터', C.white]], [['From ', C.white], ['pre-market ', C.cyan], ['target binding', C.white]]), CX, y1, (lt - 0.02) * 2.4, { size, align: 'center', maxW: W - 150, glow: 18 })
+      riseParts(L([['시판 후 ', C.magenta], ['이상사례까지', C.white]], [['to ', C.white], ['post-market ', C.magenta], ['side effects', C.white]]), CX, y2, (lt - 0.5) * 2.4, { size, align: 'center', maxW: W - 150, glow: 18 })
     })
     X.restore()
     // 강조: 크게 찍혔다가 제자리로
     const k = seg(lt, 1.2, 1.5, E.expoOut)
     if (lt > 1.2) {
-      const y3 = VERT ? 1050 : 596, s = lerp(1.7, 1, k)
+      const y3 = P3(596, 1050, 560), s = lerp(1.7, 1, k)
       X.save(); X.translate(CX, y3); X.scale(s, s)
-      rich([['에이전트 하나로 ', C.white, 900], ['잇습니다.', C.cyan, 900]], 0, 0, { size: VERT ? 78 : 88, align: 'center', a: clamp(k * 1.5), glow: 34, maxW: W - 150 })
+      rich(L([['에이전트 하나로 ', C.white, 900], ['잇습니다.', C.cyan, 900]], [['One agent ', C.white, 900], ['connects them.', C.cyan, 900]]), 0, 0, { size: P3(88, 78, 72), align: 'center', a: clamp(k * 1.5), glow: 34, maxW: W - 150 })
       X.restore()
     }
     // 여정 선: 표적 → FlyGate → 환자
-    const y = VERT ? 1330 : 830, x0 = VERT ? 150 : 380, x1 = W - x0
+    const y = P3(830, 1330, 770), x0 = P3(380, 150, 150) + (EN && W < 1920 ? 40 : 0), x1 = W - x0
     const d = seg(lt, 0.15, 0.9, E.inOut3)
     line(x0, y, lerp(x0, x1, d), y, C.line2, 1, 2)
     dot(x0, y, 8, C.cyan, seg(lt, 0.15, 0.3), 18)
-    text('시판 전 · 표적', x0, y + 50, { size: VERT ? 28 : 26, weight: 700, color: C.cyan, align: 'center', a: seg(lt, 0.2, 0.45) })
+    text(L('시판 전 · 표적', 'Pre-market · target'), x0, y + 50, { size: VERT ? 28 : 26, weight: 700, color: C.cyan, align: 'center', a: seg(lt, 0.2, 0.45) })
     dot(x1, y, 8, C.magenta, seg(lt, 0.8, 0.95), 18)
-    text('시판 후 · 환자', x1, y + 50, { size: VERT ? 28 : 26, weight: 700, color: C.magenta, align: 'center', a: seg(lt, 0.8, 1.0) })
+    text(L('시판 후 · 환자', 'Post-market · patient'), x1, y + 50, { size: VERT ? 28 : 26, weight: 700, color: C.magenta, align: 'center', a: seg(lt, 0.8, 1.0) })
     withA(seg(lt, 0.55, 0.8), () => {
       line(CX - 12, y - 36, CX - 12, y + 36, C.cyan, 1, 4, 16); line(CX + 12, y - 36, CX + 12, y + 36, C.cyan, 1, 4, 16)
       text('FLYGATE', CX, y - 52, { size: 16, weight: 700, fam: MONO, color: C.cyan, align: 'center', track: 5 })
@@ -521,60 +528,63 @@
 
   // ---------------- 02 STEP 1 FlyDiscovery ----------------
   const CHAIN = [
-    ['MSA-Search', `상동 서열 ${DS.msa_n}개`],
-    ['OpenFold3', `pLDDT ${DS.plddt}`],
-    ['DiffDock', `재도킹 ${DS.dd_rmsd} Å`],
-    ['Boltz-2', `친화도 Spearman ${DS.boltz_rho.toFixed(2)}`],
+    ['MSA-Search', L(`상동 서열 ${DS.msa_n}개`, `${DS.msa_n} related sequences`)],
+    ['OpenFold3', L(`pLDDT ${DS.plddt}`, `fold confidence ${DS.plddt}`)],
+    ['DiffDock', L(`재도킹 ${DS.dd_rmsd} Å`, `pose within ${DS.dd_rmsd} Å`)],
+    ['Boltz-2', L(`친화도 Spearman ${DS.boltz_rho.toFixed(2)}`, `affinity rank ρ ${DS.boltz_rho.toFixed(2)}`)],
   ]
   function sDisc(lt) {
-    const L = VERT
-      ? { tx: CX, ty: 300, al: 'center', cx: CX, cy: 800, rad: 330, rowX: 90, rowY: 1150, rowW: 900, rowH: 80, rowG: 96, foot: 1590 }
-      : { tx: 1020, ty: 222, al: 'left', cx: 540, cy: 560, rad: 380, rowX: 1020, rowY: 420, rowW: 780, rowH: 74, rowG: 90, foot: 860 }
+    const LY = P3({ tx: 1020, ty: 222, al: 'left', cx: 540, cy: 560, rad: 380, rowX: 1020, rowY: 420, rowW: 780, rowH: 74, rowG: 90, foot: 860 },
+      { tx: CX, ty: 300, al: 'center', cx: CX, cy: 800, rad: 330, rowX: 90, rowY: 1150, rowW: 900, rowH: 80, rowG: 96, foot: 1590 },
+      // 정사각: 제목은 왼쪽 위, 단백질은 오른쪽 위, NIM 네 단계는 아래에 폭 전체로 놓습니다
+      { tx: 70, ty: 200, al: 'left', cx: 840, cy: 272, rad: 158, rowX: 70, rowY: 450, rowW: 940, rowH: 72, rowG: 86, foot: 836 })
     // 리본(OpenFold3 PARP1 예측 구조, pLDDT 색)과 리간드 도킹
-    const s = L.rad / TUBE_R, yaw = 0.5 + lt * 0.55, pitch = -0.22 + 0.06 * Math.sin(lt * 1.3)
-    glowBlob(L.cx, L.cy, L.rad * 1.1, 'rgba(55,230,255,0.10)', seg(lt, 0, 0.5))
-    drawTube(TUBE, PIVOT, L.cx, L.cy, s, yaw, pitch, { reveal: seg(lt, 0.05, 1.25, E.inOut3), width: 0.85 })
+    const s = LY.rad / TUBE_R, yaw = 0.5 + lt * 0.55, pitch = -0.22 + 0.06 * Math.sin(lt * 1.3)
+    glowBlob(LY.cx, LY.cy, LY.rad * 1.1, 'rgba(55,230,255,0.10)', seg(lt, 0, 0.5))
+    drawTube(TUBE, PIVOT, LY.cx, LY.cy, s, yaw, pitch, { reveal: seg(lt, 0.05, 1.25, E.inOut3), width: 0.85 })
     const dk = seg(lt, 1.05, 1.6, E.out3)
     if (lt > 1.05) {
       const off = [(1 - dk) * 26, (1 - dk) * 22, (1 - dk) * -14]
-      const c = drawMol(LIG, PIVOT, L.cx, L.cy, s, yaw, pitch, { a: clamp(dk * 2), off, glow: 12, rAtom: 0.42, bw: 0.2 })
+      const c = drawMol(LIG, PIVOT, LY.cx, LY.cy, s, yaw, pitch, { a: clamp(dk * 2), off, glow: 12, rAtom: 0.42, bw: 0.2 })
       const pk = inv(1.55, 2.1, lt)
       if (c && pk > 0 && pk < 1) { ring(c.x, c.y, 20 + pk * 120, C.nvl, (1 - pk) * 0.9, 3); ring(c.x, c.y, 10 + pk * 60, '#fff', (1 - pk) * 0.6, 2) }
       if (c) withA(seg(lt, 1.6, 1.9), () => {
-        const lx = c.x + (VERT ? 150 : 170), ly = c.y - (VERT ? 150 : 170)
-        line(c.x + 14, c.y - 14, lx - 8, ly + 10, '#ffffff', 0.6, 1.5)
-        text('니라파립 · PARP1', lx, ly, { size: VERT ? 26 : 24, weight: 800, color: C.white })
-        text(`데모 약물 · 공결정 대비 ${DS.dd_rmsd} Å`, lx, ly + 30, { size: VERT ? 20 : 18, weight: 600, fam: MONO, color: C.nvl })
+        // 정사각판은 단백질 옆에 자리가 없어 제목 아래에 이름표를 둡니다
+        const lx = SQ ? LY.tx : c.x + (VERT ? 150 : 170), ly = SQ ? LY.ty + 132 : c.y - (VERT ? 150 : 170)
+        if (!SQ) line(c.x + 14, c.y - 14, lx - 8, ly + 10, '#ffffff', 0.6, 1.5)
+        const lw = EN ? W - 60 - lx : 0   // 영어판은 이름표가 화면 밖으로 나가지 않게 줄입니다
+        text(L('니라파립 · PARP1', 'Niraparib · PARP1'), lx, ly, { size: VERT ? 26 : 24, weight: 800, color: C.white, maxW: lw })
+        text(L(`데모 약물 · 공결정 대비 ${DS.dd_rmsd} Å`, `demo drug · ${DS.dd_rmsd} Å vs crystal`), lx, ly + 30, { size: VERT ? 20 : 18, weight: 600, fam: MONO, color: C.nvl, maxW: lw })
       })
     }
     // 제목
-    typeText('STEP 1 · FLYDISCOVERY · 시판 전', L.tx, L.ty - 76, inv(0.02, 0.4, lt), { size: 22, color: C.cyan, align: L.al })
-    riseParts([['Fly', C.white], ['Discovery', C.cyan]], L.tx, L.ty + 20, (lt - 0.05) * 2.6, { size: VERT ? 108 : 104, align: L.al, glow: 24, stagger: 0.03 })
-    text('후보 물질의 표적 결합을 NVIDIA BioNeMo NIM으로', L.tx, L.ty + 76, { size: VERT ? 32 : 30, weight: 600, color: C.t2, align: L.al, a: seg(lt, 0.3, 0.6), maxW: VERT ? 940 : 820 })
+    typeText(L('STEP 1 · FLYDISCOVERY · 시판 전', 'STEP 1 · FLYDISCOVERY · PRE-MARKET'), LY.tx, LY.ty - 76, inv(0.02, 0.4, lt), { size: 22, color: C.cyan, align: LY.al })
+    riseParts([['Fly', C.white], ['Discovery', C.cyan]], LY.tx, LY.ty + 20, (lt - 0.05) * 2.6, { size: P3(104, 108, 88), align: LY.al, glow: 24, stagger: 0.03 })
+    text(L('후보 물질의 표적 결합을 NVIDIA BioNeMo NIM으로', 'How a drug binds its target, via NVIDIA BioNeMo NIM'), LY.tx, LY.ty + 76, { size: VERT ? 32 : 30, weight: 600, color: C.t2, align: LY.al, a: seg(lt, 0.3, 0.6), maxW: P3(820, 940, 580) })
     // NIM 체인: 네 단계가 차례로 켜집니다
     CHAIN.forEach(([name, val], i) => {
-      const t0 = 0.4 + i * 0.36, y = L.rowY + i * L.rowG, on = seg(lt, t0 + 0.18, t0 + 0.34)
+      const t0 = 0.4 + i * 0.36, y = LY.rowY + i * LY.rowG, on = seg(lt, t0 + 0.18, t0 + 0.34)
       const ap = seg(lt, t0, t0 + 0.2)
       if (ap <= 0) return
       X.save(); X.translate((1 - ap) * 60, 0)
       withA(ap, () => {
-        panel(L.rowX, y, L.rowW, L.rowH, { r: 16, stroke: on > 0.5 ? 'rgba(118,185,0,.75)' : C.line, lw: on > 0.5 ? 2 : 1, glow: on > 0.5 ? 'rgba(118,185,0,.35)' : null })
-        chip(L.rowX + 20, y + L.rowH / 2 - 16, 'NIM', { kind: 'nv', size: 16, h: 32 })
-        text(name, L.rowX + 104, y + L.rowH / 2 + 10, { size: VERT ? 32 : 30, weight: 800, fam: MONO, color: C.white })
+        panel(LY.rowX, y, LY.rowW, LY.rowH, { r: 16, stroke: on > 0.5 ? 'rgba(118,185,0,.75)' : C.line, lw: on > 0.5 ? 2 : 1, glow: on > 0.5 ? 'rgba(118,185,0,.35)' : null })
+        chip(LY.rowX + 20, y + LY.rowH / 2 - 16, 'NIM', { kind: 'nv', size: 16, h: 32 })
+        text(name, LY.rowX + 104, y + LY.rowH / 2 + 10, { size: VERT ? 32 : 30, weight: 800, fam: MONO, color: C.white })
         withA(on, () => {
-          text(val, L.rowX + L.rowW - 64, y + L.rowH / 2 + 10, { size: VERT ? 28 : 26, weight: 700, color: C.nvl, align: 'right', maxW: L.rowW * 0.5 })
-          check(L.rowX + L.rowW - 30, y + L.rowH / 2, 18, C.ok, 1, 3.4)
+          text(val, LY.rowX + LY.rowW - 64, y + LY.rowH / 2 + 10, { size: VERT ? 28 : 26, weight: 700, color: C.nvl, align: 'right', maxW: LY.rowW * 0.5 })
+          check(LY.rowX + LY.rowW - 30, y + LY.rowH / 2, 18, C.ok, 1, 3.4)
         })
       })
       X.restore()
       if (i < CHAIN.length - 1) {   // 다음 단계로 흐르는 패킷
         const u = inv(t0 + 0.2, t0 + 0.38, lt)
-        if (u > 0 && u < 1) dot(L.rowX + 50, y + L.rowH + (L.rowG - L.rowH) * u, 5, C.nvl, 1, 16)
+        if (u > 0 && u < 1) dot(LY.rowX + 50, y + LY.rowH + (LY.rowG - LY.rowH) * u, 5, C.nvl, 1, 16)
       }
     })
     withA(seg(lt, 1.95, 2.2), () => {
-      const lbl = `공결정 재도킹 ${DS.redock_n}건 중 ${DS.redock_ok}건 2 Å 이내`
-      chip(VERT ? CX : L.rowX, L.foot, lbl, { kind: 'cyan', size: VERT ? 24 : 22, h: VERT ? 50 : 46, align: VERT ? 'center' : 'left' })
+      const lbl = L(`공결정 재도킹 ${DS.redock_n}건 중 ${DS.redock_ok}건 2 Å 이내`, `${DS.redock_ok} of ${DS.redock_n} known crystal poses re-found within 2 Å`)
+      chip(VERT || SQ ? CX : LY.rowX, LY.foot, lbl, { kind: 'cyan', size: VERT ? 24 : 22, h: VERT ? 50 : 46, align: VERT || SQ ? 'center' : 'left' })
     })
   }
   { const t = B0.disc; cue(t, 'hit', { g: 1 }); cue(t, 'glitch', { d: 0.1 }); cue(t + 0.05, 'scan', { d: 1.2 })
@@ -582,28 +592,30 @@
 
   // ---------------- 03 STEP 2 FlyVigilance ----------------
   function sFV(lt) {
-    const L = VERT
-      ? { tx: CX, ty: 290, al: 'center', ox: CX, oy: 600, oal: 'center', osz: 150, gy: 720, qx: 110, qy: 790, qw: 860, qh: 62, qg: 72, mx: CX, my: 1440, mal: 'center' }
-      : { tx: 120, ty: 222, al: 'left', ox: 120, oy: 520, oal: 'left', osz: 168, gx: 1010, qx: 1090, qy: 250, qw: 710, qh: 62, qg: 76, mx: 120, my: 820, mal: 'left' }
-    typeText('STEP 2 · FLYVIGILANCE · 시판 후', L.tx, L.ty - 76, inv(0.02, 0.4, lt), { size: 22, color: C.magenta, align: L.al })
-    riseParts([['Fly', C.white], ['Vigilance', C.magenta]], L.tx, L.ty + 20, (lt - 0.05) * 2.6, { size: VERT ? 108 : 104, align: L.al, glow: 24, stagger: 0.03 })
+    const LY = P3({ tx: 120, ty: 222, al: 'left', ox: 120, oy: 520, oal: 'left', osz: 168, gx: 1010, qx: 1090, qy: 250, qw: 710, qh: 62, qg: 76, mx: 120, my: 820, mal: 'left' },
+      { tx: CX, ty: 290, al: 'center', ox: CX, oy: 600, oal: 'center', osz: 150, gy: 720, qx: 110, qy: 790, qw: 860, qh: 62, qg: 72, mx: CX, my: 1440, mal: 'center' },
+      // 정사각: 왼쪽에 제목과 보고 수, 오른쪽에 질문 7개, 맨 아래에 지연 시간과 설명을 가로로 놓습니다
+      { tx: 70, ty: 200, al: 'left', ox: 70, oy: 520, oal: 'left', osz: 96, gx: 522, qx: 562, qy: 292, qw: 458, qh: 56, qg: 64, mx: 70, my: 880, mal: 'left' })
+    typeText(L('STEP 2 · FLYVIGILANCE · 시판 후', 'STEP 2 · FLYVIGILANCE · POST-MARKET'), LY.tx, LY.ty - 76, inv(0.02, 0.4, lt), { size: 22, color: C.magenta, align: LY.al })
+    riseParts([['Fly', C.white], ['Vigilance', C.magenta]], LY.tx, LY.ty + 20, (lt - 0.05) * 2.6, { size: P3(104, 108, 88), align: LY.al, glow: 24, stagger: 0.03 })
     // 분기당 FAERS 보고 수
     const c = count(lt, 0.2, 0.85)
     withA(seg(lt, 0.15, 0.3), () => {
-      odometer(FV.q_reports * c, L.ox, L.oy, { size: L.osz, final: FV.q_reports, align: L.oal, color: C.white, glow: 22 })
-      text(`FAERS 보고 · ${FV.quarter} 한 분기`, L.ox, L.oy + 56, { size: VERT ? 32 : 30, weight: 700, color: C.t2, align: L.oal })
+      odometer(FV.q_reports * c, LY.ox, LY.oy, { size: LY.osz, final: FV.q_reports, align: LY.oal, color: C.white, glow: 22 })
+      text(L(`FAERS 보고 · ${FV.quarter} 한 분기`, `FDA FAERS side-effect reports · ${FV.quarter} alone`), LY.ox, LY.oy + P3(56, 56, 48), { size: P3(30, 32, 26), weight: 700, color: C.t2, align: LY.oal, maxW: SQ ? 440 : 0 })
     })
     // 보고 입자가 게이트를 지나 7개 질문으로 흩어집니다
-    const src = VERT ? [CX, L.oy - 50] : [L.ox + 360, L.oy - 60]
-    const gate = VERT ? [CX, L.gy] : [L.gx, 520]
+    const src = VERT ? [CX, LY.oy - 50] : [LY.ox + P3(360, 0, 220), LY.oy - 60]
+    const gate = VERT ? [CX, LY.gy] : [LY.gx, P3(520, 0, 510)]
+    const gy0 = P3(310, 0, 300), gy1 = P3(730, 0, 720)
     withA(seg(lt, 0.7, 0.9) * (1 - seg(lt, 2.1, 2.4)), () => {
-      if (VERT) { line(CX - 160, L.gy - 12, CX + 160, L.gy - 12, C.magenta, 0.9, 3, 14); line(CX - 160, L.gy + 12, CX + 160, L.gy + 12, C.magenta, 0.9, 3, 14) }
-      else { line(L.gx - 12, 310, L.gx - 12, 730, C.magenta, 0.9, 3, 14); line(L.gx + 12, 310, L.gx + 12, 730, C.magenta, 0.9, 3, 14) }
+      if (VERT) { line(CX - 160, LY.gy - 12, CX + 160, LY.gy - 12, C.magenta, 0.9, 3, 14); line(CX - 160, LY.gy + 12, CX + 160, LY.gy + 12, C.magenta, 0.9, 3, 14) }
+      else { line(LY.gx - 12, gy0, LY.gx - 12, gy1, C.magenta, 0.9, 3, 14); line(LY.gx + 12, gy0, LY.gx + 12, gy1, C.magenta, 0.9, 3, 14) }
       for (let i = 0; i < 70; i++) {
         const st = 0.75 + hash(i) * 0.9, u = (lt - st) / 0.55
         if (u <= 0 || u >= 1) continue
         const qi = i % FV.qs.length
-        const tgt = VERT ? [L.qx + 24, L.qy + qi * L.qg + L.qh / 2] : [L.qx + 20, L.qy + qi * L.qg + L.qh / 2]
+        const tgt = VERT ? [LY.qx + 24, LY.qy + qi * LY.qg + LY.qh / 2] : [LY.qx + 20, LY.qy + qi * LY.qg + LY.qh / 2]
         let x, y
         if (u < 0.5) { const v = E.in3(u * 2); x = lerp(src[0] + (hash(i + 9) - 0.5) * 160, gate[0], v); y = lerp(src[1] + (hash(i + 7) - 0.5) * 60, gate[1], v) }
         else { const v = E.out3((u - 0.5) * 2); x = lerp(gate[0], tgt[0], v); y = lerp(gate[1], tgt[1], v) }
@@ -612,14 +624,14 @@
     })
     // 사례 하나에 묻는 7개 질문(타입이 있는 판단)
     FV.qs.forEach(([name, type], i) => {
-      const t0 = 0.95 + i * 0.08, y = L.qy + i * L.qg, a = seg(lt, t0, t0 + 0.2)
+      const t0 = 0.95 + i * 0.08, y = LY.qy + i * LY.qg, a = seg(lt, t0, t0 + 0.2)
       if (a <= 0) return
       X.save(); X.translate((1 - E.out3(a)) * 50, 0)
       withA(a, () => {
-        panel(L.qx, y, L.qw, L.qh, { r: 14, stroke: 'rgba(255,79,216,.40)' })
-        text(`Q${i + 1}`, L.qx + 22, y + L.qh / 2 + 9, { size: 22, weight: 800, fam: MONO, color: C.magenta })
-        text(name, L.qx + 84, y + L.qh / 2 + 10, { size: VERT ? 30 : 28, weight: 800, color: C.white, maxW: L.qw - 300 })
-        chip(L.qx + L.qw - 18, y + (L.qh - 36) / 2, type, { kind: 'mag', size: 18, h: 36, align: 'right', fam: SANS })
+        panel(LY.qx, y, LY.qw, LY.qh, { r: 14, stroke: 'rgba(255,79,216,.40)' })
+        text(`Q${i + 1}`, LY.qx + 22, y + LY.qh / 2 + 9, { size: 22, weight: 800, fam: MONO, color: C.magenta })
+        text(name, LY.qx + 84, y + LY.qh / 2 + 10, { size: P3(28, 30, 26), weight: 800, color: C.white, maxW: SQ ? LY.qw - 118 - chipW(type, 18, SANS, 36) : LY.qw - 300 })
+        chip(LY.qx + LY.qw - 18, y + (LY.qh - 36) / 2, type, { kind: 'mag', size: 18, h: 36, align: 'right', fam: SANS })
       })
       X.restore()
     })
@@ -627,12 +639,14 @@
     const mk = seg(lt, 1.6, 1.85, E.expoOut)
     if (lt > 1.6) {
       const s = lerp(1.5, 1, mk)
-      X.save(); X.translate(L.mx, L.my); X.scale(s, s)
-      const w = rich([[String(FV.p50), C.nvl, 900], [' ms', C.nvl, 700]], 0, 0, { size: VERT ? 140 : 150, align: L.mal, a: clamp(mk * 1.6), glow: 30 })
+      X.save(); X.translate(LY.mx, LY.my); X.scale(s, s)
+      const w = rich([[String(FV.p50), C.nvl, 900], [' ms', C.nvl, 700]], 0, 0, { size: P3(150, 140, 120), align: LY.mal, a: clamp(mk * 1.6), glow: 30 })
       X.restore()
+      // 정사각판은 설명 두 줄을 숫자 오른쪽에 둡니다
+      const cx2 = SQ ? LY.mx + w + 36 : LY.mx, cy2 = SQ ? LY.my - 94 : LY.my, cw2 = SQ ? W - 60 - cx2 : VERT ? 940 : 820
       withA(seg(lt, 1.75, 2.0), () => {
-        text(`질문 ${FV.qs.length}개를 한 번에 판단합니다 · 지연 중앙값`, L.mx, L.my + 52, { size: VERT ? 30 : 28, weight: 700, color: C.white, align: L.mal, maxW: VERT ? 940 : 820 })
-        text('비자기회귀 판단 모델 + NVIDIA Nemotron', L.mx, L.my + 94, { size: VERT ? 26 : 24, weight: 600, fam: MONO, color: C.nvl, align: L.mal, maxW: VERT ? 940 : 820 })
+        text(L(`질문 ${FV.qs.length}개를 한 번에 판단합니다 · 지연 중앙값`, `All ${FV.qs.length} questions in one pass · median latency`), cx2, cy2 + 52, { size: P3(28, 30, 26), weight: 700, color: C.white, align: LY.mal, maxW: cw2 })
+        text(L('비자기회귀 판단 모델 + NVIDIA Nemotron', 'Non-autoregressive judgment model + NVIDIA Nemotron'), cx2, cy2 + 94, { size: P3(24, 26, 22), weight: 600, fam: MONO, color: C.nvl, align: LY.mal, maxW: cw2 })
       })
     }
   }
@@ -642,11 +656,11 @@
 
   // ---------------- 04 실측: 중대 사례 ----------------
   function sSerious(lt) {
-    const y0 = VERT ? 520 : 196
-    typeText(`결과 코드를 가린 비교 · FAERS 사례 ${BL.n}건`, CX, y0, inv(0.02, 0.35, lt), { size: VERT ? 22 : 22, color: C.cyan, align: 'center', track: 3 })
-    riseParts([['중대 사례 ', C.white], [`${BL.serious}건`, C.amber], [' 중 검토에 도달한 사례', C.white]], CX, y0 + (VERT ? 92 : 90), (lt - 0.04) * 3, { size: VERT ? 52 : 56, align: 'center', stagger: 0.015, maxW: W - 140 })
+    const y0 = P3(196, 520, 170)
+    typeText(L(`결과 코드를 가린 비교 · FAERS 사례 ${BL.n}건`, `BLIND TEST · ${BL.n} FDA CASES · OUTCOMES HIDDEN`), CX, y0, inv(0.02, 0.35, lt), { size: VERT ? 22 : 22, color: C.cyan, align: 'center', track: 3 })
+    riseParts(L([['중대 사례 ', C.white], [`${BL.serious}건`, C.amber], [' 중 검토에 도달한 사례', C.white]], [['Of ', C.white], [`${BL.serious}`, C.amber], [' serious cases, how many got reviewed?', C.white]]), CX, y0 + (VERT ? 92 : 90), (lt - 0.04) * 3, { size: P3(56, 52, 50), align: 'center', stagger: 0.015, maxW: W - 140 })
     // 큰 숫자 247 / 250
-    const bs = VERT ? 250 : 270, by = VERT ? 930 : 560
+    const bs = P3(270, 250, 220), by = P3(560, 930, 540)
     const w1 = odoW(BL.fv_reached, bs), w2 = measure(` / ${BL.serious}`, bs * 0.36, 800)
     const x0 = CX - (w1 + w2) / 2, c = count(lt, 0.12, 0.7)
     withA(seg(lt, 0.1, 0.2), () => {
@@ -654,10 +668,11 @@
       text(` / ${BL.serious}`, x0 + w1, by, { size: bs * 0.36, weight: 800, color: C.t2 })
     })
     // 비교 막대
-    const bx = VERT ? 110 : 520, bw = VERT ? 860 : 880, rows = [['FlyVigilance', BL.fv_reached, C.cyan, 0.35], ['판단 모델 단독 · 질문 하나', BL.base_reached, '#7c89a8', 0.5]]
+    // 정사각판은 세로판처럼 이름을 막대 위에 둡니다
+    const bx = VERT || SQ ? 110 : 520, bw = VERT || SQ ? 860 : 880, rows = [['FlyVigilance', BL.fv_reached, C.cyan, 0.35], [L('판단 모델 단독 · 질문 하나', 'Model alone, 1 question'), BL.base_reached, '#7c89a8', 0.5]]
     rows.forEach(([lbl, v, col, t0], i) => withA(seg(lt, t0, t0 + 0.2), () => {
-      const y = (VERT ? 1060 : 650) + i * (VERT ? 120 : 76)
-      if (VERT) {
+      const y = P3(650, 1060, 650) + i * P3(76, 120, 100)
+      if (VERT || SQ) {
         text(lbl, bx, y, { size: 28, weight: 800, color: i ? C.t2 : C.white })
         text(String(v), bx + bw, y, { size: 34, weight: 900, color: col, align: 'right' })
         bar(bx, y + 18, bw, 26, (v / BL.serious) * seg(lt, t0, t0 + 0.5), col, { glow: i ? 0 : 18 })
@@ -667,17 +682,17 @@
         text(`${v} / ${BL.serious}`, bx + bw + 24, y + 26, { size: 30, weight: 900, color: col })
       }
     }))
-    stamp(VERT ? CX : 1500, VERT ? 1390 : 400, pText(BL.p_unrev), C.nvl, seg(lt, 0.8, 1.1, E.lin), { size: VERT ? 48 : 46, sub: 'MCNEMAR · PAIRED' })
+    stamp(VERT || SQ ? CX : 1500, P3(400, 1390, 884), pText(BL.p_unrev), C.nvl, seg(lt, 0.8, 1.1, E.lin), { size: P3(46, 48, 40), sub: 'MCNEMAR · PAIRED' })
   }
   { const t = B0.serious; cue(t, 'boom', { g: 1 }); cue(t, 'glitch', { d: 0.1 }); cue(t + 0.12, 'count', { d: 0.7 }); cue(t + 0.4, 'sweep', { d: 0.5 }); cue(t + 0.8, 'hit', { g: 0.8 }) }
 
   // ---------------- 05 실측: 사람이 먼저 볼 사례 ----------------
   function sWork(lt) {
-    const y0 = VERT ? 560 : 230
-    riseParts([['사람이 ', C.white], ['먼저', C.amber], [' 볼 사례', C.white]], CX, y0, (lt - 0.02) * 3, { size: VERT ? 72 : 72, align: 'center', stagger: 0.02 })
-    text('같은 440건 · 중대 사례를 덜 놓치면서 줄었습니다', CX, y0 + (VERT ? 70 : 64), { size: VERT ? 28 : 28, weight: 600, color: C.t2, align: 'center', a: seg(lt, 0.15, 0.35), maxW: W - 140 })
+    const y0 = P3(230, 560, 200)
+    riseParts(L([['사람이 ', C.white], ['먼저', C.amber], [' 볼 사례', C.white]], [['Cases ', C.white], ['escalated', C.amber], [' to a human', C.white]]), CX, y0, (lt - 0.02) * 3, { size: P3(72, 72, 64), align: 'center', stagger: 0.02, maxW: W - 140 })
+    text(L('같은 440건 · 중대 사례를 덜 놓치면서 줄었습니다', `Same ${BL.n} cases · fewer escalations, fewer serious cases missed`), CX, y0 + (VERT ? 70 : 64), { size: VERT ? 28 : 28, weight: 600, color: C.t2, align: 'center', a: seg(lt, 0.15, 0.35), maxW: W - 140 })
     // 302 → 138
-    const bs = VERT ? 160 : 210, by = VERT ? 850 : 505
+    const bs = P3(210, 160, 150), by = P3(505, 850, 440)
     const wa = odoW(BL.base_human, bs), wr = measure(' → ', bs * 0.7, 800), wb = odoW(BL.base_human, bs)
     const x0 = CX - (wa + wr + wb) / 2
     withA(seg(lt, 0.05, 0.15), () => {
@@ -689,7 +704,7 @@
       odometer(lerp(BL.base_human, BL.fv_human, c), x0 + wa + wr, by, { size: bs, final: BL.base_human, color: C.cyan, glow: 36 })
     })
     // 점 격자: 302개 중 138개만 남습니다
-    const cols = VERT ? 26 : 38, sp = VERT ? 32 : 24, gw = (cols - 1) * sp, gx = CX - gw / 2, gy = VERT ? 960 : 604
+    const cols = P3(38, 26, 34), sp = P3(24, 32, 26), gw = (cols - 1) * sp, gx = CX - gw / 2, gy = P3(604, 960, 520)
     const drop = seg(lt, 0.35, 0.85, E.inOut3)
     X.save(); X.globalCompositeOperation = 'lighter'
     for (let i = 0; i < BL.base_human; i++) {
@@ -701,69 +716,76 @@
     }
     X.restore()
     withA(seg(lt, 0.7, 0.9), () => {
-      const y = VERT ? 1420 : 890
-      rich([['과잉 호출 ', C.t2, 700], [`${BL.base_over} → ${BL.fv_over}`, C.white, 900], ['   ·   ', C.t3, 400], [pText(BL.p_work), C.nvl, 700]], CX, y, { size: VERT ? 34 : 32, align: 'center', maxW: W - 140 })
+      const y = P3(890, 1420, 884)
+      rich([[L('과잉 호출 ', 'Unneeded escalations '), C.t2, 700], [`${BL.base_over} → ${BL.fv_over}`, C.white, 900], ['   ·   ', C.t3, 400], [pText(BL.p_work), C.nvl, 700]], CX, y, { size: VERT ? 34 : 32, align: 'center', maxW: W - 140 })
     })
   }
   { const t = B0.work; cue(t, 'hit', { g: 1 }); cue(t, 'glitch', { d: 0.08 }); cue(t + 0.3, 'count', { d: 0.6, down: 1 }); cue(t + 0.35, 'whoosh', { d: 0.5 }); cue(t + 0.7, 'tick', { f: 1.2 }) }
 
   // ---------------- 06 검증: 지식 기반 판별 AUC ----------------
   function sAUC(lt) {
-    const L = VERT ? { gx: CX, gy: 760, r: 250, tx: CX, ty: 1150, al: 'center', bx: 110, bw: 860 } : { gx: 560, gy: 560, r: 270, tx: 980, ty: 380, al: 'left', bx: 980, bw: 720 }
+    const LY = P3({ gx: 560, gy: 560, r: 270, tx: 980, ty: 380, al: 'left', bx: 980, bw: 720, ry: 550, tw: 880 },
+      { gx: CX, gy: 760, r: 250, tx: CX, ty: 1150, al: 'center', bx: 110, bw: 860, ry: 1320, tw: 940 },
+      // 정사각: 제목은 위 가운데, 게이지는 왼쪽, 비교 막대는 오른쪽에 둡니다
+      { gx: 290, gy: 624, r: 180, tx: CX, ty: 210, al: 'center', bx: 560, bw: 460, ry: 580, tw: 940 })
     const f = seg(lt, 0.1, 0.8, E.out3)
     // 게이지
     X.save(); X.lineCap = 'round'
-    alpha(0.9); X.strokeStyle = 'rgba(120,170,255,0.12)'; X.lineWidth = 26; X.beginPath(); X.arc(L.gx, L.gy, L.r, 0, Math.PI * 2); X.stroke()
-    alpha(0.6); X.strokeStyle = '#7c89a8'; X.lineWidth = 8; X.beginPath(); X.arc(L.gx, L.gy, L.r - 34, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * AU.best * f); X.stroke()
+    alpha(0.9); X.strokeStyle = 'rgba(120,170,255,0.12)'; X.lineWidth = 26; X.beginPath(); X.arc(LY.gx, LY.gy, LY.r, 0, Math.PI * 2); X.stroke()
+    alpha(0.6); X.strokeStyle = '#7c89a8'; X.lineWidth = 8; X.beginPath(); X.arc(LY.gx, LY.gy, LY.r - 34, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * AU.best * f); X.stroke()
     alpha(1); X.strokeStyle = C.magenta; X.shadowColor = C.magenta; X.shadowBlur = 30; X.lineWidth = 26
-    X.beginPath(); X.arc(L.gx, L.gy, L.r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * AU.kb * f); X.stroke()
+    X.beginPath(); X.arc(LY.gx, LY.gy, LY.r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * AU.kb * f); X.stroke()
     X.restore()
-    for (let k = 0; k < 40; k++) { const an = -Math.PI / 2 + (k / 40) * Math.PI * 2; line(L.gx + Math.cos(an) * (L.r + 26), L.gy + Math.sin(an) * (L.r + 26), L.gx + Math.cos(an) * (L.r + 36), L.gy + Math.sin(an) * (L.r + 36), '#ffffff', 0.18, 2) }
-    text('AUC', L.gx, L.gy - 82, { size: 28, weight: 700, fam: MONO, color: C.t2, align: 'center', track: 6, a: seg(lt, 0.05, 0.2) })
-    odometer(AU.kb * f, L.gx, L.gy + 52, { size: VERT ? 136 : 140, decimals: 3, final: AU.kb, align: 'center', color: C.white, glow: 26 })
+    for (let k = 0; k < 40; k++) { const an = -Math.PI / 2 + (k / 40) * Math.PI * 2; line(LY.gx + Math.cos(an) * (LY.r + 26), LY.gy + Math.sin(an) * (LY.r + 26), LY.gx + Math.cos(an) * (LY.r + 36), LY.gy + Math.sin(an) * (LY.r + 36), '#ffffff', 0.18, 2) }
+    text('AUC', LY.gx, LY.gy - P3(82, 82, 66), { size: 28, weight: 700, fam: MONO, color: C.t2, align: 'center', track: 6, a: seg(lt, 0.05, 0.2) })
+    odometer(AU.kb * f, LY.gx, LY.gy + P3(52, 52, 42), { size: P3(140, 136, 108), decimals: 3, final: AU.kb, align: 'center', color: C.white, glow: 26 })
     // 설명
-    typeText(`공개 참조 세트 · ${AU.set} ${AU.n}쌍`, L.tx, L.ty - 60, inv(0.05, 0.35, lt), { size: 22, color: C.magenta, align: L.al, track: 3 })
-    riseParts([['지식 기반 ', C.white], ['판별', C.magenta]], L.tx, L.ty + 30, (lt - 0.08) * 3, { size: VERT ? 80 : 84, align: L.al, stagger: 0.02, glow: 16 })
-    text('약과 반응 이름으로 알려진 이상반응을 가려냅니다', L.tx, L.ty + 86, { size: VERT ? 30 : 28, weight: 600, color: C.t2, align: L.al, a: seg(lt, 0.25, 0.45), maxW: VERT ? 940 : 800 })
-    const rows = [['FlyGate · 지식 기반', AU.kb, C.magenta], [`통계 지표 최고 · ${AU.best_name}`, AU.best, '#7c89a8']]
+    typeText(L(`공개 참조 세트 · ${AU.set} ${AU.n}쌍`, `PUBLIC BENCHMARK · ${AU.set} · ${AU.n} DRUG–EVENT PAIRS`), LY.tx, LY.ty - 60, inv(0.05, 0.35, lt), { size: 22, color: C.magenta, align: LY.al, track: 3 })
+    riseParts(L([['지식 기반 ', C.white], ['판별', C.magenta]], [['Knowledge-based ', C.white], ['detection', C.magenta]]), LY.tx, LY.ty + 30, (lt - 0.08) * 3, { size: P3(84, 80, 72), align: LY.al, stagger: 0.02, glow: 16, maxW: LY.tw })
+    text(L('약과 반응 이름으로 알려진 이상반응을 가려냅니다', 'Flags known side effects from drug and reaction names alone'), LY.tx, LY.ty + 86, { size: VERT ? 30 : 28, weight: 600, color: C.t2, align: LY.al, a: seg(lt, 0.25, 0.45), maxW: VERT || SQ ? 940 : 800 })
+    const rows = [[L('FlyGate · 지식 기반', 'FlyGate · knowledge-based'), AU.kb, C.magenta], [L(`통계 지표 최고 · ${AU.best_name}`, `Best classic statistic · ${AU.best_name}`), AU.best, '#7c89a8']]
+    const rg = SQ ? 110 : 86
+    if (EN) text('AUC: 1.0 = perfect · 0.5 = coin flip', LY.bx, LY.ry + rg * 2 + 20, { size: 20, weight: 600, fam: MONO, color: C.t3, a: seg(lt, 0.6, 0.8), maxW: LY.bw })
     rows.forEach(([lbl, v, col], i) => withA(seg(lt, 0.35 + i * 0.12, 0.55 + i * 0.12), () => {
-      const y = L.ty + (VERT ? 170 : 170) + i * 86
-      text(lbl, L.bx, y, { size: 26, weight: 800, color: i ? C.t2 : C.white })
-      text(v.toFixed(3), L.bx + L.bw, y, { size: 30, weight: 900, fam: MONO, color: col, align: 'right' })
-      bar(L.bx, y + 16, L.bw, 20, v * seg(lt, 0.35 + i * 0.12, 0.85 + i * 0.12), col, { glow: i ? 0 : 14 })
+      const y = LY.ry + i * rg
+      text(lbl, LY.bx, y, { size: 26, weight: 800, color: i ? C.t2 : C.white })
+      text(v.toFixed(3), LY.bx + LY.bw, y, { size: 30, weight: 900, fam: MONO, color: col, align: 'right' })
+      bar(LY.bx, y + 16, LY.bw, 20, v * seg(lt, 0.35 + i * 0.12, 0.85 + i * 0.12), col, { glow: i ? 0 : 14 })
     }))
   }
   { const t = B0.auc; cue(t, 'hit', { g: 1 }); cue(t, 'glitch', { d: 0.08 }); cue(t + 0.1, 'sweep', { d: 0.7 }); cue(t + 0.1, 'count', { d: 0.7 }); cue(t + 0.8, 'lock', { f: 1.4 }) }
 
   // ---------------- 07 NVIDIA 스택 ----------------
   const TILES = [
-    { title: 'NVIDIA Nemotron', big: `${GD.caught}/${GD.n}`, sub: ['근거를 넘는 주장 차단', 'PV 정책 가드 · 숙의 · 리랭커'] },
-    { title: 'BioNeMo NIM', big: '4', unit: '단계', sub: ['MSA-Search → OpenFold3', '→ DiffDock → Boltz-2'] },
-    { title: 'NVIDIA Agent Skills', big: String(AG.skills), unit: '개', sub: ['에이전트 스킬', '시판 전 · 시판 후 전 과정'] },
-    { title: 'NemoClaw · OpenShell', big: `${AG.smoke_pass}/${AG.smoke_total}`, sub: ['샌드박스 스모크 통과', '허용 목록 밖 네트워크 차단'] },
+    { title: 'NVIDIA Nemotron', big: `${GD.caught}/${GD.n}`, sub: L(['근거를 넘는 주장 차단', 'PV 정책 가드 · 숙의 · 리랭커'], ['Overreaching claims caught', 'Policy guard · debate · reranker']) },
+    { title: 'BioNeMo NIM', big: '4', unit: L('단계', 'steps'), sub: ['MSA-Search → OpenFold3', '→ DiffDock → Boltz-2'] },
+    { title: 'NVIDIA Agent Skills', big: String(AG.skills), unit: L('개', ''), sub: L(['에이전트 스킬', '시판 전 · 시판 후 전 과정'], ['Agent skills', 'Pre-market to post-market']) },
+    { title: 'NemoClaw · OpenShell', big: `${AG.smoke_pass}/${AG.smoke_total}`, sub: L(['샌드박스 스모크 통과', '허용 목록 밖 네트워크 차단'], ['Sandbox smoke tests passed', 'Network locked to an allowlist']) },
   ]
   function sStack(lt) {
-    const hy = VERT ? 400 : 214
-    if (VERT) {
-      riseParts([['NVIDIA 스킬', C.nvl], [' 위에 쌓은', C.white]], CX, hy, (lt - 0.02) * 3, { size: 76, align: 'center', stagger: 0.02, glow: 14 })
-      riseParts([['에이전트 워크플로', C.white]], CX, hy + 96, (lt - 0.12) * 3, { size: 76, align: 'center', stagger: 0.02 })
+    const hy = P3(214, 400, 180), hs = SQ ? 60 : 76, hg = SQ ? 76 : 96
+    if (VERT || SQ) {
+      riseParts(L([['NVIDIA 스킬', C.nvl], [' 위에 쌓은', C.white]], [['An agentic workflow', C.white]]), CX, hy, (lt - 0.02) * 3, { size: hs, align: 'center', stagger: 0.02, glow: 14 })
+      riseParts(L([['에이전트 워크플로', C.white]], [['built on ', C.white], ['NVIDIA Skills', C.nvl]]), CX, hy + hg, (lt - 0.12) * 3, { size: hs, align: 'center', stagger: 0.02 })
     } else {
-      riseParts([['NVIDIA 스킬', C.nvl], [' 위에 쌓은 에이전트 워크플로', C.white]], CX, hy, (lt - 0.02) * 3, { size: 72, align: 'center', stagger: 0.015, glow: 14 })
+      riseParts(L([['NVIDIA 스킬', C.nvl], [' 위에 쌓은 에이전트 워크플로', C.white]], [['An agentic workflow built on ', C.white], ['NVIDIA Skills', C.nvl]]), CX, hy, (lt - 0.02) * 3, { size: 72, align: 'center', stagger: 0.015, glow: 14, maxW: W - 140 })
     }
-    text('비자기회귀 판단 모델과 NVIDIA Nemotron이 함께 판단합니다', CX, hy + (VERT ? 170 : 66), { size: VERT ? 32 : 30, weight: 600, color: C.t2, align: 'center', a: seg(lt, 0.2, 0.4), maxW: W - 140 })
-    const tw = VERT ? 460 : 404, th = VERT ? 400 : 390, gap = VERT ? 28 : 24
+    text(L('비자기회귀 판단 모델과 NVIDIA Nemotron이 함께 판단합니다', 'Pairing NVIDIA Nemotron with a non-autoregressive judgment model'), CX, hy + P3(66, 170, 134), { size: VERT ? 32 : 30, weight: 600, color: C.t2, align: 'center', a: seg(lt, 0.2, 0.4), maxW: W - 140 })
+    // 정사각판은 세로판처럼 2×2 로 놓되 타일 높이를 줄입니다
+    const tw = VERT || SQ ? 460 : 404, th = P3(390, 400, 280), gap = P3(24, 28, 20)
+    const tT = P3(64, 64, 56), tB = P3(0.6, 0.6, 0.54), tS = P3(78, 78, 64), tJ = SQ ? 30 : 36
     TILES.forEach((tl, i) => {
-      const col = VERT ? i % 2 : i, row = VERT ? Math.floor(i / 2) : 0, n = VERT ? 2 : 4
-      const x = CX - (n * tw + (n - 1) * gap) / 2 + col * (tw + gap), y = (VERT ? 700 : 350) + row * (th + gap)
+      const col = VERT || SQ ? i % 2 : i, row = VERT || SQ ? Math.floor(i / 2) : 0, n = VERT || SQ ? 2 : 4
+      const x = CX - (n * tw + (n - 1) * gap) / 2 + col * (tw + gap), y = P3(350, 700, 346) + row * (th + gap)
       const t0 = 0.25 + i * 0.13, k = seg(lt, t0, t0 + 0.25, E.expoOut)
       if (k <= 0) return
       X.save(); X.translate(x + tw / 2, y + th / 2); const s = lerp(1.25, 1, k); X.scale(s, s); X.translate(-(x + tw / 2), -(y + th / 2))
       withA(clamp(k * 1.6), () => {
         panel(x, y, tw, th, { r: 22, top: C.nv, stroke: 'rgba(118,185,0,.45)', lw: 1.5, glow: 'rgba(118,185,0,.25)' })
-        text(tl.title, x + 32, y + 64, { size: VERT ? 32 : 30, weight: 800, color: C.white, maxW: tw - 64 })
-        const bw = text(tl.big, x + 32, y + th * 0.6, { size: VERT ? 124 : 120, weight: 900, color: C.nvl, glow: 26 })
-        if (tl.unit) text(tl.unit, x + 40 + bw, y + th * 0.6, { size: 34, weight: 800, color: C.nvl })
-        tl.sub.forEach((ln, j) => text(ln, x + 32, y + th - 78 + j * 36, { size: j ? 21 : 25, weight: j ? 600 : 800, color: j ? C.t2 : C.white, fam: j ? MONO : SANS, maxW: tw - 64 }))
+        text(tl.title, x + 32, y + tT, { size: P3(30, 32, 30), weight: 800, color: C.white, maxW: tw - 64 })
+        const bw = text(tl.big, x + 32, y + th * tB, { size: P3(120, 124, 96), weight: 900, color: C.nvl, glow: 26 })
+        if (tl.unit) text(tl.unit, x + 40 + bw, y + th * tB, { size: SQ ? 30 : 34, weight: 800, color: C.nvl })
+        tl.sub.forEach((ln, j) => text(ln, x + 32, y + th - tS + j * tJ, { size: j ? 21 : 25, weight: j ? 600 : 800, color: j ? C.t2 : C.white, fam: j ? MONO : SANS, maxW: tw - 64 }))
       })
       X.restore()
     })
@@ -773,34 +795,37 @@
 
   // ---------------- 08 마무리: 뇌 → FlyGate ----------------
   function endCard(lt, poster = false) {
-    const bs = VERT ? 400 : 470, by = VERT ? LOGO.y - 70 : LOGO.y - 90
+    const bs = P3(470, 400, 350), by = VERT || SQ ? LOGO.y - 70 : LOGO.y - 90
     const m = poster ? 1 : seg(lt, 0.12, 1.1, E.lin)
     cloud(lt + 3, CX, by, bs, poster ? 0.5 : 1, m, { spin: poster ? 0 : 0.4, yaw0: 0.1 })
     const solid = poster ? 1 : seg(lt, 0.9, 1.25)
     glowBlob(CX, LOGO.y - LOGO.size * 0.35, LOGO.size * 2.2, 'rgba(55,230,255,0.12)', solid)
     logoText(solid, 40)
     const t1 = poster ? 1 : seg(lt, 1.05, 1.3), t2 = poster ? 1 : seg(lt, 1.15, 1.4), t3 = poster ? 1 : seg(lt, 1.25, 1.5)
-    const y1 = LOGO.y + (VERT ? 110 : 96)
-    if (VERT) {
+    const y1 = LOGO.y + P3(96, 110, 92)
+    if (VERT || SQ) {
       // 슬로건: 분자에서 환자까지, 추론보다 근거가 먼저. FlyGate. (FlyGate 는 위 로고)
-      text('분자에서 환자까지,', CX, y1, { size: 50, weight: 800, color: C.white, align: 'center', a: t1 })
-      rich([['추론보다 ', C.t2, 800], ['근거가 먼저.', C.cyan, 800]], CX, y1 + 70, { size: 50, align: 'center', a: t1 })
+      const ss = SQ ? 44 : 50, sg = SQ ? 60 : 70
+      text(L('분자에서 환자까지,', 'From molecule to patient,'), CX, y1, { size: ss, weight: 800, color: C.white, align: 'center', a: t1, maxW: W - 140 })
+      rich(L([['추론보다 ', C.t2, 800], ['근거가 먼저.', C.cyan, 800]], [['evidence ', C.cyan, 800], ['before inference.', C.t2, 800]]), CX, y1 + sg, { size: ss, align: 'center', a: t1, maxW: W - 140 })
     } else {
-      rich([['분자에서 환자까지, ', C.white, 800], ['추론보다 ', C.t2, 800], ['근거가 먼저.', C.cyan, 800]], CX, y1, { size: 48, align: 'center', a: t1 })
+      rich(L([['분자에서 환자까지, ', C.white, 800], ['추론보다 ', C.t2, 800], ['근거가 먼저.', C.cyan, 800]], [['From molecule to patient, ', C.white, 800], ['evidence ', C.cyan, 800], ['before inference.', C.t2, 800]]), CX, y1, { size: 48, align: 'center', a: t1 })
     }
-    const y2 = y1 + (VERT ? 190 : 84)
-    text(D.meta.hack.toUpperCase(), CX, y2, { size: VERT ? 25 : 24, weight: 700, fam: MONO, color: C.nvl, align: 'center', track: VERT ? 3 : 5, a: t2, maxW: W - 120 })
+    const y2 = y1 + P3(84, 190, 144)
+    text(D.meta.hack.toUpperCase(), CX, y2, { size: P3(24, 25, 22), weight: 700, fam: MONO, color: C.nvl, align: 'center', track: VERT || SQ ? 3 : 5, a: t2, maxW: W - 120 })
     const url = D.meta.live.replace(/^https?:\/\//, '')
+    const ch = P3(66, 70, 62), cs = P3(32, 34, 30), cg = SQ ? 34 : 40
     withA(t3, () => {
-      const cw = chipW(url, VERT ? 34 : 32, MONO, VERT ? 70 : 66)
-      panel(CX - cw / 2, y2 + 40, cw, VERT ? 70 : 66, { r: 35, fill: 'rgba(55,230,255,0.10)', stroke: 'rgba(55,230,255,0.7)', lw: 2, glow: 'rgba(55,230,255,0.35)' })
-      text(url, CX, y2 + 40 + (VERT ? 35 : 33) + 1, { size: VERT ? 34 : 32, weight: 700, fam: MONO, color: C.white, align: 'center', base: 'middle' })
+      const cw = chipW(url, cs, MONO, ch)
+      panel(CX - cw / 2, y2 + cg, cw, ch, { r: 35, fill: 'rgba(55,230,255,0.10)', stroke: 'rgba(55,230,255,0.7)', lw: 2, glow: 'rgba(55,230,255,0.35)' })
+      text(url, CX, y2 + cg + ch / 2 + 1, { size: cs, weight: 700, fam: MONO, color: C.white, align: 'center', base: 'middle' })
     })
     const cr = 'NVIDIA NIM (BioNeMo · Nemotron) · NVIDIA Agent Skills · NemoClaw · OpenShell · FDA FAERS · MaleCNS v1.0 (Janelia FlyEM, CC BY 4.0)'
     const ca = poster ? 0.8 : seg(lt, 1.4, 1.7) * 0.8
-    if (VERT) {
-      text('NVIDIA NIM (BioNeMo · Nemotron) · NVIDIA Agent Skills · NemoClaw · OpenShell', CX, H - 190, { size: 16, weight: 500, fam: MONO, color: C.t3, align: 'center', a: ca, maxW: W - 140 })
-      text('FDA FAERS · MaleCNS v1.0 (Janelia FlyEM, CC BY 4.0)', CX, H - 164, { size: 16, weight: 500, fam: MONO, color: C.t3, align: 'center', a: ca, maxW: W - 140 })
+    if (VERT || SQ) {
+      const cy = SQ ? H - 156 : H - 190
+      text('NVIDIA NIM (BioNeMo · Nemotron) · NVIDIA Agent Skills · NemoClaw · OpenShell', CX, cy, { size: 16, weight: 500, fam: MONO, color: C.t3, align: 'center', a: ca, maxW: W - 140 })
+      text('FDA FAERS · MaleCNS v1.0 (Janelia FlyEM, CC BY 4.0)', CX, cy + 26, { size: 16, weight: 500, fam: MONO, color: C.t3, align: 'center', a: ca, maxW: W - 140 })
     } else text(cr, CX, H - 132, { size: 15, weight: 500, fam: MONO, color: C.t3, align: 'center', a: ca, maxW: W - 200 })
   }
   function sEnd(lt) { endCard(lt) }
@@ -817,15 +842,15 @@
     const f = Math.floor(T * FPS + 1e-6), ss = Math.floor(f / FPS), ff = f % FPS
     text(`TC 00:00:${String(ss).padStart(2, '0')}:${String(ff).padStart(2, '0')}`, W - M - 30, M + 34, { size: 15, weight: 500, fam: MONO, color: C.t3, align: 'right', track: 2 })
     const step = b.id === 'disc' ? 1 : ['fv', 'serious', 'work', 'auc'].includes(b.id) ? 2 : 0
-    if (!VERT) {
+    if (!VERT && !SQ) {
       let px = W - M - 260
-      for (const [l, n] of [['STEP 2 · 시판 후', 2], ['STEP 1 · 시판 전', 1]]) {
+      for (const [l, n] of [[L('STEP 2 · 시판 후', 'STEP 2 · POST-MARKET'), 2], [L('STEP 1 · 시판 전', 'STEP 1 · PRE-MARKET'), 1]]) {
         const w = chipW(l, 13, MONO, 26); px -= w
         chip(px, M + 13, l, { kind: step === n ? (n === 1 ? 'cyan' : 'mag') : 'dim', size: 13, h: 26, a: step === n ? 1 : 0.5 }); px -= 10
       }
     }
     text(`${NUM[b.id]} — ${b.label}`, M + 30, H - M - 20, { size: 15, weight: 500, fam: MONO, color: C.cream, track: 2, maxW: W * 0.55 })
-    text(`${W}×${H} · 30FPS · 실측 데이터`, W - M - 30, H - M - 20, { size: 14, weight: 500, fam: MONO, color: C.t3, align: 'right', track: 1 })
+    text(`${W}×${H} · 30FPS · ${L('실측 데이터', 'MEASURED DATA')}`, W - M - 30, H - M - 20, { size: 14, weight: 500, fam: MONO, color: C.t3, align: 'right', track: 1 })
     const x0 = M + 30, x1 = W - M - 30, y = H - M - 46
     line(x0, y, x1, y, '#ffffff', 0.12, 1); line(x0, y, lerp(x0, x1, T / DUR), y, C.cyan, 0.9, 2)
     for (const s of BEATS.slice(1)) line(lerp(x0, x1, s.t0 / DUR), y - 4, lerp(x0, x1, s.t0 / DUR), y + 4, '#ffffff', 0.35, 1)
@@ -913,7 +938,7 @@
   })
   // 프레임 단위 렌더링(영상 출력용): 루프를 멈추고 지정 시점을 그립니다
   const renderAt = (t) => { manual = true; playing = false; T = t; render(Math.min(t, DUR - 1e-6)) }
-  window.__reel = { seek: (t) => { manual = false; T = t; playing = false }, play: () => { manual = false; playing = true }, renderAt, DUR, W, H, vertical: VERT,
+  window.__reel = { seek: (t) => { manual = false; T = t; playing = false }, play: () => { manual = false; playing = true }, renderAt, DUR, W, H, vertical: VERT, square: SQ, lang: EN ? 'en' : 'ko',
     scenes: () => BEATS.map(({ id, t0, t1, label }) => ({ id, t0, t1, name: id, label })), cues: () => [...CUES].sort((a, b) => a.t - b.t) }
   requestAnimationFrame((n) => { last = n; frame(n) })
 })()
