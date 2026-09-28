@@ -26,7 +26,7 @@ const I = (d: string) => (
   <svg className="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d={d} /></svg>
 )
 
-interface Page { id: string; label: string; en: string; icon: ReactNode; el: () => ReactNode; hot?: boolean }
+interface Page { id: string; label: string; en: string; icon: ReactNode; el: () => ReactNode; hot?: boolean; hidden?: boolean }
 
 // 메뉴는 네 묶음입니다: 개요(문제 정의 · 용어 풀이 포함) · STEP 1 시판 전 · STEP 2 시판 후 · 에이전트
 const GROUPS: { step?: string; name?: string; color?: string; pages: Page[] }[] = [
@@ -56,10 +56,10 @@ const GROUPS: { step?: string; name?: string; color?: string; pages: Page[] }[] 
   ] },
   { step: '에이전트 · NVIDIA', name: 'NemoClaw', color: '#e2a74e', pages: [
     { id: 'cli', label: 'FlyGate Agent CLI', en: '한 줄 설치 · 실제 터미널 · 튜토리얼', icon: <span className="mono" aria-hidden="true">›_</span>, el: () => <CliTutorial /> },
-    { id: 'agent', label: '에이전트 구성', en: 'NemoClaw · OpenShell', icon: I('M12 3 4 7v10l8 4 8-4V7l-8-4ZM4 7l8 4 8-4M12 11v10'), el: () => <Agent /> },
+    { id: 'agent', label: '에이전트 구성', en: 'NemoClaw · OpenShell', icon: I('M12 3 4 7v10l8 4 8-4V7l-8-4ZM4 7l8 4 8-4M12 11v10'), el: () => <Agent />, hidden: true },
     { id: 'skills', label: 'NVIDIA 스킬 · 거버넌스', en: 'Skills & Guardrails', icon: I('M12 2 3 7v6c0 5 4 8 9 9 5-1 9-4 9-9V7l-9-5ZM9 12l2 2 4-4'), el: () => <Skills /> },
     { id: 'calls', label: 'NVIDIA 호출 로그', en: 'API call log · 요청 ID · 증거 대응표', icon: I('M4 5h16M4 10h16M4 15h10M4 20h7M17 15l2 2 3-4'), el: () => <CallLog /> },
-    { id: 'architecture', label: '아키텍처 · 층 구성', en: 'Connectome-routed Architecture', icon: I('M4 6h6v6H4zM14 12h6v6h-6zM10 9h2a2 2 0 0 1 2 2v4M17 12V6h-3'), el: () => <Architecture /> },
+    { id: 'architecture', label: '아키텍처 · 층 구성', en: 'Connectome-routed Architecture', icon: I('M4 6h6v6H4zM14 12h6v6h-6zM10 9h2a2 2 0 0 1 2 2v4M17 12V6h-3'), el: () => <Architecture />, hidden: true },
   ] },
 ]
 const PAGES = GROUPS.flatMap((g) => g.pages)
@@ -100,7 +100,7 @@ export default function App() {
           {GROUPS.map((g, gi) => (
             <div key={gi} style={{ display: 'contents' }}>
               {g.step && <div className="nav-grp"><span>{g.step}</span><b style={{ color: g.color }}>{g.name}</b></div>}
-              {g.pages.map((p) => (
+              {g.pages.filter((p) => !p.hidden).map((p) => (
                 <button key={p.id} className={`nav-item ${p.hot ? 'nav-hot' : ''} ${p.id === cur.id ? 'active' : ''}`} onClick={() => go(p.id)}>
                   {p.icon}
                   <span className="lbl">{p.label}<small>{p.en}</small></span>

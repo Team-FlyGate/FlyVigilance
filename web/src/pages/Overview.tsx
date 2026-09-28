@@ -1,7 +1,9 @@
 import { useEffect, useState, type ReactNode } from 'react'
+import Architecture from './Architecture'
+import Agent from './Agent'
 import { Card, PageHead } from '../components/ui'
-import { api, fmt, getJSON, type SignalRow } from '../lib/data'
-import type { Ablation, Bench, CriticProbe, DiscoveryMeasurements, DockEval, Escalation, LiteratureEval, Validation } from '../lib/types'
+import { fmt, getJSON } from '../lib/data'
+import type { Ablation, Bench, CriticProbe, DiscoveryMeasurements, Escalation, LiteratureEval, Validation } from '../lib/types'
 import Term from '../components/Term'
 
 // 개요: STEP 1 시판 전(후보 물질)과 STEP 2 시판 후(허가 약물)를 데모 약물 니라파립으로 이어 시판 전 탐색에서 STEP 2 시판 후 감시까지 한 화면에 보여 줍니다.
@@ -9,36 +11,9 @@ import Term from '../components/Term'
 
 const REPO = 'https://github.com/Team-FlyGate/Project-FlyGate'
 const REEL = '/showreel/FlyGate_showreel_v4.3.0.html'
-const DIAGRAM = '/images/flygate_agent_diagram_v1.1.0.png'
-const MSA_SECONDS = 63.6 // MSA-Search 실측 시간입니다 (fly_discovery/README.md, measurements.json 에는 없는 값)
+const ARCH_IMG = '/images/flygate-architecture_v2.1.0.png'
 
-type Kind = 'data' | 'nim' | 'jev' | 'rule' | 'critic' | 'human'
-const KIND: Record<Kind, { c: string; t: string }> = {
-  data: { c: '#37e6ff', t: '데이터 · 조회' },
-  nim: { c: '#76b900', t: 'NVIDIA NIM' },
-  jev: { c: '#ffb547', t: '비자기회귀 판단 모델' },
-  rule: { c: '#8a97bd', t: '규칙 · SQL' },
-  critic: { c: '#ff5d6c', t: '크리틱' },
-  human: { c: '#f4f7ff', t: '사람' },
-}
-interface Step { name: string; tech: string; kind: Kind; val: ReactNode }
 
-function Flow({ steps }: { steps: Step[] }) {
-  return (
-    <div className="flow">
-      {steps.map((s, i) => (
-        <div key={s.name} style={{ display: 'contents' }}>
-          {i > 0 && <div className="flow-arrow" />}
-          <div className="flow-step" style={{ boxShadow: `inset 3px 0 0 ${KIND[s.kind].c}` }}>
-            <div className="fs-name">{s.name}</div>
-            <div className="fs-tech" style={{ color: KIND[s.kind].c }}>{s.tech}</div>
-            <div className="fs-val">{s.val}</div>
-          </div>
-        </div>
-      ))}
-    </div>
-  )
-}
 
 const SUP: Record<string, string> = { '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' }
 function fmtP(p: number) {
@@ -90,8 +65,6 @@ export default function Overview() {
   const [probe, setProbe] = useState<CriticProbe | null>(null)
   const [skills, setSkills] = useState<number | null>(null)
   const [disc, setDisc] = useState<DiscoveryMeasurements | null>(null)
-  const [dock, setDock] = useState<Record<string, DockEval> | null>(null)
-  const [nirTp, setNirTp] = useState<SignalRow | null>(null)
   useEffect(() => {
     getJSON<Bench>('/data/bench.json').then(setBench).catch(() => null)
     getJSON<Validation>('/data/validation.json').then(setVal).catch(() => null)
@@ -99,15 +72,9 @@ export default function Overview() {
     getJSON<CriticProbe>('/data/critic_probe.json').then(setProbe).catch(() => null)
     getJSON<unknown[]>('/data/skills.json').then((s) => setSkills(s.length)).catch(() => null)
     getJSON<DiscoveryMeasurements>('/discovery/data/measurements.json').then(setDisc).catch(() => null)
-    getJSON<Record<string, DockEval>>('/discovery/data/dd_eval_all.json').then(setDock).catch(() => null)
-    api<{ rows: SignalRow[] }>('/api/signals/NIRAPARIB').then((r) => setNirTp(r.rows.find((x) => x.pt === 'thrombocytopenia') ?? null)).catch(() => null)
   }, [])
 
   // STEP 1 수치 (fly_discovery/measurements)
-  const of3 = disc?.openfold3_msa
-  const bm = disc?.parp1_affinity_benchmark
-  const nirDock = dock?.['parp1-4r6e-chain-a--niraparib']
-  const redock = dock ? Object.values(dock).filter((x) => x.rmsd_xtal !== null) : []
   const superKey = disc ? Object.keys(disc.critic_eval).find((k) => k.includes('super')) : undefined
   const critic1 = superKey ? disc!.critic_eval[superKey] : undefined
   const reject1 = critic1?.rows.find((r) => r[1] === 'REJECT' && r[0].includes('선택적')) ?? critic1?.rows.find((r) => r[1] === 'REJECT')
@@ -136,27 +103,6 @@ export default function Overview() {
   const p1 = probe?.cases[0]?.probes.find((p) => p.id === 'p1')
   const p1Issue = p1?.issues.find((i) => i.source === 'T3')
 
-  const d = (x: number | undefined, digits = 2) => (x === undefined ? '…' : x.toFixed(digits))
-  const step1: Step[] = [
-    { name: '표적 · PARP1', tech: 'PDB 4R6E', kind: 'data', val: <>니라파립 <Term k="cocrystal">공결정 구조</Term> · <Term k="PDB">PDB</Term></> },
-    { name: 'MSA-Search', tech: 'BioNeMo NIM', kind: 'nim', val: <><Term k="MSA">상동 서열</Term> {of3?.msa_homologs ?? '…'}개 · {MSA_SECONDS}초</> },
-    { name: 'OpenFold3', tech: 'BioNeMo NIM', kind: 'nim', val: <><Term k="pLDDT" /> {of3?.plddt ?? '…'} · <Term k="CA">CA</Term> {d(of3?.ca_rmsd_vs_4R6E, 1)} Å</> },
-    { name: 'DiffDock', tech: 'BioNeMo NIM', kind: 'nim', val: <><Term k="docking">재도킹</Term> <Term k="RMSD" /> {nirDock?.rmsd_xtal ?? '…'} <Term k="angstrom">Å</Term></> },
-    { name: 'Boltz-2', tech: 'BioNeMo NIM', kind: 'nim', val: <><Term k="ChEMBL" /> 대비 <Term k="spearman">ρ</Term> {d(bm?.spearman, 3)} · {bm?.n ?? '…'}종</> },
-    { name: '전통 기준 채점', tech: '규칙', kind: 'rule', val: <>포즈 ≤ 2 Å {redock.filter((x) => (x.rmsd_xtal ?? 9) <= 2).length}/{redock.length || '…'}</> },
-    { name: '크리틱', tech: 'Nemotron 3 Super', kind: 'critic', val: <><Term k="overclaim">과잉해석</Term> {critic1 ? `${critic1.caught}/${critic1.n_over}` : '…'} 반려</> },
-  ]
-  const step2: Step[] = [
-    { name: '접수 · FAERS', tech: 'DuckDB SQL', kind: 'data', val: nirTp ? <>니라파립 × 혈소판감소증 {fmt.int(nirTp.a)}건</> : 'FAERS 2012Q4–2026Q2' },
-    { name: '규칙 게이트', tech: '규칙', kind: 'rule', val: <Term k="ICH4" /> },
-    { name: '라벨 근거', tech: 'openFDA 조회', kind: 'data', val: <><Term k="label">라벨</Term> 절을 조회해 주입</> },
-    { name: '타입 판단 7문항', tech: '비자기회귀 판단 모델', kind: 'jev', val: <>한 번 호출 · <Term k="pct">p50</Term> {jt ? Math.round(jt.latency_ms.p50) : '…'} ms</> },
-    { name: '결정 정책', tech: '규칙', kind: 'rule', val: <><Term k="expedited">신속보고</Term> 기한 US · KR</> },
-    { name: 'Nemotron 숙고', tech: 'Nemotron 3 Super', kind: 'nim', val: <><Term k="evidenceId">근거 ID</Term> 붙은 주장 메모</> },
-    { name: '크리틱 3단', tech: '규칙 · 판단 · Safety Guard', kind: 'critic', val: <>틀린 주장 {probe ? `${wrong.ok}/${wrong.n}` : '…'} 반려</> },
-    { name: '사람 검토 큐', tech: '사람', kind: 'human', val: <>보고 · <Term k="causality">인과성</Term> 최종 판정</> },
-  ]
-
   return (
     <div className="page">
       <PageHead eyebrow="Project-FlyGate · NVIDIA Korea Agentic AI Hackathon 2026"
@@ -172,38 +118,24 @@ export default function Overview() {
           </div>
         </div>} />
 
-      <Card style={{ marginBottom: 16 }}>
-        <div className="row between" style={{ marginBottom: 10 }}>
-          <div className="row" style={{ gap: 10 }}>
-            <span className="chip" style={{ color: 'var(--c-sense)', borderColor: 'rgba(55,230,255,0.45)' }}>STEP 1 · 시판 전</span>
-            <b style={{ fontFamily: 'var(--font)', fontSize: 15 }}>FlyDiscovery</b>
-            <span className="dim" style={{ fontSize: 12.5 }}>후보가 표적에 붙는지 구조 예측 → <Term k="docking">도킹</Term> → <Term k="affinity">친화도</Term> 순서로 잽니다</span>
-          </div>
-          <a href="#/discovery" style={{ fontSize: 12.5, textDecoration: 'none' }}>워크벤치 열기 →</a>
+      <div className="row between" style={{ margin: '4px 0 10px' }}>
+        <div className="row" style={{ gap: 10, alignItems: 'baseline' }}>
+          <span className="eyebrow" style={{ color: 'var(--c-sense)' }}>Architecture · connectome-routed agent</span>
+          <span className="dim" style={{ fontSize: 12.5 }}>뇌의 층이 곧 에이전트의 층입니다. 노드를 누르면 해당 뉴런 집단이 커넥텀(뉴런 연결 배선도)에서 켜집니다</span>
         </div>
-        <Flow steps={step1} />
-        <div className="row" style={{ gap: 12, margin: '14px 0' }}>
-          <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, rgba(55,230,255,0.4))' }} />
-          <span className="chip" style={{ fontSize: 12, color: 'var(--text)', borderColor: 'var(--line-2)' }}>데모 약물 니라파립 · 시판 후 보고로 이어집니다 ↓</span>
-          <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, rgba(118,185,0,0.4), transparent)' }} />
-        </div>
-        <div className="row between" style={{ marginBottom: 10 }}>
-          <div className="row" style={{ gap: 10 }}>
-            <span className="chip nv">STEP 2 · 시판 후</span>
-            <b style={{ fontFamily: 'var(--font)', fontSize: 15 }}>FlyVigilance</b>
-            <span className="dim" style={{ fontSize: 12.5 }}>
-              보고마다 <Term k="reflex">반사 판단</Term>으로 경로를 정하고, 필요한 건만 Nemotron 숙고(<Term k="System2" />)와 사람에게 올립니다
-              {nirTp && <> · 니라파립 × 혈소판감소증 <Term k="PRR" /> {nirTp.prr.toFixed(2)}, <Term k="IC025" /> {nirTp.ic025.toFixed(2)}{nirTp.evans && nirTp.ror_sig && nirTp.ic_sig ? <> (<Term k="triple">3중 기준</Term> <Term k="SDR" ko />)</> : ''}</>}
-            </span>
-          </div>
-          <a href="#/triage" style={{ fontSize: 12.5, textDecoration: 'none' }}>사례 분류(트리아지) 실행 →</a>
-        </div>
-        <Flow steps={step2} />
-        <div className="row wrap" style={{ gap: 14, marginTop: 12 }}>
-          {Object.values(KIND).map((k) => (
-            <span key={k.t} className="row" style={{ gap: 6, fontSize: 11.5, color: 'var(--text-3)' }}><span className="legend-dot" style={{ background: k.c }} />{k.t}</span>
-          ))}
-        </div>
+      </div>
+      <div style={{ marginBottom: 16 }}><Architecture embedded /></div>
+
+      <Card title="Project-FlyGate 아키텍처" style={{ marginBottom: 16 }}
+        sub={<>NVIDIA NemoClaw(OpenShell · OpenClaw) 위에서 STEP 1 FlyDiscovery(시판 전 · BioNeMo NIM)와 STEP 2 FlyVigilance(시판 후 · Nemotron)가 근거 관문을 거쳐 사람 승인으로 이어집니다</>}
+        right={<div className="row" style={{ gap: 12 }}>
+          <a href="#/discovery" style={{ fontSize: 12.5, textDecoration: 'none' }}>STEP 1 워크벤치 →</a>
+          <a href="#/triage" style={{ fontSize: 12.5, textDecoration: 'none' }}>STEP 2 사례 분류 →</a>
+        </div>}>
+        <a href={ARCH_IMG} target="_blank" rel="noreferrer" style={{ display: 'block' }}>
+          <img src={ARCH_IMG} alt="Project-FlyGate 아키텍처: NVIDIA NemoClaw(OpenShell 샌드박스 · OpenClaw 에이전트 실행) 아래 STEP 1 FlyDiscovery(구조 · 결합 · 참조 확인)와 STEP 2 FlyVigilance(보고 · 규칙과 분류 · 선택적 검토)가 근거 관문 3단(근거 ID · 숫자 대조 · 해석과 안전)을 거쳐 사람 검토와 승인으로 이어집니다"
+            loading="lazy" style={{ width: '100%', maxWidth: 980, display: 'block', margin: '0 auto', borderRadius: 12 }} />
+        </a>
       </Card>
 
       <Card title="실측 결과" style={{ marginBottom: 16 }}
@@ -244,15 +176,16 @@ export default function Overview() {
         </div>
       </Card>
 
-      <div className="grid" style={{ gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)', gap: 16, marginBottom: 16, alignItems: 'stretch' }}>
-        <Card title="에이전트 구성도" sub={<>NemoClaw 네 층: <Term k="LLM" /> 엔드포인트 · OpenClaw 하네스 · OpenShell <Term k="sandbox">샌드박스</Term> · NemoClaw 블루프린트</>}
-          right={<a href="#/agent" style={{ fontSize: 12.5, textDecoration: 'none' }}>에이전트 구성 →</a>}>
-          <a href={DIAGRAM} target="_blank" rel="noreferrer" style={{ display: 'block' }}>
-            <img src={DIAGRAM} alt="Project-FlyGate 에이전트 구성도: NVIDIA NIM 엔드포인트, egress 허용 목록, OpenShell 샌드박스 안의 OpenClaw 하네스와 두 워크플로, NemoClaw 블루프린트"
-              loading="lazy" style={{ width: '100%', display: 'block', borderRadius: 10, background: '#fff' }} />
-          </a>
-        </Card>
+      <div className="row between" style={{ margin: '4px 0 10px' }}>
+        <div className="row" style={{ gap: 10, alignItems: 'baseline' }}>
+          <span className="eyebrow" style={{ color: '#e2a74e' }}>에이전트 구성 · NemoClaw · OpenShell · OpenClaw</span>
+          <span className="dim" style={{ fontSize: 12.5 }}>두 워크플로를 샌드박스 안의 에이전트 하나로 돌립니다. 보고와 인과성의 최종 판정은 사람이 합니다</span>
+        </div>
+        <a href="#/cli" style={{ fontSize: 12.5, textDecoration: 'none' }}>FlyGate Agent CLI →</a>
+      </div>
+      <div style={{ marginBottom: 16 }}><Agent embedded /></div>
 
+      <div className="grid" style={{ gridTemplateColumns: 'minmax(0, 1fr)', gap: 16, marginBottom: 16, alignItems: 'stretch' }}>
         <Card title="기술 스택" sub="각 부품이 맡은 일">
           <div className="stack" style={{ gap: 10, fontSize: 12.5 }}>
             {([
