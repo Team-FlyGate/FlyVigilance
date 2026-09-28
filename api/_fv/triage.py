@@ -1,4 +1,4 @@
-"""Reflex 층: Jev System-1 로 ICSR 한 건에 타입 있는 판단 7개를 한 번에 받고 라우팅한다.
+"""Reflex 층: 비자기회귀 판단 모델(System-1)로 ICSR 한 건에 타입 있는 판단 7개를 한 번에 받고 라우팅한다.
 
 판단은 확률로 받는다. 확률은 집단 보정값이지 이 한 건의 보장이 아니므로,
 라우팅은 확률과 신뢰도 둘 다를 보고 애매하면 위(System-2, 사람)로 올린다.
@@ -28,8 +28,8 @@ ROUTES = {
 
 
 def case_state(case: dict, include_outcome: bool = True, grounding: dict | None = None) -> str:
-    """ICSR 를 Jev 상태 문자열로. include_outcome=False 는 중대성 맹검 벤치마크용.
-    grounding 이 있으면 라벨 조회 결과를 상태에 넣어, Jev 가 약 이름 기억 대신 확인된 사실을 보고 판단하게 합니다."""
+    """ICSR 를 판단 모델 상태 문자열로. include_outcome=False 는 중대성 맹검 벤치마크용.
+    grounding 이 있으면 라벨 조회 결과를 상태에 넣어, 판단 모델이 라벨 원문으로 확인된 사실을 보고 판단하게 합니다."""
     lines = [f"FAERS ICSR primaryid {case['primaryid']} (case {case['caseid']}, {case.get('quarter')})"]
     demo = []
     if case.get("age") is not None:
@@ -160,7 +160,7 @@ def dme_hits(case: dict) -> list[str]:
 def route_policy(ans: dict, valid: dict | None = None, regime: str = "US", expected: float | None = None,
                  expected_source: str = "jev", dme: list[str] | None = None) -> dict:
     """결정론적 라우팅 정책입니다. 모델 확률을 행동으로 바꾸고, 모든 규칙을 사유 문자열로 남깁니다.
-    expected 가 주어지면(라벨 조회 결과) Jev 의 기억 대신 그 값을 씁니다.
+    expected 가 주어지면(라벨 조회 결과) 모델 추정 대신 그 값을 씁니다.
     dme 는 보고된 PT 중 EMA 지정 의학적 사건(DME)입니다. 있으면 점수와 무관하게 사람 검토로 올립니다(EMA 방식의 안전망)."""
     d = _route(ans, valid, regime, expected, expected_source)
     if dme and d["action"] in ("monitor", "close", "signal_review"):
@@ -219,7 +219,7 @@ def _route(ans: dict, valid: dict | None, regime: str, expected_override: float 
     uncertain = cau["confidence"] < 0.55 or ans["route"]["confidence"] < 0.55
     if route == "signal_review" or deep >= 0.5 or uncertain:
         if route == "signal_review":
-            reasons.append("Jev route = signal_review")
+            reasons.append("model route = signal_review")
         if deep >= 0.5:
             reasons.append(f"deep={deep:.2f} >= 0.50")
         if uncertain:
@@ -239,7 +239,7 @@ def principal_suspect(case: dict) -> str:
 
 async def triage(case: dict, client=None, regime: str = "US", grounded: bool = True, include_outcome: bool = True,
                  use_dme: bool = True) -> dict:
-    """FlyVigilance 반사 판단입니다. 규칙 게이트 → 라벨 근거 주입 → Jev 7문항 → 결정 정책(+ DME 안전망).
+    """FlyVigilance 반사 판단입니다. 규칙 게이트 → 라벨 근거 주입 → 판단 모델 7문항 → 결정 정책(+ DME 안전망).
     include_outcome=False 는 결과 코드를 가린 비교 실험용입니다(정답이 결과 코드이므로)."""
     suspect = principal_suspect(case)
     g = await ground(case) if grounded else None
@@ -256,7 +256,7 @@ RAW_QUESTION = {"review_first": {"type": "noul", "instructions": "Should a pharm
 
 
 async def raw_triage(case: dict, client=None, include_outcome: bool = True) -> dict:
-    """비교용 '그대로 쓴 Jev'입니다. 근거 주입·타입 질문 설계·규칙·정책 없이 질문 하나만 던집니다."""
+    """비교용 기준 조건 '모델 단독 · 질문 하나'입니다. 근거 주입·타입 질문 설계·규칙·정책 없이 질문 하나만 던집니다."""
     state = case_state(case, include_outcome=include_outcome)
     res = await clients.jev(state, RAW_QUESTION, client=client)
     p = res["answers"]["review_first"]["noul"]

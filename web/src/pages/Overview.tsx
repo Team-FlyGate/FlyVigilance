@@ -195,7 +195,7 @@ export default function Overview() {
               {nirTp && <> · 니라파립 × 혈소판감소증 PRR {nirTp.prr.toFixed(2)}, IC₀₂₅ {nirTp.ic025.toFixed(2)}{nirTp.evans && nirTp.ror_sig && nirTp.ic_sig ? ' (3중 기준 SDR)' : ''}</>}
             </span>
           </div>
-          <a href="#/triage" style={{ fontSize: 12.5, textDecoration: 'none' }}>라이브 트리아지 →</a>
+          <a href="#/triage" style={{ fontSize: 12.5, textDecoration: 'none' }}>사례 분류(트리아지) 실행 →</a>
         </div>
         <Flow steps={step2} />
         <div className="row wrap" style={{ gap: 14, marginTop: 12 }}>
