@@ -1,0 +1,217 @@
+{
+ "results": {
+  "gr-1m2z--dexamethasone": {
+   "drug": "dexamethasone",
+   "target": "Glucocorticoid receptor LBD",
+   "gene": "NR3C1",
+   "pdb": "1M2Z",
+   "ligand": "DEX",
+   "note": "",
+   "chain": "A",
+   "smiles": "C[C@@H]1C[C@H]2[C@@H]3CCC4=CC(=O)C=C[C@@]4([C@]3([C@H](C[C@@]2([C@]1(C(=O)CO)O)C)O)F)C",
+   "heavy_atoms": 28,
+   "seconds": 3.6,
+   "poses": [
+    {
+     "rank": 1,
+     "confidence": 1.007,
+     "rmsd": 0.869
+    },
+    {
+     "rank": 2,
+     "confidence": 0.999,
+     "rmsd": 0.746
+    },
+    {
+     "rank": 3,
+     "confidence": 0.967,
+     "rmsd": 0.706
+    },
+    {
+     "rank": 4,
+     "confidence": 0.95,
+     "rmsd": 0.751
+    },
+    {
+     "rank": 5,
+     "confidence": 0.866,
+     "rmsd": 0.78
+    }
+   ],
+   "top1_rmsd": 0.869,
+   "best_rmsd": 0.706,
+   "top1_success": true
+  },
+  "d2-6cm4--risperidone": {
+   "drug": "risperidone",
+   "target": "Dopamine D2 receptor",
+   "gene": "DRD2",
+   "pdb": "6CM4",
+   "ligand": "8NU",
+   "note": "",
+   "chain": "A",
+   "smiles": "CC1=C(C(=O)N2CCCCC2=N1)CCN3CCC(CC3)c4c5ccc(cc5on4)F",
+   "heavy_atoms": 30,
+   "seconds": 3.4,
+   "poses": [
+    {
+     "rank": 1,
+     "confidence": -0.479,
+     "rmsd": 2.122
+    },
+    {
+     "rank": 2,
+     "confidence": -0.858,
+     "rmsd": 2.075
+    },
+    {
+     "rank": 3,
+     "confidence": -0.868,
+     "rmsd": 1.942
+    },
+    {
+     "rank": 4,
+     "confidence": -1.023,
+     "rmsd": 2.146
+    },
+    {
+     "rank": 5,
+     "confidence": -2.124,
+     "rmsd": 2.604
+    }
+   ],
+   "top1_rmsd": 2.122,
+   "best_rmsd": 1.942,
+   "top1_success": false
+  },
+  "jak2-6vgl--ruxolitinib": {
+   "drug": "ruxolitinib",
+   "target": "JAK2 JH1 kinase",
+   "gene": "JAK2",
+   "pdb": "6VGL",
+   "ligand": "RXT",
+   "note": "",
+   "chain": "D",
+   "smiles": "c1c[nH]c2c1c(ncn2)c3cnn(c3)[C@H](CC#N)C4CCCC4",
+   "heavy_atoms": 23,
+   "seconds": 2.5,
+   "poses": [
+    {
+     "rank": 1,
+     "confidence": 0.495,
+     "rmsd": 0.55
+    },
+    {
+     "rank": 2,
+     "confidence": 0.478,
+     "rmsd": 0.444
+    },
+    {
+     "rank": 3,
+     "confidence": -0.034,
+     "rmsd": 1.026
+    },
+    {
+     "rank": 4,
+     "confidence": -0.123,
+     "rmsd": 1.051
+    },
+    {
+     "rank": 5,
+     "confidence": -0.859,
+     "rmsd": 1.381
+    }
+   ],
+   "top1_rmsd": 0.55,
+   "best_rmsd": 0.444,
+   "top1_success": true
+  },
+  "crbn-4ci2--lenalidomide": {
+   "drug": "lenalidomide",
+   "target": "Cereblon (DDB1-CRBN)",
+   "gene": "CRBN",
+   "pdb": "4CI2",
+   "ligand": "LVY",
+   "note": "",
+   "chain": "B",
+   "smiles": "c1cc2c(c(c1)N)CN(C2=O)[C@H]3CCC(=O)NC3=O",
+   "heavy_atoms": 19,
+   "seconds": 2.6,
+   "poses": [
+    {
+     "rank": 1,
+     "confidence": 0.166,
+     "rmsd": 0.519
+    },
+    {
+     "rank": 2,
+     "confidence": 0.113,
+     "rmsd": 0.564
+    },
+    {
+     "rank": 3,
+     "confidence": 0.087,
+     "rmsd": 0.511
+    },
+    {
+     "rank": 4,
+     "confidence": 0.074,
+     "rmsd": 0.491
+    },
+    {
+     "rank": 5,
+     "confidence": 0.036,
+     "rmsd": 0.509
+    }
+   ],
+   "top1_rmsd": 0.519,
+   "best_rmsd": 0.491,
+   "top1_success": true
+  },
+  "mpro-7si9--nirmatrelvir": {
+   "drug": "nirmatrelvir",
+   "target": "SARS-CoV-2 main protease",
+   "gene": "Mpro (nsp5)",
+   "pdb": "7SI9",
+   "ligand": "4WI",
+   "note": "공유결합 억제제. DiffDock 은 비공유 결합만 모사하므로 참고용이다",
+   "chain": "A",
+   "smiles": "[H]/N=C/[C@H](C[C@@H]1CCNC1=O)NC(=O)[C@@H]2[C@@H]3[C@@H](C3(C)C)CN2C(=O)[C@H](C(C)(C)C)NC(=O)C(F)(F)F",
+   "heavy_atoms": 35,
+   "seconds": 2.4,
+   "poses": [
+    {
+     "rank": 1,
+     "confidence": -0.079,
+     "rmsd": 0.813
+    },
+    {
+     "rank": 2,
+     "confidence": -0.092,
+     "rmsd": 1.217
+    },
+    {
+     "rank": 3,
+     "confidence": -0.129,
+     "rmsd": 0.622
+    },
+    {
+     "rank": 4,
+     "confidence": -0.853,
+     "rmsd": 1.709
+    },
+    {
+     "rank": 5,
+     "confidence": -1.874,
+     "rmsd": 3.313
+    }
+   ],
+   "top1_rmsd": 0.813,
+   "best_rmsd": 0.622,
+   "top1_success": true
+  }
+ },
+ "endpoint": "https://health.api.nvidia.com/v1/biology/mit/diffdock",
+ "criterion": "top-1 heavy-atom RMSD <= 2.0 A (symmetry-aware, no alignment)",
+ "updated": "2026-09-28 13:36 KST"
+}
