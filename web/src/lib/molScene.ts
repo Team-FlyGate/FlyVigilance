@@ -48,7 +48,7 @@ void main(){
   vec3 l = normalize(vec3(0.4, 0.8, 0.5));
   float df = max(dot(n, l), 0.0), sp = pow(max(dot(n, normalize(l + v)), 0.0), 40.0), fr = pow(1.0 - max(dot(n, v), 0.0), 2.0);
   vec3 c = vC * (0.07 + df * 0.5) + sp * 0.16 + vC * fr * 0.38 * uGlow + vec3(1.0, 0.8, 0.5) * rim * 0.6;
-  float head = exp(-(uReveal - vU) * 160.0) * step(uReveal, 0.999); c += vec3(1.0, 0.95, 0.85) * head * 2.5;
+  float head = exp(-(uReveal - vU) * 160.0) * step(uReveal, 0.999); c += vec3(1.0, 0.95, 0.85) * head * 1.4;
   if (uScan >= 0.0) { float band = exp(-pow((vU - uScan) * 22.0, 2.0)); c = c * (0.35 + 0.65 * band) + vec3(0.55, 1.0, 1.0) * band * 1.4; }
   gl_FragColor = vec4(c, uAlpha);
   #include <tonemapping_fragment>
@@ -121,7 +121,7 @@ export function ballStick(lig: Ligand, style: 'solid' | 'ghost' | 'faint' = 'sol
     if (!mats.has(el)) {
       const c = ELEMENT[el] ?? 0xd8dce8
       mats.set(el, style === 'solid'
-        ? new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: 0.55, roughness: 0.25, metalness: 0.15, transparent: true, opacity: 1 })
+        ? new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: 0.28, roughness: 0.25, metalness: 0.15, transparent: true, opacity: 1 })
         : new THREE.MeshBasicMaterial({ color: style === 'ghost' ? 0xe8eefc : c, transparent: true, opacity: style === 'ghost' ? 0.28 : 0.22, depthWrite: false,
           blending: style === 'faint' ? THREE.AdditiveBlending : THREE.NormalBlending }))
     }
@@ -169,7 +169,7 @@ export function dust(n = 700, r = 120) {
     p.push(rr * Math.sqrt(1 - u * u) * Math.cos(th), rr * u, rr * Math.sqrt(1 - u * u) * Math.sin(th))
   }
   return new THREE.Points(new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(p, 3)),
-    new THREE.PointsMaterial({ color: 0x4d8dff, size: 0.35, transparent: true, opacity: 0.35, depthWrite: false }))
+    new THREE.PointsMaterial({ color: 0x4d8dff, size: 0.3, transparent: true, opacity: 0.16, depthWrite: false }))
 }
 
 export function makeRenderer(el: HTMLElement) {
@@ -188,7 +188,7 @@ export function makeRenderer(el: HTMLElement) {
   const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 600)
   const composer = new EffectComposer(renderer)
   composer.addPass(new RenderPass(scene, camera))
-  const bloom = new UnrealBloomPass(new THREE.Vector2(512, 512), 0.5, 0.4, 0.72)
+  const bloom = new UnrealBloomPass(new THREE.Vector2(512, 512), 0.3, 0.35, 0.8)
   composer.addPass(bloom)
   composer.addPass(new OutputPass())
   // 쇼릴처럼 아주 약한 필름 그레인과 비네팅

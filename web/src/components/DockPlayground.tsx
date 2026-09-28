@@ -43,7 +43,7 @@ export default function DockPlayground({ scenes }: { scenes: Record<string, Redo
   const run = async () => {
     if (!t || !l || !base) return
     setSettled(false)
-    sim?.stimulate('layer', 'sense', 1, 10)
+    sim?.stimulate('layer', 'sense', 0.45, 8)
     if (saved) {
       setScene(base); setPlay((p) => p + 1); setStatus({ kind: 'saved', text: `저장된 재도킹 결과 · PDB ${t.pdb}` })
       return
@@ -67,7 +67,7 @@ export default function DockPlayground({ scenes }: { scenes: Record<string, Redo
     }
   }
   useEffect(() => { if (base && !scene) { setScene(base); setStatus({ kind: 'saved', text: `저장된 재도킹 결과 · PDB ${base.pdb}` }) } }, [base, scene])
-  useEffect(() => { if (settled && sim) { sim.stimulate('layer', 'reflex', 1.4, 10); setTimeout(() => sim.stimulate('layer', 'memory', 1.1, 10), 250) } }, [settled, sim])
+  useEffect(() => { if (settled && sim) { sim.stimulate('layer', 'reflex', 0.6, 8); setTimeout(() => sim.stimulate('layer', 'memory', 0.5, 8), 250) } }, [settled, sim])
 
   return (
     <Card title="직접 도킹해 보기" sub="표적과 약물을 고르면, 받아 둔 조합은 저장된 결과로, 새 조합은 DiffDock NIM 을 실시간으로 불러 도킹합니다"
