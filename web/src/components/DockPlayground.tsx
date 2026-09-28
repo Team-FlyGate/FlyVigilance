@@ -10,12 +10,14 @@ import type { Ligand } from '../lib/molScene'
 // 재도킹으로 받아 둔 조합은 저장된 결과를, 새 조합은 서버(/api/dock)가 DiffDock NIM 을 실시간으로 불러 장면에 도킹합니다.
 
 interface Library { targets: { key: string; gene: string; target: string; pdb: string; native: string }[]; ligands: { name: string; smiles: string; source: string; native_target: string | null }[] }
-interface DockResult { poses: Ligand[]; confidence: (number | null)[]; seconds: number; cached: boolean }
+interface DockResult { poses: Ligand[]; confidence: (number | null)[]; seconds: number; cached?: boolean }
+interface DockMatrix { results: Record<string, DockResult>; updated?: string }
 
 const cap = (s: string) => s.split(' ').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
 
 export default function DockPlayground({ scenes }: { scenes: Record<string, RedockScene> }) {
   const [lib, setLib] = useState<Library | null>(null)
+  const [matrix, setMatrix] = useState<DockMatrix | null>(null)
   const [target, setTarget] = useState('parp1-4r6e--niraparib')
   const [ligand, setLigand] = useState('talazoparib')
   const [scene, setScene] = useState<RedockScene | null>(null)
@@ -23,7 +25,10 @@ export default function DockPlayground({ scenes }: { scenes: Record<string, Redo
   const [play, setPlay] = useState(0)
   const [settled, setSettled] = useState(false)
   const { sim } = useBrain()
-  useEffect(() => { getJSON<Library>('/discovery/data/dock_library.json').then(setLib).catch(() => null) }, [])
+  useEffect(() => {
+    getJSON<Library>('/discovery/data/dock_library.json').then(setLib).catch(() => null)
+    getJSON<DockMatrix>('/discovery/data/dock_matrix.json').then(setMatrix).catch(() => null)
+  }, [])
   const t = lib?.targets.find((x) => x.key === target)
   const l = lib?.ligands.find((x) => x.name === ligand)
   const saved = !!t && !!l && t.native === l.name
@@ -43,15 +48,22 @@ export default function DockPlayground({ scenes }: { scenes: Record<string, Redo
       setScene(base); setPlay((p) => p + 1); setStatus({ kind: 'saved', text: `저장된 재도킹 결과 · PDB ${t.pdb}` })
       return
     }
-    setStatus({ kind: 'running', text: 'DiffDock NIM 호출 중…' })
-    try {
-      const r = await api<DockResult>('/api/dock', { target, smiles: l.smiles })
+    const show = (r: DockResult) => {
       setScene({ ...base, drug: l.name, note: '', top1_rmsd: null, success: null, pose: r.poses[0], alt_poses: r.poses.slice(1),
         poses: r.confidence.map((c, i) => ({ rank: i + 1, confidence: c, rmsd: null })) })
       setPlay((p) => p + 1)
+    }
+    // 1) 미리 계산한 조합 (NVIDIA 키 없이 동작) → 2) 서버 실시간 호출 → 3) 실패하면 이 표적의 저장된 재도킹 결과
+    const pre = matrix?.results[`${target}|${l.name}`]
+    if (pre) { show(pre); setStatus({ kind: 'saved', text: `DiffDock NIM 미리 계산 결과 · ${pre.seconds}s` }); return }
+    setStatus({ kind: 'running', text: 'DiffDock NIM 호출 중…' })
+    try {
+      const r = await api<DockResult>('/api/dock', { target, smiles: l.smiles })
+      show(r)
       setStatus({ kind: 'live', text: r.cached ? `실시간 DiffDock NIM · 캐시 (${r.seconds}s)` : `실시간 DiffDock NIM · ${r.seconds}s` })
-    } catch (e) {
-      setStatus({ kind: 'error', text: String(e instanceof Error ? e.message : e) })
+    } catch {
+      setScene(base); setPlay((p) => p + 1)
+      setStatus({ kind: 'saved', text: `실시간 도킹을 쓸 수 없어 ${cap(t.native)} 저장된 재도킹 결과를 보여 드립니다` })
     }
   }
   useEffect(() => { if (base && !scene) { setScene(base); setStatus({ kind: 'saved', text: `저장된 재도킹 결과 · PDB ${base.pdb}` }) } }, [base, scene])
@@ -82,7 +94,7 @@ export default function DockPlayground({ scenes }: { scenes: Record<string, Redo
             </select>
           </label>
           <button className="btn nv" disabled={status.kind === 'running' || !lib} onClick={run}>
-            {status.kind === 'running' ? '도킹 중…' : saved ? '저장된 결과 보기' : 'DiffDock NIM 으로 도킹 ▶'}
+            {status.kind === 'running' ? '도킹 중…' : saved ? '저장된 결과 보기' : matrix?.results[`${target}|${ligand}`] ? '도킹 결과 보기 ▶' : 'DiffDock NIM 으로 도킹 ▶'}
           </button>
           <div className="row wrap" style={{ gap: 6 }}>
             {status.kind !== 'idle' && <span className={`chip ${status.kind === 'error' ? 'bad' : status.kind === 'live' ? 'nv' : status.kind === 'running' ? 'jev' : ''}`}>{status.text}</span>}

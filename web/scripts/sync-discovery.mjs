@@ -20,6 +20,7 @@ const DATA = {
   'redock_scenes.json': 'measurements/redock_scenes.json',
   'hero_scene.json': 'measurements/hero_scene.json',
   'dock_library.json': 'measurements/dock_library.json',
+  'dock_matrix.json': 'measurements/dock_matrix.json',
   'redock.json': 'measurements/redock.json',
   'drug_panel.json': 'measurements/drug_panel.json',
   'critic_v2.json': 'measurements/nim/critic_v2.json',
