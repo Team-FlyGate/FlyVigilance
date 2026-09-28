@@ -17,11 +17,15 @@ interface DockMatrix { results: Record<string, DockResult>; updated?: string }
 
 const cap = (s: string) => s.split(' ').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
 
+// 근거 검증 페이지의 선택성 표에서 #/d-diffdock?dock=<표적>|<약물> 로 넘어오면 그 조합을 바로 도킹합니다
+const pendingDock = () => new URLSearchParams(location.hash.split('?')[1] ?? '').get('dock')?.split('|') ?? null
+
 export default function DockPlayground({ scenes }: { scenes: Record<string, RedockScene> }) {
   const [lib, setLib] = useState<Library | null>(null)
   const [matrix, setMatrix] = useState<DockMatrix | null>(null)
-  const [target, setTarget] = useState('parp1-4r6e--niraparib')
-  const [ligand, setLigand] = useState('talazoparib')
+  const [pending] = useState(pendingDock)
+  const [target, setTarget] = useState(pending?.[0] ?? 'parp1-4r6e--niraparib')
+  const [ligand, setLigand] = useState(pending?.[1] ?? 'talazoparib')
   const [scene, setScene] = useState<RedockScene | null>(null)
   const [status, setStatus] = useState<{ kind: 'idle' | 'saved' | 'live' | 'running' | 'error'; text: string }>({ kind: 'idle', text: '' })
   const [play, setPlay] = useState(0)
@@ -86,6 +90,7 @@ export default function DockPlayground({ scenes }: { scenes: Record<string, Redo
       setStatus({ kind: 'saved', text: `실시간 도킹을 쓸 수 없어 ${cap(t.native)} 저장된 재도킹 결과를 보여 드립니다` })
     }
   }
+  useEffect(() => { if (lib && pending) setAuto((n) => n + 1) }, [lib]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (auto) { void run(); cardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }) } }, [auto]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (base && !scene) { setShown({ target, ligand: t?.native ?? '', source: 'redock' }); setScene(base); setStatus({ kind: 'saved', text: `저장된 재도킹 결과 · PDB ${base.pdb}` }) } }, [base, scene])
   useEffect(() => { if (settled && sim) { sim.stimulate('layer', 'reflex', 0.6, 8); setTimeout(() => sim.stimulate('layer', 'memory', 0.5, 8), 250) } }, [settled, sim])
