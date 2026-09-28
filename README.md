@@ -33,8 +33,8 @@ Project-FlyGate는 **NVIDIA 스킬 위에 구성한 에이전트 워크플로**�
 | 빠른가 | 규제 용어로 나눈 7문항 판단이 한 번 호출에 **296 ms**입니다. 같은 문항을 자기회귀 생성으로 풀면 2,286 ms입니다 | 같은 사례 27건 |
 | 공인된 약물–이상반응 연관을 알아보는가 | FlyVigilance 지식 기반 판별 AUC **0.960**(OMOP), **0.983**(EU-ADR)으로 최고 통계 지표(0.815, 0.919)보다 유의하게 높습니다 | 공개 참조 세트 480쌍 |
 | 라벨이 바뀌기 전에 알 수 있었는가 | 2013년 이전 보고만으로 그해 라벨 변경 57건 중 **21건**에 SDR이 섰고, 오경보는 음성 70건 중 **1건**입니다(PPV **0.95**) | 구형 AERS 2004–2012 |
-| 과잉해석을 막는가 | 일부러 넣은 틀린 주장 **31/31**을 반려했고, 정상 주장 6/6은 통과했습니다 | 실제 중대 사례 8건 |
-| 문헌을 제대로 읽는가 | 연구 설계 판정이 MEDLINE 색인과 **92.0%** 일치합니다 | PubMed 598편 |
+| 과잉해석을 막는가 | 일부러 넣은 틀린 주장 **31/31**을 반려했고, 정상 주장 6/6은 통과했습니다. 공식 스킬 `nemotron-policy-generator`로 만든 PV 정책을 Nemotron 3.5 Content Safety에 넣자 가드 층만으로 PRR 인과 단정 **7/7**, 없는 발생률 **8/8**을 잡습니다(기본 가드 0/7, 0/8) | 실제 중대 사례 8건 · 평가 문장 50건 |
+| 문헌을 제대로 읽는가 | 연구 설계 판정이 MEDLINE 색인과 **92.0%** 일치합니다. NVIDIA Nemotron 리랭커로 후보를 재정렬하자 읽는 6편 중 관련 문헌 비율이 **0.65 → 0.85**로 올랐습니다(21쌍 개선, 0쌍 악화) | PubMed 598편 · 30쌍 575편 |
 | 시판 전 예측이 믿을 만한가 | OpenFold3 PARP1 구조 CA RMSD **1.0 Å**, DiffDock 재도킹 **0.71 Å**, Boltz-2 친화도 Spearman **0.767** | 4R6E, ChEMBL 39종 |
 
 ## 왜 만들었나
@@ -82,10 +82,11 @@ STEP 1 FlyDiscovery                         STEP 2 FlyVigilance
 | 기술 | 어디에 | 비고 |
 | --- | --- | --- |
 | **NVIDIA Nemotron 3 Super 120B** (`nvidia/nemotron-3-super-120b-a12b`) | System-2 평가 메모, 국내 보고 서식 구조화, FlyDiscovery 크리틱 판정 | Ultra 550B → 3.5 Lightning 30B 폴백 사슬, NIM JSON 모드 |
-| **NVIDIA Nemotron Safety Guard 8B v3** | 메모의 주장마다 개별 치료 조언 여부를 검사 | 대체 가드 `nemotron-3.5-content-safety`, 20초 예산 |
+| **NVIDIA Nemotron Safety Guard 8B v3** + **Nemotron 3.5 Content Safety (PV 정책)** | 메모의 주장마다 두 가드를 동시에 돌려 치료 조언, PRR 인과 단정, 자발 보고로 낸 발생률, 재식별 시도를 반려 | PV 정책은 공식 스킬 `nemotron-policy-generator`로 생성해 `custom_policy`로 전달, 평가 50건 정확도 0.58 → 0.84 |
+| **NVIDIA Nemotron 리랭커** (`llama-nemotron-rerank-vl-1b-v2`) | 문헌 읽기 전 PubMed 후보 20편 재정렬 | 공식 스킬 `nemotron-retrieval-recipes` 기준, 추가 지연 중앙값 0.57초 |
 | **NVIDIA BioNeMo NIM** | MSA-Search → OpenFold3 → DiffDock → Boltz-2 | 공식 스킬 `bionemo-msa-structure-prediction-pipeline` 규격 |
-| **NVIDIA Agent Skills** | 에이전트 역량 11개를 [skills/*/SKILL.md](skills/)로 패키징 | 가드레일 스킬은 `nemotron-policy-generator`의 BYO 정책 방식 |
-| **NemoClaw · OpenShell · OpenClaw** | OpenClaw 작업 공간(SOUL · AGENTS · TOOLS · HEARTBEAT), deny-by-default 네트워크 정책, Landlock 파일 시스템, 비루트 실행 | [agent/policy/flygate.yaml](agent/policy/flygate.yaml), 스모크 기록 [agent/evidence/](agent/evidence/) |
+| **NVIDIA Agent Skills** ([NVIDIA/skills](https://github.com/NVIDIA/skills)) | 우리 역량 11개를 공식 규격의 [skills/*/SKILL.md](skills/)와 스킬 카드로 패키징하고, 공식 스킬 `bionemo-msa-structure-prediction-pipeline` · `nemotron-policy-generator` · `nemotron-retrieval-recipes` · `skill-card-generator`를 실제로 적용 | 목록: [skills/README.md](skills/README.md) |
+| **NemoClaw · OpenShell · OpenClaw** | OpenClaw 작업 공간(SOUL · AGENTS · TOOLS · HEARTBEAT), deny-by-default 네트워크 정책, Landlock 파일 시스템, 비루트 실행 | [agent/policy/flygate.yaml](agent/policy/flygate.yaml), 실제 OpenShell 샌드박스 스모크 **20/20** 통과 [agent/evidence/](agent/evidence/) |
 
 비자기회귀 판단 모델로는 TypeSafe AI의 Jev를 FlyVigilance 안에서 씁니다.
 
@@ -137,7 +138,7 @@ cd web && npm install && npm run dev          # http://localhost:5173
 ./agent/openshell_smoke.sh
 
 # 테스트와 평가
-.venv/bin/python -m pytest -q tests          # 오프라인 86개
+.venv/bin/python -m pytest -q tests          # 오프라인 147개
 .venv/bin/python pipeline/refsets/evaluate.py
 FV_CACHE_DIR=data/cache/api .venv/bin/python pipeline/bench/ablation.py
 ```
