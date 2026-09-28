@@ -1,0 +1,770 @@
+{
+ "about": "flygate 명령을 실제로 돌린 출력을 줄인 기록입니다(scripts/build_reel_v4_2.py --refresh-cli). 경로는 짧게 바꿨습니다(임시 설치 폴더 → ~/.local/bin · ~/Project-FlyGate, 저장소 절대 경로 → 상대 경로). 키는 기록하지 않습니다.",
+ "recorded_utc": "2026-09-28T07:28:09Z",
+ "install": {
+  "cmd": "git clone https://github.com/Team-FlyGate/Project-FlyGate && cd Project-FlyGate && ./scripts/install_flygate.sh",
+  "started_utc": "2026-09-28T07:28:09Z",
+  "wall_s": 13.88,
+  "exit": 0,
+  "commit": "41a1a64",
+  "commit_date": "2026-09-28T16:25:17+09:00",
+  "stdout": [
+   "설치했습니다: ~/.local/bin/flygate -> ~/Project-FlyGate/agent/bin/flygate",
+   "usage: flygate [-h]",
+   "               {triage,grade,signals,kr-causality,critic,discover,watch} ..."
+  ]
+ },
+ "help": {
+  "cmd": "flygate --help",
+  "started_utc": "2026-09-28T07:28:23Z",
+  "wall_s": 0.07,
+  "exit": 0,
+  "stdout": [
+   "usage: flygate [-h]",
+   "               {triage,grade,signals,kr-causality,critic,discover,watch} ...",
+   "",
+   "FlyGate agent tools: every command prints JSON with evidence IDs.",
+   "",
+   "positional arguments:",
+   "  {triage,grade,signals,kr-causality,critic,discover,watch}",
+   "    triage              reflex triage of one ICSR",
+   "    grade               evidence grade and PV class candidate for a drug-event",
+   "                        pair",
+   "    signals             top disproportionality rows for one drug (SQL extract)",
+   "    kr-causality        structure a Korean report and score the Korean",
+   "                        causality algorithm v2.0",
+   "    critic              run claims through the 3-tier critic (+ safety guard)",
+   "    discover            FlyDiscovery evidence and critic verdicts for a target",
+   "    watch               heartbeat/cron job: detect quarter, recompute",
+   "                        watchlist, write memory note",
+   "",
+   "options:",
+   "  -h, --help            show this help message and exit"
+  ]
+ },
+ "triage": {
+  "cmd": "flygate triage agent/examples/case_niraparib.json",
+  "started_utc": "2026-09-28T07:28:23Z",
+  "wall_s": 0.55,
+  "exit": 0,
+  "out": {
+   "cmd": "triage",
+   "mode": "reflex",
+   "case": 267975941,
+   "quarter": "2026Q2",
+   "suspect": "NIRAPARIB",
+   "reactions": [
+    "thrombocytopenia"
+   ],
+   "decision": {
+    "action": "expedite",
+    "tier": "human",
+    "system2": true,
+    "reasons": [
+     "priority score 2.92 >= 2.5"
+    ],
+    "regime": "US",
+    "report15": false,
+    "deadline": "Urgent human review (does not meet the 15-day expedited criteria)"
+   },
+   "judgments": {
+    "serious": 0.98,
+    "expected": 0.96,
+    "causality": {
+     "choice": "probable",
+     "confidence": 0.92
+    },
+    "special": {
+     "choice": "none",
+     "confidence": 0.77
+    },
+    "priority": {
+     "score": 2.92,
+     "confidence": 0.92
+    },
+    "route": {
+     "choice": "expedite",
+     "confidence": 0.46
+    },
+    "deep": 0.42
+   },
+   "latency_ms": 396.2,
+   "evidence_ids": [
+    "faers:case:267975941",
+    "label:b7f675e2-159c-490c-b6f4-3f16d9492b7d",
+    "label:b7f675e2-159c-490c-b6f4-3f16d9492b7d#warnings_and_cautions"
+   ],
+   "note": "판단은 집단 보정 확률이고 이 한 건의 보장이 아닙니다(R10). 신속보고 여부는 사람이 확인하고 사람이 제출합니다."
+  }
+ },
+ "grade": {
+  "cmd": "flygate grade NIRAPARIB thrombocytopenia",
+  "started_utc": "2026-09-28T07:28:24Z",
+  "wall_s": 0.74,
+  "exit": 0,
+  "out": {
+   "cmd": "grade",
+   "id": "grade:NIRAPARIB:thrombocytopenia@2026Q2",
+   "pv_class": "identified_candidate",
+   "pv_class_name": "규명된 위해성 후보",
+   "grade": "B",
+   "grade_name": "라벨 기재 + SDR",
+   "axes": {
+    "regulatory": 2,
+    "regulatory_name": "경고·주의사항",
+    "label_status": "warnings_precautions",
+    "label_status_name": "경고·주의사항",
+    "signal": "strong",
+    "signal_name": "3중 기준 SDR",
+    "literature": {
+     "read": 6,
+     "supportive": 5,
+     "analytic_read": 1,
+     "analytic_supportive": 1,
+     "anecdotal_supportive": 2,
+     "analytic_status": "supports"
+    }
+   },
+   "label_sections": [
+    "warnings_and_cautions",
+    "adverse_reactions_ct"
+   ],
+   "stats": {
+    "a": 1061,
+    "prr": 9.863,
+    "prr_lo": 9.297,
+    "prr_hi": 10.463,
+    "ror_lo": 9.692,
+    "ic025": 3.179,
+    "chi2": 8379.7
+   },
+   "summary": "label=경고·주의사항, FAERS=3중 기준 SDR, literature supportive 5/6 (analytic 1/1 supports, case reports 2)",
+   "evidence_ids": [
+    "grade:NIRAPARIB:thrombocytopenia@2026Q2",
+    "faers:2x2:NIRAPARIB:thrombocytopenia@2026Q2",
+    "label:b7f675e2-159c-490c-b6f4-3f16d9492b7d#warnings_and_cautions",
+    "pubmed:40687421#case_report",
+    "pubmed:33191394#case_report",
+    "pubmed:29767688#rct",
+    "pubmed:39019698#other",
+    "pubmed:40777128#other",
+    "pubmed:36792166#review"
+   ],
+   "literature": {
+    "query": "\"niraparib\"[tiab] AND \"thrombocytopenia\"[tiab]",
+    "count": 89,
+    "summary": {
+     "read": 6,
+     "relevant": 5,
+     "supportive": 5,
+     "designs": {
+      "rct": 1,
+      "case_report": 2,
+      "review": 1,
+      "other": 2
+     }
+    }
+   }
+  },
+  "rerank_probe": {
+   "cmd": "rerank probe NIRAPARIB thrombocytopenia",
+   "started_utc": "2026-09-28T07:28:25Z",
+   "wall_s": 1.64,
+   "exit": 0,
+   "order": "nemotron_rerank",
+   "model": "nvidia/llama-nemotron-rerank-vl-1b-v2",
+   "candidates": 20,
+   "rerank_ms": 760.6,
+   "cached": false,
+   "pmids": [
+    "40687421",
+    "40777128",
+    "33191394",
+    "29767688",
+    "39019698",
+    "36792166"
+   ],
+   "pubmed_ranks": [
+    4,
+    16,
+    10,
+    9,
+    7,
+    3
+   ]
+  }
+ },
+ "critic": {
+  "cmd": "flygate critic agent/examples/claims_niraparib.json",
+  "started_utc": "2026-09-28T07:28:26Z",
+  "wall_s": 2.25,
+  "exit": 0,
+  "out": {
+   "cmd": "critic",
+   "tiers": [
+    "T1 rules",
+    "T2 numeric oracle",
+    "T3 overclaim (judgment model)",
+    "safety guard"
+   ],
+   "verdict": "returned",
+   "issues": [
+    {
+     "claim": "c5",
+     "tier": 1,
+     "rule": "unknown_evidence",
+     "detail": "evidence IDs not in bundle: ['label:b7f675e2-159c-490c-b6f4-3f16d9492b7d#boxed_warning']"
+    },
+    {
+     "claim": "c4",
+     "tier": 2,
+     "rule": "number_mismatch",
+     "detail": "12.5 does not match any number in the evidence bundle"
+    },
+    {
+     "claim": "c3",
+     "tier": 3,
+     "rule": "R1",
+     "p": 0.99,
+     "detail": "Disproportionality (PRR, ROR, IC) shows a reporting association, never causation."
+    },
+    {
+     "claim": "c4",
+     "tier": 3,
+     "rule": "R2",
+     "p": 0.98,
+     "detail": "FAERS counts have no exposure denominator: no incidence, rate or risk estimates."
+    },
+    {
+     "claim": "c6",
+     "tier": 3,
+     "rule": "R11",
+     "p": 0.97,
+     "detail": "No individual treatment advice or dosing recommendations for the patient."
+    },
+    {
+     "claim": "c3",
+     "tier": 3,
+     "rule": "R1",
+     "guards": [
+      "pv_policy"
+     ],
+     "pv": [
+      "PV-2"
+     ],
+     "detail": "NVIDIA safety guard (pv_policy): PV-2"
+    },
+    {
+     "claim": "c4",
+     "tier": 3,
+     "rule": "R2",
+     "guards": [
+      "pv_policy"
+     ],
+     "pv": [
+      "PV-3"
+     ],
+     "detail": "NVIDIA safety guard (pv_policy): Incidence Estimate from Spontaneous Reports"
+    },
+    {
+     "claim": "c6",
+     "tier": 3,
+     "rule": "R11",
+     "guards": [
+      "pv_policy"
+     ],
+     "pv": [
+      "PV-1"
+     ],
+     "detail": "NVIDIA safety guard (pv_policy): PV-1"
+    }
+   ],
+   "guard": {
+    "safe": false,
+    "flagged": [
+     "c3",
+     "c4",
+     "c6"
+    ],
+    "policy": "FlyVigilance PV Guardrail Policy v1.0.0",
+    "fired": [
+     {
+      "claim": "c3",
+      "guard": "pv_policy",
+      "model": "nvidia/nemotron-3.5-content-safety",
+      "categories": "PV-2",
+      "pv": [
+       "PV-2"
+      ],
+      "rule": "R1"
+     },
+     {
+      "claim": "c4",
+      "guard": "pv_policy",
+      "model": "nvidia/nemotron-3.5-content-safety",
+      "categories": "Incidence Estimate from Spontaneous Reports",
+      "pv": [
+       "PV-3"
+      ],
+      "rule": "R2"
+     },
+     {
+      "claim": "c6",
+      "guard": "pv_policy",
+      "model": "nvidia/nemotron-3.5-content-safety",
+      "categories": "PV-1",
+      "pv": [
+       "PV-1"
+      ],
+      "rule": "R11"
+     }
+    ],
+    "by_guard": {
+     "safety_guard": {
+      "flagged": [],
+      "unchecked": [],
+      "model": "nvidia/llama-3.1-nemotron-safety-guard-8b-v3"
+     },
+     "pv_policy": {
+      "flagged": [
+       "c3",
+       "c4",
+       "c6"
+      ],
+      "unchecked": [],
+      "model": "nvidia/nemotron-3.5-content-safety"
+     }
+    }
+   },
+   "overclaim_p": {
+    "c1": 0.07,
+    "c2": 0.1,
+    "c3": 0.99,
+    "c4": 0.98,
+    "c5": 0.26,
+    "c6": 0.97
+   },
+   "evidence_ids": [
+    "faers:2x2:NIRAPARIB:thrombocytopenia@2026Q2",
+    "label:b7f675e2-159c-490c-b6f4-3f16d9492b7d#warnings_and_cautions",
+    "label:b7f675e2-159c-490c-b6f4-3f16d9492b7d#boxed_warning",
+    "faers:case:267975941"
+   ]
+  }
+ },
+ "discover": {
+  "cmd": "flygate discover --live --protein fly_discovery/measurements/nim/of3_parp1_niraparib.pdb --smiles C1CC(CNC1)C2=CC=C(C=C2)N3C=C4C=CC=C(C4=N3)C(=O)N --num-poses 5",
+  "started_utc": "2026-09-28T07:28:29Z",
+  "wall_s": 1.62,
+  "exit": 0,
+  "out": {
+   "cmd": "discover",
+   "mode": "live",
+   "run_id": "20260928T072829Z-24c4fead03",
+   "status": "completed",
+   "endpoint": "https://health.api.nvidia.com/v1/biology/mit/diffdock",
+   "created_at": "2026-09-28T07:28:29.274166+00:00",
+   "num_poses": 5,
+   "input_sha256": "4cc2f6ec239f821185a6d0854b8df13781dc46127035767867fdb89b8f7d5ea4",
+   "evidence_ids": [
+    "diffdock:live:20260928T072829Z-24c4fead03:pose:1",
+    "diffdock:live:20260928T072829Z-24c4fead03:pose:2",
+    "diffdock:live:20260928T072829Z-24c4fead03:pose:3",
+    "diffdock:live:20260928T072829Z-24c4fead03:pose:4",
+    "diffdock:live:20260928T072829Z-24c4fead03:pose:5"
+   ],
+   "request_id": "da368e72-9b29-4b61-aac5-dba111bd116f",
+   "poses": [
+    {
+     "rank": 1,
+     "confidence": 0.20304790139198303,
+     "file": "pose_01.sdf"
+    },
+    {
+     "rank": 2,
+     "confidence": 0.051816947758197784,
+     "file": "pose_02.sdf"
+    },
+    {
+     "rank": 3,
+     "confidence": -0.10105139762163162,
+     "file": "pose_03.sdf"
+    },
+    {
+     "rank": 4,
+     "confidence": -0.32666680216789246,
+     "file": "pose_04.sdf"
+    },
+    {
+     "rank": 5,
+     "confidence": -0.7283079624176025,
+     "file": "pose_05.sdf"
+    }
+   ],
+   "finished_at": "2026-09-28T07:28:30.777680+00:00",
+   "response_sha256": "bbcd14954cc72b0865953fd84bef61b241265135822402cc37a7cc2647a2e569",
+   "run_dir": "data/discovery-runs/20260928T072829Z-24c4fead03",
+   "note": "DiffDock 포즈 신뢰도는 결합 친화도나 약효의 측정값이 아닙니다."
+  }
+ },
+ "kr": {
+  "cmd": "flygate kr-causality agent/examples/kr_report.txt --route",
+  "started_utc": "2026-09-28T07:28:30Z",
+  "wall_s": 9.67,
+  "exit": 0,
+  "out": {
+   "cmd": "kr-causality",
+   "form": "narrative",
+   "intake_model": "nvidia/nemotron-3-super-120b-a12b",
+   "kr_form": {
+    "가_환자정보": {
+     "이니셜": null,
+     "나이": "62",
+     "성별": "여",
+     "체중": "52",
+     "원질환_병력": "난소암(BRCA 변이 없음) 1차 백금 기반 항암 후 유지요법 중",
+     "알레르기_과거력": "없음"
+    },
+    "나_이상사례정보": {
+     "이상사례명": [
+      "혈소판감소증",
+      "잇몸 출혈"
+     ],
+     "발현일": "2026-08-25",
+     "종료일": "2026-09-06",
+     "경과_결과": "니라파립 중단 및 혈소판 수혈 후 혈소판 회복으로 퇴원",
+     "중대성": {
+      "사망": false,
+      "생명위협": false,
+      "입원_연장": true,
+      "장애": false,
+      "선천기형": false,
+      "기타_의학적중요": false
+     }
+    },
+    "다_의약품정보": {
+     "의심약물": [
+      {
+       "성분명": "니라파립",
+       "성분명_영문": "NIRAPARIB",
+       "제품명": "제줄라캡슐",
+       "용량_용법": "200 mg 1일 1회 경구",
+       "투여경로": "ORAL",
+       "투여기간": "2026-08-03부터 23일간",
+       "투여목적": "난소암 유지요법",
+       "조치": "중단",
+       "재투여": "아직 하지 않음"
+      }
+     ],
+     "병용약물": [
+      {
+       "성분명": "온단세트론",
+       "성분명_영문": "ONDANSETRON",
+       "용량_용법": "8 mg 필요 시 경구",
+       "투여목적": "구역"
+      },
+      {
+       "성분명": "판토프라졸",
+       "성분명_영문": "PANTOPRAZOLE",
+       "용량_용법": "40 mg 1일 1회 경구",
+       "투여목적": null
+      }
+     ]
+    },
+    "라_보고자정보": {
+     "보고자_유형": "약사",
+     "소속_기관": "서울 소재 상급종합병원 약제부"
+    },
+    "마_보고서정보": {
+     "보고유형": "자발보고",
+     "최초_추가": "최초"
+    },
+    "바_종합의견": "니라파립 투여 후 발생한 중증 혈소판감소증으로, 중단 후 회복되어 약물과의 관련성이 높다고 판단합니다."
+   },
+   "missing": [],
+   "total": 11,
+   "range": [
+    -13,
+    19
+   ],
+   "grade": "가능성 높음",
+   "band": "6~11점",
+   "who_umc": {
+    "choice": "probable",
+    "confidence": 0.95,
+    "probabilities": {
+     "unlikely": 0.0,
+     "conditional": 0.0,
+     "possible": 0.0,
+     "certain": 0.03,
+     "unassessable": 0.01,
+     "probable": 0.96
+    }
+   },
+   "assessed_reaction": "thrombocytopenia",
+   "kr_routing": {
+    "action": "expedite",
+    "tier": "human",
+    "system2": true,
+    "reasons": [
+     "[KR] serious=0.97, WHO-UMC probable (conf 0.95, 인과관계 배제 불가): 중대한 약물이상반응 -> 15일 신속보고 후보 (expected=0.00와 무관)"
+    ],
+    "report15": true,
+    "regime": "KR",
+    "deadline": "15일 이내 (의약품 등의 안전에 관한 규칙 별표 4의3 제7호 나목: 중대한 약물이상반응, '예상하지 못한' 요건 없음)"
+   },
+   "note": "한국형 알고리즘 등급(확실함·가능성 높음·가능성 있음·가능성 낮음)과 WHO-UMC 등급은 체계가 달라 서로 바꿔 쓰지 않습니다.",
+   "evidence_ids": [
+    "label:b7f675e2-159c-490c-b6f4-3f16d9492b7d#warnings_and_cautions",
+    "faers:case:KR-DEMO",
+    "label:b7f675e2-159c-490c-b6f4-3f16d9492b7d"
+   ]
+  }
+ },
+ "watch": {
+  "cmd": "flygate watch --memory-dir memory",
+  "started_utc": "2026-09-28T07:28:40Z",
+  "wall_s": 0.73,
+  "exit": 0,
+  "out": {
+   "cmd": "watch",
+   "date": "2026-09-28",
+   "quarter": {
+    "extract_asof": "2026Q2",
+    "warehouse": "data/derived/faers.duckdb",
+    "warehouse_quarter": "2026Q2",
+    "downloaded_latest": "2026Q2",
+    "quarter": "2026Q2",
+    "source": "warehouse"
+   },
+   "new_quarter": false,
+   "openfda": null,
+   "watchlist": [
+    {
+     "drug": "NIRAPARIB",
+     "pt": "thrombocytopenia",
+     "a": 1061,
+     "prr": 9.863,
+     "ror025": 9.692,
+     "ic025": 3.179,
+     "sdr": "strong",
+     "label": "경고·주의사항",
+     "pv_class": "identified_candidate",
+     "pv_class_name": "규명된 위해성 후보",
+     "flags": [],
+     "change": null,
+     "source": "warehouse",
+     "evidence_ids": [
+      "faers:2x2:NIRAPARIB:thrombocytopenia@2026Q2",
+      "label:b7f675e2-159c-490c-b6f4-3f16d9492b7d#warnings_and_cautions"
+     ]
+    },
+    {
+     "drug": "NIRAPARIB",
+     "pt": "platelet count decreased",
+     "a": 4150,
+     "prr": 40.186,
+     "ror025": 47.632,
+     "ic025": 5.202,
+     "sdr": "strong",
+     "label": "이상반응 (임상시험)",
+     "pv_class": "identified_candidate",
+     "pv_class_name": "규명된 위해성 후보",
+     "flags": [],
+     "change": null,
+     "source": "warehouse",
+     "evidence_ids": [
+      "faers:2x2:NIRAPARIB:platelet count decreased@2026Q2",
+      "label:b7f675e2-159c-490c-b6f4-3f16d9492b7d#adverse_reactions_ct"
+     ]
+    },
+    {
+     "drug": "NIRAPARIB",
+     "pt": "anaemia",
+     "a": 1472,
+     "prr": 7.774,
+     "ror025": 7.833,
+     "ic025": 2.857,
+     "sdr": "strong",
+     "label": "경고·주의사항",
+     "pv_class": "identified_candidate",
+     "pv_class_name": "규명된 위해성 후보",
+     "flags": [],
+     "change": null,
+     "source": "warehouse",
+     "evidence_ids": [
+      "faers:2x2:NIRAPARIB:anaemia@2026Q2",
+      "label:b7f675e2-159c-490c-b6f4-3f16d9492b7d#warnings_and_cautions"
+     ]
+    },
+    {
+     "drug": "NIRAPARIB",
+     "pt": "neutropenia",
+     "a": 246,
+     "prr": 1.719,
+     "ror025": 1.523,
+     "ic025": 0.567,
+     "sdr": "weak",
+     "label": "경고·주의사항",
+     "pv_class": "known_no_sdr",
+     "pv_class_name": "알려진 위험 · SDR 없음",
+     "flags": [],
+     "change": null,
+     "source": "warehouse",
+     "evidence_ids": [
+      "faers:2x2:NIRAPARIB:neutropenia@2026Q2",
+      "label:b7f675e2-159c-490c-b6f4-3f16d9492b7d#warnings_and_cautions"
+     ]
+    },
+    {
+     "drug": "NIRAPARIB",
+     "pt": "myelodysplastic syndrome",
+     "a": 171,
+     "prr": 12.773,
+     "ror025": 11.055,
+     "ic025": 3.353,
+     "sdr": "strong",
+     "label": "경고·주의사항",
+     "pv_class": "identified_candidate",
+     "pv_class_name": "규명된 위해성 후보",
+     "flags": [],
+     "change": null,
+     "source": "warehouse",
+     "evidence_ids": [
+      "faers:2x2:NIRAPARIB:myelodysplastic syndrome@2026Q2",
+      "label:b7f675e2-159c-490c-b6f4-3f16d9492b7d#warnings_and_cautions"
+     ]
+    },
+    {
+     "drug": "NIRAPARIB",
+     "pt": "acute myeloid leukaemia",
+     "a": 123,
+     "prr": 8.184,
+     "ror025": 6.883,
+     "ic025": 2.681,
+     "sdr": "strong",
+     "label": "경고·주의사항",
+     "pv_class": "identified_candidate",
+     "pv_class_name": "규명된 위해성 후보",
+     "flags": [],
+     "change": null,
+     "source": "warehouse",
+     "evidence_ids": [
+      "faers:2x2:NIRAPARIB:acute myeloid leukaemia@2026Q2",
+      "label:b7f675e2-159c-490c-b6f4-3f16d9492b7d#warnings_and_cautions"
+     ]
+    },
+    {
+     "drug": "NIRAPARIB",
+     "pt": "hypertension",
+     "a": 1317,
+     "prr": 6.373,
+     "ror025": 6.35,
+     "ic025": 2.568,
+     "sdr": "strong",
+     "label": "경고·주의사항",
+     "pv_class": "identified_candidate",
+     "pv_class_name": "규명된 위해성 후보",
+     "flags": [],
+     "change": null,
+     "source": "warehouse",
+     "evidence_ids": [
+      "faers:2x2:NIRAPARIB:hypertension@2026Q2",
+      "label:b7f675e2-159c-490c-b6f4-3f16d9492b7d#warnings_and_cautions"
+     ]
+    },
+    {
+     "drug": "TALAZOPARIB",
+     "pt": "thrombocytopenia",
+     "a": 93,
+     "prr": 11.235,
+     "ror025": 9.602,
+     "ic025": 3.068,
+     "sdr": "strong",
+     "label": "경고·주의사항",
+     "pv_class": "identified_candidate",
+     "pv_class_name": "규명된 위해성 후보",
+     "flags": [],
+     "change": null,
+     "source": "warehouse",
+     "evidence_ids": [
+      "faers:2x2:TALAZOPARIB:thrombocytopenia@2026Q2",
+      "label:13839d4f-6acf-4ffb-a128-79df59319273#warnings_and_cautions"
+     ]
+    },
+    {
+     "drug": "TALAZOPARIB",
+     "pt": "myelodysplastic syndrome",
+     "a": 12,
+     "prr": 11.607,
+     "ror025": 6.62,
+     "ic025": 2.047,
+     "sdr": "strong",
+     "label": "경고·주의사항",
+     "pv_class": "identified_candidate",
+     "pv_class_name": "규명된 위해성 후보",
+     "flags": [],
+     "change": null,
+     "source": "warehouse",
+     "evidence_ids": [
+      "faers:2x2:TALAZOPARIB:myelodysplastic syndrome@2026Q2",
+      "label:13839d4f-6acf-4ffb-a128-79df59319273#warnings_and_cautions"
+     ]
+    },
+    {
+     "drug": "ISOTRETINOIN",
+     "pt": "inflammatory bowel disease",
+     "a": 2767,
+     "prr": 284.184,
+     "ror025": 289.255,
+     "ic025": 7.293,
+     "sdr": "strong",
+     "label": "경고·주의사항",
+     "pv_class": "identified_candidate",
+     "pv_class_name": "규명된 위해성 후보",
+     "flags": [
+      "변호사 보고 95%"
+     ],
+     "change": null,
+     "source": "warehouse",
+     "evidence_ids": [
+      "faers:2x2:ISOTRETINOIN:inflammatory bowel disease@2026Q2",
+      "label:4e8516dc-a3c6-4d8f-aa14-2c37c6c8f6e6#warnings_and_cautions"
+     ]
+    }
+   ],
+   "review_queue": [
+    {
+     "kind": "reporting_bias",
+     "what": "ISOTRETINOIN · inflammatory bowel disease: 보고의 변호사 보고 95% 입니다. PRR 284.18 은 소송 등으로 자극된 보고에 부풀었을 수 있습니다. 변호사 보고를 빼면 a=140, PRR 15.4, SDR 유지입니다.",
+     "evidence_ids": [
+      "faers:2x2:ISOTRETINOIN:inflammatory bowel disease@2026Q2",
+      "label:4e8516dc-a3c6-4d8f-aa14-2c37c6c8f6e6#warnings_and_cautions"
+     ]
+    }
+   ],
+   "triaged": [],
+   "workspace": null,
+   "memory_note": "memory/2026-09-28.md",
+   "state": "memory/watch_state.json",
+   "submitted": [],
+   "evidence_ids": [
+    "faers:2x2:NIRAPARIB:thrombocytopenia@2026Q2",
+    "label:b7f675e2-159c-490c-b6f4-3f16d9492b7d#warnings_and_cautions",
+    "faers:2x2:NIRAPARIB:platelet count decreased@2026Q2",
+    "label:b7f675e2-159c-490c-b6f4-3f16d9492b7d#adverse_reactions_ct",
+    "faers:2x2:NIRAPARIB:anaemia@2026Q2",
+    "faers:2x2:NIRAPARIB:neutropenia@2026Q2",
+    "faers:2x2:NIRAPARIB:myelodysplastic syndrome@2026Q2",
+    "faers:2x2:NIRAPARIB:acute myeloid leukaemia@2026Q2",
+    "faers:2x2:NIRAPARIB:hypertension@2026Q2",
+    "faers:2x2:TALAZOPARIB:thrombocytopenia@2026Q2",
+    "label:13839d4f-6acf-4ffb-a128-79df59319273#warnings_and_cautions",
+    "faers:2x2:TALAZOPARIB:myelodysplastic syndrome@2026Q2",
+    "faers:2x2:ISOTRETINOIN:inflammatory bowel disease@2026Q2",
+    "label:4e8516dc-a3c6-4d8f-aa14-2c37c6c8f6e6#warnings_and_cautions"
+   ],
+   "note": "이 작업은 아무것도 제출하거나 보내지 않습니다. 대기열은 사람이 검토하고, 보고는 사람이 제출합니다."
+  }
+ }
+}
