@@ -398,7 +398,7 @@ def timeline(d: dict) -> list[dict]:
         ("close", 12, "Close", "반사는 싸게, 숙고는 드물게", 3, [
             (1.4, 4.8, "초파리 뇌 점구름이 반사 → 숙고 → 행동 층 순서로 밝아지고 태그라인이 솟아오릅니다",
              "반사는 싸게, 숙고는 드물게, 판단은 사람에게."),
-            (4.8, 9.5, "Project-FlyGate · project-flygate.vercel.app · github.com/Team-FlyGate/Project-FlyGate · 기술 구성 크레딧",
+            (4.8, 9.5, "Project-FlyGate · flygate.kr · github.com/Team-FlyGate/Project-FlyGate · 기술 구성 크레딧",
              "프로젝트 플라이게이트였습니다. 감사합니다.")]),
     ]
     out, t = [], 0.0

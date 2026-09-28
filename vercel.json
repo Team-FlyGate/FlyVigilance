@@ -18,7 +18,7 @@
           "value": "flyvigilance.vercel.app"
         }
       ],
-      "destination": "https://project-flygate.vercel.app/",
+      "destination": "https://flygate.kr/",
       "permanent": true
     },
     {
@@ -29,7 +29,7 @@
           "value": "flyvigilance.vercel.app"
         }
       ],
-      "destination": "https://project-flygate.vercel.app/:path*",
+      "destination": "https://flygate.kr/:path*",
       "permanent": true
     },
     {
@@ -40,7 +40,7 @@
           "value": "flyvigilante.vercel.app"
         }
       ],
-      "destination": "https://project-flygate.vercel.app/",
+      "destination": "https://flygate.kr/",
       "permanent": true
     },
     {
@@ -51,7 +51,29 @@
           "value": "flyvigilante.vercel.app"
         }
       ],
-      "destination": "https://project-flygate.vercel.app/:path*",
+      "destination": "https://flygate.kr/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "project-flygate.vercel.app"
+        }
+      ],
+      "destination": "https://flygate.kr/",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "project-flygate.vercel.app"
+        }
+      ],
+      "destination": "https://flygate.kr/:path*",
       "permanent": true
     }
   ],
