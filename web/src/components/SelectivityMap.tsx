@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { RedockScene } from './DockingView'
 import { Card } from './ui'
+import Step2Handoff from './Step2Handoff'
 import { getJSON } from '../lib/data'
 
 // 선택성 착시 히트맵: 약물 20 × 표적 14 의 DiffDock NIM 1순위 포즈 신뢰도.
@@ -123,6 +124,7 @@ export default function SelectivityMap({ scenes }: { scenes: Record<string, Redo
             <div className="mono dim" style={{ fontSize: 10.5 }}>누른 칸</div>
             <div style={{ fontSize: 13 }}>{cap(s.l)} → <b>{s.t.gene}</b> · PDB {s.t.pdb} · 신뢰도 <span className="num">{s.v === null ? '–' : s.v.toFixed(2)}</span> · 이 약물 안에서 {s.r}위</div>
             <div className="dim" style={{ fontSize: 11.5 }}>위 “직접 도킹해 보기” 장면에 이 조합이 도킹됩니다</div>
+            <Step2Handoff drug={s.l} />
           </div>
         )}
       </div>
