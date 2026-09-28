@@ -99,7 +99,7 @@ export default function KoreanPV() {
       <PageHead eyebrow="Korean PV · 국내 보고서식 · 한국형 인과성 평가 · 국내 규정 모드"
         title={<>국내 보고 한 장이 <span style={{ color: 'var(--c-sense)' }}>구조화</span>되고 <span style={{ color: 'var(--jev)' }}>평가</span>되기까지</>}
         lede={<>의약전문가용·일반인 보고서나 병원·약사의 사례 기사를 넣으면 Nemotron이 식약처 공고 제2023-057호 서식(가~바)과 트리아지용 케이스로 구조화합니다.
-          지역의약품안전센터가 쓰는 한국형 인과성 평가 알고리즘 ver 2.0의 8개 항목은 Jev가 판단하고 점수는 규칙으로 합산하며, 국내 신속보고 기준(중대 → 15일)으로 라우팅합니다.</>} />
+          지역의약품안전센터가 쓰는 한국형 인과성 평가 알고리즘 ver 2.0의 8개 항목은 FlyVigilance가 Jev 엔진으로 판단하고(라벨·문헌으로 정할 수 있는 항목은 조회 결과를 먼저 씁니다) 점수는 규칙으로 합산하며, 국내 신속보고 기준(중대 → 15일)으로 라우팅합니다.</>} />
 
       <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1.35fr) minmax(340px,1fr)', alignItems: 'start' }}>
         <div className="stack" style={{ gap: 16 }}>
@@ -123,7 +123,7 @@ export default function KoreanPV() {
             <Card title={<>2. 식약처 보고서식으로 구조화 <span className="chip nv" style={{ marginLeft: 8 }}>{intake.model.split('/')[1]} · {fmt.ms(intake.latency_ms)}</span></>}
               sub="의약품등 이상사례·약물이상반응 보고서식(의약전문가용)의 가~바 섹션. 원문에 없는 값은 비워 두고 누락 목록으로 돌려줍니다"
               right={<div className="row" style={{ gap: 8 }}>
-                <button className="btn jev" onClick={doCaus} disabled={!!busy}>{busy === 'caus' ? <span className="spin" /> : '⚡'} 한국형 알고리즘 · Jev</button>
+                <button className="btn jev" onClick={doCaus} disabled={!!busy}>{busy === 'caus' ? <span className="spin" /> : '⚡'} 한국형 알고리즘 · FlyVigilance</button>
                 <button className="btn" onClick={doTriage} disabled={!!busy}>{busy === 'triage' ? <span className="spin" /> : '⇄'} 규정 모드 비교</button>
               </div>}>
               <div className="grid g2" style={{ gap: 10 }}>
@@ -171,7 +171,7 @@ export default function KoreanPV() {
                   <div className="note" style={{ marginTop: 8 }}>{caus.note}</div>
                 </div>
               </div>
-              {!caus.label?.found && <div className="note" style={{ marginTop: 10 }}><b>허가사항 확인:</b> openFDA 라벨에서 이 성분을 찾지 못했습니다(국내 신약 등). '알려진 정보' 항목은 Jev 판단이며, 국내 허가사항은 의약품안전나라에서 평가자가 확인해야 합니다.</div>}
+              {!caus.label?.found && <div className="note" style={{ marginTop: 10 }}><b>허가사항 확인:</b> openFDA 라벨에서 이 성분을 찾지 못했습니다(국내 신약 등). '알려진 정보' 항목은 PubMed 증례보고가 있으면 +2(문헌 읽기), 없으면 Jev 판단입니다. 국내 허가사항은 의약품안전나라에서 평가자가 확인해야 합니다.</div>}
             </Card>
           )}
 

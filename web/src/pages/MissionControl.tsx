@@ -113,9 +113,9 @@ export default function MissionControl() {
     <div className="page">
       <PageHead eyebrow="FlyVigilance · Mission Control"
         title={<>초파리 커넥텀으로 라우팅되는 <span style={{ color: 'var(--c-sense)' }}>약물감시 에이전트</span></>}
-        lede={<>분기마다 40만 건이 넘는 FAERS 이상사례가 쏟아진다. 초파리 뇌가 감각 입력을 반사, 기억, 숙고, 행동으로 나누듯
-          FlyVigilance는 모든 케이스를 <b style={{ color: 'var(--jev)' }}>Jev System-1</b>이 수백 밀리초 안에 판단하고,
-          꼭 필요한 케이스만 <b style={{ color: 'var(--nvidia)' }}>NVIDIA Nemotron System-2</b>와 사람에게 올린다.</>}
+        lede={<>분기마다 40만 건이 넘는 FAERS 이상사례가 들어옵니다. 초파리 뇌가 감각 입력을 반사, 기억, 숙고, 행동으로 나누듯
+          FlyVigilance는 모든 케이스를 <b style={{ color: 'var(--jev)' }}>약물감시 전용 반사 층</b>(TypeSafe AI의 Jev 엔진 위에 규칙·라벨 근거·결정 정책을 얹은 층)으로 수백 밀리초 안에 판단하고,
+          꼭 필요한 케이스만 <b style={{ color: 'var(--nvidia)' }}>NVIDIA Nemotron System-2</b>와 사람에게 올립니다.</>}
         right={<div className="row wrap" style={{ justifyContent: 'flex-end', maxWidth: 380 }}>
           <span className="chip">MaleCNS v1.0 · Janelia FlyEM</span><span className="chip jev">Jev · TypeSafe AI</span>
           <span className="chip nv">NVIDIA NIM · Nemotron 3</span><span className="chip">openFDA · DailyMed · PubMed</span>
@@ -153,7 +153,7 @@ export default function MissionControl() {
         </Card>
 
         <div className="stack" style={{ gap: 16 }}>
-          <Card title="Reflex Stream" sub={`실제 ${bench?.dataset.source ?? 'FAERS'} 케이스에 대한 실측 Jev 판단 재생`}
+          <Card title="Reflex Stream" sub={`실제 ${bench?.dataset.source ?? 'FAERS'} 케이스에 대한 FlyVigilance 반사 판단 재생 (실측)`}
             right={<span className="chip jev"><span className="dot on pulse" style={{ background: 'var(--jev)' }} />live replay</span>}>
             {bench ? <Stream examples={bench.jev_triage.examples} /> : <div className="shimmer" style={{ height: 300 }} />}
           </Card>
@@ -167,8 +167,8 @@ export default function MissionControl() {
           sub={ov ? `${fmt.int(ov.raw_reports - ov.cases)} versions & deletions removed` : '…'} />
         <Kpi label="Signals · Evans ∧ ROR ∧ IC025" value={ov?.all3 ?? 0} color="var(--c-memory)"
           sub={ov ? `of ${fmt.int(ov.pairs)} drug–event pairs (a ≥ 3)` : '…'} />
-        <Kpi label="Jev reflex latency p50" value={jt?.latency_ms?.p50 ?? 0} color="var(--jev)" format={(n) => `${Math.round(n)} ms`}
-          sub={jt ? `7 typed decisions / call · ${jt.throughput_cases_per_s} cases/s` : '…'} />
+        <Kpi label="FlyVigilance reflex p50" value={jt?.latency_ms?.p50 ?? 0} color="var(--jev)" format={(n) => `${Math.round(n)} ms`}
+          sub={jt ? `Jev 엔진 · 판단 7개/호출 · 라벨 조회 포함` : '…'} />
       </div>
 
       <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1.2fr) minmax(0,1fr)', gap: 16 }}>

@@ -19,12 +19,12 @@
  },
  {
   "name": "pv-critic",
-  "description": "Use to verify any AI-written pharmacovigilance claim — tier 1 evidence-ID rules, tier 2 numeric oracle against the evidence bundle, tier 3 overclaim judgment (Jev) plus NVIDIA safety guard — and return the claim to its author with reasons when it fails.",
+  "description": "Use to verify any AI-written pharmacovigilance claim — tier 1 evidence-ID rules, tier 2 numeric oracle against the evidence bundle, tier 3 overclaim judgment (Jev) plus a per-claim NVIDIA safety guard — and return the claim to its author with reasons when it fails.",
   "license": "Apache-2.0",
   "layer": "critic (GABAergic inhibition)",
   "model": "",
   "path": "skills/pv-critic/SKILL.md",
-  "body": "# PV Critic\n\n| Tier | Checks | Model |\n|---|---|---|\n| T1 rules | claim non-empty, has evidence IDs, every ID exists in the bundle | none |\n| T2 numeric oracle | every number in the claim matches a number in the case or bundle (±1.1%) | none |\n| T3 overclaim | per-claim `noul` \"violates a rule?\" + `choice` \"which rule\" over R1–R12 | Jev |\n| Guard | memo text → `nvidia/llama-3.1-nemotron-safety-guard-8b-v3`; \"Unauthorized Advice\" ⇒ R11 | NVIDIA NIM |\n\nRules R1–R12 live in `api/_fv/assess.py::OVERCLAIM_RULES` (disproportionality ≠ causation, no incidence from FAERS, no cross-drug ranking, …)."
+  "body": "# PV Critic\n\n| Tier | Checks | Model |\n|---|---|---|\n| T1 rules | memo has at least one claim (an unparseable or empty memo is returned, never passed); each claim is non-empty, has evidence IDs, and every ID exists in the bundle | none |\n| T2 numeric oracle | every number in the claim matches a number in the case or bundle (±1.1%) | none |\n| T3 overclaim | per-claim `noul` \"violates a rule?\" + `choice` \"which rule\" over R1–R13 | Jev |\n| Guard | each claim and the narrative separately → `nvidia/llama-3.1-nemotron-safety-guard-8b-v3` (fallback `nvidia/nemotron-3.5-content-safety`); \"Unauthorized Advice\" ⇒ R11 on that claim | NVIDIA NIM |\n\nRules R1–R13 live in `api/_fv/assess.py::OVERCLAIM_RULES` (disproportionality ≠ causation, no incidence from FAERS, no cross-drug ranking, evidence grade is population context, …).\n\n## Operating rules\n\n- **Evidence IDs**: before T1, an ID copied together with its catalog description (`ID :: description`) is cut back to the ID. The ID itself must still match exactly. FAERS combination products use `+` in IDs (`DARATUMUMAB+HYALURONIDASE`) because a raw backslash breaks the writer's JSON.\n- **Guard granularity**: the guard runs per claim. When the whole memo was joined into one string, a single treatment-advice sentence was judged safe in 8 of 8 memos.\n- **Time budget**: deliberation gets 100 s in total and the guard 20 s, to fit the 120 s serverless limit. If both guards fail or the verdict cannot be read, the result is \"human check\", never \"safe\".\n- **Rewrite**: a returned memo goes back to the writer once with the reasons. If it still fails, it reaches the human queue with the reasons attached.\n\n## Measured\n\n`pipeline/bench/critic_probe.py` takes 8 real death/serious FAERS cases and injects four wrong claims into each: a causal claim from PRR, an invented incidence, a fake label ID, and individual treatment advice. All 31 were caught. All 6 controls (Nemotron claims that had passed the critic) passed. Output: `web/public/data/critic_probe.json`."
  },
  {
   "name": "pv-deliberate-assess",
@@ -34,6 +34,15 @@
   "model": "nvidia/nemotron-3-super-120b-a12b (fallback ultra-550b, 3.5-lightning-30b)",
   "path": "skills/pv-deliberate-assess/SKILL.md",
   "body": "# PV Deliberate Assess\n\n- Called only for `expedite` / `signal_review` actions (or on explicit reviewer request).\n- Prompt carries the 12 interpretation rules; output is JSON only: `claims[{id,text,evidence[]}]`, `assessment`, `narrative`, `open_questions`.\n- Thinking disabled (`chat_template_kwargs.enable_thinking=false`) to keep latency bounded.\n- If the critic rejects, the issues are fed back once for a revision round.\n- `POST /api/assess` with `{case, triage}`."
+ },
+ {
+  "name": "pv-evidence-grade",
+  "description": "Use when a drug–event pair needs a population-level evidence grade (A/B/C/L/D/U) built by fixed rules from label section, FAERS triple-criterion signal and literature, returned together with its basis (evidence IDs) and gaps.",
+  "license": "Apache-2.0",
+  "layer": "memory (mushroom body)",
+  "model": "",
+  "path": "skills/pv-evidence-grade/SKILL.md",
+  "body": "# 근거 등급 (FlyVigilance Evidence Grade v1)\n\n## 규칙 (모델 미사용)\n| 등급 | 조건 |\n| --- | --- |\n| A | 박스 경고 + 3중 신호 |\n| B | 경고·주의 또는 이상반응 절 기재 + 3중 신호 |\n| C | 3중 신호가 있으나 라벨 미기재, 또는 그 반응에 붙은 \"인과 미확립\" 단서 (A·B 의 상한) |\n| L | 라벨 기재, FAERS 신호 미검출 (신호 부재 ≠ 근거 부재, R4) |\n| D | 라벨 미기재, 신호 없음 |\n| U | 라벨을 확인하지 못했거나 통계를 계산하지 못함 |\n\n- 3중 신호 = Evans(PRR≥2, χ²≥4, a≥3) ∧ ROR025>1 ∧ IC025>0 입니다.\n- 인과 미확립 단서는 그 반응이 언급된 문장과 뒤의 두 문장 안에서만 찾습니다. 이상반응 절 첫머리의 상투 문구(\"reported voluntarily from a population of uncertain size\")는 세지 않습니다.\n- 문헌은 등급을 바꾸지 않는 참고 축입니다(분석 연구의 지지·혼재·반론 상태).\n\n## 팀 시제품과 달라진 점\n팀 시제품은 이소트레티노인–염증성장질환을 C 로 매겼습니다. 인용한 단서(\"Mechanism(s) and causality for this reaction have not been established\")는 같은 경고 절의 5.9 청력 손상 항목에 붙은 문장이었습니다. 반응 범위로 단서를 찾으면 B(경고 기재 + 신호)가 되고, 대신 문헌 축에 \"분석 연구 결과 혼재\"가 표시됩니다.\n\n## 호출\n`GET /api/grade?drug=CLOZAPINE&pt=neutropenia` · 근거 ID `grade:<DRUG>:<pt>@<asof>` · 크리틱 규칙 R13"
  },
  {
   "name": "pv-guardrail-policy",
@@ -52,6 +61,24 @@
   "model": "nvidia/nemotron-3-super-120b-a12b (intake), typesafe jev-latest (causality items)",
   "path": "skills/pv-kr-intake-causality/SKILL.md",
   "body": "# 국내 보고 구조화 · 한국형 인과성 평가 · 국내 규정 모드\n\n## 1. 보고 구조화 (`POST /api/kr/intake`)\n- 입력: `{text, form}`이며, `form`은 `professional`(의약전문가용 서식), `consumer`(일반인), `narrative`(병원·약사 사례 서술) 중 하나입니다.\n- Nemotron이 식약처 공고 제2023-057호 의약전문가용 서식의 가~바 섹션(`kr_form`)을 채웁니다. 원문에 없는 값은 비워 두고 `missing`에 적습니다.\n- 트리아지용 케이스(`case`)의 약물 역할(PS/SS/C), 보고자 코드, 결과 코드, 재투여 여부는 서식 값에서 **규칙으로** 만듭니다.\n\n## 2. 한국형 인과성 평가 알고리즘 ver 2.0 (`POST /api/kr/causality`)\n- 8개 항목(시간적 선후관계, 감량·중단, 과거력, 병용약물, 비약물요인, 알려진 정보, 재투약, 특이적 검사)을 Jev 선택형 질문 한 번으로 판단합니다.\n- 점수 합산(최고 19점, 최저 −13점)과 등급 구간(12점 이상 확실함, 6~11점 가능성 높음, 2~5점 가능성 있음, 1점 이하 가능성 낮음)은 규칙으로 계산합니다.\n- \"알려진 정보\" 항목은 openFDA 라벨에서 반응명이 확인되면 규칙으로 +3을 줍니다. 국내 허가사항은 평가자가 의약품안전나라에서 확인합니다.\n- 신뢰도 0.55 미만 항목은 `needs_review`로 표시합니다.\n- WHO-UMC 등급은 따로 내며, 두 체계의 등급을 섞지 않습니다.\n\n## 3. 국내 규정 모드 (`POST /api/triage?regime=KR`)\n- KR: 중대한 약물이상반응이면 15일 신속보고 후보입니다(의약품 등의 안전에 관한 규칙 별표 4의3 제7호, \"예상하지 못한\" 요건 없음).\n- US: 중대하고 예상하지 못한 사례만 15일 신속보고 후보입니다(21 CFR 314.80).\n- 우선순위 규칙으로 올라온 사례에는 신속보고 기한 대신 \"즉시 사람 검토\"를 붙입니다.\n\n## 근거 자료\n- 팀 문서 「국내 PV 흐름 설명」, 「약물부작용 인과성평가 기준 및 도구」(WHO-UMC, 한국형 알고리즘 ver 2.0, Naranjo)"
+ },
+ {
+  "name": "pv-literature-reading",
+  "description": "Use when a drug–event pair needs its top PubMed articles read and typed — study design (PubMed publication type by rule, otherwise Jev choice), whether the article reports the association, dechallenge/rechallenge mentions and conclusion strength — with citable pubmed:<pmid>#<design> IDs.",
+  "license": "Apache-2.0",
+  "layer": "memory (mushroom body)",
+  "model": "typesafe jev-latest (one call per pair, 6 abstracts per call)",
+  "path": "skills/pv-literature-reading/SKILL.md",
+  "body": "# 문헌 읽기\n\n1. esearch 로 관련도 상위 문헌 PMID 를 받고, efetch 로 초록과 출판 유형을 받습니다.\n2. 연구 설계는 PubMed 출판 유형(Meta-Analysis, Randomized Controlled Trial, Case Reports, Review)이 있으면 규칙으로 정합니다.\n3. 출판 유형이 없을 때의 설계, 연관 보고 여부(noul), 결론 강도(score 0~4), 중단 후 호전·재투여 재발 기술(noul)은 Jev 가 한 번 호출로 판단합니다.\n4. 초록 원문은 판단에만 쓰고 결과에는 PMID·연도·제목·판정만 남깁니다.\n\n## 검증\n출판 유형을 가린 채 설계를 고르게 했을 때 MEDLINE 색인과의 일치율은 92.0% 였습니다(598편, `pipeline/bench/literature_eval.py`).\n\n## 쓰이는 곳\n근거 등급의 문헌 축, 한국형 알고리즘 \"알려진 정보\" 항목의 증례보고(+2) 규칙, System-2 근거 카탈로그."
+ },
+ {
+  "name": "pv-reference-validation",
+  "description": "Use to measure how signal-detection methods perform on public reference sets (OMOP, EU-ADR, Harpaz time-indexed incl. a pre-2013 prospective window from legacy AERS) — ROC/AUC with bootstrap CIs for PRR/ROR/chi2/IC025, raw Jev (named and blinded) and the FlyVigilance case-series judgment.",
+  "license": "Apache-2.0",
+  "layer": "control plane",
+  "model": "",
+  "path": "skills/pv-reference-validation/SKILL.md",
+  "body": "# 참조 세트 검증\n\n```bash\n.venv/bin/python pipeline/refsets/build_refsets.py   # 세트 통합, 반응 정의, 약물명 매칭\n./scripts/download_aers_legacy.sh && .venv/bin/python pipeline/refsets/legacy_aers.py   # 2013년 이전 보고\n.venv/bin/python pipeline/refsets/evaluate.py         # ROC, AUC, 부트스트랩, Jev 호출(캐시)\n```\n\n- 반응 정의는 Harpaz 정의를 먼저 쓰고, 없는 결과는 공개 정규식으로 PT 를 묶습니다(목록 공개).\n- 이름 공개 조건은 모델 기억이 새므로 참고용입니다. 공정한 비교는 이름을 가린 조건입니다.\n- 이 측정은 \"공인된 조합을 가려내는가\"를 재며 개별 사례의 인과를 재지 않습니다.\n\n## 결과 요약 (2026-09-28)\n- 모델 재순위가 최고 통계 지표를 유의하게 넘은 조건은 없었습니다 → 신호 계산은 SQL 에 둡니다.\n- 2013년 이전 보고만으로 3중 기준은 그해 라벨 변경 57건 중 21건을 신호로 세웠고 음성 70건 중 오경보는 1건이었습니다(PPV 95%)."
  },
  {
   "name": "pv-reflex-triage",

@@ -1,12 +1,20 @@
 import { useEffect, useState } from 'react'
 import { Card, Kpi, Loading, PageHead } from '../components/ui'
 import { fmt, getJSON } from '../lib/data'
-import type { Bench, LatStats, Overview } from '../lib/types'
+import type { Bench, Escalation, LatStats, Overview } from '../lib/types'
+
+const ARMS: { key: 'flyvigilance' | 'flyvigilance_ungrounded' | 'raw_jev'; name: string; sub: string; color: string }[] = [
+  { key: 'flyvigilance', name: 'FlyVigilance', sub: '규칙 게이트 + 라벨 근거 주입 + 7문항 타입 판단 + 결정 정책', color: 'var(--c-sense)' },
+  { key: 'flyvigilance_ungrounded', name: 'FlyVigilance · 근거 주입 없음', sub: '이전 설정 (라벨 여부를 Jev 기억에 물음)', color: '#7aa7ff' },
+  { key: 'raw_jev', name: 'raw Jev', sub: '같은 엔진에 질문 하나: "먼저 봐야 하나?"', color: 'var(--jev)' },
+]
+const ROUTE_KO: Record<string, string> = { expedite: '사람 우선', signal_review: 'System-2 검토', follow_up: '추가정보 요청', monitor: '모니터링', close: '종결' }
+const ROUTE_COL: Record<string, string> = { expedite: '#ff5d6c', signal_review: '#76b900', follow_up: '#a58bff', monitor: '#37e6ff', close: '#6c7aa8' }
 
 function LatBox({ s, color, label, max }: { s: LatStats; color: string; label: string; max: number }) {
   const x = (v: number) => `${(Math.log10(Math.max(v, 10)) - 1) / (Math.log10(max) - 1) * 100}%`
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '170px 1fr 120px', gap: 12, alignItems: 'center', margin: '10px 0' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: '210px 1fr 120px', gap: 12, alignItems: 'center', margin: '10px 0' }}>
       <span style={{ fontSize: 12.5 }}>{label}</span>
       <div style={{ position: 'relative', height: 26 }}>
         <div style={{ position: 'absolute', top: 12, left: x(s.min), width: `calc(${x(s.max)} - ${x(s.min)})`, height: 2, background: color, opacity: .5 }} />
@@ -18,116 +26,139 @@ function LatBox({ s, color, label, max }: { s: LatStats; color: string; label: s
   )
 }
 
+function ArmRow({ name, sub, color, e }: { name: string; sub: string; color: string; e: Escalation }) {
+  return (
+    <tr>
+      <td><div style={{ fontWeight: 600, color }}>{name}</div><div className="dim" style={{ fontSize: 11 }}>{sub}</div></td>
+      <td className="r num" style={{ fontSize: 15, color: e.serious_without_review ? 'var(--bad)' : 'var(--ok)' }}>{e.serious_without_review}</td>
+      <td className="r num" style={{ fontSize: 15 }}>{e.escalated}</td>
+      <td className="r num" style={{ fontSize: 15, color: e.over_escalated > 10 ? 'var(--warn)' : undefined }}>{e.over_escalated}</td>
+      <td className="r num">{fmt.pct(e.sens, 1)}</td>
+      <td className="r num">{fmt.pct(e.spec, 1)}</td>
+    </tr>
+  )
+}
+
 export default function Benchmarks() {
   const [b, setB] = useState<Bench | null>(null)
   const [ov, setOv] = useState<Overview | null>(null)
   useEffect(() => { getJSON<Bench>('/data/bench.json').then(setB); getJSON<Overview>('/data/faers/overview.json').then(setOv) }, [])
   if (!b || !ov) return <div className="page"><Loading /></div>
-  const jt = b.jev_triage, nt = b.nemotron
+  const jt = b.jev_triage, nt = b.nemotron, ab = b.ablation
   const bl = b.blind_serious
-  const speed = nt ? nt.triage.latency_ms.p50 / jt.latency_ms.p50 : null
-  const tokRatio = nt ? (nt.triage.tokens_in_mean + nt.triage.tokens_out_mean) / (jt.tokens_in_mean + jt.tokens_out_mean) : null
   const maxLat = Math.max(jt.latency_ms.max, nt?.triage.latency_ms.max ?? 0, nt?.blind.latency_ms.max ?? 0, bl.jev.latency_ms.max) * 1.2
   const Q = ov.latest.cases
+  const serious = ab ? Math.round(ab.n * b.dataset.serious_rate) : 0
+  const g = ab?.grounding
 
   return (
     <div className="page">
-      <PageHead eyebrow={`Measured performance · ${b.generated}`}
-        title={<>같은 케이스, 같은 질문: <span style={{ color: 'var(--jev)' }}>Jev</span> vs <span style={{ color: 'var(--nvidia)' }}>Nemotron</span></>}
-        lede={<>{b.dataset.source} 실제 케이스 {b.dataset.cases}건(사망·중대·비중대·소아 층화 표본)으로 이 저장소의 <span className="mono">pipeline/bench/bench.py</span>를 돌린 결과다. 아래 숫자는 전부 그 실행 출력이며, 투영치와 외부 인용은 따로 표시한다.</>} />
+      <PageHead eyebrow={`Measured performance · ${b.generated} · FAERS ${b.dataset.source.split(' ')[1]} 실제 케이스 ${b.dataset.cases}건`}
+        title={<>같은 엔진, 다른 설계: <span style={{ color: 'var(--jev)' }}>그대로 쓴 Jev</span> vs <span style={{ color: 'var(--c-sense)' }}>FlyVigilance</span></>}
+        lede={<>Jev는 TypeSafe AI가 만든 판단 엔진이고, FlyVigilance는 그 엔진을 약물감시에 맞게 감싼 에이전트입니다. 같은 케이스를 같은 엔진으로 돌리되,
+          질문 하나만 던진 경우(raw)와 FlyVigilance의 설계(규칙 게이트, 라벨 근거 주입, 규제 용어로 쪼갠 7문항, 결정 정책)를 거친 경우를 비교했습니다.
+          정답은 FAERS 결과 코드(중대 여부)이고, 모든 숫자는 <span className="mono">pipeline/bench/bench.py</span> 실행 결과입니다.</>} />
+
+      {ab && <>
+        <div className="grid g4" style={{ marginBottom: 16 }}>
+          <Kpi label="검토 없이 흘러간 중대 사례" value={ab.flyvigilance.serious_without_review} color="var(--ok)" format={(n) => `${Math.round(n)} / ${serious}`}
+            sub={`raw Jev ${ab.raw_jev.serious_without_review}건 · 사람 또는 System-2 가 반드시 봄`} />
+          <Kpi label="사람 검토 업무량" value={ab.flyvigilance.escalated} color="var(--c-sense)" format={(n) => `${Math.round(n)}건`}
+            sub={`raw Jev ${ab.raw_jev.escalated}건 · ${fmt.pct(1 - ab.flyvigilance.escalated / ab.raw_jev.escalated, 0)} 적음`} />
+          <Kpi label="사람에게 넘긴 비중대 사례" value={ab.flyvigilance.over_escalated} color="var(--c-memory)" format={(n) => `${Math.round(n)}건`}
+            sub={`raw Jev ${ab.raw_jev.over_escalated}건 (비중대의 ${fmt.pct(ab.raw_jev.over_escalated / (ab.n - serious), 0)})`} />
+          <Kpi label="라벨 근거로 구해 낸 중대 사례" value={ab.flyvigilance_ungrounded.missed_serious - ab.flyvigilance.missed_serious} color="var(--jev)" format={(n) => `+${Math.round(n)}건`}
+            sub={`사람 우선 검토 민감도 ${fmt.pct(ab.flyvigilance_ungrounded.sens, 1)} → ${fmt.pct(ab.flyvigilance.sens, 1)}`} />
+        </div>
+
+        <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1.3fr) minmax(0,1fr)', marginBottom: 16 }}>
+          <Card title="비교 실험 · 같은 440건, 같은 엔진" sub={ab.definition}>
+            <table className="tbl">
+              <thead><tr><th>조건</th><th className="r">검토 없이 간 중대</th><th className="r">사람 검토</th><th className="r">비중대→사람</th><th className="r">민감도</th><th className="r">특이도</th></tr></thead>
+              <tbody>{ARMS.map((a) => <ArmRow key={a.key} name={a.name} sub={a.sub} color={a.color} e={ab[a.key]} />)}</tbody>
+            </table>
+            <div className="divider" />
+            <div className="dim mono" style={{ fontSize: 10.5, marginBottom: 8 }}>FLYVIGILANCE 경로 분포 (근거 주입 전 → 후)</div>
+            {(['flyvigilance_ungrounded', 'flyvigilance'] as const).map((k) => (
+              <div key={k} style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: 10, alignItems: 'center', marginBottom: 6 }}>
+                <span style={{ fontSize: 11.5 }}>{k === 'flyvigilance' ? '근거 주입 후' : '근거 주입 전'}</span>
+                <div style={{ display: 'flex', height: 18, borderRadius: 6, overflow: 'hidden' }}>
+                  {Object.entries(ab.routes[k]).filter(([, n]) => n).map(([r, n]) => (
+                    <div key={r} title={`${ROUTE_KO[r]} ${n}`} style={{ width: `${n / ab.n * 100}%`, background: ROUTE_COL[r], opacity: .85, fontSize: 10, color: '#051022', paddingLeft: 4, overflow: 'hidden', whiteSpace: 'nowrap' }}>{n / ab.n > 0.08 ? `${ROUTE_KO[r]} ${n}` : ''}</div>
+                  ))}
+                </div>
+              </div>
+            ))}
+            <div className="note" style={{ marginTop: 8 }}>raw Jev의 "no"는 자동 큐로 가서 아무도 보지 않습니다. FlyVigilance는 중대 사례를 종결·모니터링으로 보내지 않고, 사람 우선이 아니면 System-2(Nemotron) 검토로 올립니다.
+              raw의 순위 성능(AUROC {ab.raw_auroc.toFixed(3)})은 나쁘지 않지만, 규정 기한·사유·경로가 없는 한 줄 판단이라 그대로 운영에 쓸 수 없습니다.</div>
+          </Card>
+          {g && <Card title="라벨 근거 주입 · 기억 대신 조회" sub={`라벨을 찾은 ${g.label_found}/${g.cases}건에서 Jev 기억 속 '라벨에 있음'과 openFDA 라벨 원문을 대조`}>
+            <table className="tbl" style={{ textAlign: 'center' }}>
+              <thead><tr><th></th><th className="r">라벨에 있음</th><th className="r">라벨에 없음</th></tr></thead>
+              <tbody>
+                <tr><td>기억: 있음</td><td className="r num">{g.memory_vs_label.both_expected}</td><td className="r num" style={{ color: 'var(--warn)', fontSize: 15 }}>{g.memory_vs_label.memory_expected_label_not}</td></tr>
+                <tr><td>기억: 없음</td><td className="r num">{g.memory_vs_label.memory_unexpected_label_listed}</td><td className="r num">{g.memory_vs_label.both_unexpected}</td></tr>
+              </tbody>
+            </table>
+            <div className="grid g3" style={{ gap: 10, marginTop: 12 }}>
+              <div><div className="dim mono" style={{ fontSize: 10 }}>경로가 바뀐 케이스</div><div className="num" style={{ fontSize: 20 }}>{g.actions_changed}</div></div>
+              <div><div className="dim mono" style={{ fontSize: 10 }}>중대 → 사람 우선으로</div><div className="num" style={{ fontSize: 20, color: 'var(--bad)' }}>{g.changed_serious_to_expedite}</div></div>
+              <div><div className="dim mono" style={{ fontSize: 10 }}>조회 지연 p50</div><div className="num" style={{ fontSize: 20 }}>{fmt.ms(g.label_latency_ms.p50)}</div></div>
+            </div>
+            <div className="note" style={{ marginTop: 10 }}>라벨 검색은 MedDRA PT와 라벨 문구의 문자열 일치(영국·미국 철자, 뒤집힌 어순 포함) 기준이라 동의어는 놓칠 수 있습니다.
+              놓치면 '예상하지 못한 반응'으로 처리되어 사람 검토 쪽으로 기울므로, 오류가 나도 안전한 방향입니다. 라벨 문서는 캐시해 두 번째부터 거의 비용이 없습니다.</div>
+          </Card>}
+        </div>
+      </>}
 
       <div className="grid g4" style={{ marginBottom: 16 }}>
-        <Kpi label="Jev triage p50 (7 decisions)" value={jt.latency_ms.p50} color="var(--jev)" format={(n) => `${Math.round(n)} ms`} sub={`p90 ${fmt.ms(jt.latency_ms.p90)} · n=${jt.ok}`} />
-        <Kpi label={`${nt ? nt.model.split('/')[1] : 'Nemotron'} p50`} value={nt?.triage.latency_ms.p50 ?? 0} color="var(--nvidia)" format={(n) => fmt.ms(n)} sub={nt ? `same 7 questions as JSON · n=${nt.triage.n}` : 'not run'} />
-        <Kpi label="speed ratio (p50)" value={speed ?? 0} color="var(--c-sense)" format={(n) => `${n.toFixed(1)}×`} sub="Nemotron p50 ÷ Jev p50, same session" />
-        <Kpi label="Jev cost per 1,000 cases" value={(jt.usd_per_1k ?? 0) * 1000} color="var(--c-memory)" format={(n) => `$${(n / 1000).toFixed(4)}`} sub={`${jt.tokens_in_mean} input tok · output free · $0.042/M`} />
+        <Kpi label="FlyVigilance 반사 판단 p50" value={jt.latency_ms.p50} color="var(--jev)" format={(n) => `${Math.round(n)} ms`} sub={`판단 7개 · 라벨 조회 포함 · n=${jt.ok}`} />
+        <Kpi label="같은 스키마 · Nemotron 3.5 Lightning" value={nt?.triage.latency_ms.p50 ?? 0} color="var(--nvidia)" format={(n) => fmt.ms(n)} sub={nt ? `같은 7문항을 JSON 으로 · n=${nt.triage.n}` : '실행 안 함'} />
+        <Kpi label="1,000건 반사 판단 비용" value={(jt.usd_per_1k ?? 0) * 1000} color="var(--c-memory)" format={(n) => `$${(n / 1000).toFixed(3)}`} sub={`입력 ${jt.tokens_in_mean} tok · 출력 무료 · $0.042/M`} />
+        <Kpi label="중대성 맹검 AUROC" value={bl.jev.auroc * 1000} color="var(--c-feedback)" format={(n) => (n / 1000).toFixed(3)} sub={`결과 코드를 가린 상태 · n=${bl.jev.n}`} />
       </div>
 
       <div className="grid g2" style={{ marginBottom: 16 }}>
-        <Card title="지연 분포" sub="로그 축 · 막대 = p50–p90, 선 = min–max">
-          <LatBox s={jt.latency_ms} color="var(--jev)" label="Jev · 7-question triage" max={maxLat} />
-          <LatBox s={bl.jev.latency_ms} color="#ffd38a" label="Jev · blind seriousness" max={maxLat} />
-          {nt && <LatBox s={nt.triage.latency_ms} color="var(--nvidia)" label="Nemotron · 7-question JSON" max={maxLat} />}
-          {nt && <LatBox s={nt.blind.latency_ms} color="#b6e86b" label="Nemotron · blind seriousness" max={maxLat} />}
-          <div className="note" style={{ marginTop: 10 }}>Jev 동시성 {jt.concurrency}, Nemotron 동시성 {nt?.concurrency}. build.nvidia.com 호스팅 NIM은 공유 체험 엔드포인트라 대기열 지연과 503이 섞인다. 자체 배포 NIM에서는 달라진다.</div>
+        <Card title="엔진 선택 · 반사 층에 무엇을 둘 것인가" sub="같은 7문항 스키마를 두 엔진에 올려 잰 지연 (로그 축)">
+          <LatBox s={jt.latency_ms} color="var(--jev)" label="FlyVigilance 반사 · Jev 엔진" max={maxLat} />
+          <LatBox s={bl.jev.latency_ms} color="#ffd38a" label="중대성 맹검 · Jev 엔진" max={maxLat} />
+          {nt && <LatBox s={nt.triage.latency_ms} color="var(--nvidia)" label="같은 스키마 · Nemotron Lightning" max={maxLat} />}
+          {nt && <LatBox s={nt.blind.latency_ms} color="#b6e86b" label="중대성 맹검 · Nemotron Lightning" max={maxLat} />}
+          <div className="note" style={{ marginTop: 8 }}>반사 층은 건수가 많고 판단만 필요해서 출력 토큰을 만들지 않는 엔진이 맞습니다. Nemotron은 FlyVigilance 안에서
+            근거를 읽고 글을 써야 하는 System-2 평가(Super·Ultra)와 안전 가드(Safety Guard)를 맡습니다. build.nvidia.com 호스팅 NIM은 공유 체험 엔드포인트라 대기열 지연이 섞입니다.</div>
         </Card>
-        <Card title="토큰과 처리량" sub="케이스 1건당 평균">
+        <Card title="중대성 맹검과 보정" sub="결과 코드를 지운 케이스 문자열로 중대성 확률을 받아 실제 결과 코드로 채점">
           <table className="tbl">
-            <thead><tr><th></th><th className="r">input tok</th><th className="r">output tok</th><th className="r">throughput</th><th className="r">errors</th></tr></thead>
+            <thead><tr><th></th><th className="r">n</th><th className="r">AUROC</th><th className="r">정확도@0.5</th></tr></thead>
             <tbody>
-              <tr><td><span className="chip jev">Jev</span></td><td className="r num">{jt.tokens_in_mean}</td><td className="r num">{jt.tokens_out_mean}</td><td className="r num">{jt.throughput_cases_per_s} /s</td><td className="r num">{jt.errors}</td></tr>
-              {nt && <tr><td><span className="chip nv">Nemotron</span></td><td className="r num">{nt.triage.tokens_in_mean}</td><td className="r num">{nt.triage.tokens_out_mean}</td><td className="r num">{(nt.triage.n / nt.triage.wall_s).toFixed(2)} /s</td><td className="r num">{nt.errors.triage}</td></tr>}
+              <tr><td>FlyVigilance 반사 · Jev · 전체</td><td className="r num">{bl.jev.n}</td><td className="r num">{fmt.f(bl.jev.auroc, 3)}</td><td className="r num">{fmt.pct(bl.jev.acc, 1)}</td></tr>
+              {nt && <tr><td>Jev · 같은 표본</td><td className="r num">{nt.blind.n}</td><td className="r num">{fmt.f(nt.blind.jev_same_subset_auroc, 3)}</td><td className="r num">{fmt.pct(nt.blind.jev_same_subset_acc, 1)}</td></tr>}
+              {nt && <tr><td>Nemotron Lightning · 같은 표본</td><td className="r num">{nt.blind.n}</td><td className="r num">{fmt.f(nt.blind.auroc, 3)}</td><td className="r num">{fmt.pct(nt.blind.acc, 1)}</td></tr>}
+              <tr><td className="dim">다수 클래스 기준선</td><td className="r num dim">{bl.jev.n}</td><td className="r num dim">0.500</td><td className="r num dim">{fmt.pct(bl.majority_baseline_acc, 1)}</td></tr>
             </tbody>
           </table>
-          {tokRatio && <div className="note" style={{ marginTop: 10 }}>총 토큰 비율 Nemotron ÷ Jev = <b>{tokRatio.toFixed(2)}×</b>. Jev는 출력 토큰이 과금되지 않고 사고 과정 생성이 없다.</div>}
-          <div className="divider" />
-          <h3>분기 1회분 투영 <span className="chip warn" style={{ marginLeft: 6 }}>projection</span></h3>
-          <div className="grid g2" style={{ gap: 10 }}>
-            <div><div className="dim mono" style={{ fontSize: 10.5 }}>JEV · {fmt.int(Q)} cases</div>
-              <div className="num" style={{ fontSize: 18 }}>{(Q / jt.throughput_cases_per_s / 3600).toFixed(1)} h · {fmt.usd(jt.usd_per_case * Q)}</div></div>
-            {nt && <div><div className="dim mono" style={{ fontSize: 10.5 }}>NEMOTRON ALL CASES · sequential</div>
-              <div className="num" style={{ fontSize: 18 }}>{(Q * nt.triage.latency_ms.p50 / 1000 / 3600).toFixed(0)} h · {fmt.compact(Q * (nt.triage.tokens_in_mean + nt.triage.tokens_out_mean))} tok</div></div>}
-          </div>
-          <div className="note" style={{ marginTop: 8 }}>실측 건당 값에 {ov.asof} 케이스 수를 곱한 단순 투영. 병렬화·배치·캐시는 반영하지 않았다.</div>
-        </Card>
-      </div>
-
-      <div className="grid g2" style={{ marginBottom: 16 }}>
-        <Card title="중대성 맹검 과제" sub="결과 코드(OUTC)를 지운 케이스 문자열만 주고 중대성 확률을 받아, 실제 FAERS 결과 코드 유무로 채점">
-          <table className="tbl">
-            <thead><tr><th></th><th className="r">n</th><th className="r">AUROC</th><th className="r">accuracy@0.5</th></tr></thead>
-            <tbody>
-              <tr><td><span className="chip jev">Jev</span> all cases</td><td className="r num">{bl.jev.n}</td><td className="r num">{fmt.f(bl.jev.auroc, 3)}</td><td className="r num">{fmt.pct(bl.jev.acc, 1)}</td></tr>
-              {nt && <tr><td><span className="chip jev">Jev</span> same subset</td><td className="r num">{nt.blind.n}</td><td className="r num">{fmt.f(nt.blind.jev_same_subset_auroc, 3)}</td><td className="r num">{fmt.pct(nt.blind.jev_same_subset_acc, 1)}</td></tr>}
-              {nt && <tr><td><span className="chip nv">Nemotron</span> subset</td><td className="r num">{nt.blind.n}</td><td className="r num">{fmt.f(nt.blind.auroc, 3)}</td><td className="r num">{fmt.pct(nt.blind.acc, 1)}</td></tr>}
-              <tr><td className="dim">majority-class baseline</td><td className="r num dim">{bl.jev.n}</td><td className="r num dim">0.500</td><td className="r num dim">{fmt.pct(bl.majority_baseline_acc, 1)}</td></tr>
-            </tbody>
-          </table>
-          <div className="note" style={{ marginTop: 10 }}>표본은 사망·중대 케이스를 과대 추출한 층화 표본(중대 비율 {fmt.pct(b.dataset.serious_rate, 0)})이다. 실제 분기 구성비와 다르다. 운영에서는 결과 코드가 있으면 중대성을 규칙으로 정하고, 이 과제는 코드가 없는 입력(문헌, 자유기술)에 대한 능력을 잰다.</div>
-        </Card>
-        <Card title="Jev 확률 보정 (reliability)" sub={`예측 확률 구간별 실제 중대 비율 · ECE ${fmt.f(bl.jev.ece, 3)}`}>
-          <svg viewBox="0 0 320 240" style={{ width: '100%', maxHeight: 280 }}>
-            <line x1={40} y1={210} x2={310} y2={210} stroke="rgba(120,170,255,0.2)" />
-            <line x1={40} y1={210} x2={40} y2={10} stroke="rgba(120,170,255,0.2)" />
-            <line x1={40} y1={210} x2={310} y2={10} stroke="rgba(120,170,255,0.35)" strokeDasharray="4 4" />
-            {bl.jev.calibration.map((c) => {
-              const cx = 40 + c.pred * 270, cy = 210 - c.obs * 200
-              return <g key={c.bin}><circle cx={cx} cy={cy} r={Math.max(4, Math.sqrt(c.n) * 1.4)} fill="var(--jev)" opacity={0.75} /><text x={cx + 8} y={cy - 6} fontSize={9} fill="var(--text-2)">n={c.n}</text></g>
-            })}
-            <polyline fill="none" stroke="var(--jev)" strokeWidth={2} points={bl.jev.calibration.map((c) => `${40 + c.pred * 270},${210 - c.obs * 200}`).join(' ')} />
-            <text x={175} y={234} textAnchor="middle" fontSize={10} fill="var(--text-3)">predicted P(serious)</text>
-            <text x={12} y={110} fontSize={10} fill="var(--text-3)" transform="rotate(-90 12 110)">observed rate</text>
-          </svg>
-          <div className="note">보정은 집단의 성질이다. 대각선에 가까워도 개별 케이스의 확신을 뜻하지 않는다 (R10).</div>
+          <div className="note" style={{ marginTop: 10 }}>같은 표본의 엔진 간 차이는 표본이 작아 확정할 수 없습니다. 중대 비율 {fmt.pct(b.dataset.serious_rate, 0)}의 층화 표본이며 실제 분기 구성비와 다릅니다.
+            ECE {fmt.f(bl.jev.ece, 3)}. 확률은 집단 수준의 보정값이지 한 건의 확신이 아닙니다(R10).</div>
         </Card>
       </div>
 
       <div className="grid g2">
-        <Card title="라우팅 일치와 행동 분포" sub="Jev 7문항 판단 → 결정 정책 → 행동">
-          {nt && <div className="row wrap" style={{ gap: 8, marginBottom: 12 }}>
-            <span className="chip">route agreement Jev vs Nemotron {fmt.pct(nt.triage.route_agreement, 0)} (n={nt.triage.compared})</span>
-            <span className="chip">causality agreement {fmt.pct(nt.triage.causality_agreement, 0)}</span>
-          </div>}
-          <table className="tbl">
-            <thead><tr><th>action</th><th className="r">cases</th><th className="r">share</th><th className="r">actually serious</th></tr></thead>
-            <tbody>{Object.entries(jt.actions).sort((a, b) => b[1] - a[1]).map(([a, n]) => {
-              const s = jt.serious_rate_by_action[a]
-              return <tr key={a}><td className="mono">{a}</td><td className="r num">{n}</td><td className="r num">{fmt.pct(n / jt.ok, 1)}</td><td className="r num">{s ? `${fmt.pct(s.serious / s.n, 0)} (${s.serious}/${s.n})` : ''}</td></tr>
-            })}</tbody>
-          </table>
-          <div className="note" style={{ marginTop: 10 }}>“actually serious” = 해당 행동으로 간 케이스 중 FAERS 결과 코드가 있는 비율. 신속보고 쪽에 중대 케이스가 몰리고 종결 쪽에는 드물어야 정책이 제대로 작동하는 것이다.</div>
+        <Card title="분기 1회분 투영" sub="실측 건당 값에 최신 분기 케이스 수를 곱한 단순 투영 (병렬화·배치 미반영)">
+          <div className="grid g2" style={{ gap: 12 }}>
+            <div><div className="dim mono" style={{ fontSize: 10.5 }}>FLYVIGILANCE 반사 · {fmt.int(Q)}건</div>
+              <div className="num" style={{ fontSize: 20 }}>{(Q / jt.throughput_cases_per_s / 3600).toFixed(1)} h · {fmt.usd((jt.usd_per_case ?? 0) * Q)}</div></div>
+            {nt && <div><div className="dim mono" style={{ fontSize: 10.5 }}>프런티어 LLM 로 전건 · 순차</div>
+              <div className="num" style={{ fontSize: 20 }}>{(Q * nt.triage.latency_ms.p50 / 1000 / 3600).toFixed(0)} h · {fmt.compact(Q * (nt.triage.tokens_in_mean + nt.triage.tokens_out_mean))} tok</div></div>}
+          </div>
         </Card>
-        <Card title="외부 기준점" sub="우리가 잰 값이 아니다. 비교의 맥락으로만 쓴다">
+        <Card title="외부 기준점" sub="우리가 잰 값이 아닙니다. 맥락으로만 씁니다">
           <table className="tbl">
             <tbody>
-              <tr><td>사람 · ICSR 내러티브 검토</td><td className="r num">5.56 min / case</td><td className="dim" style={{ fontSize: 11 }}>Warner 2026 CPT, 69건 395분. 예비 수치</td></tr>
-              <tr><td>Nemotron 3 Super · 예아니오 선별</td><td className="r num">1,672 ms · 369 tok</td><td className="dim" style={{ fontSize: 11 }}>팀 선행 실측 (triage-scale, 10건)</td></tr>
-              <tr><td>고정 규칙 크리틱 · 과잉해석 적발</td><td className="r num">1 / 16</td><td className="dim" style={{ fontSize: 11 }}>팀 선행 실측 (FlyGate eval 33건)</td></tr>
-              <tr><td>LLM 포함 크리틱 · 과잉해석 적발</td><td className="r num">16 / 16</td><td className="dim" style={{ fontSize: 11 }}>거짓 양성 0/17, 같은 출처</td></tr>
-              <tr><td>Jev 공급사 주장 속도</td><td className="r num">40–200×</td><td className="dim" style={{ fontSize: 11 }}>TypeSafe AI 자체 측정·상단 추정치, 독립 재현 없음</td></tr>
+              <tr><td>사람 · ICSR 내러티브 검토</td><td className="r num">5.56 min / case</td><td className="dim" style={{ fontSize: 11 }}>Warner 2026 CPT, 예비 수치</td></tr>
+              <tr><td>고정 규칙 크리틱 · 과잉해석 적발</td><td className="r num">1 / 16</td><td className="dim" style={{ fontSize: 11 }}>팀 선행 실측 (FlyGate)</td></tr>
+              <tr><td>TypeSafe AI 공개 속도 주장</td><td className="r num">40–200×</td><td className="dim" style={{ fontSize: 11 }}>공급사 자체 측정, 독립 재현 없음</td></tr>
             </tbody>
           </table>
-          <div className="note" style={{ marginTop: 10 }}>공급사 주장은 인용만 하고, 이 페이지의 속도 비율은 같은 세션에서 우리가 직접 잰 값만 쓴다.</div>
         </Card>
       </div>
     </div>

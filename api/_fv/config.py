@@ -40,6 +40,8 @@ MODEL_DELIBERATE = ["nvidia/nemotron-3-super-120b-a12b", "nvidia/nemotron-3-ultr
 MODEL_FAST = ["nvidia/nemotron-3.5-lightning-30b-a3b", "nvidia/nemotron-nano-3-30b-a3b"]
 MODEL_EMBED = "nvidia/nemotron-3-embed-1b"
 MODEL_SAFETY = "nvidia/llama-3.1-nemotron-safety-guard-8b-v3"
+# 가드 엔드포인트가 멈추거나 DEGRADED 로 거절할 때 쓰는 대체 모델입니다(응답 형식: "User Safety: unsafe")
+MODEL_SAFETY_FALLBACK = "nvidia/nemotron-3.5-content-safety"
 
 # 가격 (USD / 1M tokens). Jev 는 공급사 공개가만 쓴다. NIM 은 확인된 단가가 없어 토큰과 지연만 기록한다
 PRICE = {

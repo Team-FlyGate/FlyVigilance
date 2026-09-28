@@ -22,6 +22,7 @@ export interface BenchExample {
 
 export interface Bench {
   generated: string
+  ablation?: Ablation
   dataset: { source: string; cases: number; buckets: Record<string, number>; serious_rate: number }
   jev_triage: {
     ok: number; errors: number; questions_per_call: number; latency_ms: LatStats; wall_s: number; concurrency: number
@@ -55,3 +56,53 @@ export interface Schema {
   layers: Record<string, string>; db_bytes: number
   tables: { name: string; layer: string; rows: number; columns: { name: string; type: string }[] }[]
 }
+
+export interface RocMethod {
+  key: string; label: string; family: 'metric' | 'raw' | 'flyvigilance' | 'memory'
+  auc: number; ci: [number, number] | null; roc: [number, number][]
+  'at_0.5'?: SensSpec
+}
+export interface SensSpec { sens: number | null; spec: number | null; ppv: number | null; tp: number; fp: number; tn: number; fn: number }
+export interface RefsetResult {
+  n: number; pos: number; neg: number; methods: RocMethod[]; points: { evans: SensSpec; triple: SensSpec }
+  deltas: { a: string; b: string; delta: number; ci: [number, number]; best_metric?: boolean }[]
+  excluded: { drug: string; event: string }[]; window?: string; N?: number; not_marketed_before_2013?: number
+}
+export interface RefPair {
+  drug: string; drug_ref: string; event: string; truth: number; a: number; prr: number | null; ror_lo: number | null; ic025: number
+  evans: boolean; triple: boolean; raw_named: number; raw_blind: number; fv: number; fv_alt: string | null
+  dechal: [number, number]; indication: number
+}
+export interface Validation {
+  generated: string; asof: string; N: number; jev: { calls: number; latency_ms_p50: number }
+  refsets: Record<string, RefsetResult>; pairs: Record<string, RefPair[]>
+  events: Record<string, { label: string; source: string; pts: string[]; note: string }>
+  sources: { name: string; url: string }[]
+}
+export interface LiteratureEval {
+  generated: string; n: number; accuracy: number; group_accuracy: number; pairs: number
+  per_class: Record<string, { n: number; recall: number }>; confusion: Record<string, Record<string, number>>; labels: string[]
+  calls: number; articles_per_call: number; latency_ms_p50: number; truth_source: string
+}
+export interface Escalation { sens: number; spec: number; missed_serious: number; over_escalated: number; escalated: number; n: number; serious_without_review: number }
+export interface Ablation {
+  n: number; definition: string
+  flyvigilance: Escalation; flyvigilance_ungrounded: Escalation; raw_jev: Escalation
+  routes: Record<string, Record<string, number>>; raw_auroc: number; raw_latency_ms: LatStats
+  grounding: {
+    label_found: number; cases: number
+    memory_vs_label: { both_expected: number; both_unexpected: number; memory_expected_label_not: number; memory_unexpected_label_listed: number }
+    actions_changed: number; changed_to_expedite: number; changed_from_expedite: number; changed_serious_to_expedite: number
+    label_latency_ms: LatStats
+    examples: { primaryid: number; suspect: string; reactions: string[]; serious: boolean; memory_expected: number; label: Record<string, string[]>; before: string; after: string }[]
+  }
+}
+export interface EvidenceGrade {
+  id: string; drug: string; pt: string; grade: 'A' | 'B' | 'C' | 'L' | 'D' | 'U'; grade_name: string
+  axes: { regulatory: number; regulatory_name: string; signal: string; literature: { read: number; supportive: number; analytic_read: number; analytic_supportive: number; anecdotal_supportive: number; analytic_status: string } }
+  label_sections: string[]; disclaimer: { section: string; quote: string } | null
+  stats: { a: number; prr: number; prr_lo: number; prr_hi: number; ror_lo: number; ic025: number; chi2: number } | null
+  basis: string[]; gaps: string[]; summary: string; caution: string
+  literature?: { count: number | null; articles: LitArticle[]; summary: Record<string, unknown> }
+}
+export interface LitArticle { pmid: string; year: string | null; title: string; design: string; design_source: string; supports: number; strength: number | null; dechallenge: number; id: string }

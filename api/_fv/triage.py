@@ -3,7 +3,11 @@
 판단은 확률로 받는다. 확률은 집단 보정값이지 이 한 건의 보장이 아니므로,
 라우팅은 확률과 신뢰도 둘 다를 보고 애매하면 위(System-2, 사람)로 올린다.
 """
-from . import clients
+import time
+
+import httpx
+
+from . import clients, evidence, labeltext
 
 OUTCOME = {"DE": "death", "LT": "life-threatening", "HO": "hospitalization", "DS": "disability",
            "CA": "congenital anomaly", "RI": "required intervention", "OT": "other serious"}
@@ -21,8 +25,9 @@ ROUTES = {
 }
 
 
-def case_state(case: dict, include_outcome: bool = True) -> str:
-    """ICSR 를 Jev 상태 문자열로. include_outcome=False 는 중대성 맹검 벤치마크용."""
+def case_state(case: dict, include_outcome: bool = True, grounding: dict | None = None) -> str:
+    """ICSR 를 Jev 상태 문자열로. include_outcome=False 는 중대성 맹검 벤치마크용.
+    grounding 이 있으면 라벨 조회 결과를 상태에 넣어, Jev 가 약 이름 기억 대신 확인된 사실을 보고 판단하게 합니다."""
     lines = [f"FAERS ICSR primaryid {case['primaryid']} (case {case['caseid']}, {case.get('quarter')})"]
     demo = []
     if case.get("age") is not None:
@@ -48,7 +53,39 @@ def case_state(case: dict, include_outcome: bool = True) -> str:
     if include_outcome:
         oc = [OUTCOME.get(o, o) for o in case.get("outcomes", [])]
         lines.append("Outcomes: " + (", ".join(oc) if oc else "none reported"))
+    if grounding and grounding.get("label", {}).get("found"):
+        lab = grounding["label"]
+        facts = []
+        for pt, info in lab.get("by_pt", {}).items():
+            facts.append(f"{pt}: " + (f"listed in {', '.join(info['sections'])}" if info["sections"] else "not found in label text"))
+        lines.append(f"Label check (US label {lab.get('brand')}, effective {lab.get('effective')}): " + "; ".join(facts))
+    elif grounding is not None and not grounding.get("clinical_reactions"):
+        lines.append("Label check: not applicable (only product-use or non-clinical terms reported)")
+    elif grounding is not None:
+        lines.append("Label check: no US label found for the primary suspect; expectedness unknown")
     return "\n".join(lines)
+
+
+async def ground(case: dict, client: httpx.AsyncClient | None = None) -> dict:
+    """주 의심약의 라벨에서 주요 임상 반응(비임상 PT 제외, 최대 5개)의 기재 여부를 확인합니다.
+    라벨이 있으면 예측성은 규칙으로 정합니다: 주요 반응 3개가 모두 기재되어 있으면 예상된 반응입니다."""
+    suspect = principal_suspect(case)
+    clinical = [p for p in case.get("reactions", []) if not labeltext.is_nonclinical(p)]
+    route = next((d.get("route") for d in case.get("drugs", []) if d.get("drug") == suspect), None)
+    own = client is None
+    client = client or httpx.AsyncClient()
+    t0 = time.perf_counter()
+    try:
+        lab = await evidence.label_lookup(suspect, clinical[:5], client, route) if clinical else {"found": False}
+    finally:
+        if own:
+            await client.aclose()
+    expected = None
+    if lab.get("found") and clinical:
+        expected = 1.0 if all(lab["listed"].get(p) for p in clinical[:3]) else 0.0
+    return {"label": lab, "clinical_reactions": clinical[:5], "expected": expected,
+            "expected_source": "openFDA label" if expected is not None else "jev",
+            "latency_ms": round((time.perf_counter() - t0) * 1000, 1)}
 
 
 def questions(suspect: str) -> dict:
@@ -96,9 +133,11 @@ REGIMES = {
 }
 
 
-def route_policy(ans: dict, valid: dict | None = None, regime: str = "US") -> dict:
-    """결정론적 라우팅 정책입니다. 모델 확률을 행동으로 바꾸고, 모든 규칙을 사유 문자열로 남깁니다."""
-    d = _route(ans, valid, regime)
+def route_policy(ans: dict, valid: dict | None = None, regime: str = "US", expected: float | None = None,
+                 expected_source: str = "jev") -> dict:
+    """결정론적 라우팅 정책입니다. 모델 확률을 행동으로 바꾸고, 모든 규칙을 사유 문자열로 남깁니다.
+    expected 가 주어지면(라벨 조회 결과) Jev 의 기억 대신 그 값을 씁니다."""
+    d = _route(ans, valid, regime, expected, expected_source)
     d["regime"] = regime
     if d.pop("report15", False):
         d["deadline"] = REGIMES[regime]["deadline"]
@@ -108,9 +147,11 @@ def route_policy(ans: dict, valid: dict | None = None, regime: str = "US") -> di
     return d
 
 
-def _route(ans: dict, valid: dict | None, regime: str) -> dict:
+def _route(ans: dict, valid: dict | None, regime: str, expected_override: float | None = None,
+           expected_source: str = "jev") -> dict:
     p = lambda k: ans[k]["noul"]
-    serious, expected, deep = p("serious"), p("expected"), p("deep")
+    serious, deep = p("serious"), p("deep")
+    expected = expected_override if expected_override is not None else p("expected")
     pr = ans["priority"]
     route = ans["route"]["choice"]
     cau = ans["causality"]
@@ -123,7 +164,7 @@ def _route(ans: dict, valid: dict | None, regime: str) -> dict:
         reasons.append(f"[KR] serious={serious:.2f}: 중대한 약물이상반응 -> 15일 신속보고 후보 (expected={expected:.2f}와 무관)")
         return {"action": "expedite", "tier": "human", "system2": True, "reasons": reasons, "report15": True}
     if serious >= 0.5 and expected < 0.5:
-        reasons.append(f"[US] serious={serious:.2f} and expected={expected:.2f}: serious unexpected -> expedited candidate")
+        reasons.append(f"[US] serious={serious:.2f} and expected={expected:.2f} ({expected_source}): serious unexpected -> expedited candidate")
         return {"action": "expedite", "tier": "human", "system2": True, "reasons": reasons, "report15": True}
     if pr["score"] >= 2.5:
         reasons.append(f"priority score {pr['score']:.2f} >= 2.5")
@@ -149,10 +190,25 @@ def principal_suspect(case: dict) -> str:
     return case["drugs"][0]["drug"] if case.get("drugs") else "the suspect drug"
 
 
-async def triage(case: dict, client=None, regime: str = "US") -> dict:
+async def triage(case: dict, client=None, regime: str = "US", grounded: bool = True) -> dict:
+    """FlyVigilance 반사 판단입니다. 규칙 게이트 → 라벨 근거 주입 → Jev 7문항 → 결정 정책."""
     suspect = principal_suspect(case)
-    state = case_state(case)
+    g = await ground(case) if grounded else None
+    state = case_state(case, grounding=g)
     valid = validity(case)
     res = await clients.jev(state, questions(suspect), client=client)
-    decision = route_policy(res["answers"], valid, regime if regime in REGIMES else "US")
-    return {"state": state, "suspect": suspect, "validity": valid, "jev": res, "decision": decision}
+    exp = g["expected"] if g else None
+    decision = route_policy(res["answers"], valid, regime if regime in REGIMES else "US", exp,
+                            g["expected_source"] if g else "jev")
+    return {"state": state, "suspect": suspect, "validity": valid, "grounding": g, "jev": res, "decision": decision}
+
+
+RAW_QUESTION = {"review_first": {"type": "noul", "instructions": "Should a pharmacovigilance professional review this case first?"}}
+
+
+async def raw_triage(case: dict, client=None) -> dict:
+    """비교용 '그대로 쓴 Jev'입니다. 근거 주입·타입 질문 설계·규칙·정책 없이 질문 하나만 던집니다."""
+    state = case_state(case)
+    res = await clients.jev(state, RAW_QUESTION, client=client)
+    p = res["answers"]["review_first"]["noul"]
+    return {"state": state, "jev": res, "escalate": p >= 0.5, "p": p}

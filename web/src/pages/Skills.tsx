@@ -11,6 +11,7 @@ const RULES = [
   ['R7', 'PubMed 건수는 근거 강도가 아니다'], ['R8', '중복·자극 보고로 건수는 정확하지 않다'],
   ['R9', '적응증 교란과 병용약을 무시하지 않는다'], ['R10', '모델 확률은 집단 보정값이지 개별 확신이 아니다'],
   ['R11', '환자 개별 치료·용량 조언 금지 (NVIDIA safety guard)'], ['R12', '인용한 라벨 문구는 실제 해당 절에 있어야 한다'],
+  ['R13', '근거 등급은 집단 근거다: 근거·공백 없이 등급만 인용하거나 이 사례의 인과로 쓰지 않는다'],
 ]
 
 function Md({ text }: { text: string }) {
@@ -55,7 +56,7 @@ export default function Skills() {
         </Card>
       </div>
       <div className="grid g2">
-        <Card title="과잉해석 규칙 12종" sub="크리틱 3단(Jev 판정)과 Nemotron 시스템 프롬프트가 같은 목록을 쓴다">
+        <Card title="과잉해석 규칙 13종" sub="크리틱 3단(Jev 판정)과 Nemotron 시스템 프롬프트가 같은 목록을 쓴다">
           <div className="grid g2" style={{ gap: 8 }}>
             {RULES.map(([k, v]) => <div key={k} className="row" style={{ alignItems: 'flex-start', gap: 8, fontSize: 12 }}><span className="chip bad" style={{ fontSize: 10 }}>{k}</span><span className="muted">{v}</span></div>)}
           </div>

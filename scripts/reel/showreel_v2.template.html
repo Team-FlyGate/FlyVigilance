@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FlyVigilance Showreel v2</title>
+<style>
+  :root {
+    --bg: #03050b; --text: #eef3ff; --t2: #a7b4d4; --t3: #66749a; --line: rgba(120,170,255,.16);
+    --sense: #37e6ff; --encode: #4d8dff; --reflex: #ffb547; --memory: #ff4fd8; --deliberate: #76b900;
+    --critic: #ff5d6c; --action: #f4f7ff; --feedback: #a58bff; --jev: #ffb547; --nv: #76b900; --ok: #3ddc97;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --kr: 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --mono: ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: #000; overflow: hidden; }
+  body { font-family: var(--kr); color: var(--text); -webkit-font-smoothing: antialiased; }
+  #wrap { position: fixed; inset: 0; display: grid; place-items: center; }
+  #stage { width: 1920px; height: 1080px; position: relative; overflow: hidden; flex: none;
+    background: radial-gradient(1400px 900px at 70% 0%, rgba(40,90,220,.18), transparent 60%), radial-gradient(1000px 700px at 0% 100%, rgba(118,185,0,.10), transparent 60%), var(--bg); transform-origin: center center; }
+  #grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(120,170,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(120,170,255,.04) 1px, transparent 1px); background-size: 60px 60px; -webkit-mask-image: radial-gradient(ellipse at center, #000 30%, transparent 85%); mask-image: radial-gradient(ellipse at center, #000 30%, transparent 85%); }
+  canvas#brain { position: absolute; inset: 0; width: 1920px; height: 1080px; }
+  .scene { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
+  .eyebrow { font-family: var(--mono); font-size: 22px; letter-spacing: 6px; text-transform: uppercase; color: var(--sense); }
+  h1 { font-family: var(--font); font-weight: 700; letter-spacing: -2px; }
+  .big { font-size: 150px; line-height: 1; }
+  .h2 { font-family: var(--kr); font-weight: 700; font-size: 64px; letter-spacing: -1.5px; line-height: 1.15; }
+  .sub { font-size: 30px; color: var(--t2); font-weight: 300; line-height: 1.5; }
+  .chip { display: inline-flex; align-items: center; gap: 10px; padding: 10px 22px; border-radius: 999px; border: 1px solid var(--line); font-family: var(--mono); font-size: 22px; color: var(--t2); background: rgba(10,16,32,.6); white-space: nowrap; }
+  .chip.jev { color: #ffd38a; border-color: rgba(255,181,71,.55); background: rgba(255,181,71,.1); }
+  .chip.nv { color: #c8f36b; border-color: rgba(118,185,0,.55); background: rgba(118,185,0,.1); }
+  .chip.bad { color: #ff9aa3; border-color: rgba(255,93,108,.55); background: rgba(255,93,108,.1); }
+  .chip.ok { color: #6ff0b4; border-color: rgba(61,220,151,.55); background: rgba(61,220,151,.1); }
+  .chip.dim { color: var(--t3); }
+  .panel { position: absolute; background: rgba(10,16,32,.72); border: 1px solid var(--line); border-radius: 28px; box-shadow: 0 40px 120px -40px rgba(0,0,0,.8); }
+  .stat { position: absolute; }
+  .stat .n { font-family: var(--font); font-weight: 600; font-size: 118px; letter-spacing: -3px; line-height: 1; font-variant-numeric: tabular-nums; }
+  .stat .l { font-size: 28px; color: var(--t2); margin-top: 12px; max-width: 760px; line-height: 1.4; }
+  .stat .s { font-family: var(--mono); font-size: 17px; color: var(--t3); margin-top: 10px; }
+  .mono { font-family: var(--mono); }
+  .bar { height: 18px; border-radius: 10px; background: rgba(120,170,255,.1); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 10px; }
+  .card { padding: 34px 34px 30px; border-radius: 26px; background: rgba(10,16,32,.8); border: 1px solid var(--line); }
+  .card .hd { font-size: 30px; font-weight: 700; letter-spacing: -.5px; }
+  .card .n { font-family: var(--font); font-weight: 600; font-size: 92px; letter-spacing: -3px; line-height: 1; margin-top: 22px; font-variant-numeric: tabular-nums; }
+  .card .l { font-size: 24px; color: var(--t2); line-height: 1.45; margin-top: 16px; }
+  .card .s { font-family: var(--mono); font-size: 16px; color: var(--t3); margin-top: 16px; line-height: 1.5; }
+  .layer { position: absolute; left: 0; right: 0; height: 70px; border-radius: 16px; border: 1.5px solid; background: rgba(10,16,32,.88);
+    display: grid; grid-template-columns: 44px 300px 1fr 360px; align-items: center; padding: 0 22px; gap: 14px; }
+  .layer .ln { font-family: var(--mono); font-size: 20px; }
+  .layer .nm { font-size: 27px; font-weight: 700; letter-spacing: -.5px; white-space: nowrap; }
+  .layer .ds { font-size: 19px; color: var(--t2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .layer .ef { font-family: var(--mono); font-size: 18px; text-align: right; white-space: nowrap; }
+  .cmp { display: grid; grid-template-columns: 430px 1fr; gap: 30px; align-items: center; }
+  .cmp .lab { font-size: 27px; font-weight: 600; line-height: 1.3; }
+  .cmp .lab small { display: block; font-size: 17px; color: var(--t3); font-weight: 400; font-family: var(--mono); margin-top: 6px; }
+  .cmp .rows { display: flex; flex-direction: column; gap: 10px; }
+  .cmp .row { display: grid; grid-template-columns: 230px 1fr 130px; gap: 16px; align-items: center; }
+  .cmp .row .who { font-family: var(--mono); font-size: 18px; color: var(--t2); }
+  .cmp .row .v { font-family: var(--font); font-size: 40px; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+  #hud { position: fixed; z-index: 10; left: 0; right: 0; bottom: 0; padding: 12px 18px; display: flex; align-items: center; gap: 14px; background: linear-gradient(transparent, rgba(0,0,0,.85)); opacity: 0; transition: opacity .3s; font-family: var(--mono); font-size: 12px; color: #9fb0d6; }
+  #wrap:hover + #hud, #hud:hover { opacity: 1; }
+  #hud button { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15); color: #fff; border-radius: 8px; padding: 6px 12px; cursor: pointer; font: inherit; }
+  #scrub { flex: 1; accent-color: #37e6ff; }
+  #chapters { display: flex; gap: 6px; flex-wrap: wrap; }
+  #chapters span { cursor: pointer; padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,.1); }
+  #progress { position: absolute; left: 0; bottom: 0; height: 4px; background: linear-gradient(90deg, #37e6ff, #ff4fd8, #76b900); }
+  .cap { position: absolute; left: 110px; bottom: 56px; font-family: var(--mono); font-size: 18px; color: var(--t3); letter-spacing: 1px; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="stage">
+    <div id="grid"></div>
+    <canvas id="brain" width="1920" height="1080"></canvas>
+
+    <!-- S0 인트로 -->
+    <section class="scene" id="s0">
+      <div style="position:absolute;left:0;right:0;top:620px;text-align:center">
+        <div class="eyebrow" data-a="fade" data-t="1.2">NVIDIA Korea Agentic AI Hackathon 2026</div>
+        <h1 class="big" data-a="rise" data-t="1.8" style="margin-top:22px">Fly<span style="color:var(--sense)">Vigilance</span></h1>
+        <div class="sub" data-a="fade" data-t="3.0" style="margin-top:20px">약물감시에 특화한 Vigilance Agent</div>
+        <div data-a="fade" data-t="4.2" style="margin-top:34px;display:flex;gap:14px;justify-content:center">
+          <span class="chip">MaleCNS · 49,244 neurons</span><span class="chip jev">Jev 판단 엔진 · TypeSafe AI</span><span class="chip nv">NVIDIA Nemotron</span><span class="chip">FDA FAERS</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- S1 문제 -->
+    <section class="scene" id="s1">
+      <div style="position:absolute;left:110px;top:110px">
+        <div class="eyebrow" data-a="fade" data-t="0.2" style="color:var(--critic)">01 · The problem</div>
+        <div class="h2" data-a="rise" data-t="0.6" style="margin-top:18px">약물감시의 병목은 <span style="color:var(--critic)">양</span>이 아니라<br/><span style="color:var(--sense)">배분</span>입니다</div>
+      </div>
+      <div class="stat" style="left:110px;top:430px" data-a="rise" data-t="2.2"><div class="n" data-count="q_reports">0</div><div class="l">FAERS 한 분기에 들어온 이상사례 보고</div><div class="s" id="q_src">FDA FAERS</div></div>
+      <div class="stat" style="left:1000px;top:430px" data-a="rise" data-t="4.6"><div class="n" style="color:var(--reflex)">5.56<span style="font-size:60px"> min</span></div><div class="l">ICSR 내러티브 한 건을 사람이 읽는 시간</div><div class="s">Warner et al., Clin Pharmacol Ther 2026 · PMID 42522449</div></div>
+      <div class="stat" style="left:110px;top:720px" data-a="rise" data-t="7.4"><div class="n" style="color:var(--deliberate)">186<span style="font-size:60px"> h</span></div><div class="l">예아니오 선별 하나에 프런티어 LLM을 모든 건에 쓰면 (1.67 s × 40만 건)</div><div class="s">팀 선행 실측 · Nemotron 3 Super 건당 1,672 ms · 369 tok</div></div>
+      <div class="stat" style="left:1000px;top:720px" data-a="rise" data-t="10.2"><div class="n" style="color:var(--memory)">1 / 16</div><div class="l">근거 ID와 숫자가 다 맞는 과잉해석을 고정 규칙이 잡은 수</div><div class="s">팀 선행 실측 · FlyGate 크리틱 평가 33건</div></div>
+    </section>
+
+    <!-- S2 통찰 -->
+    <section class="scene" id="s2">
+      <div style="position:absolute;left:110px;top:110px;width:820px">
+        <div class="eyebrow" data-a="fade" data-t="0.2" style="color:var(--memory)">02 · The insight</div>
+        <div class="h2" data-a="rise" data-t="0.6" style="margin-top:18px">초파리 뇌는<br/>이 문제를 <span style="color:var(--memory)">이미 풀었습니다</span></div>
+        <div class="sub" data-a="fade" data-t="1.6" style="margin-top:22px">감각은 넓게 받고, 반사는 싸게, 기억은 희소하게,<br/>숙고는 드물게, 행동은 좁은 병목으로 냅니다.</div>
+        <div id="funnel" style="margin-top:40px;display:flex;flex-direction:column;gap:15px"></div>
+      </div>
+      <div class="cap" data-a="fade" data-t="2">MaleCNS v1.0 · Janelia FlyEM · CC-BY 4.0 · central-brain subgraph · real skeleton coordinates</div>
+    </section>
+
+    <!-- S3 엔진을 그대로 쓰면 -->
+    <section class="scene" id="s3">
+      <div style="position:absolute;left:110px;top:100px;width:1700px">
+        <div class="eyebrow" data-a="fade" data-t="0.2" style="color:var(--reflex)">03 · The engine, used as is</div>
+        <div class="h2" data-a="rise" data-t="0.6" style="margin-top:18px">판단 엔진은 빠릅니다.<br/>그대로 쓰면 <span style="color:var(--critic)">약물감시가 되지 않습니다</span></div>
+      </div>
+      <div id="rawcards" style="position:absolute;left:110px;right:110px;top:430px;display:grid;grid-template-columns:repeat(3,1fr);gap:34px"></div>
+      <div style="position:absolute;left:0;right:0;top:930px;text-align:center" data-a="rise" data-t="12.5">
+        <div style="font-size:40px;font-weight:700;letter-spacing:-1px">그래서 FlyVigilance는 엔진 위에 <span style="color:var(--sense)">약물감시를 설계</span>했습니다</div>
+      </div>
+    </section>
+
+    <!-- S4 엔진 위에 쌓은 것 -->
+    <section class="scene" id="s4">
+      <div style="position:absolute;left:110px;top:70px">
+        <div class="eyebrow" data-a="fade" data-t="0.2" style="color:var(--sense)">04 · What FlyVigilance adds</div>
+        <div class="h2" data-a="rise" data-t="0.6" style="margin-top:12px;font-size:56px">FlyVigilance = <span style="color:var(--jev)">Jev 엔진</span> + 약물감시 설계 8층</div>
+      </div>
+      <div id="stack" style="position:absolute;left:110px;top:210px;width:1290px;height:820px"></div>
+      <div id="nvcol" style="position:absolute;left:1450px;top:210px;width:360px;display:flex;flex-direction:column;gap:18px"></div>
+    </section>
+
+    <!-- S5 실제 사례 한 건 -->
+    <section class="scene" id="s5">
+      <div style="position:absolute;left:110px;top:80px">
+        <div class="eyebrow" data-a="fade" data-t="0.2" style="color:var(--reflex)">05 · One real case, end to end</div>
+        <div class="h2" data-a="rise" data-t="0.5" style="margin-top:14px;font-size:54px" id="casehead">실제 FAERS 사례 한 건</div>
+      </div>
+      <div class="panel" id="casecard" style="left:110px;top:250px;width:520px;height:720px;padding:34px" data-a="rise" data-t="1"></div>
+      <div class="panel" id="jevcard" style="left:670px;top:250px;width:560px;height:720px;padding:32px" data-a="rise" data-t="3"></div>
+      <div class="panel" id="nimcard" style="left:1270px;top:250px;width:540px;height:720px;padding:32px" data-a="rise" data-t="12"></div>
+    </section>
+
+    <!-- S6 실측: raw vs FlyVigilance -->
+    <section class="scene" id="s6">
+      <div style="position:absolute;left:110px;top:90px">
+        <div class="eyebrow" data-a="fade" data-t="0.2" style="color:var(--jev)">06 · Measured, not claimed</div>
+        <div class="h2" data-a="rise" data-t="0.6" style="margin-top:14px">같은 엔진, <span style="color:var(--sense)">다른 설계</span></div>
+        <div class="sub" data-a="fade" data-t="1.2" style="margin-top:10px;font-size:26px" id="s6sub"></div>
+      </div>
+      <div id="cmp" style="position:absolute;left:110px;right:110px;top:380px;display:flex;flex-direction:column;gap:34px"></div>
+      <div class="cap" id="s6cap" data-a="fade" data-t="13" style="right:110px;line-height:1.6"></div>
+    </section>
+
+    <!-- S7 검증 -->
+    <section class="scene" id="s7">
+      <div style="position:absolute;left:110px;top:90px">
+        <div class="eyebrow" data-a="fade" data-t="0.2" style="color:var(--memory)">07 · Validated on public reference sets</div>
+        <div class="h2" data-a="rise" data-t="0.6" style="margin-top:14px">어디서 이기는지 <span style="color:var(--memory)">재고 나서</span> 배치했습니다</div>
+      </div>
+      <div class="panel" style="left:110px;top:300px;width:900px;height:640px;padding:34px" data-a="rise" data-t="1.4">
+        <div class="mono" style="font-size:17px;letter-spacing:3px;color:var(--t2)">SIGNAL RANKING · AUC</div>
+        <div style="font-size:30px;font-weight:700;margin-top:10px" id="aucHead"></div>
+        <svg id="aucsvg" width="832" height="420" style="margin-top:18px"></svg>
+        <div class="mono" style="font-size:16px;color:var(--t3);margin-top:12px;line-height:1.5" id="aucCap"></div>
+      </div>
+      <div id="valstats" style="position:absolute;left:1070px;top:300px;width:740px;display:flex;flex-direction:column;gap:26px"></div>
+    </section>
+
+    <!-- S8 데이터와 마무리 -->
+    <section class="scene" id="s8">
+      <div style="position:absolute;left:110px;top:100px">
+        <div class="eyebrow" data-a="fade" data-t="0.2" style="color:var(--deliberate)">08 · Built on real data</div>
+        <div class="h2" data-a="rise" data-t="0.6" style="margin-top:14px">원천부터 신호까지 <span style="color:var(--deliberate)">감사 가능한 파이프라인</span></div>
+      </div>
+      <div id="dataflow" style="position:absolute;left:110px;top:320px;right:110px;display:grid;grid-template-columns:repeat(5,1fr);gap:24px"></div>
+      <div style="position:absolute;left:110px;right:110px;top:600px;display:flex;flex-wrap:wrap;gap:14px" data-a="fade" data-t="4">
+        <span class="chip nv">NVIDIA NIM · Nemotron 3 Super / Ultra / 3.5 Lightning</span><span class="chip nv">Nemotron Safety Guard 8B v3</span><span class="chip nv">NVIDIA Agent Skills · 11 SKILL.md</span>
+        <span class="chip jev">TypeSafe Jev · 판단 엔진</span><span class="chip">DuckDB</span><span class="chip">openFDA · PubMed</span><span class="chip">OMOP · EU-ADR · Harpaz</span><span class="chip">MaleCNS · Janelia FlyEM</span>
+      </div>
+      <div style="position:absolute;left:0;right:0;top:800px;text-align:center" data-a="rise" data-t="6.5">
+        <div style="font-size:52px;font-weight:700;letter-spacing:-1px">반사는 <span style="color:var(--jev)">싸게</span>, 숙고는 <span style="color:var(--nv)">드물게</span>, 판단은 <span style="color:var(--sense)">사람에게</span>.</div>
+        <div style="margin-top:18px;font-size:28px;color:var(--t2)">Jev 엔진 위에 약물감시를 설계한 Vigilance Agent · FlyVigilance</div>
+        <div class="mono" style="margin-top:16px;font-size:20px;color:var(--t3)">github.com/AwesomeZun/FlyVigilance · flyvigilance.vercel.app</div>
+      </div>
+    </section>
+
+    <div id="progress"></div>
+  </div>
+</div>
+<div id="hud">
+  <button id="pp">❚❚</button><span id="clock">0:00 / 2:40</span>
+  <input id="scrub" type="range" min="0" max="160" step="0.1" value="0" />
+  <div id="chapters"></div>
+</div>
+
+<script>
+(() => {
+  // 빌드 스크립트(scripts/build_reel_v2.py)가 실측 수치와 뇌 점구름을 여기에 넣습니다
+  const D = /*__DATA__*/null
+  const DUR = 160
+  const SCENES = [
+    { id: 's0', t0: 0, t1: 9, name: 'Intro' },
+    { id: 's1', t0: 9, t1: 26, name: 'Problem' },
+    { id: 's2', t0: 26, t1: 40, name: 'Insight' },
+    { id: 's3', t0: 40, t1: 58, name: 'Engine as is' },
+    { id: 's4', t0: 58, t1: 82, name: 'What we add' },
+    { id: 's5', t0: 82, t1: 108, name: 'Live case' },
+    { id: 's6', t0: 108, t1: 128, name: 'Measured' },
+    { id: 's7', t0: 128, t1: 146, name: 'Validated' },
+    { id: 's8', t0: 146, t1: 160, name: 'Close' },
+  ]
+  const fmtInt = (n) => Math.round(n).toLocaleString('en-US')
+  const COL = { sense: '#37e6ff', encode: '#4d8dff', reflex: '#ffb547', memory: '#ff4fd8', deliberate: '#76b900', critic: '#ff5d6c', assoc: '#6c7aa8', action: '#f4f7ff', feedback: '#a58bff' }
+  const B = D.bench, A = B.arms, raw = A.raw_jev, ung = A.flyvigilance_ungrounded, fv = A.flyvigilance
+  const mem = B.grounding.mem
+  const mismatch = mem.memory_expected_label_not + mem.memory_unexpected_label_listed
+  const V = { q_reports: D.ov.q_reports }
+  document.getElementById('q_src').textContent = `FDA FAERS ${D.ov.asof} · 전체 ${fmtInt(D.ov.raw_reports)}건 적재`
+
+  // ---------------- 뇌 점구름 ----------------
+  const pts = D.pts
+  const cv = document.getElementById('brain'), g = cv.getContext('2d')
+  const N = pts.x.length
+  const X = new Float32Array(N), Y = new Float32Array(N), Z = new Float32Array(N), L = new Uint8Array(N), R0 = new Float32Array(N * 3)
+  let seed = 20260928
+  const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296 }  // 프레임 렌더가 매번 같도록 고정 난수
+  for (let i = 0; i < N; i++) {
+    X[i] = pts.x[i] / 1000; Y[i] = pts.y[i] / 1000; Z[i] = pts.z[i] / 1000; L[i] = pts.l[i]
+    R0[i * 3] = (rnd() - 0.5) * 6; R0[i * 3 + 1] = (rnd() - 0.5) * 4; R0[i * 3 + 2] = (rnd() - 0.5) * 4
+  }
+  const layerKeys = pts.layers
+  const layerRGB = layerKeys.map((k) => { const h = COL[k] || '#8899bb'; return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)] })
+  const act = new Float32Array(layerKeys.length), actS = new Float32Array(layerKeys.length)
+  const brain = { cx: 960, cy: 470, scale: 520, rotY: 0, rotX: -0.12, assemble: 1, alpha: 1, dimOthers: -1 }
+  const buckets = layerKeys.map(() => [])
+  for (let i = 0; i < N; i++) buckets[L[i]].push(i)
+
+  function drawBrain(time) {
+    g.clearRect(0, 0, 1920, 1080)
+    if (brain.alpha <= 0.01) return
+    g.globalCompositeOperation = 'lighter'
+    const cy = Math.cos(brain.rotY), sy = Math.sin(brain.rotY), cx = Math.cos(brain.rotX), sx = Math.sin(brain.rotX)
+    const k = brain.assemble, e = k * k * (3 - 2 * k)
+    for (let li = 0; li < layerKeys.length; li++) {
+      actS[li] += (act[li] - actS[li]) * 0.08
+      const a = actS[li]
+      const [r, gg, b] = layerRGB[li]
+      const dim = brain.dimOthers >= 0 && brain.dimOthers !== li ? 0.25 : 1
+      const base = (0.16 + 0.84 * a) * brain.alpha * dim
+      g.fillStyle = `rgba(${Math.min(255, r + a * 80)},${Math.min(255, gg + a * 80)},${Math.min(255, b + a * 80)},${base.toFixed(3)})`
+      const size = 1.6 + a * 2.6
+      for (const i of buckets[li]) {
+        const px = X[i] * e + R0[i * 3] * (1 - e), py = Y[i] * e + R0[i * 3 + 1] * (1 - e), pz = Z[i] * e + R0[i * 3 + 2] * (1 - e)
+        const x1 = px * cy + pz * sy, z1 = -px * sy + pz * cy
+        const y1 = py * cx - z1 * sx, z2 = py * sx + z1 * cx
+        const p = 3.2 / (3.2 + z2)
+        const flick = a > 0.05 ? (Math.sin(time * 9 + i) > 0.6 ? 1.6 : 1) : 1
+        g.fillRect(brain.cx + x1 * brain.scale * p, brain.cy - y1 * brain.scale * p, size * p * flick, size * p * flick)
+      }
+    }
+    g.globalCompositeOperation = 'source-over'
+  }
+  const setAct = (obj) => { for (let li = 0; li < layerKeys.length; li++) act[li] = obj[layerKeys[li]] ?? 0 }
+  const el = (html) => { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstChild }
+
+  // ---------------- S2 깔때기: 뇌의 층 = 에이전트의 층 ----------------
+  const order = ['sense', 'encode', 'reflex', 'memory', 'deliberate', 'critic', 'action']
+  const KR = { sense: '감각 · 데이터 수용', encode: '인코딩 · 규칙 게이트', reflex: '반사 · Jev 엔진', memory: '신호 기억 · SQL', deliberate: '숙고 · Nemotron', critic: '억제 · 크리틱', action: '행동 · 사람 큐' }
+  const maxC = Math.max(...order.map((k) => pts.counts[k] ?? 1))
+  const funnel = document.getElementById('funnel')
+  order.forEach((k, i) => {
+    funnel.appendChild(el(`<div data-a="rise" data-t="${2.2 + i * 1.2}" style="display:grid;grid-template-columns:300px 1fr 110px;gap:20px;align-items:center">
+      <span style="font-size:25px">${KR[k]}</span><div class="bar" style="height:22px"><i style="width:${(pts.counts[k] / maxC) * 100}%;background:${COL[k]};box-shadow:0 0 20px ${COL[k]}"></i></div>
+      <span class="mono" style="font-size:22px;text-align:right">${fmtInt(pts.counts[k])}</span></div>`))
+  })
+
+  // ---------------- S3 엔진을 그대로 쓰면 ----------------
+  const rawCards = [
+    { t: 2.5, c: 'var(--memory)', hd: '기억으로 답합니다', size: 78, n: `${D.val.omop_named.toFixed(2)} → ${D.val.omop_blind.toFixed(2)}`,
+      l: '약·반응 이름을 주면 AUC가 높고, 이름을 가리면 떨어집니다. 차이는 판단력이 아니라 기억입니다.',
+      s: 'OMOP 참조 세트 387쌍 · 정답은 라벨·문헌에서 나왔습니다' },
+    { t: 5.5, c: 'var(--encode)', hd: '라벨을 기억에 묻습니다', n: `${mismatch} / ${B.grounding.label_found}`,
+      l: '라벨 기재 여부를 기억에 물으면 라벨 원문과 다른 사례. 틀리면 예상하지 못한 중대 사례가 신속보고에서 빠집니다.',
+      s: `그중 ${mem.memory_expected_label_not}건은 ‘기재됨’이라 답했지만 라벨에 없었습니다` },
+    { t: 8.5, c: 'var(--critic)', hd: '한 줄 판단', n: `${raw.over_escalated} · ${raw.serious_without_review}`,
+      l: `“먼저 봐야 하나?” 한 문항으로 비중대 ${raw.over_escalated}건을 사람에게 올리고, 중대 ${raw.serious_without_review}건을 아무도 보지 않는 큐로 보냈습니다.`,
+      s: `${B.source} 실제 사례 ${B.n}건 · 규정 기한도 사유도 없습니다` },
+  ]
+  const rc = document.getElementById('rawcards')
+  rawCards.forEach((x) => rc.appendChild(el(`<div class="card" data-a="rise" data-t="${x.t}" style="border-color:${x.c}55;box-shadow:0 0 60px -30px ${x.c}">
+    <div class="hd" style="color:${x.c}">${x.hd}</div><div class="n" style="${x.size ? `font-size:${x.size}px` : ''}">${x.n}</div><div class="l">${x.l}</div><div class="s">${x.s}</div></div>`)))
+
+  // ---------------- S4 엔진 위에 쌓은 8층 ----------------
+  const beat = D.val.sets.filter((s) => s.model_beats_best).length
+  const pr = D.probe?.summary
+  const injected = pr ? ['p1', 'p2', 'p3', 'p4'].reduce((a, k) => a + (pr[k]?.correct ?? 0), 0) : null
+  const injectedN = pr ? ['p1', 'p2', 'p3', 'p4'].reduce((a, k) => a + (pr[k]?.n ?? 0), 0) : null
+  const LAYERS = [
+    ['규칙이 먼저', 'ICH 최소 4요소 · 결과 코드 · 약물 역할은 규칙으로 정합니다', `${B.routes?.flyvigilance?.follow_up ?? '–'}/${B.n} 모델 없이 추가정보 요청`, 'var(--encode)'],
+    ['기억 대신 조회', 'openFDA 라벨 절을 검색해 ‘예상된 반응’을 정합니다', `사람 우선 민감도 ${ung.sens.toFixed(3)} → ${fv.sens.toFixed(3)}`, 'var(--sense)'],
+    ['규제 용어 7문항', 'ICH E2A · WHO-UMC를 타입 있는 질문 7개로 한 번에 묻습니다', `호출 1회 · p50 ${Math.round(B.jev_p50)} ms`, 'var(--reflex)'],
+    ['결정 정책 · 규정 모드', '확률을 행동과 신속보고 기한으로 바꿉니다 (미국 · 한국)', `검토 없는 중대 사례 ${fv.serious_without_review}/${B.serious}`, 'var(--action)'],
+    ['통계는 SQL', 'PRR · ROR · IC₀₂₅가 순위를 정하고, 모델은 숫자를 못 바꿉니다', `모델이 통계를 넘은 조건 ${beat}/${D.val.sets.length}`, 'var(--memory)'],
+    ['가림과 누출 점검', '평가할 때 약·반응 이름을 가려 기억을 뺍니다', `이름 공개 ${D.val.omop_named.toFixed(2)} → 가림 ${D.val.omop_blind.toFixed(2)}`, 'var(--feedback)'],
+    ['근거 ID + 3단 크리틱', '근거 실재 · 숫자 대조 · 과잉해석 13규칙 · Safety Guard', pr ? `틀린 주장 ${injected}/${injectedN} 적발` : '과잉해석 주입 4종 적발', 'var(--critic)'],
+    ['근거 등급 + 문헌 읽기', '라벨 절 × 3중 신호로 등급, 문헌은 연구 설계부터 읽습니다', `설계 판정 ${(D.lit.accuracy * 100).toFixed(1)}% · ${fmtInt(D.lit.n)}편`, 'var(--deliberate)'],
+  ]
+  const stack = document.getElementById('stack')
+  stack.appendChild(el(`<div data-a="rise" data-t="1.2" style="position:absolute;left:0;right:0;top:712px;height:108px;border-radius:20px;border:2px solid var(--jev);background:linear-gradient(90deg,rgba(255,181,71,.16),rgba(255,181,71,.04));display:flex;align-items:center;gap:28px;padding:0 28px;box-shadow:0 0 60px -20px var(--jev)">
+    <div><div class="mono" style="font-size:17px;letter-spacing:4px;color:var(--jev)">ENGINE · TYPESAFE AI</div><div style="font-size:34px;font-weight:700;margin-top:6px">Jev 판단 엔진</div></div>
+    <div style="font-size:22px;color:var(--t2);line-height:1.45;flex:1">타입 있는 질문(noul · choice · score)에 확률로 답합니다.<br/>글을 쓰지 않아 빠르고 쌉니다.</div>
+    <span class="chip jev" style="font-size:18px">우리가 만든 모델이 아닙니다</span></div>`))
+  LAYERS.forEach(([nm, ds, ef, c], i) => {
+    stack.appendChild(el(`<div class="layer" data-a="drop" data-t="${2.6 + i * 1.7}" style="top:${712 - (i + 1) * 84}px;border-color:${c}">
+      <span class="ln" style="color:${c}">${i + 1}</span><span class="nm">${nm}</span><span class="ds">${ds}</span><span class="ef" style="color:${c}">${ef}</span></div>`))
+  })
+  const NV = [
+    ['숙고 층', 'Nemotron 3 Super → Ultra → 3.5 Lightning', '승격된 사례만 근거 ID로 평가<br/>국내 서식 구조화 · JSON 모드'],
+    ['안전 가드', 'Nemotron Safety Guard 8B v3', '주장마다 치료 조언 차단 (R11)<br/>장애 시 대체 가드로 전환'],
+    ['Agent Skills', 'SKILL.md 11개', '역량마다 입력 · 출력 · 가드레일 명세'],
+    ['NIM', 'build.nvidia.com', '폴백 사슬 · 사고 과정 끔 · 속도 제한'],
+  ]
+  const nvcol = document.getElementById('nvcol')
+  nvcol.appendChild(el(`<div data-a="fade" data-t="16" class="mono" style="font-size:18px;letter-spacing:4px;color:var(--nv)">NVIDIA · SYSTEM-2</div>`))
+  NV.forEach(([h, a, b], i) => nvcol.appendChild(el(`<div data-a="rise" data-t="${16.4 + i * 0.9}" style="padding:20px 22px;border-radius:18px;border:1.5px solid rgba(118,185,0,.55);background:rgba(118,185,0,.07)">
+    <div class="mono" style="font-size:15px;color:#c8f36b;letter-spacing:2px">${h}</div><div style="font-size:23px;font-weight:700;margin-top:6px">${a}</div><div style="font-size:18px;color:var(--t2);margin-top:6px;line-height:1.4">${b}</div></div>`)))
+
+  // ---------------- S5 실제 사례 한 건 ----------------
+  const dm = D.demo, c = dm.case, tri = dm.triage, asr = dm.assess
+  document.getElementById('casehead').innerHTML = `${tri.suspect} · <span style="color:var(--t2);font-weight:400">${c.reactions.slice(0, 2).join(', ')}</span>`
+  const OUT = { DE: '사망', LT: '생명위협', HO: '입원', DS: '장애', CA: '선천이상', RI: '개입필요', OT: '기타 중요' }
+  document.getElementById('casecard').innerHTML = `
+    <div class="eyebrow" style="font-size:16px;letter-spacing:4px;color:var(--sense)">FAERS ${c.quarter} · primaryid ${c.primaryid}</div>
+    <div style="margin-top:24px;font-size:24px;color:var(--t2)">${c.age ? Math.round(c.age) + '세' : '나이 미상'} · ${c.sex === 'F' ? '여성' : c.sex === 'M' ? '남성' : '성별 미상'} · ${c.country ?? ''}</div>
+    <div style="margin-top:26px;display:flex;flex-direction:column;gap:12px">${c.drugs.map((d) => `<div style="display:flex;gap:12px;align-items:center"><span class="chip ${d.role === 'PS' ? 'bad' : ''}" style="font-size:16px;padding:4px 12px">${d.role}</span><span style="font-size:26px;font-weight:600">${d.drug}</span></div>`).join('')}</div>
+    <div style="margin-top:30px;display:flex;flex-wrap:wrap;gap:10px">${c.reactions.map((r) => `<span class="chip" style="font-size:18px;color:var(--text)">${r}</span>`).join('')}</div>
+    <div style="margin-top:26px;display:flex;flex-wrap:wrap;gap:10px">${c.outcomes.map((o) => `<span class="chip bad" style="font-size:18px">${OUT[o] ?? o}</span>`).join('')}</div>`
+  const SEC = { boxed_warning: '박스 경고', warnings_and_cautions: '경고·주의', warnings: '경고', precautions: '주의', contraindications: '금기', adverse_reactions: '이상반응', postmarketing: '시판 후' }
+  const gr = tri.grounding, ans = tri.answers
+  const labRows = gr.found ? Object.entries(gr.by_pt).slice(0, 3).map(([pt, secs], i) => `<div data-a="rise" data-t="${4.2 + i * 0.6}" style="display:flex;justify-content:space-between;gap:12px;font-size:19px;padding:7px 0;border-bottom:1px solid var(--line)">
+      <span>${pt}</span><span class="mono" style="color:${secs.length ? '#9fe9ff' : '#ff9aa3'}">${secs.length ? secs.slice(0, 2).map((s) => SEC[s] ?? s).join(' · ') : '라벨에 없음'}</span></div>`).join('')
+    : `<div style="font-size:19px;color:var(--t3)">미국 라벨을 찾지 못해 엔진 판단을 씁니다</div>`
+  const expV = gr.expected ?? ans.expected.noul
+  const bars = [['중대성', ans.serious.noul, 'var(--critic)', 'Jev'], [`예상된 반응 (${gr.expected != null ? '라벨 조회' : 'Jev'})`, expV, 'var(--encode)', ''], ['숙고 필요', ans.deep.noul, 'var(--jev)', 'Jev']]
+  const ACT = { expedite: '사람 우선 검토', signal_review: '신호 검토 → System-2', monitor: '모니터링', close: '종결', follow_up: '추가정보 요청' }
+  document.getElementById('jevcard').innerHTML = `
+    <div class="eyebrow" style="font-size:16px;letter-spacing:4px;color:var(--jev)">FlyVigilance 반사 판단 · ${Math.round(tri.latency_ms)} ms</div>
+    <div data-a="fade" data-t="3.6" style="margin-top:18px;font-size:17px;color:var(--t2)" class="mono">라벨 근거 주입 · openFDA 라벨 절 검색${gr.latency_ms != null ? ' · ' + gr.latency_ms.toFixed(0) + ' ms' : ''}</div>
+    <div style="margin-top:6px">${labRows}</div>
+    <div style="margin-top:20px;display:flex;flex-direction:column;gap:16px">${bars.map(([l, p, col], i) => `<div data-a="grow" data-t="${6.4 + i * 0.6}"><div style="display:flex;justify-content:space-between;font-size:21px"><span>${l}</span><span class="mono">${p.toFixed(2)}</span></div><div class="bar" style="margin-top:7px"><i style="width:${p * 100}%;background:${col};box-shadow:0 0 16px ${col}"></i></div></div>`).join('')}</div>
+    <div style="margin-top:18px;font-size:20px;color:var(--t2)">WHO-UMC <b style="color:var(--text)">${ans.causality.choice}</b> · 우선순위 <b style="color:var(--text)">${ans.priority.score.toFixed(2)}</b>/3</div>
+    <div data-a="rise" data-t="9" style="margin-top:20px;padding:18px 20px;border-radius:18px;border:1px solid rgba(255,93,108,.5);background:rgba(255,93,108,.08)">
+      <div class="mono" style="font-size:14px;letter-spacing:3px;color:var(--critic)">결정 정책 · US</div>
+      <div style="font-size:32px;font-weight:700;margin-top:6px">${ACT[tri.decision.action] ?? tri.decision.action}</div>
+      <div class="mono" style="font-size:14px;color:var(--t2);margin-top:8px;line-height:1.5">${(tri.decision.reasons?.[0] ?? '').slice(0, 110)}</div>
+      ${tri.decision.deadline ? `<div class="mono" style="font-size:14px;color:#ffd38a;margin-top:6px">기한 · ${tri.decision.deadline}</div>` : ''}
+    </div>`
+  const GC = { A: '#ff5d6c', B: '#ffb547', C: '#ffe066', L: '#37e6ff', D: '#6c7aa8', U: '#4a5878' }
+  document.getElementById('nimcard').innerHTML = `
+    <div class="eyebrow" style="font-size:16px;letter-spacing:4px;color:var(--nv)">NVIDIA Nemotron 숙고 · 크리틱 ×3</div>
+    <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">${asr.rounds.map((r) => `<span class="chip ${r.issues ? 'bad' : 'ok'}" style="font-size:15px;padding:5px 12px">round ${r.round} · ${(r.latency_ms / 1000).toFixed(1)} s · ${r.issues ? r.issues + ' issues → 반려' : '통과'}</span>`).join('')}</div>
+    <div style="margin-top:16px;display:flex;flex-direction:column;gap:12px">${asr.claims.slice(0, 3).map((cl, i) => `<div data-a="rise" data-t="${13.4 + i * 1.4}" style="padding:12px 14px;border-radius:14px;border:1px solid rgba(61,220,151,.4);background:rgba(61,220,151,.05)"><div style="font-size:17px;line-height:1.45">${cl.text.length > 140 ? cl.text.slice(0, 138) + '…' : cl.text}</div><div class="mono" style="font-size:12.5px;color:#9fe9ff;margin-top:6px">${cl.evidence.join(' · ')}</div></div>`).join('')}</div>
+    <div data-a="rise" data-t="18.5" style="margin-top:16px"><div class="mono" style="font-size:14px;letter-spacing:3px;color:var(--t2)">근거 등급 · 라벨 절 × 3중 신호</div>
+      <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">${asr.grades.slice(0, 3).map((x) => `<div style="display:flex;gap:12px;align-items:center"><span style="width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-weight:800;font-size:22px;color:#081020;background:${GC[x.grade]}">${x.grade}</span><span style="font-size:18px">${x.pt}</span><span class="mono" style="font-size:13px;color:var(--t3)">${x.regulatory}</span></div>`).join('')}</div></div>
+    <div data-a="rise" data-t="21" style="margin-top:16px;font-size:24px;font-weight:700;color:${asr.verdict === 'pass' ? '#6ff0b4' : '#ff9aa3'}">${asr.verdict === 'pass' ? '✓ 크리틱 통과 → 사람 검토 큐' : '✗ 반려 → 사유와 함께 작성자에게'}</div>`
+
+  // ---------------- S6 같은 엔진, 다른 설계 ----------------
+  document.getElementById('s6sub').textContent = `${B.source} 실제 사례 ${B.n}건 · 중대 ${B.serious}건 · 같은 Jev 엔진 · 같은 세션`
+  const CMP = [
+    ['검토 없이 흘러간 중대 사례', '종결·모니터링으로 가서 아무도 보지 않은 중대 사례', raw.serious_without_review, fv.serious_without_review, Math.max(raw.serious_without_review, 1)],
+    ['사람 검토 업무량', '사람 우선으로 올라간 사례 수', raw.escalated, fv.escalated, raw.escalated],
+    ['사람에게 올라간 비중대 사례', '과잉 상향', raw.over_escalated, fv.over_escalated, raw.over_escalated],
+  ]
+  const cmp = document.getElementById('cmp')
+  CMP.forEach(([h, s, a, b, mx], i) => {
+    const t = 2 + i * 2.6
+    cmp.appendChild(el(`<div class="cmp" data-a="rise" data-t="${t}"><div class="lab">${h}<small>${s}</small></div><div class="rows">
+      <div class="row"><span class="who">raw Jev · 한 문항</span><div class="bar" style="height:26px" data-a="grow" data-t="${t + 0.4}"><i style="width:${(a / mx) * 100}%;background:#6c7aa8"></i></div><span class="v" style="color:var(--t2)">${fmtInt(a)}</span></div>
+      <div class="row"><span class="who" style="color:var(--sense)">FlyVigilance</span><div class="bar" style="height:26px" data-a="grow" data-t="${t + 0.9}"><i style="width:${Math.max(0.6, (b / mx) * 100)}%;background:var(--sense);box-shadow:0 0 18px var(--sense)"></i></div><span class="v" style="color:var(--sense)">${fmtInt(b)}</span></div>
+    </div></div>`))
+  })
+  const t4 = 2 + 3 * 2.6
+  cmp.appendChild(el(`<div class="cmp" data-a="rise" data-t="${t4}"><div class="lab">라벨 조회가 되찾은 중대 사례<small>기억 대신 openFDA 라벨 원문으로 ‘예상됨’ 결정</small></div>
+    <div style="display:flex;align-items:baseline;gap:26px"><span style="font-family:var(--font);font-size:72px;font-weight:600;color:var(--sense)">+${Math.round((fv.sens - ung.sens) * B.serious)}</span>
+    <span style="font-size:26px;color:var(--t2)">사람 우선 중대 사례 ${Math.round(ung.sens * B.serious)} → ${Math.round(fv.sens * B.serious)} · 조회 p50 ${B.grounding.label_p50} ms</span></div></div>`))
+  document.getElementById('s6cap').innerHTML = `엔진 선택 · 같은 7문항 p50: Jev ${Math.round(B.jev_p50)} ms vs ${B.nim_model.split('/')[1]} ${fmtInt(B.nim_p50)} ms (n=${B.nim_n}) · 1,000건 반사 판단 $${B.usd1k.toFixed(3)}`
+
+  // ---------------- S7 검증 ----------------
+  const sets = D.val.sets
+  const SETN = { OMOP: 'OMOP', 'EU-ADR': 'EU-ADR', Harpaz: 'Harpaz', 'Harpaz-prospective': 'Harpaz 전향' }
+  document.getElementById('aucHead').innerHTML = `모델이 최고 통계 지표를 유의하게 넘은 조건 <span style="color:var(--memory)">${beat} / ${sets.length}</span>`
+  document.getElementById('aucCap').textContent = '막대: 최고 통계 지표 · raw Jev(이름 가림) · FlyVigilance. 짝지은 부트스트랩 95% 구간. → 신호 순위는 SQL이 맡습니다'
+  const svg = document.getElementById('aucsvg'), W = 832, H = 420, y0 = 360, lo = 0.5, hi = 1.0
+  const yy = (v) => y0 - ((v - lo) / (hi - lo)) * 320
+  const grpW = W / sets.length
+  const NS = 'http://www.w3.org/2000/svg'
+  const mk = (tag, attrs, text) => { const n = document.createElementNS(NS, tag); for (const k in attrs) n.setAttribute(k, attrs[k]); if (text != null) n.textContent = text; return n }
+  ;[0.5, 0.6, 0.7, 0.8, 0.9, 1.0].forEach((v) => { svg.appendChild(mk('line', { x1: 0, x2: W, y1: yy(v), y2: yy(v), stroke: 'rgba(120,170,255,.12)' })); svg.appendChild(mk('text', { x: 0, y: yy(v) - 4, fill: '#66749a', 'font-size': 13, 'font-family': 'ui-monospace, Menlo, monospace' }, v.toFixed(1))) })
+  const aucBars = []
+  sets.forEach((s, i) => {
+    const vals = [[s.best.auc, '#4d8dff', s.best.label], [s.raw_blind, '#6c7aa8', 'raw'], [s.fv, '#37e6ff', 'FV']]
+    vals.forEach(([v, col], j) => {
+      const x = i * grpW + 40 + j * 54, w = 44
+      const r = mk('rect', { x, y: y0, width: w, height: 0, rx: 6, fill: col, opacity: 0.9 })
+      const tx = mk('text', { x: x + w / 2, y: yy(v) - 8, fill: '#eef3ff', 'font-size': 15, 'text-anchor': 'middle', 'font-family': 'ui-monospace, Menlo, monospace', opacity: 0 }, v.toFixed(2))
+      svg.appendChild(r); svg.appendChild(tx); aucBars.push({ r, tx, v, t: 2.4 + i * 0.5 + j * 0.15 })
+    })
+    svg.appendChild(mk('text', { x: i * grpW + 40 + 81, y: y0 + 32, fill: '#a7b4d4', 'font-size': 18, 'text-anchor': 'middle', 'font-family': 'Apple SD Gothic Neo, Noto Sans KR, sans-serif' }, SETN[s.key] ?? s.key))
+    svg.appendChild(mk('text', { x: i * grpW + 40 + 81, y: y0 + 54, fill: '#66749a', 'font-size': 13, 'text-anchor': 'middle', 'font-family': 'ui-monospace, Menlo, monospace' }, `n=${s.n} · ${s.best.label.split(' ')[0]}`))
+  })
+  const pro = D.val.pro
+  const VS = [
+    [`${pro.tp} / ${pro.pos}`, 'var(--memory)', '2013년 라벨 변경을 그 이전 보고만으로 미리 신호로 세운 수', `구형 AERS 2004–2012Q3 · ${fmtInt(pro.N)} 사례 · 오경보 ${pro.fp}/${pro.neg} · PPV ${pro.ppv.toFixed(2)}`],
+    [`${(D.lit.accuracy * 100).toFixed(1)}%`, 'var(--deliberate)', '문헌 연구 설계 판정이 MEDLINE 색인과 일치', `PubMed ${fmtInt(D.lit.n)}편 · 6편을 한 번에 · 3분류 ${(D.lit.group_accuracy * 100).toFixed(1)}%`],
+  ]
+  if (pr) VS.push([`${injected} / ${injectedN}`, 'var(--critic)', '일부러 만든 틀린 주장을 크리틱이 적발한 수', `실제 사례 ${D.probe.n_cases}건 × 4종 · 정상 대조군 통과 ${pr.ctrl?.correct ?? 0}/${pr.ctrl?.n ?? 0}`])
+  const vs = document.getElementById('valstats')
+  VS.forEach(([n, col, l, s], i) => vs.appendChild(el(`<div data-a="rise" data-t="${5 + i * 2.2}"><div style="font-family:var(--font);font-weight:600;font-size:92px;letter-spacing:-3px;line-height:1;color:${col}">${n}</div>
+    <div style="font-size:26px;color:var(--t2);margin-top:10px;line-height:1.4">${l}</div><div class="mono" style="font-size:16px;color:var(--t3);margin-top:8px">${s}</div></div>`)))
+
+  // ---------------- S8 데이터 흐름 ----------------
+  const ov = D.ov
+  const flow = [
+    ['FAERS 원천 보고', ov.raw_reports, `${ov.first}–${ov.asof} · ${ov.quarters} quarters`, '#4d8dff'],
+    ['중복 제거 사례', ov.cases, `FDA 삭제 ${fmtInt(ov.deleted_cases)}건 반영`, '#37e6ff'],
+    ['사례-약물-반응', ov.triplets, '의심약(PS/SS) 기준', '#a58bff'],
+    ['약물-반응 쌍', ov.pairs, 'PRR · ROR · IC', '#ff4fd8'],
+    ['3중 신호', ov.all3, 'Evans ∧ ROR₀₂₅ ∧ IC₀₂₅', '#ff5d6c'],
+  ]
+  const df = document.getElementById('dataflow')
+  flow.forEach(([l, n, s, col], i) => df.appendChild(el(`<div data-a="rise" data-t="${1.2 + i * 0.6}" style="padding:26px;border-radius:22px;border:1px solid ${col}66;background:rgba(10,16,32,.75)">
+    <div class="mono" style="font-size:16px;color:${col};letter-spacing:2px">${l}</div><div style="font-family:var(--font);font-size:50px;font-weight:600;margin-top:10px;letter-spacing:-1px" data-count2="${n}">0</div><div style="font-size:18px;color:var(--t3);margin-top:6px">${s}</div></div>`)))
+
+  // ---------------- 타임라인 ----------------
+  const ease = (x) => 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 3)
+  function animEl(e, local) {
+    const t = parseFloat(e.dataset.t || '0'), k = ease((local - t) / 0.9), a = e.dataset.a
+    if (a === 'grow') { const i = e.querySelector('i'); if (i) { i.style.transform = `scaleX(${k})`; i.style.transformOrigin = 'left' } return }
+    e.style.opacity = k
+    if (a === 'rise') e.style.transform = `translateY(${(1 - k) * 40}px)`
+    if (a === 'drop') e.style.transform = `translateY(${-(1 - k) * 70}px)`
+  }
+  function countEl(e, local, t0) {
+    const target = V[e.dataset.count] ?? 0, k = ease((local - t0) / 1.6)
+    e.textContent = (e.dataset.prefix || '') + fmtInt(target * k) + (e.dataset.suffix || '')
+  }
+  function sceneBrain(t) {
+    const sc = SCENES.find((x) => t >= x.t0 && t < x.t1) ?? SCENES[SCENES.length - 1]
+    const s = sc.id, lt = t - sc.t0
+    brain.rotY = t * 0.12
+    brain.dimOthers = -1
+    if (s === 's0') { brain.assemble = ease(lt / 5); brain.cx = 960; brain.cy = 360; brain.scale = 560; brain.alpha = 1; setAct({ sense: 0.3 + 0.3 * Math.sin(t * 2), memory: 0.2 }) }
+    else if (s === 's1') { brain.assemble = 1; brain.cx = 1560; brain.cy = 200; brain.scale = 250; brain.alpha = 0.45; setAct({ sense: 0.9, encode: 0.2 }) }
+    else if (s === 's2') {
+      brain.assemble = 1; brain.cx = 1500; brain.cy = 540; brain.scale = 460; brain.alpha = 1
+      const stage = Math.floor((lt - 2.2) / 1.2)
+      const o = {}; order.forEach((k, i) => { o[k] = i === stage ? 1 : i < stage ? 0.25 : 0.05 })
+      setAct(o); brain.dimOthers = stage >= 0 && stage < order.length ? layerKeys.indexOf(order[stage]) : -1
+    }
+    else if (s === 's3') { brain.assemble = 1; brain.cx = 1560; brain.cy = 190; brain.scale = 240; brain.alpha = 0.4; setAct({ reflex: 0.9 }) }
+    else if (s === 's4') { brain.assemble = 1; brain.cx = 1640; brain.cy = 985; brain.scale = 150; brain.alpha = 0.35; const ph = (lt * 0.7) % order.length; const o = {}; order.forEach((k, i) => { o[k] = Math.max(0, 1 - Math.abs(ph - i)) }); setAct(o) }
+    else if (s === 's5') {
+      brain.assemble = 1; brain.cx = 960; brain.cy = 1060; brain.scale = 380; brain.alpha = 0.18
+      setAct({ sense: lt < 3 ? 1 : 0.1, encode: lt > 1.5 && lt < 5 ? 1 : 0.1, reflex: lt > 3 && lt < 11 ? 1 : 0.1, memory: lt > 9 && lt < 14 ? 1 : 0.1, deliberate: lt > 12 && lt < 19 ? 1 : 0.1, critic: lt > 16 && lt < 22 ? 1 : 0.1, action: lt > 21 ? 1 : 0.05 })
+    }
+    else if (s === 's6') { brain.assemble = 1; brain.cx = 1600; brain.cy = 200; brain.scale = 230; brain.alpha = 0.35; setAct({ reflex: 0.8, action: 0.6 }) }
+    else if (s === 's7') { brain.assemble = 1; brain.cx = 1600; brain.cy = 170; brain.scale = 200; brain.alpha = 0.35; setAct({ memory: 0.9, critic: 0.4 }) }
+    else { brain.assemble = 1; brain.cx = 1610; brain.cy = 160; brain.scale = 180 + lt * 2; brain.alpha = 0.4; setAct({ sense: 0.5, reflex: 0.6, memory: 0.6, deliberate: 0.5, critic: 0.4, action: 0.8 }) }
+  }
+
+  let T = 0, playing = true, last = performance.now()
+  const params = new URLSearchParams(location.search)
+  if (params.get('t')) T = parseFloat(params.get('t'))
+  const clock = document.getElementById('clock'), scrub = document.getElementById('scrub'), prog = document.getElementById('progress')
+  function render(time) {
+    for (const s of SCENES) {
+      const node = document.getElementById(s.id)
+      const local = T - s.t0
+      const vis = T >= s.t0 - 0.01 && T < s.t1 ? Math.min(ease(local / 0.8), ease((s.t1 - T) / 0.8)) : 0
+      node.style.opacity = vis
+      if (vis <= 0) continue
+      node.querySelectorAll('[data-a]').forEach((x) => animEl(x, local))
+      node.querySelectorAll('[data-count]').forEach((x) => { const p = x.closest('[data-t]'); countEl(x, local, parseFloat(p?.dataset.t || '0')) })
+      node.querySelectorAll('[data-count2]').forEach((x) => { const p = x.closest('[data-t]'); const k = ease((local - parseFloat(p?.dataset.t || '0')) / 1.5); x.textContent = fmtInt(parseFloat(x.dataset.count2) * k) })
+      if (s.id === 's7') aucBars.forEach(({ r, tx, v, t }) => { const k = ease((local - t) / 0.9); const h = (yy(v) - y0) * -k; r.setAttribute('y', y0 - h); r.setAttribute('height', h); tx.setAttribute('opacity', k) })
+    }
+    sceneBrain(T)
+    drawBrain(time / 1000)
+    clock.textContent = `${Math.floor(T / 60)}:${String(Math.floor(T % 60)).padStart(2, '0')} / 2:40`
+    scrub.value = T
+    prog.style.width = `${(T / DUR) * 100}%`
+  }
+  let manual = false
+  function loop(now) {
+    const dt = (now - last) / 1000; last = now
+    if (manual) { requestAnimationFrame(loop); return }
+    if (playing) T = Math.min(DUR, T + dt)
+    render(now)
+    if (T >= DUR) { playing = false; document.getElementById('pp').textContent = '▶' }
+    requestAnimationFrame(loop)
+  }
+  const stage = document.getElementById('stage')
+  const fit = () => { const k = Math.min(innerWidth / 1920, innerHeight / 1080); stage.style.transform = `scale(${k})` }
+  addEventListener('resize', fit); fit()
+  document.getElementById('pp').onclick = () => { playing = !playing; if (T >= DUR) T = 0; document.getElementById('pp').textContent = playing ? '❚❚' : '▶' }
+  scrub.oninput = () => { T = parseFloat(scrub.value) }
+  addEventListener('keydown', (e) => { if (e.code === 'Space') { e.preventDefault(); document.getElementById('pp').click() } if (e.code === 'ArrowRight') T = Math.min(DUR, T + 5); if (e.code === 'ArrowLeft') T = Math.max(0, T - 5) })
+  const ch = document.getElementById('chapters')
+  SCENES.forEach((s) => { const sp = document.createElement('span'); sp.textContent = s.name; sp.onclick = () => { T = s.t0 + 0.01 }; ch.appendChild(sp) })
+  // 프레임 단위 렌더링(영상 출력용): 루프를 멈추고 지정 시점을 그립니다
+  const renderAt = (t) => { manual = true; playing = false; T = t; render(t * 1000) }
+  window.__reel = { seek: (t) => { T = t; playing = false }, play: () => { playing = true }, renderAt, DUR }
+  if (params.get('paused')) { playing = false; document.getElementById('pp').textContent = '▶' }
+  requestAnimationFrame((n) => { last = n; loop(n) })
+})()
+</script>
+</body>
+</html>

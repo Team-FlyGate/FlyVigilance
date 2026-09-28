@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as d3 from 'd3'
 import { Card, Loading, PageHead } from '../components/ui'
+import GradeCard, { GradeLegend } from '../components/GradeCard'
 import { api, fmt, getJSON, type SignalRow } from '../lib/data'
 
 interface Resp { drug: string; asof: string; rows: SignalRow[] }
@@ -122,6 +123,11 @@ export default function SignalLab() {
               <div><div className="dim mono" style={{ fontSize: 10 }}>ROR₀₂₅ · χ²</div><span className="num">{fmt.f(selRow.ror_lo)} · {fmt.f(selRow.chi2, 0)}</span></div>
               <div><div className="dim mono" style={{ fontSize: 10 }}>IC · IC₀₂₅</div><span className="num">{fmt.f(selRow.ic)} · {fmt.f(selRow.ic025)}</span></div>
             </div>}
+          </Card>
+          <Card title={<>근거 등급 <span className="dim" style={{ fontSize: 12, fontWeight: 400 }}>· {sel ? `${data.drug} × ${sel}` : '산점도나 표에서 반응을 고르세요'}</span></>}
+            sub="규칙으로 매깁니다: 라벨 절(규제 축) + FAERS 3중 신호(통계 축). 문헌은 Jev 가 읽어 참고 축으로 붙입니다" className="span2">
+            <GradeLegend />
+            <div style={{ marginTop: 12 }}>{sel ? <GradeCard drug={data.drug} pt={sel} /> : <div className="note">팀 시제품(A~D)을 이어받아, 라벨에는 있으나 신호가 없는 조합(L)과 판정 불가(U)를 나눴습니다. 인과 미확립 단서는 그 반응이 언급된 문장 주변에서만 찾습니다.</div>}</div>
           </Card>
           <Card title="Forest · PRR with 95% CI" sub="보고 건수 상위 반응. 점선 = PRR 2 (Evans)">
             <Forest rows={top} />

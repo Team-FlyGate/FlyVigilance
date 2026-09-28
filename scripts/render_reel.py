@@ -1,4 +1,7 @@
-"""쇼릴을 30fps 프레임 단위로 렌더링해 MP4 로 만든다. 사용: render_reel.py OUT.mp4 [fps] [base_url]"""
+"""쇼릴을 30fps 프레임 단위로 렌더링해 MP4 로 만든다. 사용: render_reel.py OUT.mp4 [fps] [page_url]
+
+page_url 기본값은 개발 서버의 v1 쇼릴입니다. v2 는 파일 하나로 완결되므로 file:// 주소를 그대로 줄 수 있습니다.
+"""
 import asyncio
 import subprocess
 import sys
@@ -7,14 +10,14 @@ from playwright.async_api import async_playwright
 
 OUT = sys.argv[1]
 FPS = int(sys.argv[2]) if len(sys.argv) > 2 else 30
-BASE = sys.argv[3] if len(sys.argv) > 3 else "http://127.0.0.1:5173"
+PAGE = sys.argv[3] if len(sys.argv) > 3 else "http://127.0.0.1:5173/showreel/index.html"
 
 
 async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(channel="chromium", args=["--use-angle=metal", "--ignore-gpu-blocklist", "--enable-gpu"])
         pg = await b.new_page(viewport={"width": 1920, "height": 1080})
-        await pg.goto(f"{BASE}/showreel/index.html?paused=1", wait_until="domcontentloaded", timeout=60000)
+        await pg.goto(f"{PAGE}?paused=1", wait_until="domcontentloaded", timeout=60000)
         await pg.evaluate("document.fonts.ready")
         await pg.wait_for_timeout(3000)
         await pg.add_style_tag(content="#hud{display:none!important}")

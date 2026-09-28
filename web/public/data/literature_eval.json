@@ -1,0 +1,4270 @@
+{
+ "generated": "2026-09-27 20:19",
+ "n": 598,
+ "accuracy": 0.9197,
+ "group_accuracy": 0.9565,
+ "per_class": {
+  "meta_analysis": {
+   "n": 67,
+   "recall": 0.9253731343283582
+  },
+  "rct": {
+   "n": 248,
+   "recall": 0.9556451612903226
+  },
+  "case_report": {
+   "n": 80,
+   "recall": 0.85
+  },
+  "review": {
+   "n": 203,
+   "recall": 0.9014778325123153
+  }
+ },
+ "confusion": {
+  "meta_analysis": {
+   "meta_analysis": 62,
+   "rct": 0,
+   "case_report": 0,
+   "review": 2,
+   "case_series": 0,
+   "cohort": 1,
+   "other": 2,
+   "preclinical": 0
+  },
+  "rct": {
+   "meta_analysis": 2,
+   "rct": 237,
+   "case_report": 0,
+   "review": 0,
+   "case_series": 0,
+   "cohort": 9,
+   "other": 0,
+   "preclinical": 0
+  },
+  "case_report": {
+   "meta_analysis": 0,
+   "rct": 0,
+   "case_report": 68,
+   "review": 2,
+   "case_series": 10,
+   "cohort": 0,
+   "other": 0,
+   "preclinical": 0
+  },
+  "review": {
+   "meta_analysis": 9,
+   "rct": 2,
+   "case_report": 0,
+   "review": 183,
+   "case_series": 1,
+   "cohort": 1,
+   "other": 4,
+   "preclinical": 3
+  }
+ },
+ "labels": [
+  "meta_analysis",
+  "rct",
+  "case_report",
+  "review",
+  "case_series",
+  "cohort",
+  "other",
+  "preclinical"
+ ],
+ "calls": 100,
+ "articles_per_call": 6,
+ "latency_ms_p50": 365.2,
+ "wall_s": 5.0,
+ "truth_source": "PubMed publication type (MEDLINE indexing)",
+ "pairs": 210,
+ "predictions": [
+  {
+   "pmid": "19881349",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2010"
+  },
+  {
+   "pmid": "19229801",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.99,
+   "year": "2009"
+  },
+  {
+   "pmid": "26768242",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2016"
+  },
+  {
+   "pmid": "18071694",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.8,
+   "year": "2008"
+  },
+  {
+   "pmid": "19886227",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.98,
+   "year": "2009"
+  },
+  {
+   "pmid": "18688172",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2008"
+  },
+  {
+   "pmid": "17220732",
+   "truth": "case_report",
+   "pred": "case_series",
+   "confidence": 1.0,
+   "year": "2007"
+  },
+  {
+   "pmid": "39261451",
+   "truth": "rct",
+   "pred": "cohort",
+   "confidence": 0.39,
+   "year": "2024"
+  },
+  {
+   "pmid": "40717676",
+   "truth": "meta_analysis",
+   "pred": "other",
+   "confidence": 0.72,
+   "year": "2025"
+  },
+  {
+   "pmid": "31859245",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2020"
+  },
+  {
+   "pmid": "38104330",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.99,
+   "year": "2023"
+  },
+  {
+   "pmid": "40962246",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "34000253",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.99,
+   "year": "2022"
+  },
+  {
+   "pmid": "39674406",
+   "truth": "review",
+   "pred": "cohort",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "39691632",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "16225027",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.97,
+   "year": "2005"
+  },
+  {
+   "pmid": "40600383",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 0.62,
+   "year": "2025"
+  },
+  {
+   "pmid": "10745067",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2000"
+  },
+  {
+   "pmid": "12537784",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 0.93,
+   "year": "2002"
+  },
+  {
+   "pmid": "10875855",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2000"
+  },
+  {
+   "pmid": "28137754",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2017"
+  },
+  {
+   "pmid": "40714031",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2026"
+  },
+  {
+   "pmid": "33058045",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 0.47,
+   "year": "2020"
+  },
+  {
+   "pmid": "27912901",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2017"
+  },
+  {
+   "pmid": "40633120",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "37762488",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 0.96,
+   "year": "2023"
+  },
+  {
+   "pmid": "38486276",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "2778058",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "1989"
+  },
+  {
+   "pmid": "21590349",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2012"
+  },
+  {
+   "pmid": "32864026",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2020"
+  },
+  {
+   "pmid": "29163738",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2017"
+  },
+  {
+   "pmid": "28042253",
+   "truth": "case_report",
+   "pred": "case_series",
+   "confidence": 0.99,
+   "year": "2017"
+  },
+  {
+   "pmid": "41530074",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "37559845",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "37365881",
+   "truth": "review",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "39521109",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "15871554",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2003"
+  },
+  {
+   "pmid": "18254106",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2008"
+  },
+  {
+   "pmid": "19370644",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2009"
+  },
+  {
+   "pmid": "22336820",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2012"
+  },
+  {
+   "pmid": "39655944",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "30480729",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2018"
+  },
+  {
+   "pmid": "32452549",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2020"
+  },
+  {
+   "pmid": "31690390",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2019"
+  },
+  {
+   "pmid": "8507629",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "1993"
+  },
+  {
+   "pmid": "39862870",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "31287230",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2019"
+  },
+  {
+   "pmid": "27518661",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2016"
+  },
+  {
+   "pmid": "41506743",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 0.98,
+   "year": "2026"
+  },
+  {
+   "pmid": "35646432",
+   "truth": "review",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2022"
+  },
+  {
+   "pmid": "36512671",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "34820733",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.98,
+   "year": "2022"
+  },
+  {
+   "pmid": "34347860",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "35871814",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2022"
+  },
+  {
+   "pmid": "27690741",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2016"
+  },
+  {
+   "pmid": "34126094",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.97,
+   "year": "2022"
+  },
+  {
+   "pmid": "33761207",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "39992210",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 0.99,
+   "year": "2025"
+  },
+  {
+   "pmid": "18245148",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2008"
+  },
+  {
+   "pmid": "37354675",
+   "truth": "case_report",
+   "pred": "review",
+   "confidence": 0.87,
+   "year": "2023"
+  },
+  {
+   "pmid": "41360064",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2026"
+  },
+  {
+   "pmid": "31735560",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2019"
+  },
+  {
+   "pmid": "32866432",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2020"
+  },
+  {
+   "pmid": "38423700",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "40769686",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "30081197",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2019"
+  },
+  {
+   "pmid": "35953230",
+   "truth": "review",
+   "pred": "other",
+   "confidence": 0.98,
+   "year": "2022"
+  },
+  {
+   "pmid": "35453032",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2022"
+  },
+  {
+   "pmid": "32415503",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2020"
+  },
+  {
+   "pmid": "36217276",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "37668490",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "34461001",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "38933731",
+   "truth": "review",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "27747531",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2015"
+  },
+  {
+   "pmid": "20068404",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.66,
+   "year": "2009"
+  },
+  {
+   "pmid": "38152360",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "41348428",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.99,
+   "year": "2026"
+  },
+  {
+   "pmid": "40856907",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 0.99,
+   "year": "2025"
+  },
+  {
+   "pmid": "36971914",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "29255743",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2017"
+  },
+  {
+   "pmid": "23725303",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2013"
+  },
+  {
+   "pmid": "18575223",
+   "truth": "rct",
+   "pred": "cohort",
+   "confidence": 0.85,
+   "year": "2008"
+  },
+  {
+   "pmid": "9990416",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "1998"
+  },
+  {
+   "pmid": "21967116",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2011"
+  },
+  {
+   "pmid": "19466959",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2009"
+  },
+  {
+   "pmid": "41812192",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2026"
+  },
+  {
+   "pmid": "21870978",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2011"
+  },
+  {
+   "pmid": "32586585",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2020"
+  },
+  {
+   "pmid": "23216615",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2013"
+  },
+  {
+   "pmid": "33141212",
+   "truth": "meta_analysis",
+   "pred": "review",
+   "confidence": 0.9,
+   "year": "2020"
+  },
+  {
+   "pmid": "23808982",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2013"
+  },
+  {
+   "pmid": "36335914",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2022"
+  },
+  {
+   "pmid": "28451433",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2017"
+  },
+  {
+   "pmid": "14533345",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.98,
+   "year": "2003"
+  },
+  {
+   "pmid": "25743937",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2015"
+  },
+  {
+   "pmid": "38195189",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "20558853",
+   "truth": "case_report",
+   "pred": "case_series",
+   "confidence": 0.98,
+   "year": "2010"
+  },
+  {
+   "pmid": "8162840",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "1994"
+  },
+  {
+   "pmid": "36106755",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2022"
+  },
+  {
+   "pmid": "31678488",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2020"
+  },
+  {
+   "pmid": "26109850",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2015"
+  },
+  {
+   "pmid": "24961142",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2014"
+  },
+  {
+   "pmid": "24661068",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.99,
+   "year": "2014"
+  },
+  {
+   "pmid": "35654457",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2022"
+  },
+  {
+   "pmid": "38790040",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 0.7,
+   "year": "2024"
+  },
+  {
+   "pmid": "34186022",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "34170647",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "36050763",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.67,
+   "year": "2022"
+  },
+  {
+   "pmid": "39037780",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.94,
+   "year": "2024"
+  },
+  {
+   "pmid": "37385275",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "40196933",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "35133415",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2022"
+  },
+  {
+   "pmid": "36847624",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "33891380",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "25007392",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2014"
+  },
+  {
+   "pmid": "32479641",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "32594522",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "36815128",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "28780364",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2017"
+  },
+  {
+   "pmid": "23153406",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.99,
+   "year": "2012"
+  },
+  {
+   "pmid": "33808367",
+   "truth": "review",
+   "pred": "meta_analysis",
+   "confidence": 0.47,
+   "year": "2021"
+  },
+  {
+   "pmid": "25732432",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2015"
+  },
+  {
+   "pmid": "40085955",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 0.99,
+   "year": "2025"
+  },
+  {
+   "pmid": "36522207",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2022"
+  },
+  {
+   "pmid": "17135639",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2006"
+  },
+  {
+   "pmid": "19204201",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2009"
+  },
+  {
+   "pmid": "32275467",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2020"
+  },
+  {
+   "pmid": "37488811",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "32673703",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2020"
+  },
+  {
+   "pmid": "29343507",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2018"
+  },
+  {
+   "pmid": "26357944",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2015"
+  },
+  {
+   "pmid": "27768242",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2017"
+  },
+  {
+   "pmid": "27486641",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.64,
+   "year": "2016"
+  },
+  {
+   "pmid": "34100922",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 0.99,
+   "year": "2022"
+  },
+  {
+   "pmid": "29866475",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2018"
+  },
+  {
+   "pmid": "37000077",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "32705137",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2020"
+  },
+  {
+   "pmid": "30245231",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2018"
+  },
+  {
+   "pmid": "18991953",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.74,
+   "year": "2008"
+  },
+  {
+   "pmid": "15684570",
+   "truth": "review",
+   "pred": "preclinical",
+   "confidence": 1.0,
+   "year": "2005"
+  },
+  {
+   "pmid": "11979726",
+   "truth": "review",
+   "pred": "preclinical",
+   "confidence": 1.0,
+   "year": "2002"
+  },
+  {
+   "pmid": "34055568",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.97,
+   "year": "2021"
+  },
+  {
+   "pmid": "2407880",
+   "truth": "review",
+   "pred": "preclinical",
+   "confidence": 1.0,
+   "year": "1990"
+  },
+  {
+   "pmid": "14741438",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.99,
+   "year": "2004"
+  },
+  {
+   "pmid": "30673120",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 0.99,
+   "year": "2019"
+  },
+  {
+   "pmid": "34637958",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2022"
+  },
+  {
+   "pmid": "29023146",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.99,
+   "year": "2018"
+  },
+  {
+   "pmid": "39839199",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "36820573",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "31967742",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2020"
+  },
+  {
+   "pmid": "33053283",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2020"
+  },
+  {
+   "pmid": "37423647",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "39393109",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "22992073",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2012"
+  },
+  {
+   "pmid": "33296968",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2020"
+  },
+  {
+   "pmid": "3530639",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.84,
+   "year": "1986"
+  },
+  {
+   "pmid": "31784875",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2019"
+  },
+  {
+   "pmid": "23338729",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2013"
+  },
+  {
+   "pmid": "21669937",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2011"
+  },
+  {
+   "pmid": "31475794",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2019"
+  },
+  {
+   "pmid": "39927814",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "39320292",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 0.71,
+   "year": "2024"
+  },
+  {
+   "pmid": "34783839",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "38537919",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 0.86,
+   "year": "2024"
+  },
+  {
+   "pmid": "38508844",
+   "truth": "rct",
+   "pred": "meta_analysis",
+   "confidence": 0.83,
+   "year": "2024"
+  },
+  {
+   "pmid": "30415601",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2019"
+  },
+  {
+   "pmid": "32815018",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2020"
+  },
+  {
+   "pmid": "32503471",
+   "truth": "review",
+   "pred": "case_series",
+   "confidence": 0.86,
+   "year": "2020"
+  },
+  {
+   "pmid": "42624624",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2026"
+  },
+  {
+   "pmid": "30767710",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2019"
+  },
+  {
+   "pmid": "29222255",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2017"
+  },
+  {
+   "pmid": "30528374",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2019"
+  },
+  {
+   "pmid": "39272779",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "31239953",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.98,
+   "year": "2017"
+  },
+  {
+   "pmid": "30242482",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2018"
+  },
+  {
+   "pmid": "37300633",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "38644874",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "40268707",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "11303413",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.95,
+   "year": "2001"
+  },
+  {
+   "pmid": "39434856",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "29114418",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2017"
+  },
+  {
+   "pmid": "19537837",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2009"
+  },
+  {
+   "pmid": "19213787",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 0.98,
+   "year": "2009"
+  },
+  {
+   "pmid": "28264816",
+   "truth": "review",
+   "pred": "other",
+   "confidence": 0.99,
+   "year": "2017"
+  },
+  {
+   "pmid": "36836166",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "36368906",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "18778113",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2008"
+  },
+  {
+   "pmid": "34214475",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 0.91,
+   "year": "2021"
+  },
+  {
+   "pmid": "12804447",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 0.99,
+   "year": "2003"
+  },
+  {
+   "pmid": "38256318",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "37706024",
+   "truth": "review",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "40903099",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "34557642",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "9360060",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.9,
+   "year": "1997"
+  },
+  {
+   "pmid": "361306",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "1978"
+  },
+  {
+   "pmid": "16308180",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2006"
+  },
+  {
+   "pmid": "11073508",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2000"
+  },
+  {
+   "pmid": "28272736",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2017"
+  },
+  {
+   "pmid": "23711618",
+   "truth": "rct",
+   "pred": "cohort",
+   "confidence": 0.88,
+   "year": "2013"
+  },
+  {
+   "pmid": "33963666",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "39707559",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "37539549",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "26654816",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2015"
+  },
+  {
+   "pmid": "26773926",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2016"
+  },
+  {
+   "pmid": "38983827",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "34244196",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "24326619",
+   "truth": "case_report",
+   "pred": "case_series",
+   "confidence": 0.89,
+   "year": "2015"
+  },
+  {
+   "pmid": "33373028",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "35602825",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 0.98,
+   "year": "2022"
+  },
+  {
+   "pmid": "36811419",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "36652938",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 0.8,
+   "year": "2023"
+  },
+  {
+   "pmid": "18221165",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.98,
+   "year": "2007"
+  },
+  {
+   "pmid": "41731947",
+   "truth": "review",
+   "pred": "other",
+   "confidence": 0.99,
+   "year": "2026"
+  },
+  {
+   "pmid": "38289166",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.99,
+   "year": "2023"
+  },
+  {
+   "pmid": "30194799",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2019"
+  },
+  {
+   "pmid": "26310040",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2015"
+  },
+  {
+   "pmid": "26817135",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2015"
+  },
+  {
+   "pmid": "40388166",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "31469238",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2020"
+  },
+  {
+   "pmid": "39381332",
+   "truth": "review",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "28841363",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2017"
+  },
+  {
+   "pmid": "32402160",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2020"
+  },
+  {
+   "pmid": "37133585",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "37071094",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "28438473",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2017"
+  },
+  {
+   "pmid": "15175435",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2004"
+  },
+  {
+   "pmid": "29141164",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2017"
+  },
+  {
+   "pmid": "31851799",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2019"
+  },
+  {
+   "pmid": "29863955",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2018"
+  },
+  {
+   "pmid": "18840007",
+   "truth": "review",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2008"
+  },
+  {
+   "pmid": "34319626",
+   "truth": "review",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2022"
+  },
+  {
+   "pmid": "27770771",
+   "truth": "rct",
+   "pred": "cohort",
+   "confidence": 1.0,
+   "year": "2016"
+  },
+  {
+   "pmid": "33087021",
+   "truth": "case_report",
+   "pred": "case_series",
+   "confidence": 0.9,
+   "year": "2020"
+  },
+  {
+   "pmid": "34222785",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "16966687",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2006"
+  },
+  {
+   "pmid": "33208340",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "29501363",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2018"
+  },
+  {
+   "pmid": "38608530",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "38763510",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "35331984",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2022"
+  },
+  {
+   "pmid": "26597252",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2016"
+  },
+  {
+   "pmid": "21493741",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 0.78,
+   "year": "2011"
+  },
+  {
+   "pmid": "33289308",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "34051178",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "30509740",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2019"
+  },
+  {
+   "pmid": "39061988",
+   "truth": "review",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "34260011",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2022"
+  },
+  {
+   "pmid": "35835135",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2022"
+  },
+  {
+   "pmid": "30522922",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2019"
+  },
+  {
+   "pmid": "24618336",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2014"
+  },
+  {
+   "pmid": "30939090",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2019"
+  },
+  {
+   "pmid": "27569442",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2016"
+  },
+  {
+   "pmid": "36183733",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2022"
+  },
+  {
+   "pmid": "26030518",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2015"
+  },
+  {
+   "pmid": "25524798",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2015"
+  },
+  {
+   "pmid": "40472660",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "34995105",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 0.98,
+   "year": "2022"
+  },
+  {
+   "pmid": "26027431",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2015"
+  },
+  {
+   "pmid": "39282897",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "34986285",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2022"
+  },
+  {
+   "pmid": "27718784",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2016"
+  },
+  {
+   "pmid": "34077643",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "35108470",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2022"
+  },
+  {
+   "pmid": "31562797",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2019"
+  },
+  {
+   "pmid": "29562145",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2018"
+  },
+  {
+   "pmid": "33549193",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "18486739",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2008"
+  },
+  {
+   "pmid": "26092291",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2015"
+  },
+  {
+   "pmid": "19344192",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.87,
+   "year": "2009"
+  },
+  {
+   "pmid": "38256367",
+   "truth": "case_report",
+   "pred": "review",
+   "confidence": 0.93,
+   "year": "2024"
+  },
+  {
+   "pmid": "28497473",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 0.89,
+   "year": "2017"
+  },
+  {
+   "pmid": "40065343",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "18279583",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.97,
+   "year": "2008"
+  },
+  {
+   "pmid": "36576555",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "10796811",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2000"
+  },
+  {
+   "pmid": "29873010",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2018"
+  },
+  {
+   "pmid": "34185118",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "7865433",
+   "truth": "review",
+   "pred": "other",
+   "confidence": 0.41,
+   "year": "1994"
+  },
+  {
+   "pmid": "16172456",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2005"
+  },
+  {
+   "pmid": "7597430",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.93,
+   "year": "1995"
+  },
+  {
+   "pmid": "12618923",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.99,
+   "year": "2003"
+  },
+  {
+   "pmid": "30220407",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2018"
+  },
+  {
+   "pmid": "22750925",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2010"
+  },
+  {
+   "pmid": "24965536",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2014"
+  },
+  {
+   "pmid": "12740681",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2003"
+  },
+  {
+   "pmid": "21095116",
+   "truth": "meta_analysis",
+   "pred": "other",
+   "confidence": 0.97,
+   "year": "2011"
+  },
+  {
+   "pmid": "12010086",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.54,
+   "year": "2002"
+  },
+  {
+   "pmid": "36727017",
+   "truth": "review",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2022"
+  },
+  {
+   "pmid": "28679982",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2017"
+  },
+  {
+   "pmid": "22713195",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2011"
+  },
+  {
+   "pmid": "15456328",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2004"
+  },
+  {
+   "pmid": "15554747",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.98,
+   "year": "2004"
+  },
+  {
+   "pmid": "22472310",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2012"
+  },
+  {
+   "pmid": "11769824",
+   "truth": "case_report",
+   "pred": "case_series",
+   "confidence": 1.0,
+   "year": "2001"
+  },
+  {
+   "pmid": "30097359",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2018"
+  },
+  {
+   "pmid": "32427307",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2020"
+  },
+  {
+   "pmid": "31583255",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2019"
+  },
+  {
+   "pmid": "28887948",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2017"
+  },
+  {
+   "pmid": "38007038",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.98,
+   "year": "2024"
+  },
+  {
+   "pmid": "38266061",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "40728772",
+   "truth": "rct",
+   "pred": "cohort",
+   "confidence": 0.5,
+   "year": "2025"
+  },
+  {
+   "pmid": "18690940",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2006"
+  },
+  {
+   "pmid": "39184707",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "19370190",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2009"
+  },
+  {
+   "pmid": "11368249",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.64,
+   "year": "2001"
+  },
+  {
+   "pmid": "30676825",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.73,
+   "year": "2020"
+  },
+  {
+   "pmid": "18756591",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2008"
+  },
+  {
+   "pmid": "16878265",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2006"
+  },
+  {
+   "pmid": "16251851",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.97,
+   "year": "2005"
+  },
+  {
+   "pmid": "35909831",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2022"
+  },
+  {
+   "pmid": "28266779",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2017"
+  },
+  {
+   "pmid": "39046272",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "33567185",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "37947489",
+   "truth": "review",
+   "pred": "rct",
+   "confidence": 0.67,
+   "year": "2023"
+  },
+  {
+   "pmid": "34514682",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 0.85,
+   "year": "2022"
+  },
+  {
+   "pmid": "30122305",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2018"
+  },
+  {
+   "pmid": "36629265",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.99,
+   "year": "2023"
+  },
+  {
+   "pmid": "31152740",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2019"
+  },
+  {
+   "pmid": "34164249",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "28868386",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.99,
+   "year": "2015"
+  },
+  {
+   "pmid": "34727190",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.99,
+   "year": "2021"
+  },
+  {
+   "pmid": "40940161",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "35900607",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 0.99,
+   "year": "2022"
+  },
+  {
+   "pmid": "17013567",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 0.98,
+   "year": "2007"
+  },
+  {
+   "pmid": "18505369",
+   "truth": "rct",
+   "pred": "cohort",
+   "confidence": 0.54,
+   "year": "2008"
+  },
+  {
+   "pmid": "27461427",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2016"
+  },
+  {
+   "pmid": "26130187",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2015"
+  },
+  {
+   "pmid": "41123300",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "24935480",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2014"
+  },
+  {
+   "pmid": "30229541",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2018"
+  },
+  {
+   "pmid": "26967515",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 0.99,
+   "year": "2016"
+  },
+  {
+   "pmid": "27314428",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.99,
+   "year": "2016"
+  },
+  {
+   "pmid": "10883413",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2000"
+  },
+  {
+   "pmid": "2140370",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "1990"
+  },
+  {
+   "pmid": "35417909",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2022"
+  },
+  {
+   "pmid": "37851874",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "41124201",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2026"
+  },
+  {
+   "pmid": "34481017",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2022"
+  },
+  {
+   "pmid": "34459214",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "38320501",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "37163621",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "35657079",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2022"
+  },
+  {
+   "pmid": "36511784",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "33426371",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "38078508",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "26639149",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2015"
+  },
+  {
+   "pmid": "35427411",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2022"
+  },
+  {
+   "pmid": "39438067",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "38492904",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 0.99,
+   "year": "2024"
+  },
+  {
+   "pmid": "40704669",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 0.69,
+   "year": "2025"
+  },
+  {
+   "pmid": "35788492",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2022"
+  },
+  {
+   "pmid": "39533349",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 0.67,
+   "year": "2024"
+  },
+  {
+   "pmid": "33591618",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "32320566",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2020"
+  },
+  {
+   "pmid": "39172480",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "37126762",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "33664745",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "38625661",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.92,
+   "year": "2024"
+  },
+  {
+   "pmid": "28962635",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 0.77,
+   "year": "2017"
+  },
+  {
+   "pmid": "34102137",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "30922733",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2019"
+  },
+  {
+   "pmid": "40645192",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "33862000",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "37086745",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "33301740",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "28355581",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2017"
+  },
+  {
+   "pmid": "12515569",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2003"
+  },
+  {
+   "pmid": "41344122",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 0.96,
+   "year": "2026"
+  },
+  {
+   "pmid": "30145513",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2018"
+  },
+  {
+   "pmid": "28748365",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2018"
+  },
+  {
+   "pmid": "39325444",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "40545961",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "32418171",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.99,
+   "year": "2020"
+  },
+  {
+   "pmid": "23810097",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2013"
+  },
+  {
+   "pmid": "40632538",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "41833262",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2026"
+  },
+  {
+   "pmid": "33981424",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "29065722",
+   "truth": "meta_analysis",
+   "pred": "review",
+   "confidence": 0.58,
+   "year": "2018"
+  },
+  {
+   "pmid": "9220044",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "1997"
+  },
+  {
+   "pmid": "41466811",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "18568804",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2008"
+  },
+  {
+   "pmid": "20091667",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 0.99,
+   "year": "2010"
+  },
+  {
+   "pmid": "27924643",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2016"
+  },
+  {
+   "pmid": "30897745",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2019"
+  },
+  {
+   "pmid": "18155297",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2008"
+  },
+  {
+   "pmid": "34286461",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2022"
+  },
+  {
+   "pmid": "32385134",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2020"
+  },
+  {
+   "pmid": "11449876",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2001"
+  },
+  {
+   "pmid": "38678766",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "41040757",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "39330051",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "16971736",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.99,
+   "year": "2006"
+  },
+  {
+   "pmid": "15763604",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2005"
+  },
+  {
+   "pmid": "7595719",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "1995"
+  },
+  {
+   "pmid": "28753384",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2017"
+  },
+  {
+   "pmid": "15117980",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2004"
+  },
+  {
+   "pmid": "39368843",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.99,
+   "year": "2024"
+  },
+  {
+   "pmid": "28336049",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.99,
+   "year": "2017"
+  },
+  {
+   "pmid": "31287527",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2019"
+  },
+  {
+   "pmid": "31485975",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.99,
+   "year": "2019"
+  },
+  {
+   "pmid": "40066580",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "40376729",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "36573969",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2022"
+  },
+  {
+   "pmid": "36828150",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 0.87,
+   "year": "2023"
+  },
+  {
+   "pmid": "38750479",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "28859190",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2017"
+  },
+  {
+   "pmid": "18974308",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2008"
+  },
+  {
+   "pmid": "36651686",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.99,
+   "year": "2023"
+  },
+  {
+   "pmid": "19202952",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.99,
+   "year": "2008"
+  },
+  {
+   "pmid": "24795200",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2014"
+  },
+  {
+   "pmid": "24795201",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2014"
+  },
+  {
+   "pmid": "15084065",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.96,
+   "year": "2004"
+  },
+  {
+   "pmid": "24725237",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2014"
+  },
+  {
+   "pmid": "40945523",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "25877855",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2015"
+  },
+  {
+   "pmid": "38906161",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "37329889",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "40359459",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "17140279",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2006"
+  },
+  {
+   "pmid": "22893778",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2012"
+  },
+  {
+   "pmid": "37849071",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 0.88,
+   "year": "2023"
+  },
+  {
+   "pmid": "36749272",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "40398898",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "35676843",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "19323621",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2009"
+  },
+  {
+   "pmid": "25280267",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2014"
+  },
+  {
+   "pmid": "25895021",
+   "truth": "rct",
+   "pred": "cohort",
+   "confidence": 0.86,
+   "year": "2015"
+  },
+  {
+   "pmid": "25306200",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2014"
+  },
+  {
+   "pmid": "41445985",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "12165940",
+   "truth": "case_report",
+   "pred": "case_series",
+   "confidence": 0.99,
+   "year": "2002"
+  },
+  {
+   "pmid": "32034323",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2020"
+  },
+  {
+   "pmid": "39981928",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "30629341",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2020"
+  },
+  {
+   "pmid": "26615328",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2016"
+  },
+  {
+   "pmid": "35427471",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2022"
+  },
+  {
+   "pmid": "30413379",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2018"
+  },
+  {
+   "pmid": "25088940",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2014"
+  },
+  {
+   "pmid": "35398713",
+   "truth": "meta_analysis",
+   "pred": "cohort",
+   "confidence": 0.97,
+   "year": "2022"
+  },
+  {
+   "pmid": "34000472",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.98,
+   "year": "2021"
+  },
+  {
+   "pmid": "42208561",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2026"
+  },
+  {
+   "pmid": "32786187",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2020"
+  },
+  {
+   "pmid": "39976417",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "39115831",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "39854189",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "40479620",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "15218994",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2004"
+  },
+  {
+   "pmid": "31119643",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2019"
+  },
+  {
+   "pmid": "12010082",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.98,
+   "year": "2002"
+  },
+  {
+   "pmid": "26683033",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.99,
+   "year": "2016"
+  },
+  {
+   "pmid": "28424359",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2017"
+  },
+  {
+   "pmid": "33306188",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.96,
+   "year": "2021"
+  },
+  {
+   "pmid": "28154373",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 0.95,
+   "year": "2017"
+  },
+  {
+   "pmid": "33285097",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "35980649",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2022"
+  },
+  {
+   "pmid": "32888454",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2020"
+  },
+  {
+   "pmid": "36669140",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "17517853",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2007"
+  },
+  {
+   "pmid": "20656674",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2010"
+  },
+  {
+   "pmid": "22298606",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.99,
+   "year": "2012"
+  },
+  {
+   "pmid": "24893215",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.83,
+   "year": "2014"
+  },
+  {
+   "pmid": "30767126",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2019"
+  },
+  {
+   "pmid": "12923824",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2003"
+  },
+  {
+   "pmid": "34015555",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 0.46,
+   "year": "2021"
+  },
+  {
+   "pmid": "24417745",
+   "truth": "rct",
+   "pred": "meta_analysis",
+   "confidence": 0.35,
+   "year": "2014"
+  },
+  {
+   "pmid": "36007534",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2022"
+  },
+  {
+   "pmid": "36253442",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "33549697",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "41290573",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "42687183",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2026"
+  },
+  {
+   "pmid": "32381019",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2020"
+  },
+  {
+   "pmid": "40283425",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "33971784",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "40221314",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "20085566",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2010"
+  },
+  {
+   "pmid": "37871604",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "29175149",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2018"
+  },
+  {
+   "pmid": "39612919",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "28526536",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2017"
+  },
+  {
+   "pmid": "37142372",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 0.85,
+   "year": "2023"
+  },
+  {
+   "pmid": "29146401",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2017"
+  },
+  {
+   "pmid": "37885023",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "32944113",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2020"
+  },
+  {
+   "pmid": "35363878",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2022"
+  },
+  {
+   "pmid": "8784217",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.97,
+   "year": "1995"
+  },
+  {
+   "pmid": "10530692",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "1999"
+  },
+  {
+   "pmid": "34092825",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.99,
+   "year": "2021"
+  },
+  {
+   "pmid": "10403224",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.99,
+   "year": "1999"
+  },
+  {
+   "pmid": "9827240",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.8,
+   "year": "1998"
+  },
+  {
+   "pmid": "25645637",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2015"
+  },
+  {
+   "pmid": "2051498",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "1991"
+  },
+  {
+   "pmid": "26438969",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2016"
+  },
+  {
+   "pmid": "8262891",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.98,
+   "year": "1993"
+  },
+  {
+   "pmid": "37285865",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "40450503",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "31157964",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2019"
+  },
+  {
+   "pmid": "24881730",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2014"
+  },
+  {
+   "pmid": "36795891",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "36990608",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "31727538",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2019"
+  },
+  {
+   "pmid": "37119051",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "24183563",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2014"
+  },
+  {
+   "pmid": "28802934",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2017"
+  },
+  {
+   "pmid": "42717152",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2026"
+  },
+  {
+   "pmid": "40161932",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "33933853",
+   "truth": "rct",
+   "pred": "cohort",
+   "confidence": 0.69,
+   "year": "2021"
+  },
+  {
+   "pmid": "16689452",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2006"
+  },
+  {
+   "pmid": "22410751",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2013"
+  },
+  {
+   "pmid": "21083471",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2010"
+  },
+  {
+   "pmid": "38823398",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "17960012",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2007"
+  },
+  {
+   "pmid": "26045340",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2015"
+  },
+  {
+   "pmid": "24439929",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2014"
+  },
+  {
+   "pmid": "32530769",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2020"
+  },
+  {
+   "pmid": "37713101",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "31208515",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2019"
+  },
+  {
+   "pmid": "28811951",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2017"
+  },
+  {
+   "pmid": "356306",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 0.95,
+   "year": "1978"
+  },
+  {
+   "pmid": "39040237",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "30681821",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2019"
+  },
+  {
+   "pmid": "38307640",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "36786548",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "39227797",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "28460892",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2017"
+  },
+  {
+   "pmid": "29171821",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2017"
+  },
+  {
+   "pmid": "34743579",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2022"
+  },
+  {
+   "pmid": "21427581",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2011"
+  },
+  {
+   "pmid": "12003373",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.99,
+   "year": "2002"
+  },
+  {
+   "pmid": "11333342",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.98,
+   "year": "2001"
+  },
+  {
+   "pmid": "12535423",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2003"
+  },
+  {
+   "pmid": "33414482",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 0.81,
+   "year": "2021"
+  },
+  {
+   "pmid": "31944221",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2020"
+  },
+  {
+   "pmid": "24417860",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2014"
+  },
+  {
+   "pmid": "24621109",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2014"
+  },
+  {
+   "pmid": "37116523",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "27132696",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2016"
+  },
+  {
+   "pmid": "32219442",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2020"
+  },
+  {
+   "pmid": "27313086",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2016"
+  },
+  {
+   "pmid": "33730455",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "39700502",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "39371251",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "30510080",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2019"
+  },
+  {
+   "pmid": "16990386",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2006"
+  },
+  {
+   "pmid": "38884175",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "38084255",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.95,
+   "year": "2023"
+  },
+  {
+   "pmid": "31538208",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2019"
+  },
+  {
+   "pmid": "12865771",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.96,
+   "year": "2003"
+  },
+  {
+   "pmid": "40625470",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "9506246",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.71,
+   "year": "1998"
+  },
+  {
+   "pmid": "8871736",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.99,
+   "year": "1996"
+  },
+  {
+   "pmid": "40696682",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "11874388",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2002"
+  },
+  {
+   "pmid": "11799030",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2002"
+  },
+  {
+   "pmid": "19438584",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2009"
+  },
+  {
+   "pmid": "15639699",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2004"
+  },
+  {
+   "pmid": "23001096",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2012"
+  },
+  {
+   "pmid": "12083991",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.99,
+   "year": "2002"
+  },
+  {
+   "pmid": "37715354",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "27267111",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 0.99,
+   "year": "2016"
+  },
+  {
+   "pmid": "34993394",
+   "truth": "case_report",
+   "pred": "case_series",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "40734311",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "37850218",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "35028503",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2022"
+  },
+  {
+   "pmid": "29804068",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2018"
+  },
+  {
+   "pmid": "39834901",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "30847222",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2019"
+  },
+  {
+   "pmid": "40726608",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "35224540",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "37219080",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "36538979",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "25199059",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2014"
+  },
+  {
+   "pmid": "41738176",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2026"
+  },
+  {
+   "pmid": "35772597",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2022"
+  },
+  {
+   "pmid": "32034960",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 0.99,
+   "year": "2020"
+  },
+  {
+   "pmid": "26280341",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 0.63,
+   "year": "2015"
+  },
+  {
+   "pmid": "23708174",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 0.93,
+   "year": "2013"
+  },
+  {
+   "pmid": "33553369",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "39233949",
+   "truth": "case_report",
+   "pred": "case_series",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "40620104",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "17462168",
+   "truth": "meta_analysis",
+   "pred": "meta_analysis",
+   "confidence": 1.0,
+   "year": "2007"
+  },
+  {
+   "pmid": "24038560",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2013"
+  },
+  {
+   "pmid": "22696718",
+   "truth": "case_report",
+   "pred": "case_series",
+   "confidence": 1.0,
+   "year": "2011"
+  },
+  {
+   "pmid": "39167807",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2024"
+  },
+  {
+   "pmid": "33616314",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "21306238",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2011"
+  },
+  {
+   "pmid": "26406148",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2015"
+  },
+  {
+   "pmid": "26703889",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2016"
+  },
+  {
+   "pmid": "22149876",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2012"
+  },
+  {
+   "pmid": "27279544",
+   "truth": "rct",
+   "pred": "rct",
+   "confidence": 1.0,
+   "year": "2016"
+  },
+  {
+   "pmid": "17311603",
+   "truth": "rct",
+   "pred": "cohort",
+   "confidence": 0.97,
+   "year": "2007"
+  },
+  {
+   "pmid": "40538704",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2025"
+  },
+  {
+   "pmid": "17052297",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2006"
+  },
+  {
+   "pmid": "41782953",
+   "truth": "case_report",
+   "pred": "case_report",
+   "confidence": 1.0,
+   "year": "2026"
+  },
+  {
+   "pmid": "34379039",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2022"
+  },
+  {
+   "pmid": "34812859",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2021"
+  },
+  {
+   "pmid": "37998335",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2023"
+  },
+  {
+   "pmid": "31587447",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2019"
+  },
+  {
+   "pmid": "32107726",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2020"
+  },
+  {
+   "pmid": "28705050",
+   "truth": "review",
+   "pred": "review",
+   "confidence": 1.0,
+   "year": "2018"
+  }
+ ]
+}

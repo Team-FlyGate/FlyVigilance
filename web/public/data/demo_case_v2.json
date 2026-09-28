@@ -1,0 +1,1185 @@
+{
+ "case": {
+  "primaryid": 94666163,
+  "caseid": 9466616,
+  "quarter": "2026Q2",
+  "fda_dt": "2026-06-22",
+  "age": 13.0,
+  "sex": "M",
+  "weight": null,
+  "occp_cod": null,
+  "country": "CN",
+  "rept_cod": "EXP",
+  "bucket": "death",
+  "drugs": [
+   {
+    "drug": "CYCLOSPORINE",
+    "role": "PS",
+    "route": "Unknown",
+    "dechal": "U",
+    "rechal": null,
+    "indication": "graft versus host disease"
+   },
+   {
+    "drug": "METHOTREXATE",
+    "role": "SS",
+    "route": "Unknown",
+    "dechal": "U",
+    "rechal": null,
+    "indication": "graft versus host disease"
+   },
+   {
+    "drug": "ACYCLOVIR",
+    "role": "SS",
+    "route": "Unknown",
+    "dechal": "U",
+    "rechal": null,
+    "indication": "infection prophylaxis"
+   },
+   {
+    "drug": "GANCICLOVIR",
+    "role": "SS",
+    "route": "Unknown",
+    "dechal": "U",
+    "rechal": null,
+    "indication": "infection prophylaxis"
+   },
+   {
+    "drug": "FLUDARABINE",
+    "role": "SS",
+    "route": "Unknown",
+    "dechal": "U",
+    "rechal": null,
+    "indication": "acute leukaemia"
+   },
+   {
+    "drug": "CYTARABINE",
+    "role": "SS",
+    "route": "Unknown",
+    "dechal": "U",
+    "rechal": null,
+    "indication": "acute leukaemia"
+   },
+   {
+    "drug": "THYMOCYTE IMMUNE GLOBULIN NOS",
+    "role": "C",
+    "route": "Unknown",
+    "dechal": "U",
+    "rechal": null,
+    "indication": "product used for unknown indication"
+   },
+   {
+    "drug": "CYCLOPHOSPHAMIDE",
+    "role": "C",
+    "route": "Unknown",
+    "dechal": "U",
+    "rechal": null,
+    "indication": "product used for unknown indication"
+   },
+   {
+    "drug": "ALPROSTADIL",
+    "role": "C",
+    "route": "Unknown",
+    "dechal": "U",
+    "rechal": null,
+    "indication": "venoocclusive liver disease"
+   },
+   {
+    "drug": "UNSPECIFIED INGREDIENT",
+    "role": "C",
+    "route": "Unknown",
+    "dechal": "U",
+    "rechal": null,
+    "indication": "venoocclusive liver disease"
+   }
+  ],
+  "reactions": [
+   "acute leukaemia",
+   "bk virus infection",
+   "cystitis haemorrhagic",
+   "disseminated intravascular coagulation",
+   "drug ineffective",
+   "haematological malignancy",
+   "klebsiella sepsis",
+   "neoplasm recurrence",
+   "pneumonia"
+  ],
+  "outcomes": [
+   "DE",
+   "OT"
+  ]
+ },
+ "triage": {
+  "state": "FAERS ICSR primaryid 94666163 (case 9466616, 2026Q2)\nPatient: age 13y, male\nReporter: not reported, country CN\nDrug [primary suspect]: CYCLOSPORINE (unknown; for graft versus host disease)\nDrug [secondary suspect]: METHOTREXATE (unknown; for graft versus host disease)\nDrug [secondary suspect]: ACYCLOVIR (unknown; for infection prophylaxis)\nDrug [secondary suspect]: GANCICLOVIR (unknown; for infection prophylaxis)\nDrug [secondary suspect]: FLUDARABINE (unknown; for acute leukaemia)\nDrug [secondary suspect]: CYTARABINE (unknown; for acute leukaemia)\nDrug [concomitant]: THYMOCYTE IMMUNE GLOBULIN NOS (unknown; for product used for unknown indication)\nDrug [concomitant]: CYCLOPHOSPHAMIDE (unknown; for product used for unknown indication)\nReactions (MedDRA PT): acute leukaemia; bk virus infection; cystitis haemorrhagic; disseminated intravascular coagulation; drug ineffective; haematological malignancy; klebsiella sepsis; neoplasm recurrence; pneumonia\nOutcomes: death, other serious\nLabel check (US label CycloSPORINE, Modfied, effective 20260910): acute leukaemia: not found in label text; bk virus infection: listed in warnings; cystitis haemorrhagic: not found in label text; disseminated intravascular coagulation: not found in label text; haematological malignancy: not found in label text",
+  "suspect": "CYCLOSPORINE",
+  "validity": {
+   "valid": true,
+   "checks": {
+    "reporter": true,
+    "patient": true,
+    "suspect_drug": true,
+    "adverse_event": true
+   }
+  },
+  "grounding": {
+   "label": {
+    "found": true,
+    "drug": "CYCLOSPORINE",
+    "setid": "5baaf78c-90f6-abcf-52c8-814490f3cf9f",
+    "effective": "20260910",
+    "route": [
+     "ORAL"
+    ],
+    "brand": "CycloSPORINE, Modfied",
+    "hits": [
+     {
+      "id": "label:5baaf78c-90f6-abcf-52c8-814490f3cf9f#warnings",
+      "pt": "bk virus infection",
+      "section": "warnings",
+      "quote": "oencephalopathy (PML), and polyoma virus-associated nephropathy (PVAN), especially due to BK virus infection, which have been observed in patients receiving cyclosporine. PVAN is associated with serious outcomes, inclu"
+     }
+    ],
+    "by_pt": {
+     "acute leukaemia": {
+      "sections": [],
+      "rank": 0,
+      "disclaimer": null
+     },
+     "bk virus infection": {
+      "sections": [
+       "warnings"
+      ],
+      "rank": 2,
+      "disclaimer": null
+     },
+     "cystitis haemorrhagic": {
+      "sections": [],
+      "rank": 0,
+      "disclaimer": null
+     },
+     "disseminated intravascular coagulation": {
+      "sections": [],
+      "rank": 0,
+      "disclaimer": null
+     },
+     "haematological malignancy": {
+      "sections": [],
+      "rank": 0,
+      "disclaimer": null
+     }
+    },
+    "listed": {
+     "acute leukaemia": false,
+     "bk virus infection": true,
+     "cystitis haemorrhagic": false,
+     "disseminated intravascular coagulation": false,
+     "haematological malignancy": false
+    }
+   },
+   "clinical_reactions": [
+    "acute leukaemia",
+    "bk virus infection",
+    "cystitis haemorrhagic",
+    "disseminated intravascular coagulation",
+    "haematological malignancy"
+   ],
+   "expected": 0.0,
+   "expected_source": "openFDA label",
+   "latency_ms": 50.2
+  },
+  "jev": {
+   "answers": {
+    "serious": {
+     "type": "noul",
+     "noul": 0.96
+    },
+    "expected": {
+     "type": "noul",
+     "noul": 0.14
+    },
+    "causality": {
+     "type": "choice",
+     "choice": "unassessable",
+     "confidence": 0.45,
+     "probabilities": {
+      "unlikely": 0.04,
+      "possible": 0.38,
+      "probable": 0.02,
+      "unassessable": 0.56,
+      "certain": 0.0
+     }
+    },
+    "special": {
+     "type": "choice",
+     "choice": "pediatric",
+     "confidence": 0.99,
+     "probabilities": {
+      "pregnancy": 0.0,
+      "none": 0.0,
+      "pediatric": 1.0,
+      "misuse": 0.0,
+      "interaction": 0.0,
+      "elderly": 0.0,
+      "offlabel": 0.0
+     }
+    },
+    "priority": {
+     "type": "score",
+     "score": 2.92,
+     "confidence": 0.92,
+     "legend": {
+      "0": "routine (periodic report)",
+      "1": "standard review (30 days)",
+      "2": "priority review (7 days)",
+      "3": "expedited (15-day report, immediate)"
+     },
+     "probabilities": {
+      "0": 0.0,
+      "1": 0.01,
+      "2": 0.05,
+      "3": 0.94
+     }
+    },
+    "route": {
+     "type": "choice",
+     "choice": "expedite",
+     "confidence": 0.9,
+     "probabilities": {
+      "signal_review": 0.08,
+      "monitor": 0.0,
+      "close": 0.0,
+      "expedite": 0.92
+     }
+    },
+    "deep": {
+     "type": "noul",
+     "noul": 0.73
+    }
+   },
+   "usage": {
+    "input_tokens": 1185,
+    "output_tokens": 246
+   },
+   "model": "jev-1.13.0",
+   "latency_ms": 412.7
+  },
+  "decision": {
+   "action": "expedite",
+   "tier": "human",
+   "system2": true,
+   "reasons": [
+    "[US] serious=0.96 and expected=0.00 (openFDA label): serious unexpected -> expedited candidate"
+   ],
+   "regime": "US",
+   "deadline": "15 calendar days (21 CFR 314.80: serious and unexpected)"
+  }
+ },
+ "assess": {
+  "verdict": "pass",
+  "rounds": [
+   {
+    "round": 1,
+    "model": "nvidia/nemotron-3-super-120b-a12b",
+    "latency_ms": 10794.3,
+    "usage": {
+     "prompt_tokens": 2825,
+     "completion_tokens": 779,
+     "total_tokens": 3604
+    },
+    "fallbacks": [],
+    "memo": {
+     "claims": [
+      {
+       "id": "c1",
+       "text": "The case reports acute leukaemia, bk virus infection, and cystitis haemorrhagic as reactions in a 13-year-old male receiving cyclosporine for graft versus host disease.",
+       "evidence": [
+        "faers:case:94666163"
+       ],
+       "overclaim_p": 0.17
+      },
+      {
+       "id": "c2",
+       "text": "BK virus infection is listed in the cyclosporine label under warnings, with a specific mention of polyoma virus-associated nephropathy (PVAN) due to BK virus infection.",
+       "evidence": [
+        "label:5baaf78c-90f6-abcf-52c8-814490f3cf9f#warnings"
+       ],
+       "overclaim_p": 0.14
+      },
+      {
+       "id": "c3",
+       "text": "FAERS shows a strong disproportionality signal for cyclosporine and BK virus infection (PRR=94.173, ROR025=88.06, IC025=5.889), meeting Evans, ROR, and IC criteria.",
+       "evidence": [
+        "faers:2x2:CYCLOSPORINE:bk virus infection@2026Q2"
+       ],
+       "overclaim_p": 0.39
+      },
+      {
+       "id": "c4",
+       "text": "Acute leukaemia and cystitis haemorrhagic are not found in the cyclosporine label and are not among the 80 most-reported reactions for cyclosporine in FAERS, so disproportionality is not available for these reactions.",
+       "evidence": [
+        "faers:2x2:CYCLOSPORINE:acute leukaemia@2026Q2",
+        "faers:2x2:CYCLOSPORINE:cystitis haemorrhagic@2026Q2",
+        "label:5baaf78c-90f6-abcf-52c8-814490f3cf9f"
+       ],
+       "overclaim_p": 0.16
+      },
+      {
+       "id": "c5",
+       "text": "The case includes multiple concomitant medications (e.g., fludarabine, cytarabine, methotrexate) that are known to be used in acute leukaemia and may confound attribution of acute leukaemia to cyclosporine.",
+       "evidence": [
+        "faers:case:94666163"
+       ],
+       "overclaim_p": 0.08
+      },
+      {
+       "id": "c6",
+       "text": "The reflex judgment assesses causality as 'unassessable' due to confounding and limited information, despite a high seriousness probability (0.96).",
+       "evidence": [
+        "REFLEX JUDGMENTS"
+       ],
+       "overclaim_p": 0.18
+      }
+     ],
+     "assessment": "expedite",
+     "narrative": "A 13-year-old male developed acute leukaemia, BK virus infection, and haemorrhagic cystitis while on cyclosporine for GVHD, with multiple concomitant leukemogenic and immunosuppressive drugs. BK virus infection is label-listed and shows a strong FAERS signal, but causality is unassessable due to confounding. The case is serious and requires expedited review.",
+     "open_questions": [
+      "Whether acute leukaemia is disease-related or drug-induced cannot be determined from this case alone due to concomitant chemotherapy and underlying condition.",
+      "The role of cyclosporine in BK virus infection is biologically plausible and supported by label and signal, but individual causality remains unclear without temporal dechallenge/rechallenge data."
+     ]
+    },
+    "issues": [
+     {
+      "claim": "c6",
+      "tier": 1,
+      "rule": "unknown_evidence",
+      "detail": "evidence IDs not in bundle: ['REFLEX JUDGMENTS']"
+     }
+    ],
+    "judge_latency_ms": 405.9,
+    "judge_usage": {
+     "input_tokens": 3502,
+     "output_tokens": 912
+    }
+   },
+   {
+    "round": 2,
+    "model": "nvidia/nemotron-3-super-120b-a12b",
+    "latency_ms": 13611.4,
+    "usage": {
+     "prompt_tokens": 2888,
+     "completion_tokens": 617,
+     "total_tokens": 3505
+    },
+    "fallbacks": [],
+    "memo": {
+     "claims": [
+      {
+       "id": "c1",
+       "text": "The case reports acute leukaemia, BK virus infection, and cystitis haemorrhagic as reactions in a 13-year-old male receiving cyclosporine for graft versus host disease.",
+       "evidence": [
+        "faers:case:94666163"
+       ],
+       "overclaim_p": 0.24
+      },
+      {
+       "id": "c2",
+       "text": "BK virus infection is listed in the warnings section of the cyclosporine label.",
+       "evidence": [
+        "label:5baaf78c-90f6-abcf-52c8-814490f3cf9f#warnings"
+       ],
+       "overclaim_p": 0.17
+      },
+      {
+       "id": "c3",
+       "text": "Acute leukaemia and cystitis haemorrhagic are not found in the cyclosporine label.",
+       "evidence": [
+        "label:5baaf78c-90f6-abcf-52c8-814490f3cf9f"
+       ],
+       "overclaim_p": 0.14
+      },
+      {
+       "id": "c4",
+       "text": "FAERS shows a strong disproportionality signal for cyclosporine and BK virus infection (PRR=94.173, ROR025=88.06, IC025=5.889).",
+       "evidence": [
+        "faers:2x2:CYCLOSPORINE:bk virus infection@2026Q2"
+       ],
+       "overclaim_p": 0.28
+      },
+      {
+       "id": "c5",
+       "text": "No disproportionality data are available for cyclosporine with acute leukaemia or cystitis haemorrhagic in the FAERS 2x2 table.",
+       "evidence": [
+        "faers:2x2:CYCLOSPORINE:acute leukaemia@2026Q2",
+        "faers:2x2:CYCLOSPORINE:cystitis haemorrhagic@2026Q2"
+       ],
+       "overclaim_p": 0.14
+      }
+     ],
+     "assessment": "signal_review",
+     "narrative": "A pediatric patient developed acute leukaemia, BK virus infection, and cystitis haemorrhagic while on cyclosporine for GVHD. BK virus infection is labeled and shows a strong FAERS signal. Acute leukaemia and cystitis haemorrhagic are not labeled and lack FAERS signals. Concomitant leukemogenic drugs (fludarabine, cytarabine) raise confounding by indication.",
+     "open_questions": [
+      "Whether acute leukaemia represents disease progression or a new event, given concomitant fludarabine and cytarabine.",
+      "Whether cystitis haemorrhagic is related to cyclosporine, infection, or other comorbidities in this immunocompromised patient."
+     ]
+    },
+    "issues": [],
+    "judge_latency_ms": 441.2,
+    "judge_usage": {
+     "input_tokens": 2943,
+     "output_tokens": 764
+    }
+   }
+  ],
+  "memo": {
+   "claims": [
+    {
+     "id": "c1",
+     "text": "The case reports acute leukaemia, BK virus infection, and cystitis haemorrhagic as reactions in a 13-year-old male receiving cyclosporine for graft versus host disease.",
+     "evidence": [
+      "faers:case:94666163"
+     ],
+     "overclaim_p": 0.24
+    },
+    {
+     "id": "c2",
+     "text": "BK virus infection is listed in the warnings section of the cyclosporine label.",
+     "evidence": [
+      "label:5baaf78c-90f6-abcf-52c8-814490f3cf9f#warnings"
+     ],
+     "overclaim_p": 0.17
+    },
+    {
+     "id": "c3",
+     "text": "Acute leukaemia and cystitis haemorrhagic are not found in the cyclosporine label.",
+     "evidence": [
+      "label:5baaf78c-90f6-abcf-52c8-814490f3cf9f"
+     ],
+     "overclaim_p": 0.14
+    },
+    {
+     "id": "c4",
+     "text": "FAERS shows a strong disproportionality signal for cyclosporine and BK virus infection (PRR=94.173, ROR025=88.06, IC025=5.889).",
+     "evidence": [
+      "faers:2x2:CYCLOSPORINE:bk virus infection@2026Q2"
+     ],
+     "overclaim_p": 0.28
+    },
+    {
+     "id": "c5",
+     "text": "No disproportionality data are available for cyclosporine with acute leukaemia or cystitis haemorrhagic in the FAERS 2x2 table.",
+     "evidence": [
+      "faers:2x2:CYCLOSPORINE:acute leukaemia@2026Q2",
+      "faers:2x2:CYCLOSPORINE:cystitis haemorrhagic@2026Q2"
+     ],
+     "overclaim_p": 0.14
+    }
+   ],
+   "assessment": "signal_review",
+   "narrative": "A pediatric patient developed acute leukaemia, BK virus infection, and cystitis haemorrhagic while on cyclosporine for GVHD. BK virus infection is labeled and shows a strong FAERS signal. Acute leukaemia and cystitis haemorrhagic are not labeled and lack FAERS signals. Concomitant leukemogenic drugs (fludarabine, cytarabine) raise confounding by indication.",
+   "open_questions": [
+    "Whether acute leukaemia represents disease progression or a new event, given concomitant fludarabine and cytarabine.",
+    "Whether cystitis haemorrhagic is related to cyclosporine, infection, or other comorbidities in this immunocompromised patient."
+   ]
+  },
+  "guard": {
+   "safe": true,
+   "categories": null,
+   "model": "nvidia/llama-3.1-nemotron-safety-guard-8b-v3",
+   "latency_ms": 455.3,
+   "fallbacks": []
+  },
+  "stopped_early": false,
+  "total_ms": 25839.2,
+  "rules": [
+   {
+    "id": "R1",
+    "text": "Disproportionality (PRR, ROR, IC) shows a reporting association, never causation."
+   },
+   {
+    "id": "R2",
+    "text": "FAERS counts have no exposure denominator: no incidence, rate or risk estimates."
+   },
+   {
+    "id": "R3",
+    "text": "Do not rank or compare the safety of different drugs by disproportionality magnitude."
+   },
+   {
+    "id": "R4",
+    "text": "Absence of a disproportionality signal is not evidence of safety."
+   },
+   {
+    "id": "R5",
+    "text": "A reaction listed in the label does not confirm causality in this individual case."
+   },
+   {
+    "id": "R6",
+    "text": "A single case report cannot establish or confirm a signal on its own."
+   },
+   {
+    "id": "R7",
+    "text": "Number of PubMed hits is not a measure of evidence strength."
+   },
+   {
+    "id": "R8",
+    "text": "Counts may include duplicates and stimulated reporting; do not treat them as exact."
+   },
+   {
+    "id": "R9",
+    "text": "Confounding by indication and co-medication must not be ignored when attributing the reaction."
+   },
+   {
+    "id": "R10",
+    "text": "Model probabilities are population-calibrated, not certainty about this case."
+   },
+   {
+    "id": "R11",
+    "text": "No individual treatment advice or dosing recommendations for the patient."
+   },
+   {
+    "id": "R12",
+    "text": "Quoted label text must actually appear in the cited label section."
+   },
+   {
+    "id": "R13",
+    "text": "An evidence grade is population-level context: never cite the grade without its basis, and never as proof of causality in this case."
+   }
+  ],
+  "evidence": {
+   "suspect": "CYCLOSPORINE",
+   "reactions": [
+    "acute leukaemia",
+    "bk virus infection",
+    "cystitis haemorrhagic"
+   ],
+   "faers": [
+    {
+     "id": "faers:2x2:CYCLOSPORINE:acute leukaemia@2026Q2",
+     "pt": "acute leukaemia",
+     "a": null,
+     "note": "not among the 80 most-reported reactions exported for this drug; disproportionality not available here",
+     "N": 17585242
+    },
+    {
+     "pt": "bk virus infection",
+     "a": 900,
+     "expected": 13.58,
+     "prr": 94.173,
+     "prr_lo": 87.128,
+     "prr_hi": 101.787,
+     "ror": 95.24,
+     "ror_lo": 88.06,
+     "ror_hi": 103.004,
+     "chi2": 58061.2,
+     "ic": 5.999,
+     "ic025": 5.889,
+     "evans": true,
+     "ror_sig": true,
+     "ic_sig": true,
+     "id": "faers:2x2:CYCLOSPORINE:bk virus infection@2026Q2",
+     "N": 17585242
+    },
+    {
+     "id": "faers:2x2:CYCLOSPORINE:cystitis haemorrhagic@2026Q2",
+     "pt": "cystitis haemorrhagic",
+     "a": null,
+     "note": "not among the 80 most-reported reactions exported for this drug; disproportionality not available here",
+     "N": 17585242
+    }
+   ],
+   "label": {
+    "found": true,
+    "drug": "CYCLOSPORINE",
+    "setid": "5baaf78c-90f6-abcf-52c8-814490f3cf9f",
+    "effective": "20260910",
+    "route": [
+     "ORAL"
+    ],
+    "brand": "CycloSPORINE, Modfied",
+    "hits": [
+     {
+      "id": "label:5baaf78c-90f6-abcf-52c8-814490f3cf9f#warnings",
+      "pt": "bk virus infection",
+      "section": "warnings",
+      "quote": "oencephalopathy (PML), and polyoma virus-associated nephropathy (PVAN), especially due to BK virus infection, which have been observed in patients receiving cyclosporine. PVAN is associated with serious outcomes, inclu"
+     }
+    ],
+    "by_pt": {
+     "acute leukaemia": {
+      "sections": [],
+      "rank": 0,
+      "disclaimer": null
+     },
+     "bk virus infection": {
+      "sections": [
+       "warnings"
+      ],
+      "rank": 2,
+      "disclaimer": null
+     },
+     "cystitis haemorrhagic": {
+      "sections": [],
+      "rank": 0,
+      "disclaimer": null
+     }
+    },
+    "listed": {
+     "acute leukaemia": false,
+     "bk virus infection": true,
+     "cystitis haemorrhagic": false
+    }
+   },
+   "literature": {
+    "acute leukaemia": {
+     "query": "\"cyclosporine\"[tiab] AND \"acute leukaemia\"[tiab]",
+     "count": 5,
+     "pmids": [
+      "2043473",
+      "10087141",
+      "9575394",
+      "14642178",
+      "11552980"
+     ],
+     "ids": [
+      "pubmed:2043473#review",
+      "pubmed:10087141#preclinical",
+      "pubmed:9575394#cohort",
+      "pubmed:14642178#cohort",
+      "pubmed:11552980#preclinical"
+     ],
+     "articles": [
+      {
+       "pmid": "2043473",
+       "year": "1991",
+       "title": "Autotransplants in acute leukaemia.",
+       "pubtypes": [
+        "Journal Article",
+        "Research Support, Non-U.S. Gov't",
+        "Research Support, U.S. Gov't, P.H.S.",
+        "Review"
+       ],
+       "design": "review",
+       "design_source": "PubMed publication type",
+       "supports": 0.07,
+       "strength": 0.0,
+       "dechallenge": 0.05,
+       "id": "pubmed:2043473#review"
+      },
+      {
+       "pmid": "10087141",
+       "year": "1999",
+       "title": "P-glycoprotein inhibition by glibenclamide and related compounds.",
+       "pubtypes": [
+        "Journal Article",
+        "Research Support, Non-U.S. Gov't"
+       ],
+       "design": "preclinical",
+       "design_source": "jev",
+       "supports": 0.03,
+       "strength": 0.0,
+       "dechallenge": 0.02,
+       "id": "pubmed:10087141#preclinical"
+      },
+      {
+       "pmid": "9575394",
+       "year": "1998",
+       "title": "Risk factors in bone marrow transplant recipients with leukaemia. Increased relapse risk in patients treated with ciprofloxacin for gut decontamination.",
+       "pubtypes": [
+        "Journal Article",
+        "Research Support, Non-U.S. Gov't"
+       ],
+       "design": "cohort",
+       "design_source": "jev",
+       "supports": 0.11,
+       "strength": 0.1,
+       "dechallenge": 0.05,
+       "id": "pubmed:9575394#cohort"
+      },
+      {
+       "pmid": "14642178",
+       "year": "2003",
+       "title": "[Comparison of conditioning regimens containing or no fludarabine in nonmyeloablative allogeneic peripheral blood stem cell transplantation].",
+       "pubtypes": [
+        "Comparative Study",
+        "English Abstract",
+        "Journal Article"
+       ],
+       "design": "cohort",
+       "design_source": "jev",
+       "supports": 0.08,
+       "strength": 0.01,
+       "dechallenge": 0.03,
+       "id": "pubmed:14642178#cohort"
+      },
+      {
+       "pmid": "11552980",
+       "year": "2001",
+       "title": "Cross-resistance to cytosine arabinoside in a multidrug-resistant human promyelocytic cell line selected for resistance to doxorubicin: implications for combination chemotherapy.",
+       "pubtypes": [
+        "Journal Article",
+        "Research Support, Non-U.S. Gov't"
+       ],
+       "design": "preclinical",
+       "design_source": "jev",
+       "supports": 0.05,
+       "strength": 0.0,
+       "dechallenge": 0.03,
+       "id": "pubmed:11552980#preclinical"
+      }
+     ],
+     "summary": {
+      "read": 5,
+      "supportive": 0,
+      "analytic_read": 2,
+      "analytic_status": "not_supported",
+      "analytic_supportive": 0,
+      "anecdotal_supportive": 0,
+      "dechallenge_reports": 0,
+      "designs": {
+       "cohort": 2,
+       "review": 1,
+       "preclinical": 2
+      }
+     },
+     "judge_latency_ms": 491.4
+    },
+    "bk virus infection": {
+     "query": "\"cyclosporine\"[tiab] AND \"bk virus infection\"[tiab]",
+     "count": 11,
+     "pmids": [
+      "24685738",
+      "21940156",
+      "19040017",
+      "15518765",
+      "15996241",
+      "14966420"
+     ],
+     "ids": [
+      "pubmed:24685738#cohort",
+      "pubmed:21940156#review",
+      "pubmed:19040017#cohort",
+      "pubmed:15518765#case_series",
+      "pubmed:15996241#cohort",
+      "pubmed:14966420#cohort"
+     ],
+     "articles": [
+      {
+       "pmid": "24685738",
+       "year": "2014",
+       "title": "Prospective study of BK virus infection and nephropathy during the first year after kidney transplantation.",
+       "pubtypes": [
+        "Journal Article"
+       ],
+       "design": "cohort",
+       "design_source": "jev",
+       "supports": 0.73,
+       "strength": 0.9,
+       "dechallenge": 0.03,
+       "id": "pubmed:24685738#cohort"
+      },
+      {
+       "pmid": "21940156",
+       "year": "2012",
+       "title": "The influence of immunosuppressive agents on BK virus risk following kidney transplantation, and implications for choice of regimen.",
+       "pubtypes": [
+        "Journal Article",
+        "Review"
+       ],
+       "design": "review",
+       "design_source": "PubMed publication type",
+       "supports": 0.79,
+       "strength": 0.64,
+       "dechallenge": 0.07,
+       "id": "pubmed:21940156#review"
+      },
+      {
+       "pmid": "19040017",
+       "year": "2008",
+       "title": "[Clinical diagnosis and treatment of BK virus infection in renal transplant recipients].",
+       "pubtypes": [
+        "English Abstract",
+        "Journal Article",
+        "Research Support, Non-U.S. Gov't"
+       ],
+       "design": "cohort",
+       "design_source": "jev",
+       "supports": 0.76,
+       "strength": 0.86,
+       "dechallenge": 0.34,
+       "id": "pubmed:19040017#cohort"
+      },
+      {
+       "pmid": "15518765",
+       "year": "2004",
+       "title": "BK virus infection in kidney transplant recipients.",
+       "pubtypes": [
+        "Journal Article"
+       ],
+       "design": "case_series",
+       "design_source": "jev",
+       "supports": 0.37,
+       "strength": 0.34,
+       "dechallenge": 0.06,
+       "id": "pubmed:15518765#case_series"
+      },
+      {
+       "pmid": "15996241",
+       "year": "2005",
+       "title": "A prospective longitudinal study of BK virus infection in 104 renal transplant recipients.",
+       "pubtypes": [
+        "Journal Article"
+       ],
+       "design": "cohort",
+       "design_source": "jev",
+       "supports": 0.66,
+       "strength": 0.22,
+       "dechallenge": 0.04,
+       "id": "pubmed:15996241#cohort"
+      },
+      {
+       "pmid": "14966420",
+       "year": "2004",
+       "title": "The high incidence of BK polyoma virus infection among renal transplant recipients in India.",
+       "pubtypes": [
+        "Journal Article"
+       ],
+       "design": "cohort",
+       "design_source": "jev",
+       "supports": 0.87,
+       "strength": 1.8,
+       "dechallenge": 0.03,
+       "id": "pubmed:14966420#cohort"
+      }
+     ],
+     "summary": {
+      "read": 6,
+      "supportive": 5,
+      "analytic_read": 4,
+      "analytic_status": "supports",
+      "analytic_supportive": 4,
+      "anecdotal_supportive": 0,
+      "dechallenge_reports": 0,
+      "designs": {
+       "cohort": 4,
+       "case_series": 1,
+       "review": 1
+      }
+     },
+     "judge_latency_ms": 302.2
+    },
+    "cystitis haemorrhagic": {
+     "query": "\"cyclosporine\"[tiab] AND \"cystitis haemorrhagic\"[tiab]",
+     "count": 0,
+     "pmids": [],
+     "ids": [],
+     "articles": [],
+     "summary": {
+      "read": 0,
+      "supportive": 0,
+      "analytic_read": 0,
+      "analytic_status": "no_analytic",
+      "analytic_supportive": 0,
+      "anecdotal_supportive": 0,
+      "dechallenge_reports": 0,
+      "designs": {}
+     }
+    }
+   },
+   "pubmed": {
+    "acute leukaemia": {
+     "count": 5,
+     "pmids": [
+      "2043473",
+      "10087141",
+      "9575394",
+      "14642178",
+      "11552980"
+     ],
+     "ids": [
+      "pubmed:2043473#review",
+      "pubmed:10087141#preclinical",
+      "pubmed:9575394#cohort",
+      "pubmed:14642178#cohort",
+      "pubmed:11552980#preclinical"
+     ]
+    },
+    "bk virus infection": {
+     "count": 11,
+     "pmids": [
+      "24685738",
+      "21940156",
+      "19040017",
+      "15518765",
+      "15996241",
+      "14966420"
+     ],
+     "ids": [
+      "pubmed:24685738#cohort",
+      "pubmed:21940156#review",
+      "pubmed:19040017#cohort",
+      "pubmed:15518765#case_series",
+      "pubmed:15996241#cohort",
+      "pubmed:14966420#cohort"
+     ]
+    },
+    "cystitis haemorrhagic": {
+     "count": 0,
+     "pmids": [],
+     "ids": []
+    }
+   },
+   "grades": [
+    {
+     "id": "grade:CYCLOSPORINE:acute leukaemia@2026Q2",
+     "drug": "CYCLOSPORINE",
+     "pt": "acute leukaemia",
+     "grade": "U",
+     "grade_name": "판정 불가 · 라벨을 확인하지 못했고 신호도 서지 않음",
+     "axes": {
+      "regulatory": 0,
+      "regulatory_name": "라벨 미기재",
+      "signal": "unavailable",
+      "literature": {
+       "read": 5,
+       "supportive": 0,
+       "analytic_read": 2,
+       "analytic_supportive": 0,
+       "anecdotal_supportive": 0,
+       "analytic_status": "not_supported"
+      }
+     },
+     "label_sections": [],
+     "disclaimer": null,
+     "stats": null,
+     "basis": [
+      "faers:2x2:CYCLOSPORINE:acute leukaemia@2026Q2"
+     ],
+     "gaps": [
+      "FAERS 통계 부족: 동시 보고 3건 미만이거나 웨어하우스 상위 반응 목록 밖입니다",
+      "라벨 검색은 PT 문자열(영국·미국 철자) 일치 기준입니다. 라벨이 다른 표현으로 적었을 수 있습니다",
+      "분석 연구 2편 중 0편만 연관을 지지합니다 (문헌 결과 혼재 또는 반론)"
+     ],
+     "summary": "regulatory=라벨 미기재, FAERS signal=unavailable, literature supportive 0/5 (analytic 0/2 not_supported, case reports 0)",
+     "caution": "집단 수준의 근거 등급입니다. 이 한 사례의 인과를 뜻하지 않으며, 근거와 공백 없이 등급만 인용하지 않습니다."
+    },
+    {
+     "id": "grade:CYCLOSPORINE:bk virus infection@2026Q2",
+     "drug": "CYCLOSPORINE",
+     "pt": "bk virus infection",
+     "grade": "B",
+     "grade_name": "개연 · 라벨 기재 + 신호",
+     "axes": {
+      "regulatory": 2,
+      "regulatory_name": "경고·주의사항",
+      "signal": "strong",
+      "literature": {
+       "read": 6,
+       "supportive": 5,
+       "analytic_read": 4,
+       "analytic_supportive": 4,
+       "anecdotal_supportive": 0,
+       "analytic_status": "supports"
+      }
+     },
+     "label_sections": [
+      "warnings"
+     ],
+     "disclaimer": null,
+     "stats": {
+      "a": 900,
+      "prr": 94.173,
+      "prr_lo": 87.128,
+      "prr_hi": 101.787,
+      "ror_lo": 88.06,
+      "ic025": 5.889,
+      "chi2": 58061.2
+     },
+     "basis": [
+      "faers:2x2:CYCLOSPORINE:bk virus infection@2026Q2",
+      "label:5baaf78c-90f6-abcf-52c8-814490f3cf9f#warnings",
+      "pubmed:24685738#cohort",
+      "pubmed:21940156#review",
+      "pubmed:19040017#cohort",
+      "pubmed:15996241#cohort"
+     ],
+     "gaps": [],
+     "summary": "regulatory=경고·주의사항, FAERS signal=strong, literature supportive 5/6 (analytic 4/4 supports, case reports 0)",
+     "caution": "집단 수준의 근거 등급입니다. 이 한 사례의 인과를 뜻하지 않으며, 근거와 공백 없이 등급만 인용하지 않습니다."
+    },
+    {
+     "id": "grade:CYCLOSPORINE:cystitis haemorrhagic@2026Q2",
+     "drug": "CYCLOSPORINE",
+     "pt": "cystitis haemorrhagic",
+     "grade": "U",
+     "grade_name": "판정 불가 · 라벨을 확인하지 못했고 신호도 서지 않음",
+     "axes": {
+      "regulatory": 0,
+      "regulatory_name": "라벨 미기재",
+      "signal": "unavailable",
+      "literature": {
+       "read": 0,
+       "supportive": 0,
+       "analytic_read": 0,
+       "analytic_supportive": 0,
+       "anecdotal_supportive": 0,
+       "analytic_status": "no_analytic"
+      }
+     },
+     "label_sections": [],
+     "disclaimer": null,
+     "stats": null,
+     "basis": [
+      "faers:2x2:CYCLOSPORINE:cystitis haemorrhagic@2026Q2"
+     ],
+     "gaps": [
+      "FAERS 통계 부족: 동시 보고 3건 미만이거나 웨어하우스 상위 반응 목록 밖입니다",
+      "라벨 검색은 PT 문자열(영국·미국 철자) 일치 기준입니다. 라벨이 다른 표현으로 적었을 수 있습니다",
+      "문헌을 읽지 못했습니다"
+     ],
+     "summary": "regulatory=라벨 미기재, FAERS signal=unavailable",
+     "caution": "집단 수준의 근거 등급입니다. 이 한 사례의 인과를 뜻하지 않으며, 근거와 공백 없이 등급만 인용하지 않습니다."
+    }
+   ],
+   "catalog": [
+    {
+     "id": "faers:case:94666163",
+     "what": "this ICSR (demographics, drugs, reactions, outcomes)"
+    },
+    {
+     "id": "faers:2x2:CYCLOSPORINE:acute leukaemia@2026Q2",
+     "what": "FAERS 2x2 for CYCLOSPORINE / acute leukaemia: not among the 80 most-reported reactions exported for this drug; disproportionality not available here"
+    },
+    {
+     "id": "faers:2x2:CYCLOSPORINE:bk virus infection@2026Q2",
+     "what": "FAERS 2x2 for CYCLOSPORINE / bk virus infection: a=900, PRR=94.173 [87.128-101.787], ROR025=88.06, IC025=5.889, Evans=True, ROR=True, IC=True"
+    },
+    {
+     "id": "faers:2x2:CYCLOSPORINE:cystitis haemorrhagic@2026Q2",
+     "what": "FAERS 2x2 for CYCLOSPORINE / cystitis haemorrhagic: not among the 80 most-reported reactions exported for this drug; disproportionality not available here"
+    },
+    {
+     "id": "label:5baaf78c-90f6-abcf-52c8-814490f3cf9f",
+     "what": "openFDA label for CYCLOSPORINE (CycloSPORINE, Modfied, route ORAL), effective 20260910; reaction search in boxed warning/warnings/adverse reactions: acute leukaemia=not found, bk virus infection=listed, cystitis haemorrhagic=not found"
+    },
+    {
+     "id": "label:5baaf78c-90f6-abcf-52c8-814490f3cf9f#warnings",
+     "what": "label section warnings mentions 'bk virus infection': \"oencephalopathy (PML), and polyoma virus-associated nephropathy (PVAN), especially due to BK virus infection, which have been observed in patients receiving cyclosporine. PVAN is associated with serious outcomes, inclu\""
+    },
+    {
+     "id": "pubmed:search:acute leukaemia",
+     "what": "PubMed search \"cyclosporine\"[tiab] AND \"acute leukaemia\"[tiab]: 5 records"
+    },
+    {
+     "id": "pubmed:2043473#review",
+     "what": "PMID 2043473 (1991), design review [PubMed publication type], reports association p=0.07: Autotransplants in acute leukaemia."
+    },
+    {
+     "id": "pubmed:10087141#preclinical",
+     "what": "PMID 10087141 (1999), design preclinical [jev], reports association p=0.03: P-glycoprotein inhibition by glibenclamide and related compounds."
+    },
+    {
+     "id": "pubmed:9575394#cohort",
+     "what": "PMID 9575394 (1998), design cohort [jev], reports association p=0.11: Risk factors in bone marrow transplant recipients with leukaemia. Increased relapse risk in patients treated with ciprofloxacin for gut deco"
+    },
+    {
+     "id": "pubmed:14642178#cohort",
+     "what": "PMID 14642178 (2003), design cohort [jev], reports association p=0.08: [Comparison of conditioning regimens containing or no fludarabine in nonmyeloablative allogeneic peripheral blood stem cell transplantation]"
+    },
+    {
+     "id": "pubmed:11552980#preclinical",
+     "what": "PMID 11552980 (2001), design preclinical [jev], reports association p=0.05: Cross-resistance to cytosine arabinoside in a multidrug-resistant human promyelocytic cell line selected for resistance to doxorubicin: impl"
+    },
+    {
+     "id": "pubmed:search:bk virus infection",
+     "what": "PubMed search \"cyclosporine\"[tiab] AND \"bk virus infection\"[tiab]: 11 records"
+    },
+    {
+     "id": "pubmed:24685738#cohort",
+     "what": "PMID 24685738 (2014), design cohort [jev], reports association p=0.73: Prospective study of BK virus infection and nephropathy during the first year after kidney transplantation."
+    },
+    {
+     "id": "pubmed:21940156#review",
+     "what": "PMID 21940156 (2012), design review [PubMed publication type], reports association p=0.79: The influence of immunosuppressive agents on BK virus risk following kidney transplantation, and implications for choice of regimen."
+    },
+    {
+     "id": "pubmed:19040017#cohort",
+     "what": "PMID 19040017 (2008), design cohort [jev], reports association p=0.76: [Clinical diagnosis and treatment of BK virus infection in renal transplant recipients]."
+    },
+    {
+     "id": "pubmed:15518765#case_series",
+     "what": "PMID 15518765 (2004), design case_series [jev], reports association p=0.37: BK virus infection in kidney transplant recipients."
+    },
+    {
+     "id": "pubmed:15996241#cohort",
+     "what": "PMID 15996241 (2005), design cohort [jev], reports association p=0.66: A prospective longitudinal study of BK virus infection in 104 renal transplant recipients."
+    },
+    {
+     "id": "pubmed:14966420#cohort",
+     "what": "PMID 14966420 (2004), design cohort [jev], reports association p=0.87: The high incidence of BK polyoma virus infection among renal transplant recipients in India."
+    },
+    {
+     "id": "pubmed:search:cystitis haemorrhagic",
+     "what": "PubMed search \"cyclosporine\"[tiab] AND \"cystitis haemorrhagic\"[tiab]: 0 records"
+    },
+    {
+     "id": "metric:triple:OMOP@2026Q2",
+     "what": "Signal rule Evans AND ROR025>1 AND IC025>0 on the OMOP reference set (n=387): sensitivity 0.55, specificity 0.92, PPV 0.83. Measures agreement with labeled/literature reference pairs, not causality."
+    },
+    {
+     "id": "metric:triple:EU-ADR@2026Q2",
+     "what": "Signal rule Evans AND ROR025>1 AND IC025>0 on the EU-ADR reference set (n=93): sensitivity 0.86, specificity 0.84, PPV 0.82. Measures agreement with labeled/literature reference pairs, not causality."
+    },
+    {
+     "id": "metric:triple:Harpaz@2026Q2",
+     "what": "Signal rule Evans AND ROR025>1 AND IC025>0 on the Harpaz reference set (n=137): sensitivity 0.37, specificity 0.87, PPV 0.70. Measures agreement with labeled/literature reference pairs, not causality."
+    },
+    {
+     "id": "metric:triple:Harpaz-prospective@2026Q2",
+     "what": "Signal rule Evans AND ROR025>1 AND IC025>0 on the Harpaz-prospective reference set (n=127): sensitivity 0.37, specificity 0.99, PPV 0.95. Measures agreement with labeled/literature reference pairs, not causality."
+    },
+    {
+     "id": "grade:CYCLOSPORINE:acute leukaemia@2026Q2",
+     "what": "Evidence grade U (판정 불가 · 라벨을 확인하지 못했고 신호도 서지 않음) for CYCLOSPORINE / acute leukaemia: regulatory=라벨 미기재, FAERS signal=unavailable, literature supportive 0/5 (analytic 0/2 not_supported, case reports 0). Population-level evidence only; not individual-case causality."
+    },
+    {
+     "id": "grade:CYCLOSPORINE:bk virus infection@2026Q2",
+     "what": "Evidence grade B (개연 · 라벨 기재 + 신호) for CYCLOSPORINE / bk virus infection: regulatory=경고·주의사항, FAERS signal=strong, literature supportive 5/6 (analytic 4/4 supports, case reports 0). Population-level evidence only; not individual-case causality."
+    },
+    {
+     "id": "grade:CYCLOSPORINE:cystitis haemorrhagic@2026Q2",
+     "what": "Evidence grade U (판정 불가 · 라벨을 확인하지 못했고 신호도 서지 않음) for CYCLOSPORINE / cystitis haemorrhagic: regulatory=라벨 미기재, FAERS signal=unavailable. Population-level evidence only; not individual-case causality."
+    }
+   ],
+   "ids": [
+    "faers:2x2:CYCLOSPORINE:acute leukaemia@2026Q2",
+    "faers:2x2:CYCLOSPORINE:bk virus infection@2026Q2",
+    "faers:2x2:CYCLOSPORINE:cystitis haemorrhagic@2026Q2",
+    "faers:case:94666163",
+    "grade:CYCLOSPORINE:acute leukaemia@2026Q2",
+    "grade:CYCLOSPORINE:bk virus infection@2026Q2",
+    "grade:CYCLOSPORINE:cystitis haemorrhagic@2026Q2",
+    "label:5baaf78c-90f6-abcf-52c8-814490f3cf9f",
+    "label:5baaf78c-90f6-abcf-52c8-814490f3cf9f#warnings",
+    "metric:triple:EU-ADR@2026Q2",
+    "metric:triple:Harpaz-prospective@2026Q2",
+    "metric:triple:Harpaz@2026Q2",
+    "metric:triple:OMOP@2026Q2",
+    "pubmed:10087141#preclinical",
+    "pubmed:11552980#preclinical",
+    "pubmed:14642178#cohort",
+    "pubmed:14966420#cohort",
+    "pubmed:15518765#case_series",
+    "pubmed:15996241#cohort",
+    "pubmed:19040017#cohort",
+    "pubmed:2043473#review",
+    "pubmed:21940156#review",
+    "pubmed:24685738#cohort",
+    "pubmed:9575394#cohort",
+    "pubmed:search:acute leukaemia",
+    "pubmed:search:bk virus infection",
+    "pubmed:search:cystitis haemorrhagic"
+   ]
+  }
+ },
+ "total_ms": 26862.3,
+ "recorded": "2026-09-27 21:21"
+}

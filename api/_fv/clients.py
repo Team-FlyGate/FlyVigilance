@@ -41,8 +41,13 @@ async def jev(state: str, questions: dict, client: httpx.AsyncClient | None = No
 
 
 async def nim_chat(messages: list, models: list[str], max_tokens: int = 1200, temperature: float = 0.2,
-                   client: httpx.AsyncClient | None = None) -> dict:
-    """NVIDIA NIM chat/completions. 모델 사슬을 따라 폴백하고 사고 과정은 끈다."""
+                   client: httpx.AsyncClient | None = None, deadline: float | None = None, json_mode: bool = False) -> dict:
+    """NVIDIA NIM chat/completions. 모델 사슬을 따라 폴백하고 사고 과정은 끈다.
+
+    deadline(time.monotonic 기준)이 있으면 모든 시도를 그 안에서 끝냅니다. 서버리스 함수 제한 시간을 넘기지 않으려는 장치입니다.
+    시간 초과는 같은 모델로 다시 시도하지 않고 다음 모델로 넘어갑니다.
+    json_mode 는 NIM 의 response_format(json_object)을 켭니다. 모델이 이를 거절하면(HTTP 400) 끄고 한 번 더 시도합니다.
+    """
     if not config.NVIDIA_API_KEY:
         raise NotConfigured("NVIDIA_API_KEY")
     own = client is None
@@ -50,14 +55,25 @@ async def nim_chat(messages: list, models: list[str], max_tokens: int = 1200, te
     errors = []
     try:
         for model in models:
+            use_json = json_mode
             for attempt in range(2):
+                left = None if deadline is None else deadline - time.monotonic()
+                if left is not None and left < 3:
+                    errors.append(f"{model}: time budget exhausted")
+                    raise RuntimeError("all NIM models failed: " + "; ".join(errors))
                 body = {"model": model, "messages": messages, "max_tokens": max_tokens,
                         "temperature": temperature,
                         "chat_template_kwargs": {"enable_thinking": False}}
+                if use_json:
+                    body["response_format"] = {"type": "json_object"}
                 t0 = time.perf_counter()
                 try:
                     r = await client.post(f"{config.NIM_URL}/chat/completions", json=body,
-                                          headers={"Authorization": f"Bearer {config.NVIDIA_API_KEY}"})
+                                          headers={"Authorization": f"Bearer {config.NVIDIA_API_KEY}"},
+                                          timeout=httpx.Timeout(min(90.0, left) if left else 90.0, connect=10.0))
+                except httpx.TimeoutException as e:
+                    errors.append(f"{model}: {type(e).__name__}")
+                    break
                 except httpx.HTTPError as e:
                     errors.append(f"{model}: {type(e).__name__}")
                     continue
@@ -68,6 +84,9 @@ async def nim_chat(messages: list, models: list[str], max_tokens: int = 1200, te
                     return {"content": msg.get("content") or "", "model": model, "usage": d.get("usage", {}),
                             "latency_ms": round(ms, 1), "fallbacks": errors}
                 errors.append(f"{model}: HTTP {r.status_code}")
+                if r.status_code == 400 and use_json and attempt == 0:
+                    use_json = False
+                    continue
                 if r.status_code in (429, 503) and attempt == 0:
                     await asyncio.sleep(1.5)
                     continue
@@ -98,4 +117,12 @@ def parse_json_block(text: str):
     s, e = text.find("{"), text.rfind("}")
     if s < 0 or e < 0:
         raise ValueError("no JSON object in model output")
-    return json.loads(text[s:e + 1])
+    blob = text[s:e + 1]
+    try:
+        return json.loads(blob)
+    except json.JSONDecodeError as err:
+        # FAERS 복합제 이름(DARATUMUMAB\HYALURONIDASE)의 역슬래시를 이스케이프 없이 옮기는 경우를 고쳐 읽습니다
+        if "escape" not in str(err):
+            raise
+        # 이미 이스케이프된 쌍(역슬래시 두 개)은 그대로 두고, 뒤에 이스케이프 문자가 없는 홑 역슬래시만 두 개로 바꿉니다
+        return json.loads(re.sub(r'\\\\|\\(?![/"bfnrtu])', lambda m: m.group(0) if len(m.group(0)) == 2 else "\\\\", blob))

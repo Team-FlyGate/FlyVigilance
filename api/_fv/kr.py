@@ -8,10 +8,11 @@
    WHO-UMC 등급과 한국형 등급은 이름과 체계가 달라 섞지 않습니다.
 """
 import json
+import time
 
 import httpx
 
-from . import clients, config, evidence
+from . import clients, config, evidence, literature
 
 # 한국형 인과성 평가 알고리즘 ver 2.0 (팀 자료 「약물부작용 인과성평가 기준 및 도구」). 최고 19점, 최저 -13점.
 KR_ALGO = [
@@ -129,7 +130,7 @@ async def intake(text: str, form: str) -> dict:
     out = await clients.nim_chat(
         [{"role": "system", "content": INTAKE_SYSTEM},
          {"role": "user", "content": f"FORM TYPE: {FORMS.get(form, form)}\n\nREPORT:\n{text[:12000]}"}],
-        config.MODEL_DELIBERATE, max_tokens=2000, temperature=0.0)
+        config.MODEL_DELIBERATE, max_tokens=2000, temperature=0.0, deadline=time.monotonic() + 100, json_mode=True)
     data = clients.parse_json_block(out["content"])
     case = _norm_case(data.get("kr_form", {}), data.get("case", {}))
     case["primaryid"] = "KR-DEMO"
@@ -143,10 +144,13 @@ async def causality_kr(case: dict, case_state: str, narrative: str | None = None
     """한국형 알고리즘 8개 항목을 한 번의 Jev 호출로 판단하고 점수를 규칙으로 합산합니다.
     '약물에 대해 알려진 정보'는 openFDA 라벨에서 반응명이 확인되면 규칙으로 +3 을 줍니다(국내 허가사항은 별도 확인 필요)."""
     ps = next((d for d in case.get("drugs", []) if d.get("role") == "PS"), None)
-    label = None
+    label, lit = None, None
     if ps and case.get("reactions"):
-        async with httpx.AsyncClient(headers={"User-Agent": "FlyVigilance/1.0"}) as c:
+        async with httpx.AsyncClient() as c:
             label = await evidence.label_lookup(ps["drug"], case["reactions"][:3], c, ps.get("route"))
+            if not (label.get("found") and any(label.get("listed", {}).values())):
+                # 라벨에 없으면 문헌을 읽어 증례보고가 있는지 봅니다 (허가사항 미반영 + 증례보고 = +2)
+                lit = await literature.read(ps["drug"], case["reactions"][0], c)
     state = case_state + (f"\n\nNarrative: {narrative}" if narrative else "")
     qs = {}
     for it in KR_ALGO:
@@ -162,18 +166,24 @@ async def causality_kr(case: dict, case_state: str, narrative: str | None = None
         a = res["answers"][it["id"]]
         opt = {k: (label, sc) for k, label, sc in it["options"]}
         choice, source, conf = a["choice"], "jev", a["confidence"]
+        ev_ids = []
         if it["id"] == "known" and label and label.get("found") and any(label.get("listed", {}).values()):
             choice, source, conf = "label", "openFDA label", 1.0
+            ev_ids = [h["id"] for h in label.get("hits", [])]
+        elif it["id"] == "known" and lit and ((lit.get("summary") or {}).get("supportive", 0) > 0):
+            choice, source, conf = "case_reports", "PubMed literature reading", 1.0
+            ev_ids = [a["id"] for a in lit.get("articles", []) if a.get("supports", 0) >= 0.5][:4]
         lab, sc = opt.get(choice, ("정보없음", 0))
         total += sc
         items.append({"id": it["id"], "name": it["name"], "choice": choice, "label": lab, "score": sc,
                       "confidence": conf, "probabilities": a["probabilities"], "source": source,
-                      "evidence": ([h["id"] for h in label.get("hits", [])] if source == "openFDA label" else []),
+                      "evidence": ev_ids,
                       "options": [{"key": k, "label": l, "score": s} for k, l, s in it["options"]],
                       "needs_review": source == "jev" and conf < 0.55})
     who = res["answers"]["who_umc"]
     return {"items": items, "total": total, "max": KR_MAX, "min": KR_MIN, **kr_grade(total),
             "who_umc": {"choice": who["choice"], "confidence": who["confidence"], "probabilities": who["probabilities"]},
+            "literature": ({"summary": lit.get("summary"), "articles": lit.get("articles", [])} if lit else None),
             "label": ({"found": label.get("found"), "setid": label.get("setid"), "brand": label.get("brand"), "listed": label.get("listed"),
                        "hits": label.get("hits", [])} if label else None),
             "note": "한국형 알고리즘 등급(확실함·가능성 높음·가능성 있음·가능성 낮음)과 WHO-UMC 등급은 체계가 달라 서로 바꿔 쓰지 않습니다.",

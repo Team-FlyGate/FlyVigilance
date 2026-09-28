@@ -14,7 +14,7 @@ async def main():
         pg.on("pageerror", lambda e: print("pageerror", e))
         await pg.goto("http://127.0.0.1:5173/#/triage")
         await pg.wait_for_timeout(4000)
-        await pg.get_by_role("button", name="Reflex · Jev").click()
+        await pg.get_by_role("button", name="Reflex · FlyVigilance").click()
         await pg.wait_for_selector("text=Router decision", timeout=60000)
         await pg.wait_for_timeout(1500)
         await pg.screenshot(path=f"{OUT}/triage_reflex.png", full_page=True)

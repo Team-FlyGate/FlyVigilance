@@ -53,6 +53,7 @@ export type Answer = NoulA | ChoiceA | ScoreA
 export interface TriageResult {
   state: string; suspect: string
   validity?: { valid: boolean; checks: Record<string, boolean> }
+  grounding?: { label: { found: boolean; brand?: string; effective?: string; by_pt?: Record<string, { sections: string[] }> }; expected: number | null; expected_source: string; latency_ms: number; clinical_reactions: string[] } | null
   jev: { answers: Record<string, Answer>; usage: { input_tokens: number; output_tokens: number }; model: string; latency_ms: number }
   decision: { action: string; tier: string; system2?: boolean; reasons: string[]; regime?: string; deadline?: string }
 }
@@ -69,6 +70,8 @@ export interface AssessResult {
   rules: { id: string; text: string }[]; evidence_ms: number
   evidence: {
     suspect: string; reactions: string[]; ids: string[]; catalog?: { id: string; what: string }[]
+    grades?: import('./types').EvidenceGrade[]
+    literature?: Record<string, { articles: import('./types').LitArticle[]; summary: Record<string, unknown> }>
     faers: (SignalRow & { id: string; N: number; note?: string })[]
     label: { found: boolean; setid?: string; brand?: string; effective?: string; hits?: { id: string; pt: string; section: string; quote: string }[]; listed?: Record<string, boolean> }
     pubmed: Record<string, { count: number | null; pmids: string[]; ids: string[] }>

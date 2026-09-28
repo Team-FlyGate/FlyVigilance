@@ -30,7 +30,7 @@ export default function Problem() {
       fact: <>신호 평가 중 ICSR 내러티브 검토에 건당 약 5.56분(69건 395분). 자동화 플랫폼으로 약 63% 줄었다는 보고가 있다. 접수·코딩·인과성 평가를 뺀 <b>읽기 시간만</b>이다.</>,
       src: <>Warner et al., Clin Pharmacol Ther 2026, PMID 42522449 (저자 스스로 예비적 수치라고 밝힘)</>,
       principle: '선천적 반사 회로', brain: `Lateral horn ${fmt.int(L('reflex'))}개 뉴런: 학습 없이 즉시 판단`, layer: 'reflex',
-      fix: 'Jev System-1이 중대성·예측성·인과성·우선순위·다음 행동을 한 번의 호출로 확률과 함께 낸다',
+      fix: 'FlyVigilance 반사 층이 규칙 게이트와 라벨 조회를 먼저 하고, 중대성·예측성·인과성·우선순위·다음 행동을 Jev 엔진 한 번 호출로 확률과 함께 받아 결정 정책으로 라우팅한다',
       metric: <>{b ? <>p50 <b>{Math.round(b.jev_triage.latency_ms.p50)} ms</b> / 7판단, {b.jev_triage.throughput_cases_per_s}건/초</> : '벤치마크 대기'}</>,
     },
     {
@@ -38,15 +38,15 @@ export default function Problem() {
       fact: <>예아니오 한 줄을 받는 선별에도 프런티어 모델은 건당 입력 322 + 출력 47 토큰, 지연 중앙값 1.67초를 썼다. 분기 40만 건이면 순차로 186시간이다.</>,
       src: <>팀 선행 실측: Nemotron 3 Super, niraparib 상위 10건 (korea-agentic-hackathon-2026 triage-scale)</>,
       principle: '희소 확장 코딩', brain: `Kenyon cell ${fmt.int(4064)}개 중 소수만 발화하고 소수의 MBON이 읽는다`, layer: 'memory',
-      fix: '모든 건은 Jev가 싸게, 애매하거나 중대·예상외인 건만 Nemotron으로 올린다. 통계는 SQL이 계산한다',
-      metric: <>{b ? <>Jev <b>{fmt.usd(b.jev_triage.usd_per_1k)}</b> / 1,000건 · 입력 {b.jev_triage.tokens_in_mean} tok, 출력 무료</> : '…'}</>,
+      fix: '모든 건은 반사 층(Jev 엔진)이 싸게, 애매하거나 중대·예상외인 건만 NVIDIA Nemotron으로 올린다. 통계는 SQL이 계산하고, 공개 참조 세트로 이 배치를 검증했다',
+      metric: <>{b ? <>반사 판단 <b>{fmt.usd(b.jev_triage.usd_per_1k)}</b> / 1,000건 · 사람 검토 업무량 {b.ablation ? `−${Math.round((1 - b.ablation.flyvigilance.escalated / b.ablation.raw_jev.escalated) * 100)}%` : ''} (raw 대비)</> : '…'}</>,
     },
     {
       n: '04', title: '그럴듯한 과잉해석',
       fact: <>근거 ID도 붙고 숫자도 맞는데 결론만 틀린 요약이 나온다. 고정 규칙은 심어 둔 과잉해석 16건 중 1건만 잡았고, LLM 판정을 더하면 16건 모두 잡았다(거짓 양성 0/17).</>,
       src: <>팀 선행 실측: FlyGate 크리틱 평가 33건 (critic_verdict_output_*.json)</>,
       principle: '억제성 되먹임', brain: `GABA성 억제 뉴런 ${fmt.int(L('critic'))}개: APL이 버섯체 활동을 눌러 희소성을 지킨다`, layer: 'critic',
-      fix: '3단 크리틱: 근거 ID 실재(규칙) → 숫자 오라클(SQL 대조) → Jev 과잉해석 판정(규칙 12종). 반려 시 사유와 함께 재작성',
+      fix: '3단 크리틱: 근거 ID 실재(규칙) → 숫자 오라클(SQL 대조) → Jev 과잉해석 판정(규칙 13종) + NVIDIA Safety Guard. 반려 시 사유와 함께 재작성',
       metric: <>주장마다 overclaim 확률과 위반 규칙 ID를 남긴다</>,
     },
     {
@@ -108,7 +108,7 @@ export default function Problem() {
       </div>
       <Card style={{ marginTop: 16 }}>
         <div className="note" style={{ fontSize: 12.5 }}>
-          <b>경계를 분명히 한다.</b> 커넥텀은 설계 원리와 실시간 라우팅 시각화를 준다. 임상 판단의 근거는 FAERS, 라벨, 문헌이고 판단은 Jev와 Nemotron과 사람이 한다.
+          <b>경계를 분명히 한다.</b> 커넥텀은 설계 원리와 실시간 라우팅 시각화를 준다. 임상 판단의 근거는 FAERS, 라벨, 문헌이고 판단은 FlyVigilance의 반사 층(Jev 엔진)·숙고 층(NVIDIA Nemotron)과 사람이 한다.
           초파리 뇌가 약물 안전성을 “이해”한다고 주장하지 않는다. 배선도는 어디로 보낼지를 말해 주지 무엇이 옳은지를 말해 주지 않는다.
         </div>
       </Card>

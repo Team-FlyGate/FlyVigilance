@@ -4,6 +4,7 @@ import { Card, PageHead, ProbBar } from '../components/ui'
 import { useBrain } from '../lib/brain'
 import { api, fmt, OCCP_LABEL, OUTCOME_LABEL, type AssessResult, type Case, type ChoiceA, type Claim, type Issue, type NoulA, type ScoreA, type TriageResult } from '../lib/data'
 import { ACTION_META } from './MissionControl'
+import { GradeView } from '../components/GradeCard'
 
 type Stage = 'idle' | 'reflex' | 'routed' | 'evidence' | 'deliberate' | 'done' | 'error'
 
@@ -20,9 +21,9 @@ function Stepper({ stage, timings }: { stage: Stage; timings: Record<string, num
   const steps = [
     { k: 'intake', l: 'Intake', s: 'FAERS ICSR', c: 'var(--c-sense)' },
     { k: 'rule', l: 'Rule gate', s: 'ICH 4요소', c: 'var(--c-encode)' },
-    { k: 'reflex', l: 'Reflex', s: 'Jev System-1', c: 'var(--jev)' },
+    { k: 'reflex', l: 'Reflex', s: 'FlyVigilance · Jev 엔진', c: 'var(--jev)' },
     { k: 'route', l: 'Router', s: '결정 정책', c: 'var(--c-reflex)' },
-    { k: 'evidence', l: 'Memory', s: 'FAERS · 라벨 · PubMed', c: 'var(--c-memory)' },
+    { k: 'evidence', l: 'Memory', s: '통계·라벨·문헌·등급', c: 'var(--c-memory)' },
     { k: 'deliberate', l: 'Deliberate', s: 'Nemotron System-2', c: 'var(--nvidia)' },
     { k: 'critic', l: 'Critic ×3', s: '규칙 · 오라클 · 판정', c: 'var(--c-critic)' },
     { k: 'action', l: 'Action', s: '사람 · 보고', c: 'var(--c-action)' },
@@ -150,6 +151,15 @@ function CaseCard({ c }: { c: Case }) {
 function EvidenceView({ ev }: { ev: AssessResult['evidence'] }) {
   return (
     <div className="stack" style={{ gap: 12 }}>
+      {ev.grades?.length ? (
+        <div className="grid g3" style={{ gap: 10 }}>
+          {ev.grades.map((g) => (
+            <div key={g.id} style={{ padding: 12, borderRadius: 12, border: '1px solid var(--line-2)' }}>
+              <GradeView g={{ ...g, literature: ev.literature?.[g.pt] as never }} compact />
+            </div>
+          ))}
+        </div>
+      ) : null}
       <div className="grid g3" style={{ gap: 10 }}>
         {ev.faers.map((f) => (
           <div key={f.id} style={{ padding: 12, borderRadius: 12, border: '1px solid rgba(255,79,216,0.3)', background: 'rgba(255,79,216,0.05)' }}>
@@ -242,7 +252,7 @@ function MemoView({ res }: { res: AssessResult }) {
   )
 }
 
-interface ProbeResult { claims: Claim[]; issues: Issue[]; guard: { safe: boolean | null; categories?: string }; total_ms: number; judge_latency_ms?: number }
+interface ProbeResult { claims: Claim[]; issues: Issue[]; guard: { safe: boolean | null; categories?: string; flagged?: string[]; unchecked?: string[] }; total_ms: number; judge_latency_ms?: number }
 
 function buildProbes(asr: AssessResult, suspect: string): (Claim & { expect: string })[] {
   const f = asr.evidence.faers.find((x) => x.prr) ?? asr.evidence.faers[0]
@@ -271,14 +281,15 @@ function ProbeView({ asr, tri }: { asr: AssessResult; tri: TriageResult }) {
     try { setRes(await api<ProbeResult>('/api/critic', { claims: probes.map(({ expect: _e, ...c }) => c), state: tri.state, bundle: asr.evidence })) }
     catch (e) { setErr(String(e)) } finally { setBusy(false) }
   }
-  const guardHit = res?.issues.some((x) => x.claim === 'memo')
+  // 가드는 주장마다 따로 돌고, 걸린 주장에 R11 사유가 붙습니다
+  const guardHit = (id: string) => !!res?.issues.some((x) => x.claim === id && x.detail?.startsWith('NVIDIA safety guard'))
   return (
     <Card title="과잉해석 주입 테스트" sub="이 케이스의 실제 근거로 일부러 틀린 주장을 만들어 크리틱에 넣는다. 대조군은 Nemotron이 쓴 정상 주장이다"
       right={<button className="btn" onClick={run} disabled={busy}>{busy ? <span className="spin" /> : '☠'} 크리틱에 주입</button>}>
       <div className="stack" style={{ gap: 8 }}>
         {probes.map((p) => {
           const iss = res?.issues.filter((x) => x.claim === p.id) ?? []
-          const caught = iss.length > 0 || (p.id === 'p4' && guardHit)
+          const caught = iss.length > 0
           return (
             <div key={p.id} style={{ display: 'grid', gridTemplateColumns: '150px 1fr 90px', gap: 12, padding: '10px 12px', borderRadius: 11,
               border: `1px solid ${!res ? 'var(--line)' : caught === (p.id !== 'ctrl') ? 'rgba(61,220,151,0.35)' : 'rgba(255,93,108,0.5)'}` }}>
@@ -287,7 +298,7 @@ function ProbeView({ asr, tri }: { asr: AssessResult; tri: TriageResult }) {
                 <div style={{ fontSize: 12.5 }}>{p.text}</div>
                 <div className="row wrap" style={{ gap: 4, marginTop: 5 }}>{p.evidence.map((e) => <span key={e} className="chip ev">{e}</span>)}</div>
                 {iss.map((x, i) => <div key={i} style={{ fontSize: 11, color: '#ff9aa3', marginTop: 4 }}>T{x.tier} · {x.rule} · {x.detail}{x.p !== undefined ? ` (p=${x.p.toFixed(2)})` : ''}</div>)}
-                {p.id === 'p4' && res && <div style={{ fontSize: 11, color: guardHit ? '#ff9aa3' : 'var(--text-3)', marginTop: 4 }}>NVIDIA safety guard: {guardHit ? `unsafe · ${res.guard.categories}` : 'safe'}</div>}
+                {p.id === 'p4' && res && <div style={{ fontSize: 11, color: guardHit('p4') ? '#ff9aa3' : 'var(--text-3)', marginTop: 4 }}>NVIDIA safety guard: {guardHit('p4') ? `unsafe · ${res.guard.categories}` : res.guard.unchecked?.includes('p4') ? '응답 없음 → 사람 확인 필요' : 'safe'}</div>}
               </div>
               <div style={{ textAlign: 'right' }}>{res && <span className={`chip ${caught ? 'bad' : 'ok'}`}>{caught ? '적발' : '통과'}</span>}</div>
             </div>
@@ -363,7 +374,7 @@ export default function LiveTriage() {
     <div className="page">
       <PageHead eyebrow="Live Triage · real FAERS 2026Q2"
         title={<>한 건의 ICSR이 <span style={{ color: 'var(--jev)' }}>반사</span>에서 <span style={{ color: 'var(--nvidia)' }}>숙고</span>까지 가는 길</>}
-        lede="실제 FAERS 케이스를 골라 Jev System-1에 보낸다. 7개의 타입 있는 판단이 한 번의 호출로 돌아오고, 결정 정책이 필요할 때만 근거 수집과 Nemotron System-2, 3단 크리틱으로 올린다. 모든 호출은 지금 이 순간 실제 API로 나간다." />
+        lede="실제 FAERS 케이스를 골라 FlyVigilance 반사 층에 보낸다. 규칙 게이트와 라벨 조회를 거친 뒤 7개의 타입 있는 판단이 Jev 엔진 한 번 호출로 돌아오고, 결정 정책이 필요할 때만 근거 수집과 Nemotron System-2, 3단 크리틱으로 올린다. 모든 호출은 지금 이 순간 실제 API로 나간다." />
 
       <div className="grid" style={{ gridTemplateColumns: '300px minmax(0,1fr) 380px', alignItems: 'start' }}>
         <Card title="케이스 큐" sub={`${list.length} / ${cases.length} cases`} style={{ position: 'sticky', top: 0 }}>
@@ -396,7 +407,7 @@ export default function LiveTriage() {
           {sel && <Card title="ICSR" sub="FAERS 원천 → 정제 계층에서 복원한 케이스"
             right={<div className="row" style={{ gap: 8 }}>
               <button className="btn jev" onClick={runReflex} disabled={stage === 'reflex' || stage === 'evidence' || stage === 'deliberate'}>
-                {stage === 'reflex' ? <span className="spin" /> : '⚡'} Reflex · Jev</button>
+                {stage === 'reflex' ? <span className="spin" /> : '⚡'} Reflex · FlyVigilance</button>
               <button className="btn nv" onClick={runDeliberate} disabled={!tri || stage === 'evidence' || stage === 'deliberate'}>
                 {stage === 'evidence' || stage === 'deliberate' ? <span className="spin" /> : '◆'} Deliberate · Nemotron</button>
             </div>}>
@@ -404,7 +415,7 @@ export default function LiveTriage() {
           </Card>}
           {err && <Card><div style={{ color: 'var(--bad)' }}>{err}</div></Card>}
           {tri && (
-            <Card title={<>System-1 반사 판단 <span className="chip jev" style={{ marginLeft: 8 }}>{tri.jev.model}</span></>}
+            <Card title={<>FlyVigilance 반사 판단 <span className="chip jev" style={{ marginLeft: 8 }}>Jev 엔진 · {tri.jev.model}</span></>}
               sub={`한 번의 호출 · ${fmt.ms(tri.jev.latency_ms)} · 입력 ${tri.jev.usage.input_tokens} tok · 출력 ${tri.jev.usage.output_tokens} tok · 비용 ${fmt.usd(tri.jev.usage.input_tokens * 0.042 / 1e6)}`}>
               <div className="grid g2" style={{ gap: 18 }}>
                 <div className="stack" style={{ gap: 12 }}>
@@ -416,6 +427,15 @@ export default function LiveTriage() {
                 </div>
               </div>
               <div className="divider" />
+              {tri.grounding && (
+                <div className="row wrap" style={{ gap: 6, marginBottom: 8 }}>
+                  <span className="dim mono" style={{ fontSize: 10.5 }}>LABEL GROUNDING · 기억 대신 조회</span>
+                  {tri.grounding.label.found ? Object.entries(tri.grounding.label.by_pt ?? {}).map(([pt, v]) => (
+                    <span key={pt} className={`chip ${v.sections.length ? 'ok' : 'warn'}`}>{pt}: {v.sections.length ? v.sections[0] : '라벨에 없음'}</span>
+                  )) : <span className="chip">라벨 없음 또는 비임상 PT</span>}
+                  <span className="chip">예측성 {tri.grounding.expected === null ? 'Jev 판단' : tri.grounding.expected >= 0.5 ? '예상됨' : '예상 밖'} · {tri.grounding.expected_source} · {fmt.ms(tri.grounding.latency_ms)}</span>
+                </div>
+              )}
               <div className="row wrap" style={{ gap: 6 }}>
                 <span className="dim mono" style={{ fontSize: 10.5 }}>RULE GATE · ICH 최소 4요소</span>
                 {tri.validity && Object.entries(tri.validity.checks).map(([k, v]) => <span key={k} className={`chip ${v ? 'ok' : 'bad'}`}>{v ? '✓' : '✗'} {k}</span>)}
@@ -437,11 +457,11 @@ export default function LiveTriage() {
           )}
           {asr && (
             <>
-              <Card title="Signal Memory · 근거 묶음" sub={`FAERS 웨어하우스 2×2 · openFDA 라벨 · PubMed E-utilities · ${fmt.ms(asr.evidence_ms)}`}>
+              <Card title="Signal Memory · 근거 묶음과 근거 등급" sub={`FAERS 웨어하우스 2×2 · openFDA 라벨 절 · PubMed 초록 읽기(Jev) · 규칙 등급 · ${fmt.ms(asr.evidence_ms)}`}>
                 <EvidenceView ev={asr.evidence} />
               </Card>
               <Card title={<>System-2 메모와 3단 크리틱 <span className={`chip ${asr.verdict === 'pass' ? 'ok' : 'bad'}`} style={{ marginLeft: 8 }}>{asr.verdict === 'pass' ? '통과 → 사람 검토 큐' : '반려 → 작성자에게'}</span></>}
-                sub="T1 규칙(근거 ID 실재) · T2 숫자 오라클(근거 수치 일치) · T3 Jev 과잉해석 판정(규칙 12종)">
+                sub="T1 규칙(근거 ID 실재) · T2 숫자 오라클(근거 수치 일치) · T3 Jev 과잉해석 판정(규칙 13종) · NVIDIA Safety Guard">
                 <MemoView res={asr} />
               </Card>
               {tri && <ProbeView asr={asr} tri={tri} />}
