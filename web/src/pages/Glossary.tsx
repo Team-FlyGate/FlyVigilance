@@ -8,7 +8,7 @@ import { GLOSSARY, GLOSS_CAT, type GlossCat, type GlossEntry } from '../lib/glos
 const PAGE_LABEL: Record<string, string> = {
   overview: '개요', problem: '문제 정의', discovery: '전체 프로세스', 'd-msa': '1. MSA-Search', 'd-of3': '2. OpenFold3', 'd-diffdock': '3. DiffDock',
   'd-boltz': '4. Boltz-2', 'd-critic': '5. 크리틱(STEP 1)', mission: '관제 센터', triage: '사례 분류', korea: '국내 보고 · 인과성', signals: '부작용 신호 연구실',
-  timemachine: '부작용 신호 타임머신', validation: '검증', bench: '유의성 벤치마크', warehouse: '데이터 웨어하우스', agent: '에이전트 구성', cli: 'CLI 튜토리얼',
+  timemachine: '부작용 신호 타임머신', validation: '유의성 검증', bench: '유의성 벤치마크', warehouse: '데이터 웨어하우스', agent: '에이전트 구성', cli: 'CLI 튜토리얼',
   skills: 'NVIDIA 스킬 · 거버넌스', architecture: '아키텍처', calls: 'NVIDIA 호출 로그', 'd-evidence': '근거 검증',
 }
 const CORE = ['SDR', 'PRR', 'ROR', 'IC025', 'FAERS', 'triage', 'System2', 'NAR', 'NIM', 'AUC', 'pvalue', 'RMSD']

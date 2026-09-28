@@ -50,7 +50,7 @@ const GROUPS: { step?: string; name?: string; color?: string; pages: Page[] }[] 
     { id: 'korea', label: '국내 보고 · 인과성', en: 'Korean PV Intake', icon: I('M4 4h16v16H4zM8 9h8M8 13h8M8 17h5'), el: () => <KoreanPV /> },
     { id: 'signals', label: '부작용 신호 연구실', en: 'Signal Lab', icon: I('M4 20V10M10 20V4M16 20v-7M22 20H2'), el: () => <SignalLab /> },
     { id: 'timemachine', label: '부작용 신호 타임머신', en: 'Signal Time Machine', icon: I('M12 7v5l3 2M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5'), el: () => <TimeMachine /> },
-    { id: 'validation', label: '검증', en: 'Reference Validation', icon: I('M9 12l2 2 4-4M4 4h16v16H4z'), el: () => <Validation /> },
+    { id: 'validation', label: '유의성 검증', en: 'Reference Validation', icon: I('M9 12l2 2 4-4M4 4h16v16H4z'), el: () => <Validation /> },
     { id: 'bench', label: '유의성 벤치마크', en: 'Measured Performance', icon: I('M3 3v18h18M7 15l4-4 3 3 6-7'), el: () => <Benchmarks /> },
     { id: 'warehouse', label: '데이터 웨어하우스', en: 'PV Warehouse', icon: I('M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3ZM4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6'), el: () => <Warehouse /> },
   ] },
