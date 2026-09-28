@@ -260,6 +260,7 @@ export default function Agent() {
           STEP 2 FlyVigilance를 실행하고, OpenShell 샌드박스는 정책이 허용한 호스트 · 경로 · 시스템 호출만 통과시키며, NemoClaw 블루프린트가 둘을 한 벌로 구성합니다.
           보고와 인과성의 최종 판정은 사람이 합니다.</>}
         right={<div className="stack" style={{ gap: 8, alignItems: 'flex-end' }}>
+          <a className="btn ghost" href="#/cli">CLI 튜토리얼 →</a>
           <a className="btn ghost" href={IMG} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>구성도 이미지 ↗</a>
           <div className="row" style={{ gap: 8 }}>
             <a className="btn ghost" href={`${REPO}/tree/main/agent`} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>agent/</a>
