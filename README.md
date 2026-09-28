@@ -172,12 +172,20 @@ MaleCNS 초파리 커넥텀(뇌 뉴런 연결 배선도, 뉴런 49,244개) 화�
 
 ### flygate CLI
 
-에이전트가 쓰는 도구와 사람이 쓰는 명령이 같습니다. 모든 명령은 근거 ID(`evidence_ids`)가 붙은 JSON을 출력합니다.
+`flygate`만 실행하면 대화형 CLI가 열립니다. 자연어로 요청하거나 `/discover parp1`처럼 슬래시 명령을 입력하고, 실행 내용을 승인한 뒤 결과와 근거 ID를 확인합니다. 일반 터미널에서는 `flygate discover parp1`처럼 실행해 JSON을 받을 수 있습니다.
+
+[**실제 화면·24초 동작 데모·설치 튜토리얼 ↗**](https://project-flygate.vercel.app/#/cli)
+
+<a href="https://project-flygate.vercel.app/#/cli"><img src="web/public/media/cli/v2.0.0/01-start.png" width="100%" alt="실제 FlyGate CLI 시작 화면: 블록 로고, 초파리, 분석·채팅 슬래시 명령과 입력창"></a>
+
+채팅창의 `/login`에서 NVIDIA 키와 선택 사항인 Jev 키를 숨김 입력으로 설정합니다. `/help`는 사용법, `/last`는 전체 결과, `/clear`는 대화 초기화, `/exit`는 종료입니다.
 
 ```bash
 git clone https://github.com/Team-FlyGate/Project-FlyGate && cd Project-FlyGate
 ./scripts/install_flygate.sh              # .venv 생성, 의존성 설치, ~/.local/bin/flygate 연결
-# 키: 저장소 루트 .env 에 TYPESAFE_API_KEY, NVIDIA_API_KEY (없으면 판단이 필요한 명령은 '사람 확인'으로 돌립니다)
+flygate                                  # 대화형 CLI 시작 · /login으로 키 설정
+
+# 아래는 일반 터미널에서 바로 실행하는 명령입니다.
 
 flygate discover parp1                    # STEP 1: BioNeMo NIM 실측과 크리틱 판정
 flygate signals NIRAPARIB                 # 불균형 지표 상위 반응 (SQL 추출본)
