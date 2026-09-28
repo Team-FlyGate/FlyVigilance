@@ -169,6 +169,23 @@ AUC의 95% 구간은 층화 부트스트랩 2,000회로 구했고, 방법 간 �
 
 재현: `FV_CACHE_DIR=data/cache/api .venv/bin/python pipeline/bench/literature_eval.py`
 
+### 3-2. NVIDIA Nemotron 리랭커로 후보 재정렬
+
+공식 스킬 `nemotron-retrieval-recipes`를 따라, PubMed 후보 20편을 `nvidia/llama-nemotron-rerank-vl-1b-v2`로 재정렬한 뒤 상위 6편을 읽습니다.
+기준은 운영 관문 질문에 대한 판단 모델의 답(직접 다룸 · 보고함 = 관련)이며, 대상은 웨어하우스 SDR 상위 30쌍의 575편입니다.
+
+| 순서 | 쌍별 평균 AUC | 상위 3편 정밀도 | 상위 6편 정밀도 |
+| --- | --- | --- | --- |
+| PubMed 관련도 순서 | 0.429 | 0.678 | 0.650 |
+| 제목에 약·반응이 모두 있음(규칙) | 0.652 | 0.800 | 0.767 |
+| **Nemotron 리랭커** | **0.778** | **0.867** | **0.850** |
+
+- 쌍별로 21쌍이 좋아지고 9쌍은 같았으며 나빠진 쌍은 없었습니다(부호 검정 p = 9.5 × 10⁻⁷).
+- 질의 문구 세 가지의 상위 6편 정밀도 차이는 0.022 이내입니다.
+- 추가 지연은 중앙값 0.57초이고, 오류가 나면 PubMed 순서로 돌아갑니다.
+
+재현: `FV_CACHE_DIR=data/cache/api .venv/bin/python pipeline/bench/literature_rerank_eval.py`
+
 ## 4. PV 분류 점검
 
 팀 시제품(`korea-agentic-hackathon-2026` docs/notes/evidence-grade-2026-09-28.md)의 세 쌍을 FlyVigilance PV 분류(라벨 상태 × SDR)로 다시 매겼습니다.
@@ -213,9 +230,45 @@ p1은 한 사례에 PRR이 없어 7건입니다. 대조군은 크리틱을 통�
 
 재현: `FV_CACHE_DIR=data/cache/api .venv/bin/python pipeline/bench/critic_probe.py --n 8` → `web/public/data/critic_probe.json`
 
+### 5-2. PV 정책 가드 (nemotron-policy-generator)
+
+공식 스킬 `nemotron-policy-generator`의 6단계 절차로 PV 정책을 만들었습니다(`skills/pv-guardrail-policy/`). V2 범주 8개에 PV 범주 5개를 더했습니다.
+- **PV-1**: 개별 치료·용량 조언
+- **PV-2**: 불균형 지표만으로 한 인과 단정
+- **PV-3**: 자발 보고로 낸 발생률
+- **PV-4**: 보고자·환자 재식별
+- **PV-5**: 허용 외 도구 사용
+
+정책은 `nvidia/nemotron-3.5-content-safety`에 `chat_template_kwargs.custom_policy`로 넣습니다. 크리틱은 Safety Guard 8B v3와 이 정책 가드를 주장마다 동시에 돌리고, 둘 중 하나라도 걸리면 반려합니다.
+
+가드 층만으로 잰 주입 테스트 결과입니다.
+
+| 주입 | Safety Guard 8B v3 | Content Safety 기본 | **Content Safety + PV 정책** |
+| --- | --- | --- | --- |
+| p1 PRR로 인과 단정 | 0/7 | 2/7 | **7/7** |
+| p2 없는 발생률 | 0/8 | 2/8 | **8/8** |
+| p4 개별 치료 조언 | 8/8 | 8/8 | 8/8 |
+| 정상 대조군 오탐 | 0/6 | 0/6 | 1/6 |
+
+p3(가짜 근거 ID)는 문장만으로는 가려지지 않으므로 크리틱 T1이 맡습니다.
+
+손으로 쓴 평가 문장 50건(범주마다 위반 6 · 경계 정상 4)에서 정확도는 다음과 같습니다.
+
+| 가드 | 정확도 | 재현율 | 경계 정상 오탐 |
+| --- | --- | --- | --- |
+| Safety Guard 8B v3 | 0.58 | 0.33 | 0.05 |
+| Content Safety 기본 | 0.72 | 0.53 | 0.00 |
+| **Content Safety + PV 정책 (운영)** | **0.84** | **0.80** | 0.10 |
+
+- **지연**: 운영 설정 중앙값은 459 ms입니다.
+- **다음 보완 대상**: 범주별로는 PV-3이 0.40으로 가장 낮습니다.
+- **정책 조정**: 정책 자체의 예시로 조정했고, 평가 50건은 조정에 쓰지 않았습니다.
+
+재현: `FV_CACHE_DIR=data/cache/api .venv/bin/python pipeline/bench/guard_policy_eval.py` → `web/public/data/guard_policy_eval.json`
+
 ## 6. 소프트웨어 검증
 
-`.venv/bin/python -m pytest -q tests` 로 오프라인 단위 테스트 86개가 통과합니다. 네트워크와 API 키 없이 돕니다. 검증하는 대상은 다음과 같습니다.
+`.venv/bin/python -m pytest -q tests` 로 오프라인 단위 테스트 147개가 통과합니다. 네트워크와 API 키 없이 돕니다. 검증하는 대상은 다음과 같습니다.
 - 라우팅 정책과 규정 모드, 라벨 근거 덮어쓰기
 - 한국형 알고리즘 배점표(−13~19)와 등급 구간, 국내 서식 정규화
 - 근거 등급 규칙(A/B/C/L/D/U)
