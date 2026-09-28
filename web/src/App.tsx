@@ -24,7 +24,7 @@ const I = (d: string) => (
   <svg className="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d={d} /></svg>
 )
 
-interface Page { id: string; label: string; en: string; icon: ReactNode; el: () => ReactNode }
+interface Page { id: string; label: string; en: string; icon: ReactNode; el: () => ReactNode; hot?: boolean }
 
 // 메뉴는 네 묶음입니다: 개요(문제 정의 · 용어 풀이 포함) · STEP 1 시판 전 · STEP 2 시판 후 · 에이전트
 const GROUPS: { step?: string; name?: string; color?: string; pages: Page[] }[] = [
@@ -52,8 +52,8 @@ const GROUPS: { step?: string; name?: string; color?: string; pages: Page[] }[] 
     { id: 'warehouse', label: '데이터 웨어하우스', en: 'PV Warehouse', icon: I('M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3ZM4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6'), el: () => <Warehouse /> },
   ] },
   { step: '에이전트 · NVIDIA', name: 'NemoClaw', color: '#e2a74e', pages: [
+    { id: 'cli', label: 'FlyGate Agent CLI', en: '한 줄 설치 · 실제 터미널 · 튜토리얼', icon: <span className="mono" aria-hidden="true">›_</span>, el: () => <CliTutorial />, hot: true },
     { id: 'agent', label: '에이전트 구성', en: 'NemoClaw · OpenShell', icon: I('M12 3 4 7v10l8 4 8-4V7l-8-4ZM4 7l8 4 8-4M12 11v10'), el: () => <Agent /> },
-    { id: 'cli', label: 'CLI 사용법 · 튜토리얼', en: 'FlyGate CLI · 처음부터 따라 하기', icon: <span className="mono" aria-hidden="true">›_</span>, el: () => <CliTutorial /> },
     { id: 'skills', label: 'NVIDIA 스킬 · 거버넌스', en: 'Skills & Guardrails', icon: I('M12 2 3 7v6c0 5 4 8 9 9 5-1 9-4 9-9V7l-9-5ZM9 12l2 2 4-4'), el: () => <Skills /> },
     { id: 'architecture', label: '아키텍처 · 층 구성', en: 'Connectome-routed Architecture', icon: I('M4 6h6v6H4zM14 12h6v6h-6zM10 9h2a2 2 0 0 1 2 2v4M17 12V6h-3'), el: () => <Architecture /> },
   ] },
@@ -97,7 +97,7 @@ export default function App() {
             <div key={gi} style={{ display: 'contents' }}>
               {g.step && <div className="nav-grp"><span>{g.step}</span><b style={{ color: g.color }}>{g.name}</b></div>}
               {g.pages.map((p) => (
-                <button key={p.id} className={`nav-item ${p.id === cur.id ? 'active' : ''}`} onClick={() => go(p.id)}>
+                <button key={p.id} className={`nav-item ${p.hot ? 'nav-hot' : ''} ${p.id === cur.id ? 'active' : ''}`} onClick={() => go(p.id)}>
                   {p.icon}
                   <span className="lbl">{p.label}<small>{p.en}</small></span>
                 </button>

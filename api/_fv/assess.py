@@ -116,7 +116,7 @@ async def tier3_judge(claims: list[dict], bundle: dict) -> tuple[list[dict], dic
         rule = res["answers"][f"{c['id']}_rule"]["choice"]
         c["overclaim_p"] = p
         if p >= 0.5 and rule != "none":
-            issues.append({"claim": c["id"], "tier": 3, "rule": rule, "p": p,
+            issues.append({"claim": c["id"], "tier": 3, "source": "judge", "rule": rule, "p": p,
                            "detail": dict(OVERCLAIM_RULES).get(rule, "")})
     return issues, res
 
@@ -299,6 +299,19 @@ async def guard_claims(claims: list[dict], narrative: str = "", timeout_s: float
             "by_guard": {"safety_guard": by("default"), "pv_policy": by("pv_policy")}}
 
 
+def summarize_issues(issues: list[dict]) -> list[dict]:
+    """주장마다 반려 사유를 한 줄로 묶습니다. 같은 규칙을 3단 판단과 안전 가드가 따로 잡으면 caught_by 에 둘 다 적습니다."""
+    by: dict = {}
+    for i in issues:
+        row = by.setdefault(i["claim"], {"claim": i["claim"], "rules": [], "caught_by": []})
+        if i.get("rule") and i["rule"] not in row["rules"]:
+            row["rules"].append(i["rule"])
+        src = i.get("source") or f"T{i.get('tier')}"
+        if src not in row["caught_by"]:
+            row["caught_by"].append(src)
+    return list(by.values())
+
+
 def guard_issues(g: dict) -> list[dict]:
     """가드가 건 주장마다 사유 하나를 만듭니다. PV 정책 범주가 걸렸으면 그 규칙(R1/R2/R11/PV-4/PV-5)을, 아니면 R11 을 붙입니다."""
     fired = {}
@@ -311,7 +324,7 @@ def guard_issues(g: dict) -> list[dict]:
         rule = next((f["rule"] for f in fs if f.get("rule")), None) or "R11"
         names = " + ".join(f["guard"] for f in fs) or "safety_guard"
         cats = "; ".join(str(f["categories"]) for f in fs if f.get("categories")) or g.get("categories")
-        out.append({"claim": cid, "tier": 3, "rule": rule, "guards": [f["guard"] for f in fs], "pv": pv,
+        out.append({"claim": cid, "tier": 3, "source": "guard", "rule": rule, "guards": [f["guard"] for f in fs], "pv": pv,
                     "detail": f"NVIDIA safety guard ({names}): {cats}"})
     return out
 

@@ -1,0 +1,120 @@
+{
+ "how_captured": "각 명령을 macOS script(1) 가상 터미널(110열, TERM=xterm-256color)에서 실제로 실행해 ANSI 바이트를 기록하고, xterm.js 터미널 에뮬레이터로 재생해 창 이미지를 2배율로 저장했습니다. 프롬프트 한 줄만 기록기가 붙였고 명령과 출력은 실행 그대로입니다. 설치 장면은 빈 임시 홈(/tmp/flygate-demo)에 저장소를 새로 클론해 실행했고, 나머지 장면은 그 클론 안에서 FV_CACHE_DIR=data/cache/api 로 실행했습니다(데이터 폴더는 원 저장소의 data/ 를 연결했고, 키는 .env 에서 읽어 화면에 나오지 않습니다). 화면 캡처 권한이 없어 Terminal.app 창 캡처 대신 이 방식을 썼습니다.",
+ "exit_code_note": "exit_code 는 파이프 첫 단계(flygate 또는 설치 체인)의 종료 코드입니다.",
+ "captures": [
+  {
+   "name": "install",
+   "cmd": "git clone https://github.com/Team-FlyGate/Project-FlyGate && cd Project-FlyGate && ./scripts/install_flygate.sh\nflygate --help",
+   "cmds": [
+    "git clone https://github.com/Team-FlyGate/Project-FlyGate && cd Project-FlyGate && ./scripts/install_flygate.sh",
+    "flygate --help"
+   ],
+   "file": "cli/captures/install.png",
+   "w": 2452,
+   "h": 2326,
+   "scale": 2,
+   "captured_at_utc": "2026-09-28T09:34:12Z",
+   "exit_code": 0,
+   "seconds": 19.5,
+   "note": "빈 홈 디렉터리에서 새로 클론한 뒤 설치 스크립트를 실행하고, 이어서 flygate --help 를 실행했습니다.",
+   "ansi": "cli/captures/ansi/install.ans"
+  },
+  {
+   "name": "triage",
+   "cmd": "flygate triage agent/examples/case_niraparib.json | jq '{suspect, reactions, decision: .decision | {action, tier, deadline}, grounding: .grounding | {brand, listed}, evidence_ids}'",
+   "cmds": [
+    "flygate triage agent/examples/case_niraparib.json | jq '{suspect, reactions, decision: .decision | {action, tier, deadline}, grounding: .grounding | {brand, listed}, evidence_ids}'"
+   ],
+   "file": "cli/captures/triage.png",
+   "w": 2452,
+   "h": 1542,
+   "scale": 2,
+   "captured_at_utc": "2026-09-28T09:34:38Z",
+   "exit_code": 0,
+   "seconds": 0.6,
+   "note": "사례 한 건의 반사 분류. 전체 JSON 중 핵심 필드만 jq 로 골랐습니다.",
+   "ansi": "cli/captures/ansi/triage.ans"
+  },
+  {
+   "name": "grade",
+   "cmd": "flygate grade NIRAPARIB thrombocytopenia | jq '{grade, grade_name, pv_class_name, summary, stats, evidence_ids}'",
+   "cmds": [
+    "flygate grade NIRAPARIB thrombocytopenia | jq '{grade, grade_name, pv_class_name, summary, stats, evidence_ids}'"
+   ],
+   "file": "cli/captures/grade.png",
+   "w": 2452,
+   "h": 1822,
+   "scale": 2,
+   "captured_at_utc": "2026-09-28T09:34:38Z",
+   "exit_code": 0,
+   "seconds": 0.9,
+   "note": "약물·이상사례 쌍의 근거 등급. 핵심 필드만 jq 로 골랐습니다.",
+   "ansi": "cli/captures/ansi/grade.ans"
+  },
+  {
+   "name": "critic",
+   "cmd": "flygate critic agent/examples/claims_niraparib.json | jq '{verdict, issues: [.issues[] | \"\\(.claim) · tier \\(.tier) · \\(.rule)\"], guard: .guard | {safe, flagged, model}, evidence_ids}'",
+   "cmds": [
+    "flygate critic agent/examples/claims_niraparib.json | jq '{verdict, issues: [.issues[] | \"\\(.claim) · tier \\(.tier) · \\(.rule)\"], guard: .guard | {safe, flagged, model}, evidence_ids}'"
+   ],
+   "file": "cli/captures/critic.png",
+   "w": 2452,
+   "h": 1878,
+   "scale": 2,
+   "captured_at_utc": "2026-09-28T09:35:14Z",
+   "exit_code": 0,
+   "seconds": 2.3,
+   "note": "주장 6개를 3단 비평과 안전 가드에 통과시킨 결과입니다.",
+   "ansi": "cli/captures/ansi/critic.ans"
+  },
+  {
+   "name": "discover_live",
+   "cmd": "flygate discover --live --protein fly_discovery/measurements/nim/of3_parp1_niraparib.pdb --smiles 'C1CC(CNC1)C2=CC=C(C=C2)N3C=C4C=CC=C(C4=N3)C(=O)N' | jq '{status, run_id, endpoint, confidence: [.poses[].confidence], evidence_ids}'",
+   "cmds": [
+    "flygate discover --live --protein fly_discovery/measurements/nim/of3_parp1_niraparib.pdb --smiles 'C1CC(CNC1)C2=CC=C(C=C2)N3C=C4C=CC=C(C4=N3)C(=O)N' | jq '{status, run_id, endpoint, confidence: [.poses[].confidence], evidence_ids}'"
+   ],
+   "file": "cli/captures/discover_live.png",
+   "w": 2452,
+   "h": 1430,
+   "scale": 2,
+   "captured_at_utc": "2026-09-28T09:34:42Z",
+   "exit_code": 0,
+   "seconds": 2.2,
+   "note": "DiffDock NIM 에 새 작업을 제출한 실제 실행입니다(PARP1 OpenFold3 구조 + 니라파립).",
+   "ansi": "cli/captures/ansi/discover_live.ans"
+  },
+  {
+   "name": "kr_causality",
+   "cmd": "flygate kr-causality agent/examples/kr_report.txt --route | jq '{total, grade, band, who_umc: .who_umc.choice, kr_routing: .kr_routing | {action, deadline}, evidence_ids}'",
+   "cmds": [
+    "flygate kr-causality agent/examples/kr_report.txt --route | jq '{total, grade, band, who_umc: .who_umc.choice, kr_routing: .kr_routing | {action, deadline}, evidence_ids}'"
+   ],
+   "file": "cli/captures/kr_causality.png",
+   "w": 2452,
+   "h": 1206,
+   "scale": 2,
+   "captured_at_utc": "2026-09-28T09:34:44Z",
+   "exit_code": 0,
+   "seconds": 9.2,
+   "note": "한국어 서술 보고를 구조화하고 한국형 인과성 알고리즘 v2.0 으로 채점한 결과입니다.",
+   "ansi": "cli/captures/ansi/kr_causality.ans"
+  },
+  {
+   "name": "watch",
+   "cmd": "flygate watch | jq '{date, quarter: .quarter.quarter, new_quarter, watchlist: [.watchlist[] | \"\\(.drug) · \\(.pt) · SDR \\(.sdr)\"], review_queue: (.review_queue | length), submitted, note}'",
+   "cmds": [
+    "flygate watch | jq '{date, quarter: .quarter.quarter, new_quarter, watchlist: [.watchlist[] | \"\\(.drug) · \\(.pt) · SDR \\(.sdr)\"], review_queue: (.review_queue | length), submitted, note}'"
+   ],
+   "file": "cli/captures/watch.png",
+   "w": 2452,
+   "h": 1430,
+   "scale": 2,
+   "captured_at_utc": "2026-09-28T09:34:53Z",
+   "exit_code": 0,
+   "seconds": 1.1,
+   "note": "하트비트 작업. 감시 목록을 다시 계산하고 날짜별 메모를 씁니다. 아무것도 제출하지 않습니다.",
+   "ansi": "cli/captures/ansi/watch.ans"
+  }
+ ],
+ "ansi_note": "ansi/*.ans 는 창 이미지의 원본 터미널 바이트(프롬프트 포함)입니다. 타이핑 애니메이션 등에 그대로 재생할 수 있습니다."
+}

@@ -1,0 +1,21 @@
+[38;5;114m❯[0m [1;38;5;75mProject-FlyGate[0m [38;5;244mgit:([38;5;211mmain[38;5;244m)[0m flygate discover --live --protein fly_discovery/measurements/nim/of3_parp1_niraparib.pdb --smiles 'C1CC(CNC1)C2=CC=C(C=C2)N3C=C4C=CC=C(C4=N3)C(=O)N' | jq '{status, run_id, endpoint, confidence: [.poses[].confidence], evidence_ids}'
+[1;37m{[0m
+  [1;36m"status"[0m[1;37m:[0m [0;32m"completed"[0m[1;37m,[0m
+  [1;36m"run_id"[0m[1;37m:[0m [0;32m"20260928T093442Z-379e060988"[0m[1;37m,[0m
+  [1;36m"endpoint"[0m[1;37m:[0m [0;32m"https://health.api.nvidia.com/v1/biology/mit/diffdock"[0m[1;37m,[0m
+  [1;36m"confidence"[0m[1;37m:[0m [1;37m[[0m
+    [0;33m0.18674343824386597[0m[1;37m,[0m
+    [0;33m0.17174559831619263[0m[1;37m,[0m
+    [0;33m0.13976100087165833[0m[1;37m,[0m
+    [0;33m-0.009456537663936615[0m[1;37m,[0m
+    [0;33m-0.094041608273983[0m
+  [1;37m][0m[1;37m,[0m
+  [1;36m"evidence_ids"[0m[1;37m:[0m [1;37m[[0m
+    [0;32m"diffdock:live:20260928T093442Z-379e060988:pose:1"[0m[1;37m,[0m
+    [0;32m"diffdock:live:20260928T093442Z-379e060988:pose:2"[0m[1;37m,[0m
+    [0;32m"diffdock:live:20260928T093442Z-379e060988:pose:3"[0m[1;37m,[0m
+    [0;32m"diffdock:live:20260928T093442Z-379e060988:pose:4"[0m[1;37m,[0m
+    [0;32m"diffdock:live:20260928T093442Z-379e060988:pose:5"[0m
+  [1;37m][0m
+[1;37m}[0m
+[38;5;114m❯[0m [1;38;5;75mProject-FlyGate[0m [38;5;244mgit:([38;5;211mmain[38;5;244m)[0m 

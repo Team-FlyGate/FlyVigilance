@@ -196,7 +196,7 @@ async def _critic(spec: dict, offline: bool) -> dict:
             guard_unknown = res["guard"].get("unchecked") or []
             verdict = "returned" if issues else ("human_check" if guard_unknown else "pass")
             return {"cmd": "critic", "tiers": ["T1 rules", "T2 numeric oracle", "T3 overclaim (judgment model)", "safety guard"],
-                    "verdict": verdict, "issues": issues, "guard": res["guard"],
+                    "verdict": verdict, "returned_claims": assess.summarize_issues(issues), "issues": issues, "guard": res["guard"],
                     "overclaim_p": {c.get("id"): c.get("overclaim_p") for c in claims},
                     "evidence_ids": _ids([e for c in claims for e in (c.get("evidence") or [])])}
         except (clients.NotConfigured, RuntimeError) as e:
