@@ -3,13 +3,14 @@
 같은 약물–반응 쌍에서 다음을 잽니다.
   통계 지표   : 보고 건수 a, PRR, ROR025, 부호 있는 카이제곱, IC025 (웨어하우스 SQL 과 같은 공식)
   규칙 기준점 : Evans(PRR>=2, chi2>=4, a>=3), 세 기준 동시 충족(Evans ∧ ROR025>1 ∧ IC025>0)
-  raw Jev     : (1) 이름 공개 - 약·반응 이름만 주고 묻습니다. 모델 기억이 새므로 참고용입니다
-                (2) 블라인드 - 이름을 가리고 불균형 숫자만 줍니다
-  FlyVigilance: 이름을 가리고, 웨어하우스에서 계산한 사례군 특성(시기별 일관성, 주의심약 비율, 중대·사망,
-                의료인 보고, 중단 후 호전·재투여 재발, 보고 국가 수, 적응증 교란)을 약물감시 평가 기준 질문으로 묻습니다
+  FlyVigilance 지식 기반 판별 : 약·반응 이름을 주고 공인된 연관인지 묻습니다(api/_fv/knowledge.py 와 같은 질문)
+  FlyVigilance 통계 기반 판별 : 이름을 가리고, 웨어하우스에서 계산한 사례군 특성(시기별 일관성, 주의심약 비율,
+                중대·사망, 의료인 보고, 중단 후 호전·재투여 재발, 보고 국가 수, 적응증 교란)을 약물감시 평가 기준 질문으로 묻습니다
+  모델 단독 · 이름 가림      : 이름을 가리고 불균형 숫자만 준 기준선입니다
 
-주의: 참조 세트의 양성은 라벨·문헌에서 뽑았습니다. 이 측정이 재는 것은 '라벨·문헌이 인정한 조합을 가려내는가'이지
-개별 사례의 인과성이 아닙니다. OMOP 음성 대조군 일부가 잘못 분류됐다는 반론도 있습니다(Hauben et al. 2016).
+참조 세트의 양성은 라벨·문헌이 인정한 조합이므로, 이 측정은 '공인된 약물-이상반응 연관을 가려내는가'를 잽니다.
+Harpaz 전향 조건은 2013년 이전 보고만 쓰는 방법(통계 지표, 통계 기반 판별)으로 잽니다.
+OMOP 음성 대조군의 분류 논의(Hauben et al. 2016)도 함께 참고합니다.
 
 산출물: web/public/data/validation.json, api/_data/metrics.json
 """
@@ -27,7 +28,7 @@ import pandas as pd
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "api"))
-from _fv import clients, config, pvstats  # noqa: E402
+from _fv import clients, config, knowledge, pvstats  # noqa: E402
 
 DB = ROOT / "data/derived/faers.duckdb"
 REF = ROOT / "data/derived/refsets"
@@ -119,9 +120,8 @@ def warehouse(pairs: pd.DataFrame, events: dict, db: pathlib.Path = DB, eras: li
     return feats, {"N": N}
 
 
-# ---------------------------------------------------------------- Jev 상태와 질문
-def state_named(drug: str, event_label: str) -> str:
-    return f"Drug: {drug.lower()}.\nAdverse event: {event_label}."
+# ---------------------------------------------------------------- 판단 모델 상태와 질문
+state_named = knowledge.state   # 지식 기반 판별은 서비스와 같은 질문·상태를 씁니다
 
 
 def state_blind(f: dict) -> str:
@@ -163,7 +163,7 @@ def _p(x):
     return "n/a" if x is None else f"{x:.0%}"
 
 
-Q_NAMED = {"causes": {"type": "noul", "instructions": "Does this drug cause this adverse event in humans?"}}
+Q_NAMED = knowledge.QUESTION
 Q_BLIND = {"causes": {"type": "noul", "instructions": "Based only on these reporting statistics, is DRUG_A likely to cause EVENT_1?"}}
 Q_FV = {
     "credible": {"type": "noul", "instructions":
@@ -225,8 +225,8 @@ async def run_jev(jobs: list[tuple[str, str, dict]], conc: int) -> dict:
 METHODS = [
     ("a", "보고 건수 a", "metric"), ("prr", "PRR", "metric"), ("ror_lo", "ROR₀₂₅", "metric"),
     ("chi2s", "χ² (부호)", "metric"), ("ic025", "IC₀₂₅", "metric"),
-    ("raw_blind", "raw Jev · 블라인드", "raw"), ("fv", "FlyVigilance (Jev 엔진)", "flyvigilance"),
-    ("raw_named", "raw Jev · 이름 공개 (기억 누출)", "memory"),
+    ("raw_blind", "모델 단독 · 이름 가림", "raw"), ("fv", "FlyVigilance · 통계 기반 판별 (이름 가림)", "flyvigilance"),
+    ("raw_named", "FlyVigilance · 지식 기반 판별 (이름 사용)", "knowledge"),
 ]
 
 
@@ -245,27 +245,28 @@ def score(row: dict, key: str) -> float:
     return row.get(key, 0.0)
 
 
-def evaluate(rows: list[dict]) -> dict:
+def evaluate(rows: list[dict], skip: tuple = ()) -> dict:
     y = [r["truth"] for r in rows]
     methods = []
     for key, label, fam in METHODS:
+        if key in skip:
+            continue
         s = [score(r, key) for r in rows]
         m = {"key": key, "label": label, "family": fam, "auc": round(pvstats.auc(s, y), 4),
              "ci": pvstats.bootstrap_auc(s, y), "roc": pvstats.roc_points(s, y)}
-        if fam in ("raw", "flyvigilance", "memory"):
+        if fam in ("raw", "flyvigilance", "knowledge"):
             m["at_0.5"] = pvstats.sens_spec([v >= 0.5 for v in s], y)
         methods.append(m)
     points = {"evans": pvstats.sens_spec([r["f"]["evans"] for r in rows], y),
               "triple": pvstats.sens_spec([r["f"]["triple"] for r in rows], y)}
-    sc = {k: [score(r, k) for r in rows] for k, _, _ in METHODS}
+    sc = {k: [score(r, k) for r in rows] for k, _, _ in METHODS if k not in skip}
     deltas = [
         {"a": "fv", "b": "ic025", **pvstats.bootstrap_delta(sc["fv"], sc["ic025"], y)},
         {"a": "fv", "b": "raw_blind", **pvstats.bootstrap_delta(sc["fv"], sc["raw_blind"], y)},
-        {"a": "raw_named", "b": "fv", **pvstats.bootstrap_delta(sc["raw_named"], sc["fv"], y)},
     ]
-    # 모델 판단이 그 세트의 최고 통계 지표를 넘는지도 같은 방식으로 검정합니다
+    # 각 판별 방식을 그 세트의 최고 통계 지표와 같은 방식(짝지은 부트스트랩)으로 비교합니다
     best = max((m for m in methods if m["family"] == "metric"), key=lambda m: m["auc"])["key"]
-    for k in ("raw_blind", "fv"):
+    for k in [x for x in ("raw_named", "raw_blind", "fv") if x in sc]:
         if not any(d["a"] == k and d["b"] == best for d in deltas):
             deltas.append({"a": k, "b": best, **pvstats.bootstrap_delta(sc[k], sc[best], y)})
     for d in deltas:
@@ -326,7 +327,8 @@ async def main(args):
                          "raw_blind": pick(f"blind|{r.drug}|{r.event}{sfx}", "causes"),
                          "fv": pick(f"fv|{r.drug}|{r.event}{sfx}", "credible"),
                          "fv_alt": fvj.get("answers", {}).get("alternative", {}).get("choice")})
-        res = evaluate(rows)
+        # 지식 기반 판별은 현재 지식을 쓰므로, 2013년 이전 정보만 쓰는 전향 조건에는 넣지 않습니다
+        res = evaluate(rows, skip=("raw_named",) if refset == "Harpaz-prospective" else ())
         base_ref = "Harpaz" if refset == "Harpaz-prospective" else refset
         res["excluded"] = [{"drug": d, "event": e} for d, e in pairs[(pairs.refset == base_ref) & ~pairs.evaluable][["drug_ref", "event"]].itertuples(index=False)]
         if refset == "Harpaz-prospective":
@@ -344,7 +346,7 @@ async def main(args):
         fv = next(m for m in res["methods"] if m["key"] == "fv")
         print(f"{refset}: n={res['n']} pos={res['pos']} | best metric {best['label']} {best['auc']:.3f} | "
               f"raw_blind {next(m['auc'] for m in res['methods'] if m['key'] == 'raw_blind'):.3f} | FV {fv['auc']:.3f} "
-              f"| named {next(m['auc'] for m in res['methods'] if m['key'] == 'raw_named'):.3f} | deltas {res['deltas']}")
+              f"| knowledge {next((m['auc'] for m in res['methods'] if m['key'] == 'raw_named'), float('nan')):.3f} | deltas {res['deltas']}")
         print("   evans", res["points"]["evans"], "\n   triple", res["points"]["triple"])
 
     asof = "2026Q2"

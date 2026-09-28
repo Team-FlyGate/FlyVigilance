@@ -2,15 +2,31 @@
  "generated": "2026-09-27 20:16",
  "ablation": {
   "n": 440,
-  "definition": "human-first = FlyVigilance action 'expedite' / raw Jev review_first p>=0.5; truth = FAERS outcome code present (serious)",
+  "serious": 250,
+  "include_outcome": true,
+  "definition": "human-first = FlyVigilance action 'expedite' / raw Jev review_first p>=0.5; truth = FAERS outcome code present (serious); outcome codes shown in the triage input",
   "flyvigilance": {
-   "sens": 0.88,
+   "sens": 0.896,
    "spec": 0.9894736842105263,
-   "missed_serious": 30,
+   "missed_serious": 26,
    "over_escalated": 2,
-   "escalated": 222,
+   "escalated": 226,
    "n": 440,
-   "serious_without_review": 0
+   "serious_without_review": 0,
+   "routes": {
+    "expedite": 226,
+    "signal_review": 157,
+    "follow_up": 42,
+    "monitor": 11,
+    "close": 4
+   },
+   "routes_serious": {
+    "expedite": 224,
+    "signal_review": 11,
+    "follow_up": 15,
+    "monitor": 0,
+    "close": 0
+   }
   },
   "flyvigilance_ungrounded": {
    "sens": 0.824,
@@ -19,67 +35,148 @@
    "over_escalated": 2,
    "escalated": 208,
    "n": 440,
-   "serious_without_review": 0
+   "serious_without_review": 0,
+   "routes": {
+    "expedite": 208,
+    "signal_review": 129,
+    "follow_up": 42,
+    "monitor": 58,
+    "close": 3
+   },
+   "routes_serious": {
+    "expedite": 206,
+    "signal_review": 29,
+    "follow_up": 15,
+    "monitor": 0,
+    "close": 0
+   }
+  },
+  "flyvigilance_no_dme": {
+   "sens": 0.896,
+   "spec": 0.9894736842105263,
+   "missed_serious": 26,
+   "over_escalated": 2,
+   "escalated": 226,
+   "n": 440,
+   "serious_without_review": 0,
+   "routes": {
+    "expedite": 226,
+    "signal_review": 157,
+    "follow_up": 42,
+    "monitor": 11,
+    "close": 4
+   },
+   "routes_serious": {
+    "expedite": 224,
+    "signal_review": 11,
+    "follow_up": 15,
+    "monitor": 0,
+    "close": 0
+   }
   },
   "raw_jev": {
    "sens": 0.988,
-   "spec": 0.7947368421052632,
+   "spec": 0.7894736842105263,
    "missed_serious": 3,
-   "over_escalated": 39,
-   "escalated": 286,
+   "over_escalated": 40,
+   "escalated": 287,
    "n": 440,
    "serious_without_review": 3
   },
   "routes": {
    "flyvigilance": {
-    "expedite": 222,
-    "signal_review": 163,
+    "expedite": 226,
+    "signal_review": 157,
     "follow_up": 42,
-    "monitor": 8,
-    "close": 5
+    "monitor": 11,
+    "close": 4
    },
    "flyvigilance_ungrounded": {
     "expedite": 208,
-    "signal_review": 132,
+    "signal_review": 129,
     "follow_up": 42,
-    "monitor": 56,
-    "close": 2
+    "monitor": 58,
+    "close": 3
    }
   },
-  "raw_auroc": 0.9832736842105263,
+  "raw_auroc": 0.9836842105263158,
   "raw_latency_ms": {
    "n": 440,
-   "p50": 191.0,
-   "p90": 336.6,
-   "p99": 992.8,
-   "mean": 252.9,
-   "min": 136.7,
-   "max": 1052.4
+   "p50": 184.5,
+   "p90": 313.4,
+   "p99": 353.7,
+   "mean": 206.6,
+   "min": 127.2,
+   "max": 469.6
   },
-  "raw_wall_s": 9.6,
+  "tests": {
+   "workload_fv_vs_raw": {
+    "a_only": 3,
+    "b_only": 64,
+    "p": 6.801200228001569e-16
+   },
+   "over_escalation_fv_vs_raw": {
+    "a_only": 0,
+    "b_only": 38,
+    "p": 7.275957614183426e-12
+   },
+   "serious_unreviewed_fv_vs_raw": {
+    "a_only": 0,
+    "b_only": 3,
+    "p": 0.25
+   },
+   "serious_escalation_grounded_vs_ungrounded": {
+    "a_only": 25,
+    "b_only": 7,
+    "p": 0.0021024015732109547
+   },
+   "serious_escalation_dme_vs_no_dme": {
+    "a_only": 0,
+    "b_only": 0,
+    "p": 1.0
+   }
+  },
+  "dme": {
+   "cases_with_dme": 15,
+   "serious_among_dme": 15,
+   "changed_by_dme": 0,
+   "serious_changed_by_dme": 0
+  },
   "grounding": {
-   "label_found": 360,
+   "label_found": 321,
    "cases": 440,
    "memory_vs_label": {
-    "both_expected": 64,
-    "both_unexpected": 136,
-    "memory_expected_label_not": 144,
-    "memory_unexpected_label_listed": 16
+    "both_expected": 41,
+    "both_unexpected": 125,
+    "memory_expected_label_not": 141,
+    "memory_unexpected_label_listed": 14
    },
-   "actions_changed": 87,
-   "changed_to_expedite": 23,
-   "changed_from_expedite": 9,
-   "changed_serious_to_expedite": 23,
+   "actions_changed": 84,
+   "changed_to_expedite": 25,
+   "changed_from_expedite": 7,
+   "changed_serious_to_expedite": 25,
    "label_latency_ms": {
     "n": 440,
-    "p50": 1.7,
-    "p90": 7.1,
-    "p99": 18.1,
-    "mean": 3.0,
-    "min": 0.1,
-    "max": 57.6
+    "p50": 2.8,
+    "p90": 12.0,
+    "p99": 30.8,
+    "mean": 5.2,
+    "min": 0.0,
+    "max": 130.8
    },
    "examples": [
+    {
+     "primaryid": 252830822,
+     "suspect": "RILONACEPT",
+     "reactions": [
+      "drug effect less than expected"
+     ],
+     "serious": false,
+     "memory_expected": 0.35,
+     "label": {},
+     "before": "monitor",
+     "after": "signal_review"
+    },
     {
      "primaryid": 261672812,
      "suspect": "DUPILUMAB",
@@ -91,17 +188,35 @@
      "serious": false,
      "memory_expected": 0.9,
      "label": {
-      "dermatitis atopic": [
-       "warnings_and_cautions",
-       "adverse_reactions"
-      ],
+      "dermatitis atopic": [],
       "pruritus": [
-       "adverse_reactions"
+       "adverse_reactions_ct",
+       "adverse_reactions_pm"
       ],
       "rash": [
        "warnings_and_cautions",
-       "adverse_reactions"
+       "adverse_reactions_ct",
+       "adverse_reactions_pm"
       ]
+     },
+     "before": "monitor",
+     "after": "signal_review"
+    },
+    {
+     "primaryid": 263301004,
+     "suspect": "DUPILUMAB",
+     "reactions": [
+      "injection site pain",
+      "injection site urticaria",
+      "product preparation issue"
+     ],
+     "serious": false,
+     "memory_expected": 0.85,
+     "label": {
+      "injection site pain": [
+       "adverse_reactions_ct"
+      ],
+      "injection site urticaria": []
      },
      "before": "monitor",
      "after": "signal_review"
@@ -115,35 +230,13 @@
       "product dose omission issue"
      ],
      "serious": false,
-     "memory_expected": 0.7,
+     "memory_expected": 0.69,
      "label": {
       "diarrhoea": [
        "warnings_and_cautions",
-       "adverse_reactions"
+       "adverse_reactions_ct"
       ],
       "memory impairment": []
-     },
-     "before": "monitor",
-     "after": "signal_review"
-    },
-    {
-     "primaryid": 264317882,
-     "suspect": "BENRALIZUMAB",
-     "reactions": [
-      "constipation",
-      "headache",
-      "nervousness"
-     ],
-     "serious": false,
-     "memory_expected": 0.33,
-     "label": {
-      "constipation": [],
-      "headache": [
-       "adverse_reactions"
-      ],
-      "nervousness": [],
-      "palpitations": [],
-      "vision blurred": []
      },
      "before": "monitor",
      "after": "signal_review"
@@ -155,8 +248,33 @@
       "device difficult to use"
      ],
      "serious": false,
-     "memory_expected": 0.2,
+     "memory_expected": 0.22,
      "label": {},
+     "before": "monitor",
+     "after": "signal_review"
+    },
+    {
+     "primaryid": 265626061,
+     "suspect": "DUPILUMAB",
+     "reactions": [
+      "dermatitis",
+      "dry eye",
+      "pruritus"
+     ],
+     "serious": false,
+     "memory_expected": 0.9,
+     "label": {
+      "dermatitis": [
+       "adverse_reactions_ct"
+      ],
+      "dry eye": [
+       "adverse_reactions_ct"
+      ],
+      "pruritus": [
+       "adverse_reactions_ct",
+       "adverse_reactions_pm"
+      ]
+     },
      "before": "monitor",
      "after": "signal_review"
     },
@@ -167,7 +285,7 @@
       "incorrect dose administered"
      ],
      "serious": false,
-     "memory_expected": 0.36,
+     "memory_expected": 0.35,
      "label": {},
      "before": "monitor",
      "after": "signal_review"
@@ -181,14 +299,15 @@
       "pruritus"
      ],
      "serious": false,
-     "memory_expected": 0.78,
+     "memory_expected": 0.77,
      "label": {
       "dry skin": [],
       "insomnia": [
-       "adverse_reactions"
+       "adverse_reactions_ct"
       ],
       "pruritus": [
-       "adverse_reactions"
+       "adverse_reactions_ct",
+       "adverse_reactions_pm"
       ]
      },
      "before": "monitor",
@@ -202,7 +321,7 @@
       "ocular discomfort"
      ],
      "serious": false,
-     "memory_expected": 0.69,
+     "memory_expected": 0.7,
      "label": {
       "eye irritation": [],
       "ocular discomfort": []
@@ -222,7 +341,7 @@
      "label": {
       "discomfort": [],
       "injection site pain": [
-       "adverse_reactions"
+       "adverse_reactions_ct"
       ]
      },
      "before": "signal_review",
@@ -237,25 +356,11 @@
       "sneezing"
      ],
      "serious": false,
-     "memory_expected": 0.35,
+     "memory_expected": 0.37,
      "label": {
       "cough": [],
       "headache": [],
       "sneezing": []
-     },
-     "before": "monitor",
-     "after": "signal_review"
-    },
-    {
-     "primaryid": 266286741,
-     "suspect": "TIRZEPATIDE",
-     "reactions": [
-      "alopecia"
-     ],
-     "serious": false,
-     "memory_expected": 0.35,
-     "label": {
-      "alopecia": []
      },
      "before": "monitor",
      "after": "signal_review"
@@ -268,34 +373,25 @@
       "neck pain"
      ],
      "serious": false,
-     "memory_expected": 0.66,
+     "memory_expected": 0.64,
      "label": {
       "back pain": [
-       "adverse_reactions"
+       "adverse_reactions_ct"
       ],
       "neck pain": [
-       "adverse_reactions"
+       "adverse_reactions_ct"
       ]
      },
      "before": "monitor",
      "after": "signal_review"
-    },
-    {
-     "primaryid": 266477721,
-     "suspect": "ETHINYL ESTRADIOL\\NORELGESTROMIN",
-     "reactions": [
-      "no adverse event",
-      "product adhesion issue"
-     ],
-     "serious": false,
-     "memory_expected": 0.47,
-     "label": {},
-     "before": "close",
-     "after": "signal_review"
     }
    ]
   },
-  "ungrounded_wall_s": 8.99
+  "wall_s": {
+   "flyvigilance": 12.84,
+   "flyvigilance_ungrounded": 8.47,
+   "raw_jev": 7.79
+  }
  },
  "dataset": {
   "source": "FAERS 2026Q2",
@@ -16971,5 +17067,386 @@
    "compared": 27
   },
   "concurrency": 4
- }
+ },
+ "ablation_blind": {
+  "n": 440,
+  "serious": 250,
+  "include_outcome": false,
+  "definition": "human-first = FlyVigilance action 'expedite' / raw Jev review_first p>=0.5; truth = FAERS outcome code present (serious); outcome codes hidden from every arm",
+  "flyvigilance": {
+   "sens": 0.54,
+   "spec": 0.9842105263157894,
+   "missed_serious": 115,
+   "over_escalated": 3,
+   "escalated": 138,
+   "n": 440,
+   "serious_without_review": 3,
+   "routes": {
+    "expedite": 138,
+    "signal_review": 247,
+    "follow_up": 42,
+    "monitor": 9,
+    "close": 4
+   },
+   "routes_serious": {
+    "expedite": 135,
+    "signal_review": 97,
+    "follow_up": 15,
+    "monitor": 3,
+    "close": 0
+   }
+  },
+  "flyvigilance_ungrounded": {
+   "sens": 0.564,
+   "spec": 0.9842105263157894,
+   "missed_serious": 109,
+   "over_escalated": 3,
+   "escalated": 144,
+   "n": 440,
+   "serious_without_review": 2,
+   "routes": {
+    "expedite": 144,
+    "signal_review": 226,
+    "follow_up": 42,
+    "monitor": 25,
+    "close": 3
+   },
+   "routes_serious": {
+    "expedite": 141,
+    "signal_review": 92,
+    "follow_up": 15,
+    "monitor": 2,
+    "close": 0
+   }
+  },
+  "flyvigilance_no_dme": {
+   "sens": 0.536,
+   "spec": 0.9842105263157894,
+   "missed_serious": 116,
+   "over_escalated": 3,
+   "escalated": 137,
+   "n": 440,
+   "serious_without_review": 3,
+   "routes": {
+    "expedite": 137,
+    "signal_review": 248,
+    "follow_up": 42,
+    "monitor": 9,
+    "close": 4
+   },
+   "routes_serious": {
+    "expedite": 134,
+    "signal_review": 98,
+    "follow_up": 15,
+    "monitor": 3,
+    "close": 0
+   }
+  },
+  "raw_jev": {
+   "sens": 0.936,
+   "spec": 0.6421052631578947,
+   "missed_serious": 16,
+   "over_escalated": 68,
+   "escalated": 302,
+   "n": 440,
+   "serious_without_review": 16
+  },
+  "routes": {
+   "flyvigilance": {
+    "expedite": 138,
+    "signal_review": 247,
+    "follow_up": 42,
+    "monitor": 9,
+    "close": 4
+   },
+   "flyvigilance_ungrounded": {
+    "expedite": 144,
+    "signal_review": 226,
+    "follow_up": 42,
+    "monitor": 25,
+    "close": 3
+   }
+  },
+  "raw_auroc": 0.8976526315789474,
+  "raw_latency_ms": {
+   "n": 440,
+   "p50": 185.1,
+   "p90": 311.6,
+   "p99": 348.5,
+   "mean": 205.0,
+   "min": 135.3,
+   "max": 395.6
+  },
+  "tests": {
+   "workload_fv_vs_raw": {
+    "a_only": 1,
+    "b_only": 165,
+    "p": 3.5708136526831734e-48
+   },
+   "over_escalation_fv_vs_raw": {
+    "a_only": 0,
+    "b_only": 65,
+    "p": 5.421010862427522e-20
+   },
+   "serious_unreviewed_fv_vs_raw": {
+    "a_only": 3,
+    "b_only": 16,
+    "p": 0.004425048828125
+   },
+   "serious_escalation_grounded_vs_ungrounded": {
+    "a_only": 12,
+    "b_only": 18,
+    "p": 0.361594608053565
+   },
+   "serious_escalation_dme_vs_no_dme": {
+    "a_only": 1,
+    "b_only": 0,
+    "p": 1.0
+   }
+  },
+  "dme": {
+   "cases_with_dme": 15,
+   "serious_among_dme": 15,
+   "changed_by_dme": 1,
+   "serious_changed_by_dme": 1
+  },
+  "grounding": {
+   "label_found": 321,
+   "cases": 440,
+   "memory_vs_label": {
+    "both_expected": 42,
+    "both_unexpected": 120,
+    "memory_expected_label_not": 146,
+    "memory_unexpected_label_listed": 13
+   },
+   "actions_changed": 63,
+   "changed_to_expedite": 12,
+   "changed_from_expedite": 18,
+   "changed_serious_to_expedite": 12,
+   "label_latency_ms": {
+    "n": 440,
+    "p50": 1.0,
+    "p90": 6.8,
+    "p99": 19.3,
+    "mean": 2.9,
+    "min": 0.1,
+    "max": 110.1
+   },
+   "examples": [
+    {
+     "primaryid": 264794373,
+     "suspect": "GALSULFASE",
+     "reactions": [
+      "disease progression",
+      "respiratory disorder"
+     ],
+     "serious": true,
+     "memory_expected": 0.43,
+     "label": {
+      "respiratory disorder": []
+     },
+     "before": "expedite",
+     "after": "signal_review"
+    },
+    {
+     "primaryid": 265661002,
+     "suspect": "LENVATINIB",
+     "reactions": [
+      "cholecystitis acute"
+     ],
+     "serious": true,
+     "memory_expected": 0.58,
+     "label": {
+      "cholecystitis acute": []
+     },
+     "before": "signal_review",
+     "after": "expedite"
+    },
+    {
+     "primaryid": 268874131,
+     "suspect": "FOSCARBIDOPA\\FOSLEVODOPA",
+     "reactions": [
+      "pneumonia"
+     ],
+     "serious": true,
+     "memory_expected": 0.54,
+     "label": {},
+     "before": "signal_review",
+     "after": "expedite"
+    },
+    {
+     "primaryid": 252830822,
+     "suspect": "RILONACEPT",
+     "reactions": [
+      "drug effect less than expected"
+     ],
+     "serious": false,
+     "memory_expected": 0.39,
+     "label": {},
+     "before": "monitor",
+     "after": "signal_review"
+    },
+    {
+     "primaryid": 265626061,
+     "suspect": "DUPILUMAB",
+     "reactions": [
+      "dermatitis",
+      "dry eye",
+      "pruritus"
+     ],
+     "serious": false,
+     "memory_expected": 0.91,
+     "label": {
+      "dermatitis": [
+       "adverse_reactions_ct"
+      ],
+      "dry eye": [
+       "adverse_reactions_ct"
+      ],
+      "pruritus": [
+       "adverse_reactions_ct",
+       "adverse_reactions_pm"
+      ]
+     },
+     "before": "monitor",
+     "after": "signal_review"
+    },
+    {
+     "primaryid": 265867671,
+     "suspect": "DUPILUMAB",
+     "reactions": [
+      "dry skin",
+      "insomnia",
+      "pruritus"
+     ],
+     "serious": false,
+     "memory_expected": 0.77,
+     "label": {
+      "dry skin": [],
+      "insomnia": [
+       "adverse_reactions_ct"
+      ],
+      "pruritus": [
+       "adverse_reactions_ct",
+       "adverse_reactions_pm"
+      ]
+     },
+     "before": "monitor",
+     "after": "signal_review"
+    },
+    {
+     "primaryid": 265941001,
+     "suspect": "CYCLOSPORINE",
+     "reactions": [
+      "eye irritation",
+      "ocular discomfort"
+     ],
+     "serious": false,
+     "memory_expected": 0.67,
+     "label": {
+      "eye irritation": [],
+      "ocular discomfort": []
+     },
+     "before": "monitor",
+     "after": "signal_review"
+    },
+    {
+     "primaryid": 266286741,
+     "suspect": "TIRZEPATIDE",
+     "reactions": [
+      "alopecia"
+     ],
+     "serious": false,
+     "memory_expected": 0.31,
+     "label": {
+      "alopecia": [
+       "adverse_reactions_ct"
+      ]
+     },
+     "before": "monitor",
+     "after": "signal_review"
+    },
+    {
+     "primaryid": 266477721,
+     "suspect": "ETHINYL ESTRADIOL\\NORELGESTROMIN",
+     "reactions": [
+      "no adverse event",
+      "product adhesion issue"
+     ],
+     "serious": false,
+     "memory_expected": 0.47,
+     "label": {},
+     "before": "close",
+     "after": "signal_review"
+    },
+    {
+     "primaryid": 266760441,
+     "suspect": "SEMAGLUTIDE",
+     "reactions": [
+      "nausea",
+      "off label use",
+      "vomiting"
+     ],
+     "serious": false,
+     "memory_expected": 0.85,
+     "label": {
+      "nausea": [
+       "warnings_and_cautions",
+       "adverse_reactions_ct"
+      ],
+      "vomiting": [
+       "warnings_and_cautions",
+       "adverse_reactions_ct"
+      ]
+     },
+     "before": "signal_review",
+     "after": "monitor"
+    },
+    {
+     "primaryid": 266867521,
+     "suspect": "TIRZEPATIDE",
+     "reactions": [
+      "food craving",
+      "muscle spasms",
+      "pain"
+     ],
+     "serious": false,
+     "memory_expected": 0.35,
+     "label": {
+      "food craving": [],
+      "muscle spasms": [],
+      "pain": [
+       "warnings_and_cautions",
+       "adverse_reactions_ct"
+      ],
+      "pain in extremity": []
+     },
+     "before": "monitor",
+     "after": "signal_review"
+    },
+    {
+     "primaryid": 267033781,
+     "suspect": "TIRZEPATIDE",
+     "reactions": [
+      "injection site rash"
+     ],
+     "serious": false,
+     "memory_expected": 0.83,
+     "label": {
+      "injection site rash": [
+       "adverse_reactions_ct"
+      ]
+     },
+     "before": "monitor",
+     "after": "signal_review"
+    }
+   ]
+  },
+  "wall_s": {
+   "flyvigilance": 11.64,
+   "flyvigilance_ungrounded": 8.6,
+   "raw_jev": 7.87
+  }
+ },
+ "ablation_generated": "2026-09-28 00:26"
 }

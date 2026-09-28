@@ -5,9 +5,9 @@ import type { LiteratureEval, RocMethod, RefsetResult, Validation as V } from '.
 
 const FAMILY: Record<RocMethod['family'], { name: string; color: string; dash?: string; width: number }> = {
   metric: { name: '통계 지표 (SQL)', color: '#4d8dff', width: 1.6 },
-  raw: { name: 'raw Jev', color: '#ffb547', dash: '6 4', width: 2 },
-  flyvigilance: { name: 'FlyVigilance', color: '#37e6ff', width: 3 },
-  memory: { name: '기억 누출 (참고)', color: '#6c7aa8', dash: '2 4', width: 1.6 },
+  raw: { name: '모델 단독', color: '#ffb547', dash: '6 4', width: 2 },
+  flyvigilance: { name: 'FlyVigilance · 통계 기반', color: '#37e6ff', width: 2.4 },
+  knowledge: { name: 'FlyVigilance · 지식 기반', color: '#7cffb2', width: 3 },
 }
 const METRIC_SHADE: Record<string, string> = { a: '#2d4a7a', prr: '#3e63a8', ror_lo: '#4d8dff', chi2s: '#7aa7ff', ic025: '#a8c6ff' }
 const SET_LABEL: Record<string, string> = {
@@ -19,6 +19,7 @@ const DESIGN_KO: Record<string, string> = {
 }
 
 function colorOf(m: RocMethod) { return m.family === 'metric' ? METRIC_SHADE[m.key] ?? FAMILY.metric.color : FAMILY[m.family].color }
+function labelOf(m: RocMethod) { return m.label }
 
 function RocChart({ res, hidden, size = 380 }: { res: RefsetResult; hidden: Set<string>; size?: number }) {
   const pad = 38, W = size, H = size
@@ -42,7 +43,7 @@ function RocChart({ res, hidden, size = 380 }: { res: RefsetResult; hidden: Set<
         const f = FAMILY[m.family]
         const d = m.roc.map(([a, b], i) => `${i ? 'L' : 'M'}${x(a).toFixed(1)},${y(b).toFixed(1)}`).join(' ')
         return <path key={m.key} d={d} fill="none" stroke={colorOf(m)} strokeWidth={f.width} strokeDasharray={f.dash}
-          style={m.family === 'flyvigilance' ? { filter: 'drop-shadow(0 0 6px #37e6ff)' } : undefined} />
+          style={m.family === 'knowledge' || m.family === 'flyvigilance' ? { filter: `drop-shadow(0 0 6px ${f.color})` } : undefined} />
       })}
       {pts.map((p, i) => p.sens !== null && p.spec !== null && (
         <g key={i} transform={`translate(${x(1 - p.spec)},${y(p.sens)})`}>
@@ -123,21 +124,23 @@ export default function Validation() {
       <PageHead eyebrow="Reference validation · 공개 참조 세트 · 전향적 검증"
         title={<>어느 부품이 어디서 이기는지 <span style={{ color: 'var(--c-sense)' }}>재고 나서</span> 배치했습니다</>}
         lede={<>공개 참조 세트 세 개(OMOP, EU-ADR, Harpaz)의 약물–반응 {Object.values(v.refsets).slice(0, 3).reduce((a, r) => a + r.n, 0)}쌍에서
-          통계 지표, 그대로 쓴 Jev, FlyVigilance의 판단을 같은 조건으로 비교했습니다. Harpaz는 2013년 라벨 변경을 정답으로 삼으므로,
-          2013년 이전 보고(구형 AERS 2004–2012Q3, {fmt.compact(pro?.N ?? 0)}건)만으로 다시 재어 "미리 알 수 있었는가"를 봤습니다.</>} />
+          통계 지표, 모델 단독 판단, FlyVigilance의 두 판별 모드(지식 기반·통계 기반)를 같은 조건으로 비교했습니다. Harpaz는 2013년 라벨 변경을 정답으로 삼으므로,
+          2013년 이전 보고(구형 AERS 2004–2012Q3, {fmt.compact(pro?.N ?? 0)}건)만으로 다시 재어 "미리 알 수 있었는가"를 봤습니다. 이 전향 조건은 2013년 이전 정보만 쓰므로 통계 기반 판별로 비교합니다.</>} />
 
       <div className="grid g3" style={{ marginBottom: 16 }}>
-        <Finding n="1" color="#4d8dff" title="신호 순위는 통계가 맡습니다"
-          body={<>네 조건 어디서도 모델 판단(raw Jev, FlyVigilance)이 최고 통계 지표를 유의하게 넘지 못했습니다
-            ({Object.entries(v.refsets).map(([k, r]) => `${k} ${best(r).auc.toFixed(2)} vs ${m(r, 'fv').auc.toFixed(2)}`).join(', ')}).
-            유의한 차이는 모두 모델이 낮은 쪽이었습니다({Object.entries(v.refsets).flatMap(([k, r]) => r.deltas.filter((d) => d.best_metric && d.ci[1] < 0)
-              .map((d) => `${k === 'Harpaz' ? 'Harpaz 전 기간' : k === 'Harpaz-prospective' ? 'Harpaz 전향' : k}의 ${m(r, d.a).label}`)).join(', ')}). 그래서 FlyVigilance는 신호 계산을 SQL에 두고 모델이 숫자를 바꾸지 못하게 합니다.</>} />
-        <Finding n="2" color="#ffb547" title="이름을 가리면 사라지는 성능"
-          body={<>raw Jev에 약·반응 이름을 주면 AUC {m(omop, 'raw_named').auc.toFixed(3)}, 이름을 가리면 {m(omop, 'raw_blind').auc.toFixed(3)}.
-            차이는 판단력이 아니라 기억입니다. 그래서 FlyVigilance는 라벨 여부를 기억에 묻지 않고 조회해서 넣습니다(트리아지 라벨 근거 주입).</>} />
-        <Finding n="3" color="#ff4fd8" title="라벨이 바뀌기 전에 잡은 신호"
-          body={<>2013년 이전 보고만으로 3중 기준은 그해 라벨이 바뀐 {pro.pos}건 중 <b style={{ color: 'var(--text)' }}>{pro.points.triple.tp}건</b>을 이미 신호로 세웠고,
-            음성 {pro.neg}건 중 오경보는 {pro.points.triple.fp}건이었습니다(PPV {fmt.pct(pro.points.triple.ppv ?? 0, 0)}). 연속 자동 감시의 근거입니다.</>} />
+        <Finding n="1" color="#7cffb2" title="공인된 연관은 지식 기반 판별이 가려냅니다"
+          body={<>약·반응 이름으로 묻는 FlyVigilance 지식 기반 판별이 최고 통계 지표보다 AUC가 높았습니다
+            ({(['OMOP', 'EU-ADR', 'Harpaz'] as const).map((k) => { const r = v.refsets[k]; const d = r.deltas.find((x) => x.best_metric && x.a === 'raw_named')
+              return d ? `${k} ${m(r, 'raw_named').auc.toFixed(3)} vs ${best(r).auc.toFixed(3)}${d.ci[0] > 0 ? ' 유의' : ''}` : '' }).filter(Boolean).join(', ')}).
+            판단 한 번에 {fmt.ms(v.jev.latency_ms_p50)}(중앙값)이라 트리아지 흐름 안에서 바로 씁니다.</>} />
+        <Finding n="2" color="#4d8dff" title="새 조합은 통계, 예측성은 라벨 조회"
+          body={<>아직 알려지지 않은 조합의 순위는 SQL 불균형 통계(PRR·ROR·IC, SDR 3중 기준)가 맡고, 모델이 숫자를 바꾸지 못하게 했습니다.
+            라벨 기재 여부(예측성)는 FDA 허가 라벨을 조회해서 정합니다. 이름을 가린 통계 기반 판별은 통계 지표와 같은 수준입니다
+            (OMOP {m(omop, 'fv').auc.toFixed(2)} vs {best(omop).auc.toFixed(2)}, 차이 없음).</>} />
+        <Finding n="3" color="#ff4fd8" title="라벨이 바뀌기 전에 선 SDR"
+          body={<>2013년 이전 보고만으로 3중 기준은 그해 라벨이 바뀐 {pro.pos}건 중 <b style={{ color: 'var(--text)' }}>{pro.points.triple.tp}건</b>을 이미 SDR로 잡았고,
+            음성 {pro.neg}건 중 오경보는 {pro.points.triple.fp}건이었습니다(PPV {fmt.pct(pro.points.triple.ppv ?? 0, 0)}). 연속 자동 감시의 근거입니다.
+            라벨 개정 시점보다 앞섰다는 뜻이며, 규제기관의 인지 시점과는 별개입니다.</>} />
       </div>
 
       <Card style={{ marginBottom: 16 }}>
@@ -152,7 +155,7 @@ export default function Validation() {
           <RocChart res={res} hidden={hidden} />
           <div className="row wrap" style={{ gap: 6, marginTop: 8 }}>
             {res.methods.map((mm) => (
-              <button key={mm.key} className="chip" onClick={() => toggle(mm.key)} style={{ cursor: 'pointer', opacity: hidden.has(mm.key) ? 0.35 : 1, borderColor: colorOf(mm) + '99', color: colorOf(mm) }}>{mm.label}</button>
+              <button key={mm.key} className="chip" onClick={() => toggle(mm.key)} style={{ cursor: 'pointer', opacity: hidden.has(mm.key) ? 0.35 : 1, borderColor: colorOf(mm) + '99', color: colorOf(mm) }}>{labelOf(mm)}</button>
             ))}
           </div>
         </Card>
@@ -161,10 +164,10 @@ export default function Validation() {
             <table className="tbl">
               <thead><tr><th>방법</th><th>계열</th><th className="r">AUC</th><th className="r">95% CI</th><th className="r">민감도@0.5</th><th className="r">특이도@0.5</th></tr></thead>
               <tbody>{[...res.methods].sort((a, b) => b.auc - a.auc).map((mm) => (
-                <tr key={mm.key} style={{ opacity: mm.family === 'memory' ? 0.6 : 1 }}>
-                  <td><span className="legend-dot" style={{ background: colorOf(mm), marginRight: 8 }} />{mm.label}</td>
+                <tr key={mm.key}>
+                  <td><span className="legend-dot" style={{ background: colorOf(mm), marginRight: 8 }} />{labelOf(mm)}</td>
                   <td><span className="chip" style={{ fontSize: 10, color: FAMILY[mm.family].color }}>{FAMILY[mm.family].name}</span></td>
-                  <td className="r num" style={{ fontSize: 13, color: mm.family === 'flyvigilance' ? 'var(--c-sense)' : undefined }}>{mm.auc.toFixed(3)}</td>
+                  <td className="r num" style={{ fontSize: 13, color: mm.family === 'knowledge' || mm.family === 'flyvigilance' ? FAMILY[mm.family].color : undefined }}>{mm.auc.toFixed(3)}</td>
                   <td className="r num dim">{mm.ci ? `${mm.ci[0].toFixed(3)}–${mm.ci[1].toFixed(3)}` : '–'}</td>
                   <td className="r num">{mm['at_0.5'] ? fmt.pct(mm['at_0.5'].sens ?? 0, 0) : ''}</td>
                   <td className="r num">{mm['at_0.5'] ? fmt.pct(mm['at_0.5'].spec ?? 0, 0) : ''}</td>
@@ -187,7 +190,7 @@ export default function Validation() {
           <Card title="차이 검정 (짝지은 부트스트랩)" sub="구간이 0을 포함하면 차이가 있다고 말할 수 없습니다">
             <div className="stack" style={{ gap: 8 }}>
               {[...res.deltas].sort((x, y) => Number(!!y.best_metric) - Number(!!x.best_metric)).map((d) => {
-                const la = res.methods.find((x) => x.key === d.a)!.label, lb = res.methods.find((x) => x.key === d.b)!.label
+                const la = labelOf(res.methods.find((x) => x.key === d.a)!), lb = labelOf(res.methods.find((x) => x.key === d.b)!)
                 const sig = d.ci[0] > 0 || d.ci[1] < 0
                 return (
                   <div key={d.a + d.b} className="row between" style={{ fontSize: 12.5 }}>
@@ -202,11 +205,11 @@ export default function Validation() {
       </div>
 
       <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1.4fr) minmax(0,1fr)', alignItems: 'start', marginBottom: 16 }}>
-        <Card title="쌍 탐색" sub="정답과 각 방법의 점수. 이름 공개 점수(회색)는 기억 누출이라 참고만"
+        <Card title="쌍 탐색" sub="정답과 각 방법의 점수입니다. 전향 세트(2013년 이전)의 비교는 통계 기반 판별로 합니다"
           right={<label className="row" style={{ gap: 6, fontSize: 12, cursor: 'pointer' }}><input type="checkbox" checked={onlyPos} onChange={(e) => setOnlyPos(e.target.checked)} />양성만</label>}>
           <div style={{ maxHeight: 460, overflow: 'auto' }}>
             <table className="tbl" style={{ fontSize: 11.5 }}>
-              <thead><tr><th>약물</th><th>반응</th><th className="r">정답</th><th className="r">a</th><th className="r">PRR</th><th className="r">IC₀₂₅</th><th>3중</th><th className="r">FlyV</th><th className="r">raw 블라인드</th><th className="r">이름 공개</th></tr></thead>
+              <thead><tr><th>약물</th><th>반응</th><th className="r">정답</th><th className="r">a</th><th className="r">PRR</th><th className="r">IC₀₂₅</th><th>3중</th><th className="r">지식 기반</th><th className="r">통계 기반</th><th className="r">모델 단독</th></tr></thead>
               <tbody>{pairs.map((p) => (
                 <tr key={p.drug + p.event}>
                   <td title={p.drug_ref !== p.drug ? `참조 이름: ${p.drug_ref}` : undefined}>{p.drug}</td>
@@ -214,15 +217,15 @@ export default function Validation() {
                   <td className="r">{p.truth ? <span className="chip ok" style={{ fontSize: 9.5 }}>양성</span> : <span className="chip" style={{ fontSize: 9.5 }}>음성</span>}</td>
                   <td className="r num">{fmt.int(p.a)}</td><td className="r num">{fmt.f(p.prr ?? NaN)}</td><td className="r num">{fmt.f(p.ic025)}</td>
                   <td>{p.triple ? <span className="legend-dot" style={{ background: '#ff4fd8' }} /> : null}</td>
+                  <td className="r num" style={{ color: FAMILY.knowledge.color }}>{set === 'Harpaz-prospective' ? '–' : p.raw_named.toFixed(2)}</td>
                   <td className="r num" style={{ color: 'var(--c-sense)' }}>{p.fv.toFixed(2)}</td>
-                  <td className="r num" style={{ color: 'var(--jev)' }}>{p.raw_blind.toFixed(2)}</td>
-                  <td className="r num dim">{p.raw_named.toFixed(2)}</td>
+                  <td className="r num dim">{p.raw_blind.toFixed(2)}</td>
                 </tr>
               ))}</tbody>
             </table>
           </div>
         </Card>
-        <Card title="반응 정의" sub="기억으로 채우지 않았습니다. Harpaz 정의를 먼저 쓰고, 없는 것은 공개 정규식으로 묶었습니다">
+        <Card title="반응 정의" sub="Harpaz 정의를 먼저 쓰고, 없는 것은 공개 정규식으로 MedDRA PT를 묶었습니다">
           <div className="stack" style={{ gap: 8, maxHeight: 460, overflow: 'auto' }}>
             {Object.entries(v.events).filter(([k]) => (v.pairs[set] ?? []).some((p) => p.event === k)).map(([k, e]) => (
               <details key={k} style={{ padding: '8px 10px', borderRadius: 10, border: '1px solid var(--line)' }}>
@@ -244,7 +247,7 @@ export default function Validation() {
           <li>참조 세트의 양성은 라벨·문헌·규제 조치에서 뽑았습니다. 이 측정은 "공인된 조합을 가려내는가"를 재며, 개별 사례의 인과성을 재지 않습니다.</li>
           <li>OMOP 음성 대조군 일부가 잘못 분류됐다는 반론이 있습니다(Hauben et al. 2016). 음성의 정의가 AUC를 좌우합니다.</li>
           <li>라벨·문헌을 쓰는 근거 등급은 이 세트로 평가하지 않았습니다. 정답이 같은 출처에서 나와 순환이기 때문입니다.</li>
-          <li>Jev 호출 {fmt.int(v.jev.calls)}회, 중앙값 {fmt.ms(v.jev.latency_ms_p50)}. 같은 입력은 캐시해 재실행해도 같은 값이 나오게 했습니다.</li>
+          <li>판단 모델 호출 {fmt.int(v.jev.calls)}회, 중앙값 {fmt.ms(v.jev.latency_ms_p50)}. 같은 입력은 캐시해 재실행해도 같은 값이 나오게 했습니다.</li>
           <li>재현: <span className="mono">pipeline/refsets/build_refsets.py → legacy_aers.py → evaluate.py</span></li>
         </ul>
         <div className="row wrap" style={{ gap: 6, marginTop: 10 }}>{v.sources.map((s) => <a key={s.url} className="chip" href={s.url} target="_blank" rel="noreferrer">{s.name} ↗</a>)}</div>

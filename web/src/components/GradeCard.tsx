@@ -55,6 +55,8 @@ export function GradeView({ g, compact = false }: { g: EvidenceGrade; compact?: 
   const lit = g.axes.literature
   const bias = g.flags?.reporting_bias
   const step = LABEL_STEPS.findIndex(([k]) => k === g.axes.label_status)
+  // 지식 기반 판별: 약·반응 이름으로 공인된 연관인지 보는 참고 축입니다(분류 규칙에는 쓰지 않습니다)
+  const kn = (g.axes as { knowledge?: { p: number | null; latency_ms?: number } }).knowledge
   return (
     <div className="stack fade-in" style={{ gap: 10 }}>
       <div className="row" style={{ gap: 14, alignItems: 'flex-start' }}>
@@ -90,6 +92,14 @@ export function GradeView({ g, compact = false }: { g: EvidenceGrade; compact?: 
           <div className="num dim" style={{ fontSize: 10.5 }}>분석 {lit.analytic_supportive}/{lit.analytic_read} · 증례 {lit.anecdotal_supportive} · 읽음 {lit.read}</div>
         </div>
       </div>
+      {kn?.p != null && (
+        <div className="row" style={{ gap: 10, alignItems: 'center', padding: 8, borderRadius: 10, border: '1px solid var(--line)' }}>
+          <span className="dim mono" style={{ fontSize: 9.5, whiteSpace: 'nowrap' }}>지식 기반 판별 · 참고</span>
+          <div className="bar" style={{ flex: 1, height: 6 }}><i style={{ width: `${kn.p * 100}%`, background: 'var(--jev)' }} /></div>
+          <span className="num" style={{ fontSize: 12 }}>{kn.p.toFixed(2)}</span>
+          <span className="dim" style={{ fontSize: 10.5 }}>공인된 연관일 확률{kn.latency_ms ? ` · ${Math.round(kn.latency_ms)} ms` : ''}</span>
+        </div>
+      )}
       {g.disclaimer && <div style={{ fontSize: 11.5, padding: 8, borderRadius: 8, border: '1px solid rgba(255,224,102,0.4)' }}><b style={{ color: '#ffe066' }}>그 반응에 붙은 인과 미확립 단서 · </b><span className="dim">"{g.disclaimer.quote}"</span></div>}
       {!compact && g.literature?.articles?.length ? <Articles arts={g.literature.articles} /> : null}
       <div className="row wrap" style={{ gap: 4 }}>{g.basis.map((b) => <span key={b} className="chip ev">{b}</span>)}</div>

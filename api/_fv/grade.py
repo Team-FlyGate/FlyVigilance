@@ -39,7 +39,7 @@ LABEL_STATUS_NAMES = {
 SIG_NAMES = {"strong": "3중 기준 SDR", "weak": "기준 일부 충족 (SDR 아님)", "none": "SDR 없음",
              "insufficient": "보고 부족 (a<3)", "unavailable": "통계 없음"}
 PV_CLASSES = {
-    "review_sdr": ("검토가 필요한 SDR", "새 신호 후보입니다. 라벨에 없는데 SDR 이 섰으므로 먼저 검토합니다", 1),
+    "review_sdr": ("검토가 필요한 SDR · 새 신호 후보", "새 신호 후보입니다. 라벨에 없는데 SDR 이 섰으므로 먼저 검토합니다", 1),
     "potential_candidate": ("잠재적 위해성 후보", "라벨에 있으나 그 반응에 인과 미확립 단서가 붙어 있습니다", 2),
     "undetermined": ("판정 불가", "라벨이나 FAERS 통계를 확인하지 못했습니다. 사람이 확인해야 합니다", 2),
     "identified_candidate": ("규명된 위해성 후보", "라벨에 있고 SDR 도 섰습니다. 알려진 위험이 보고와 일치합니다", 3),
@@ -165,7 +165,7 @@ def grade_pair(drug: str, pt: str, f: dict | None, label: dict, lit: dict | None
                + (", reporting-bias flag" if bias and (bias["flag_lawyer"] or bias["flag_consumer"]) else ""))
     return {
         "id": f"grade:{evidence.id_drug(drug)}:{pt.lower()}@{asof}", "drug": drug.upper(), "pt": pt.lower(),
-        "pv_class": pc, "pv_class_name": f"{pc_name} (후보)" if pc not in ("none", "undetermined") else pc_name,
+        "pv_class": pc, "pv_class_name": pc_name,
         "pv_hint": pc_hint, "review_priority": priority,
         "grade": g, "grade_name": GRADE_NAMES[g],
         "axes": {"regulatory": reg, "regulatory_name": REG_NAMES[reg], "label_status": status,

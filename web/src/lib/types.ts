@@ -62,7 +62,7 @@ export interface Schema {
 }
 
 export interface RocMethod {
-  key: string; label: string; family: 'metric' | 'raw' | 'flyvigilance' | 'memory'
+  key: string; label: string; family: 'metric' | 'raw' | 'flyvigilance' | 'knowledge'
   auc: number; ci: [number, number] | null; roc: [number, number][]
   'at_0.5'?: SensSpec
 }
@@ -125,3 +125,53 @@ export interface EvidenceGrade {
   literature?: { count: number | null; articles: LitArticle[]; summary: Record<string, unknown> }
 }
 export interface LitArticle { pmid: string; year: string | null; title: string; design: string; design_source: string; addresses?: string | null; supports: number | null; strength: number | null; dechallenge: string | number | null; id: string }
+
+// ---------- Project-FlyGate: 에이전트 구성과 STEP 1 측정 ----------
+
+/** /data/agent.json: OpenClaw 하네스, OpenShell 샌드박스, NemoClaw 구성입니다. 다른 스크립트가 만들므로 없을 수도 있습니다 */
+export interface AgentEgressRule { host: string; port: number | string; methods: string[] | string; paths: string[] | string; binaries: string[] | string }
+export interface AgentSmokeResult { check: string; expect: string; observed: string; pass: boolean }
+export interface AgentInfo {
+  generated: string
+  stack: { layer: string; what: string; ours: string }[]
+  workspace: { file: string; role: string; content: string }[]
+  skills: { name: string; description: string; stage: string; path: string }[]
+  policy: {
+    yaml: string
+    egress: AgentEgressRule[]
+    filesystem: { read_only: string[]; read_write: string[] }
+    process: { user: string; seccomp: string | boolean }
+  }
+  triggers: { name: string; session: string; directive: string; trigger: string }[]
+  cli: { cmd: string; what: string }[]
+  modules: { id: string; title: string; ours: string; where: string }[]
+  smoke: { ran: boolean; when: string | null; gateway: string | null; sandbox: string | null; results: AgentSmokeResult[]; source: string }
+  trifecta: { private_data: string; untrusted_input: string; external_comm: string; mediation: string }
+}
+
+/** fly_discovery/measurements/measurements.json 입니다. scripts/sync-discovery.mjs 가 /discovery/data/ 로 복사합니다 */
+export interface DiscoveryMeasurements {
+  openfold3_msa: { endpoint: string; target: string; msa_homologs: number; plddt: number; ptm: number; iptm: number; ca_rmsd_vs_4R6E: number; n_ca: number; ligand_rmsd: number; seconds: number }
+  openfold2: { status: string; http: number; error: string; attempts: number }
+  nemoguard_topic_control?: { status: string; http: number; error: string; attempts: number; alternative_ok?: string }
+  /** [조합, Vina, DiffDock 신뢰도, Boltz-2 pIC50, Boltz-2 결합 확률, ChEMBL pChEMBL 중앙값 또는 null, ChEMBL 활성 건수] */
+  diffdock_boltz2_chembl: [string, number, number, number, number, number | null, number][]
+  parp1_affinity_benchmark: {
+    n: number; spearman: number; pearson: number; mae: number; rmse: number; bias: number
+    ef_top25: number; hit: number; k: number; sens: number; spec: number; pairs: [number, number][]
+  }
+  /** 모델별 크리틱 평가입니다. rows = [주장, 정답(PASS/REJECT), 모델 판정] */
+  critic_eval: Record<string, { sec: number; caught: number; n_over: number; passed: number; n_valid: number; rows: [string, string, string][] }>
+}
+/** /discovery/data/dd_eval_all.json 의 값입니다. rmsd_xtal 은 공결정 리간드를 다시 넣은 재도킹 대조에만 있습니다 */
+export interface DockEval { top_conf: number; pocket_dist: number; rmsd_xtal: number | null; vina: number }
+
+/** /data/critic_probe.json: 실제 사례 메모에 틀린 주장을 넣어 크리틱이 잡는지 잰 결과입니다 */
+export interface CriticProbe {
+  generated: string; n_cases: number
+  summary: Record<string, { expect: string; n: number; correct: number; by_source: Record<string, number> }>
+  cases: {
+    primaryid: number; suspect: string; reactions: string[]
+    probes: { id: string; expect: string; text: string; evidence: string[]; flagged: boolean; correct: boolean; issues: { tier: number; rule: string; p: number | null; source: string }[] }[]
+  }[]
+}

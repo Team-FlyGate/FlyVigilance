@@ -24,7 +24,7 @@ from fastapi import FastAPI, HTTPException, Request  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 
 from _fv import assess as assess_mod  # noqa: E402
-from _fv import clients, config, evidence, grade as grade_mod, kr as kr_mod, literature, triage as triage_mod  # noqa: E402
+from _fv import clients, config, evidence, grade as grade_mod, knowledge, kr as kr_mod, literature, triage as triage_mod  # noqa: E402
 
 app = FastAPI(title="FlyVigilance API", version="1.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
@@ -138,13 +138,21 @@ async def kr_causality(req: Request):
 
 @app.get("/api/grade")
 async def grade(req: Request, drug: str, pt: str, route: str | None = None):
-    """근거 등급 (규칙) = FAERS 통계 + 라벨 절 + 문헌 읽기(Jev). 근거와 공백을 함께 돌려줍니다."""
+    """PV 분류 (규칙) = FAERS 통계 + FDA 허가 라벨 + 문헌 읽기, 그리고 지식 기반 판별(참고 축)을 함께 돌려줍니다."""
     _rate(req, "grade")
+    import asyncio
     import httpx
+
+    async def know(c):
+        try:
+            return await knowledge.recognize(drug, pt, c)
+        except Exception as e:  # 판단 모델 장애는 분류에 영향을 주지 않습니다
+            return {"p": None, "error": type(e).__name__}
     async with httpx.AsyncClient() as c:
-        lab = await evidence.label_lookup(drug, [pt], c, route)
-        lit = await literature.read(drug, pt, c)
-    return {**grade_mod.grade_pair(drug, pt, evidence.faers_2x2(drug, pt), lab, lit), "literature": lit, "label": lab}
+        lab, lit, kn = await asyncio.gather(evidence.label_lookup(drug, [pt], c, route), literature.read(drug, pt, c), know(c))
+    g = grade_mod.grade_pair(drug, pt, evidence.faers_2x2(drug, pt), lab, lit)
+    g["axes"]["knowledge"] = kn
+    return {**g, "literature": lit, "label": lab}
 
 
 @app.get("/api/signals/{drug}")
