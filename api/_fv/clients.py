@@ -111,6 +111,54 @@ async def nim_embed(texts: list[str], input_type: str = "query") -> dict:
                 "usage": d.get("usage", {})}
 
 
+async def nim_embed_many(texts: list[str], input_type: str, client: httpx.AsyncClient,
+                         model: str | None = None) -> list[list[float]]:
+    """여러 글을 한 번에 임베딩합니다. input_type 은 query 또는 passage 이고, 긴 글은 서버가 뒤를 자릅니다(truncate=END)."""
+    if not config.NVIDIA_API_KEY:
+        raise NotConfigured("NVIDIA_API_KEY")
+    r = await client.post(f"{config.NIM_URL}/embeddings",
+                          json={"model": model or config.MODEL_EMBED, "input": texts, "input_type": input_type, "truncate": "END"},
+                          headers={"Authorization": f"Bearer {config.NVIDIA_API_KEY}"}, timeout=_TIMEOUT)
+    r.raise_for_status()
+    return [x["embedding"] for x in sorted(r.json()["data"], key=lambda x: x.get("index", 0))]
+
+
+def parse_rerank(body, n: int) -> list[float]:
+    """리랭커 응답({"rankings": [{"index", "logit"}]})을 입력 순서의 점수 목록으로 풉니다.
+    색인이 범위를 벗어나거나, 겹치거나, 빠지거나, 점수가 숫자가 아니면 ValueError 를 냅니다(호출한 쪽이 PubMed 순서로 돌아갑니다)."""
+    ranks = body.get("rankings") if isinstance(body, dict) else None
+    if not isinstance(ranks, list):
+        raise ValueError("no rankings in rerank response")
+    scores: list[float | None] = [None] * n
+    for r in ranks:
+        i = r.get("index") if isinstance(r, dict) else None
+        s = r.get("logit", r.get("score")) if isinstance(r, dict) else None
+        if not isinstance(i, int) or isinstance(i, bool) or not 0 <= i < n or scores[i] is not None:
+            raise ValueError(f"bad rerank index {i!r}")
+        if not isinstance(s, (int, float)) or isinstance(s, bool) or s != s:
+            raise ValueError(f"bad rerank score for index {i}")
+        scores[i] = float(s)
+    if any(s is None for s in scores):
+        raise ValueError("rerank response missing passages")
+    return scores
+
+
+async def nim_rerank(query: str, passages: list[str], client: httpx.AsyncClient, timeout: float = 4.0) -> dict:
+    """Nemotron 리랭커로 질의–글 쌍의 관련도 점수(logit)를 받습니다. 글은 서버가 뒤를 자릅니다(truncate=END).
+    돌려주는 scores 는 passages 와 같은 순서입니다."""
+    if not config.NVIDIA_API_KEY:
+        raise NotConfigured("NVIDIA_API_KEY")
+    t0 = time.perf_counter()
+    r = await client.post(config.RERANK_URL,
+                          json={"model": config.MODEL_RERANK, "query": {"text": query},
+                                "passages": [{"text": p} for p in passages], "truncate": "END"},
+                          headers={"Authorization": f"Bearer {config.NVIDIA_API_KEY}", "Accept": "application/json"},
+                          timeout=httpx.Timeout(timeout, connect=min(timeout, 3.0)))
+    r.raise_for_status()
+    return {"scores": parse_rerank(r.json(), len(passages)), "model": config.MODEL_RERANK,
+            "latency_ms": round((time.perf_counter() - t0) * 1000, 1)}
+
+
 def parse_json_block(text: str):
     """모델 응답에서 첫 JSON 객체를 꺼낸다."""
     text = re.sub(r"^```(?:json)?|```$", "", text.strip(), flags=re.M)

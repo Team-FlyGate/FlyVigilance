@@ -39,6 +39,10 @@ MODEL_DELIBERATE = ["nvidia/nemotron-3-super-120b-a12b", "nvidia/nemotron-3-ultr
                     "nvidia/nemotron-3.5-lightning-30b-a3b"]
 MODEL_FAST = ["nvidia/nemotron-3.5-lightning-30b-a3b", "nvidia/nemotron-nano-3-30b-a3b"]
 MODEL_EMBED = "nvidia/nemotron-3-embed-1b"
+# 문헌 후보 재정렬(교차 인코더)입니다. build.nvidia.com 에서 2026-09-28 에 응답을 확인한 공개 Nemotron 리랭커입니다
+# (llama-nemotron-rerank-1b-v2 텍스트 엔드포인트는 2026-08-25 에 종료되었습니다).
+MODEL_RERANK = "nvidia/llama-nemotron-rerank-vl-1b-v2"
+RERANK_URL = "https://ai.api.nvidia.com/v1/retrieval/nvidia/llama-nemotron-rerank-vl-1b-v2/reranking"
 MODEL_SAFETY = "nvidia/llama-3.1-nemotron-safety-guard-8b-v3"
 # 가드 엔드포인트가 멈추거나 DEGRADED 로 거절할 때 쓰는 대체 모델입니다(응답 형식: "User Safety: unsafe")
 MODEL_SAFETY_FALLBACK = "nvidia/nemotron-3.5-content-safety"

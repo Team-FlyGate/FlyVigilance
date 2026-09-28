@@ -1,6 +1,6 @@
 """문헌 읽기 단계입니다 (확장 계획 제안 2, 약사 검토 반영).
 
-PubMed 검색 → 초록 가져오기(efetch) → 관문(이 약과 이 반응을 실제로 다루는가) → 연구 설계별 항목 추출.
+PubMed 검색 → 초록 가져오기(efetch) → Nemotron 리랭커로 후보 재정렬(상위 20편 중 6편) → 관문(이 약과 이 반응을 실제로 다루는가) → 연구 설계별 항목 추출.
 - 연구 설계는 PubMed 가 붙인 출판 유형(PublicationType)이 있으면 규칙으로 정합니다. 없을 때만 Jev 가 고릅니다.
   설계 질문의 문구와 선택지(DESIGNS)는 pipeline/bench/literature_eval.py 의 사본과 한 글자도 다르지 않아야 합니다.
 - 관문(addresses): 두 이름이 함께 나온다고 그 논문이 연관을 보고한 것은 아닙니다(부작용 목록에 한 줄 언급된 총설 등).
@@ -13,7 +13,12 @@ PubMed 검색 → 초록 가져오기(efetch) → 관문(이 약과 이 반응�
 - 초록 원문은 판정과 규칙 언급 확인(title_mentions, abstract_mentions)에만 쓰고 결과에는 남기지 않습니다.
 근거 ID: pubmed:<pmid>#<design>
 """
+import asyncio
+import hashlib
+import json
+import os
 import re
+import time
 import xml.etree.ElementTree as ET
 
 import httpx
@@ -298,20 +303,108 @@ def questions(i: int, a: dict, drug: str, pt: str) -> dict:
     return qs
 
 
+# ---------------------------------------------------------------- 후보 재정렬(Nemotron 리랭커)
+# PubMed 관련도순 상위 RERANK_POOL 편을 가져와 Nemotron 리랭커로 다시 줄 세우고, 위에서 n 편만 Jev 가 읽습니다.
+# 실측(pipeline/bench/literature_rerank_eval.py, 30쌍 575편): 읽는 상위 6편 가운데 관문을 통과하는 논문 비율이
+# PubMed 순서 0.65 에서 0.85 로 올랐습니다(21쌍 개선, 9쌍 같음, 0쌍 악화). 리랭커가 실패하면 PubMed 순서로 돌아갑니다.
+RERANK_POOL = 20
+RERANK_TIMEOUT = 2.0     # 초. 리랭커 한 번(20편)은 실측 중앙값 0.43~0.53 초, 최대 0.9 초였습니다
+RERANK_QUERY = ("{drug}-induced {pt}: case reports, clinical trials, cohort or pharmacovigilance studies "
+                "reporting {pt} as an adverse effect of {drug} in patients")
+_RERANK_MEMO: dict[str, list[float]] = {}
+
+
+def rerank_enabled() -> bool:
+    """키가 있고 FV_RERANK=0 으로 끄지 않았으면 재정렬합니다."""
+    return bool(config.NVIDIA_API_KEY) and os.environ.get("FV_RERANK", "1").strip().lower() not in ("0", "false", "off", "no")
+
+
+def rerank_drug(drug: str) -> str:
+    """질의에 넣는 약물명입니다. 복합제 구분자(A\\B)는 'a and b' 로 풉니다."""
+    return " and ".join(c.strip().lower() for c in re.split(r"[\\/+]", drug or "") if c.strip())
+
+
+def rerank_passage(a: dict, limit: int = 3000) -> str:
+    """리랭커에 주는 글입니다. 제목과 초록 원문이고, 512 토큰을 넘는 뒤쪽은 서버가 자릅니다(truncate=END)."""
+    return (f"{a.get('title') or ''}\n{a.get('abstract') or ''}")[:limit]
+
+
+def rerank_query(drug: str, pt: str) -> str:
+    return RERANK_QUERY.format(drug=rerank_drug(drug), pt=pt)
+
+
+def top_by_score(scores: list[float], n: int) -> list[int]:
+    """점수가 높은 순으로 n 편의 색인을 고릅니다. 동점이면 PubMed 순서를 따릅니다."""
+    return sorted(range(len(scores)), key=lambda i: (-scores[i], i))[:n]
+
+
+def _rerank_cache(key: str):
+    d = evidence._cache_dir()
+    return d / f"rerank_{key}.json" if d else None
+
+
+async def rerank(drug: str, pt: str, arts: list[dict], n: int, client: httpx.AsyncClient) -> tuple[list[dict], dict]:
+    """후보 arts(PubMed 순서)에서 읽을 n 편을 고릅니다. (고른 편, 메타)를 돌려줍니다.
+    후보가 n 편 이하이거나, 재정렬이 꺼져 있거나, 리랭커가 실패하거나 제한 시간을 넘기면 PubMed 순서 앞 n 편입니다."""
+    meta = {"order": "pubmed", "candidates": len(arts)}
+    if len(arts) <= n or not rerank_enabled():
+        return arts[:n], meta
+    q = rerank_query(drug, pt)
+    key = hashlib.sha1(json.dumps([config.MODEL_RERANK, q, [a["pmid"] for a in arts]]).encode()).hexdigest()[:20]
+    cfile = _rerank_cache(key)
+    scores, ms, t0 = _RERANK_MEMO.get(key), None, time.perf_counter()
+    if scores is None and cfile and cfile.exists():
+        try:
+            scores = json.loads(cfile.read_text())["scores"]
+        except (ValueError, KeyError, OSError):
+            scores = None
+    if scores is None:
+        try:
+            r = await asyncio.wait_for(clients.nim_rerank(q, [rerank_passage(a) for a in arts], client, timeout=RERANK_TIMEOUT),
+                                       RERANK_TIMEOUT + 0.5)
+            scores, ms = r["scores"], r["latency_ms"]
+        except Exception as e:  # 실패는 PubMed 순서로 돌아갑니다(fail open)
+            meta["rerank_error"] = type(e).__name__[:80]
+            meta["rerank_ms"] = round((time.perf_counter() - t0) * 1000, 1)
+            return arts[:n], meta
+        if len(scores) != len(arts):
+            meta["rerank_error"] = "LengthMismatch"
+            return arts[:n], meta
+        _RERANK_MEMO[key] = scores
+        if cfile:
+            try:
+                cfile.write_text(json.dumps({"scores": scores, "query": q, "model": config.MODEL_RERANK}))
+            except OSError:
+                pass
+    idx = top_by_score(scores, n)
+    out = [{**arts[i], "pubmed_rank": i + 1, "rerank_score": round(float(scores[i]), 3)} for i in idx]
+    meta.update(order="nemotron_rerank", model=config.MODEL_RERANK, query=q, cached=ms is None,
+                rerank_ms=ms, pubmed_ranks=[i + 1 for i in idx])
+    return out, meta
+
+
 # ---------------------------------------------------------------- 읽기
 async def read(drug: str, pt: str, client: httpx.AsyncClient, n: int = 6, use_jev: bool = True) -> dict:
-    """약물–반응 쌍의 상위 문헌 n 편을 읽고 판정합니다. error 는 PubMed 조회 실패에만 붙고, Jev 실패는 judge_error 에 남깁니다."""
-    search = await evidence.pubmed(drug, pt, client, retmax=n)
-    res = {**search, "articles": [], "summary": {}}
+    """약물–반응 쌍의 상위 문헌 n 편을 읽고 판정합니다. error 는 PubMed 조회 실패에만 붙고, Jev 실패는 judge_error 에 남깁니다.
+    재정렬이 켜져 있으면 PubMed 상위 RERANK_POOL 편을 후보로 가져와 Nemotron 리랭커로 n 편을 고릅니다.
+    order 는 'nemotron_rerank' 또는 'pubmed' 이고, pmids 는 실제로 읽은 편입니다(후보 수는 rerank.candidates)."""
+    pool = max(n, RERANK_POOL) if rerank_enabled() else n
+    search = await evidence.pubmed(drug, pt, client, retmax=pool)
+    res = {**search, "articles": [], "summary": {}, "order": "pubmed"}
     if not search.get("pmids"):
         res["summary"] = summarize([])
         return res
     status, body = await evidence.get_json(client, "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi",
                                            {"db": "pubmed", "id": ",".join(search["pmids"]), "retmode": "xml"},
                                            evidence.PUBMED, key=f"pubmed_fetch_{'_'.join(search['pmids'])}")
-    arts = (parse_efetch(body) if status == 200 and isinstance(body, str) else [])[:n]
+    arts = parse_efetch(body) if status == 200 and isinstance(body, str) else []
     if status != 200:
         res["error"] = f"efetch HTTP {status}"
+    by, want = {a["pmid"]: a for a in arts}, set(search["pmids"])   # PubMed 관련도 순서를 지킵니다
+    arts = [by[p] for p in search["pmids"] if p in by] + [a for a in arts if a["pmid"] not in want]
+    arts, rmeta = await rerank(drug, pt, arts, n, client)
+    res["order"], res["rerank"] = rmeta["order"], rmeta
+    res["pmids"] = [a["pmid"] for a in arts] or search["pmids"][:n]
     judged: dict = {}
     if arts and use_jev:
         if not config.TYPESAFE_API_KEY:
@@ -326,6 +419,7 @@ async def read(drug: str, pt: str, client: httpx.AsyncClient, n: int = 6, use_je
         design = a["design_rule"] or j.get("design") or "other"
         res["articles"].append({
             "pmid": a["pmid"], "year": a["year"], "title": a["title"][:220], "pubtypes": a["pubtypes"][:4],
+            "pubmed_rank": a.get("pubmed_rank", i + 1), "rerank_score": a.get("rerank_score"),
             "design": design, "design_source": "pubtype" if a["design_rule"] else ("jev" if j.get("design") else "none"),
             "judged": bool(j), "block": block_for(a), "clipped": j.get("clipped", False), "data_source": a.get("data_source"),
             "supports": j.get("supports"), "strength": j.get("strength"), "on_topic": j.get("on_topic"),
@@ -337,7 +431,7 @@ async def read(drug: str, pt: str, client: httpx.AsyncClient, n: int = 6, use_je
             "title_mentions": mentions(a["title"], drug, pt), "abstract_mentions": mentions(a["abstract"], drug, pt),
             "id": f"pubmed:{a['pmid']}#{design}"})
     res["summary"] = summarize(res["articles"])
-    res["ids"] = [a["id"] for a in res["articles"]] or search["ids"]
+    res["ids"] = [a["id"] for a in res["articles"]] or search["ids"][:n]
     res["judge_latency_ms"] = judged.get("_latency")
     res["judge_questions"] = judged.get("_n_questions")
     return res
