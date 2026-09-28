@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import DockingView, { type RedockScene } from './DockingView'
 import ConnectomePanel from './ConnectomePanel'
 import { Card } from './ui'
@@ -25,6 +25,14 @@ export default function DockPlayground({ scenes }: { scenes: Record<string, Redo
   const [play, setPlay] = useState(0)
   const [settled, setSettled] = useState(false)
   const { sim } = useBrain()
+  // 선택성 히트맵의 칸을 누르면 그 조합을 이 장면에서 바로 도킹합니다
+  const [auto, setAuto] = useState(0)
+  const cardRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const on = (e: Event) => { const d = (e as CustomEvent<{ target: string; ligand: string }>).detail; setTarget(d.target); setLigand(d.ligand); setAuto((n) => n + 1) }
+    window.addEventListener('fd-dock', on)
+    return () => window.removeEventListener('fd-dock', on)
+  }, [])
   useEffect(() => {
     getJSON<Library>('/discovery/data/dock_library.json').then(setLib).catch(() => null)
     getJSON<DockMatrix>('/discovery/data/dock_matrix.json').then(setMatrix).catch(() => null)
@@ -66,10 +74,12 @@ export default function DockPlayground({ scenes }: { scenes: Record<string, Redo
       setStatus({ kind: 'saved', text: `실시간 도킹을 쓸 수 없어 ${cap(t.native)} 저장된 재도킹 결과를 보여 드립니다` })
     }
   }
+  useEffect(() => { if (auto) { void run(); cardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }) } }, [auto]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (base && !scene) { setScene(base); setStatus({ kind: 'saved', text: `저장된 재도킹 결과 · PDB ${base.pdb}` }) } }, [base, scene])
   useEffect(() => { if (settled && sim) { sim.stimulate('layer', 'reflex', 0.6, 8); setTimeout(() => sim.stimulate('layer', 'memory', 0.5, 8), 250) } }, [settled, sim])
 
   return (
+    <div ref={cardRef} style={{ scrollMarginTop: 16 }}>
     <Card title="직접 도킹해 보기" sub="표적과 약물을 고르면, 받아 둔 조합은 저장된 결과로, 새 조합은 DiffDock NIM 을 실시간으로 불러 도킹합니다"
       right={<span className="chip nv"><span className="dot on pulse" style={{ background: 'var(--nvidia)' }} />BioNeMo NIM · live</span>} style={{ marginBottom: 16 }}>
       <div className="grid" style={{ gridTemplateColumns: 'minmax(0, 1.5fr) minmax(300px, 1fr)', gap: 16 }}>
@@ -117,5 +127,6 @@ export default function DockPlayground({ scenes }: { scenes: Record<string, Redo
         </div>
       </div>
     </Card>
+    </div>
   )
 }
