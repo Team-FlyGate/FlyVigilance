@@ -15,10 +15,32 @@
       "has": [
         {
           "type": "host",
+          "value": "flyvigilance.vercel.app"
+        }
+      ],
+      "destination": "https://project-flygate.vercel.app/",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "flyvigilance.vercel.app"
+        }
+      ],
+      "destination": "https://project-flygate.vercel.app/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
           "value": "flyvigilante.vercel.app"
         }
       ],
-      "destination": "https://flyvigilance.vercel.app/",
+      "destination": "https://project-flygate.vercel.app/",
       "permanent": true
     },
     {
@@ -29,7 +51,7 @@
           "value": "flyvigilante.vercel.app"
         }
       ],
-      "destination": "https://flyvigilance.vercel.app/:path*",
+      "destination": "https://project-flygate.vercel.app/:path*",
       "permanent": true
     }
   ],
