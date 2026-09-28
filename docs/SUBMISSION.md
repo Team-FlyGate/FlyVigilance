@@ -13,9 +13,9 @@ NVIDIA Korea Agentic AI Hackathon 2026 · Section 02 · 서비스 명: **Project
 
 ## (2) 서비스 소개 및 주요 기능 (Solution, 500자 내외)
 
-Project-FlyGate는 분자 하나(니라파립)를 시판 전부터 시판 후까지 따라가는 약물 안전성 에이전트입니다. STEP 1 FlyDiscovery는 NVIDIA BioNeMo NIM(MSA-Search→OpenFold3→DiffDock→Boltz-2)으로 PARP1 결합을 예측하고 근거를 넘는 주장을 반려합니다. STEP 2 FlyVigilance는 FAERS 사례마다 규칙 게이트→FDA 라벨 원문 조회→7문항 판단→결정 정책→EMA DME 안전망을 거쳐 사람 우선, System-2 검토 등 경로를 정합니다. System-2에서는 Nemotron이 근거 ID를 붙여 평가하고 3단 크리틱과 Safety Guard가 과잉해석을 막습니다. 비자기회귀 판단 모델을 병용해 7문항 판단이 296 ms에 끝나고, 결과 코드를 가린 440건에서 중대 사례 247/250이 검토에 닿았습니다(질문 하나 234, p=0.004). 사람 업무량은 302건에서 138건으로 줄었습니다. 에이전트는 OpenShell 샌드박스 안의 OpenClaw로 돕니다.
+Project-FlyGate는 시판 전 후보 물질의 표적 결합과 시판 후 허가 약물의 이상사례를 함께 다루는 약물 안전성 에이전트입니다. STEP 1 FlyDiscovery는 NVIDIA BioNeMo NIM(MSA-Search→OpenFold3→DiffDock→Boltz-2)으로 PARP1 결합을 예측하고 근거를 넘는 주장을 반려합니다. STEP 2 FlyVigilance는 FAERS 사례마다 규칙 게이트→FDA 라벨 원문 조회→7문항 판단→결정 정책→EMA DME 안전망을 거쳐 사람 우선, System-2 검토 등 경로를 정합니다. System-2에서는 Nemotron이 근거 ID를 붙여 평가하고 3단 크리틱과 Safety Guard가 과잉해석을 막습니다. 비자기회귀 판단 모델을 병용해 7문항 판단이 296 ms에 끝나고, 결과 코드를 가린 440건에서 중대 사례 247/250이 검토에 닿았습니다(질문 하나 234, p=0.004). 사람 업무량은 302건에서 138건으로 줄었습니다. 에이전트는 OpenShell 샌드박스 안의 OpenClaw로 돕니다.
 
-<sub>공백 포함 530자</sub>
+<sub>공백 포함 542자</sub>
 
 ## (3) 활용한 핵심 기술 및 AI 모델 (Tech Stack)
 

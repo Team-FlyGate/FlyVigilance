@@ -3,7 +3,7 @@ import { Card, PageHead } from '../components/ui'
 import { api, fmt, getJSON, type SignalRow } from '../lib/data'
 import type { Ablation, Bench, CriticProbe, DiscoveryMeasurements, DockEval, Escalation, LiteratureEval, Validation } from '../lib/types'
 
-// 개요: 한 분자(니라파립)를 STEP 1 시판 전 탐색에서 STEP 2 시판 후 감시까지 한 화면에 보여 줍니다.
+// 개요: STEP 1 시판 전(후보 물질)과 STEP 2 시판 후(허가 약물)를 데모 약물 니라파립으로 이어 시판 전 탐색에서 STEP 2 시판 후 감시까지 한 화면에 보여 줍니다.
 // 수치는 정적 데이터(/data, /discovery/data)나 API 에서 읽습니다. 파일이 없으면 '…' 로 남깁니다.
 
 const REPO = 'https://github.com/Team-FlyGate/Project-FlyGate'
@@ -159,9 +159,9 @@ export default function Overview() {
   return (
     <div className="page">
       <PageHead eyebrow="Project-FlyGate · NVIDIA Korea Agentic AI Hackathon 2026"
-        title={<>한 분자를 <span style={{ color: 'var(--c-sense)' }}>표적 결합</span>부터 <span style={{ color: 'var(--nvidia)' }}>시판 후 이상사례</span>까지 따라갑니다</>}
-        lede={<>니라파립(PARP1 억제제) 하나로 보여 드립니다. <b>STEP 1 FlyDiscovery</b>는 BioNeMo NIM으로 PARP1 결합을 예측해 전통 기준으로 채점하고,
-          <b> STEP 2 FlyVigilance</b>는 같은 약의 FAERS 이상사례 보고를 분류하고 신호를 평가합니다. NVIDIA 스킬(build.nvidia.com NIM, Agent Skills, NemoClaw · OpenShell · OpenClaw) 위에 만든
+        title={<>시판 전 <span style={{ color: 'var(--c-sense)' }}>표적 결합</span>부터 <span style={{ color: 'var(--nvidia)' }}>시판 후 이상사례</span>까지, 약물 전 주기의 근거를 봅니다</>}
+        lede={<><b>STEP 1 FlyDiscovery</b>는 시판 전 후보 물질의 표적 결합을 BioNeMo NIM으로 예측해 전통 기준으로 채점하고,
+          <b> STEP 2 FlyVigilance</b>는 시판 후 허가 약물의 FAERS 이상사례 보고를 분류하고 신호를 평가합니다. 데모에서는 이미 허가된 니라파립으로 시판 전 단계를 되짚어 재현하고, 같은 약의 실제 시판 후 보고로 이어 봅니다. NVIDIA 스킬(build.nvidia.com NIM, Agent Skills, NemoClaw · OpenShell · OpenClaw) 위에 만든
           에이전트 워크플로이며, NVIDIA Nemotron과 함께 <b style={{ color: 'var(--jev)' }}>비자기회귀 판단 모델</b>을 써서 빠른 속도와 통계적으로 유의한 개선을 얻었습니다.</>}
         right={<div className="stack" style={{ gap: 8, alignItems: 'flex-end' }}>
           <a className="btn primary" href={REEL} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>▶ 쇼릴 영상 v3</a>

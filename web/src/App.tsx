@@ -26,7 +26,7 @@ interface Page { id: string; label: string; en: string; icon: ReactNode; el: () 
 // 메뉴는 네 묶음입니다: 개요 · STEP 1 시판 전 · STEP 2 시판 후 · 에이전트
 const GROUPS: { step?: string; name?: string; color?: string; pages: Page[] }[] = [
   { pages: [
-    { id: 'overview', label: '개요', en: 'One molecule, two gates', icon: I('M3 11 12 4l9 7M5 10v10h5v-6h4v6h5V10'), el: () => <Overview /> },
+    { id: 'overview', label: '개요', en: 'Discovery → Vigilance', icon: I('M3 11 12 4l9 7M5 10v10h5v-6h4v6h5V10'), el: () => <Overview /> },
   ] },
   { step: 'STEP 1 · 시판 전', name: 'FlyDiscovery', color: 'var(--c-sense)', pages: [
     { id: 'discovery', label: '후보 탐색 워크벤치', en: 'PARP1 · BioNeMo NIM · critic', icon: I('M12 3l7.8 4.5v9L12 21l-7.8-4.5v-9ZM12 8.5l3 1.75v3.5L12 15.5l-3-1.75v-3.5Z'), el: () => <Discovery /> },

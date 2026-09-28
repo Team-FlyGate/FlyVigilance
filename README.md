@@ -1,6 +1,8 @@
 # Project-FlyGate
 
-**분자 하나를 시판 전 결합 예측부터 시판 후 이상사례 감시까지 따라가는 약물 안전성 에이전트**
+**약물 전 주기의 안전성 근거를 다루는 에이전트: 시판 전에는 후보 물질의 표적 결합을, 시판 후에는 허가 약물의 이상사례를 봅니다**
+
+데모에서는 이미 허가된 PARP1 억제제 니라파립으로 시판 전 단계를 되짚어 재현하고, 같은 약의 실제 시판 후 보고로 이어서 보여 드립니다. 두 단계 모두 다른 표적과 약물에 그대로 씁니다.
 
 NVIDIA Korea Agentic AI Hackathon 2026 · Team FlyGate
 
@@ -17,8 +19,8 @@ Project-FlyGate는 **NVIDIA 스킬 위에 구성한 에이전트 워크플로**�
 
 | 단계 | 이름 | 하는 일 |
 | --- | --- | --- |
-| STEP 1 · 시판 전 | **FlyDiscovery** | 후보 분자(니라파립)를 NVIDIA BioNeMo NIM으로 PARP1 구조 예측 → 도킹 → 친화도까지 따라가고, 근거를 넘는 주장을 반려합니다 |
-| STEP 2 · 시판 후 | **FlyVigilance** | 같은 분자의 FAERS 이상사례를 트리아지하고, SDR·라벨·문헌으로 PV 분류를 매기고, 사람 검토 대기열과 신속보고 기한을 만듭니다 |
+| STEP 1 · 시판 전 | **FlyDiscovery** | 후보 물질을 NVIDIA BioNeMo NIM으로 표적 구조 예측 → 도킹 → 친화도까지 평가하고, 근거를 넘는 주장을 반려합니다(데모: 니라파립 · PARP1, 대조 약물 2종, 친화도 벤치마크 39종) |
+| STEP 2 · 시판 후 | **FlyVigilance** | FAERS 이상사례(약물 2,563종의 SDR 표)를 트리아지하고, SDR·라벨·문헌으로 PV 분류를 매기고, 사람 검토 대기열과 신속보고 기한을 만듭니다 |
 
 ![Project-FlyGate agentic workflow](docs/images/flygate_agent_diagram_v1.0.0.png)
 
@@ -100,7 +102,7 @@ STEP 1 FlyDiscovery                         STEP 2 FlyVigilance
 
 | 화면 | 내용 |
 | --- | --- |
-| 개요 | 분자 하나가 두 관문(STEP 1 · STEP 2)을 지나는 흐름 |
+| 개요 | 두 관문(STEP 1 시판 전 · STEP 2 시판 후)과 데모 약물 니라파립의 흐름 |
 | 후보 탐색 | FlyDiscovery: 후보 비교, 결합 포즈 3D, 주장 검증, 친화도 벤치마크 |
 | 관제 센터 · 라이브 트리아지 | 실제 FAERS 사례를 한 건씩 반사 판단 → 경로 → System-2 → 크리틱까지 |
 | 국내 보고 · 인과성 | 국내 서식 구조화(Nemotron)와 한국형 인과성 평가 알고리즘 ver 2.0 |
