@@ -50,6 +50,8 @@ Project-FlyGate는 **NVIDIA 스킬 위에 구성한 에이전트 워크플로**�
 | 중대 사례를 놓치지 않으면서 사람 일을 줄이는가 | 결과 코드를 가린 채로 중대 사례 **247/250**이 검토에 닿았습니다(모델 단독 질문 하나 234/250, McNemar p = 0.0044). 사람 우선 업무량은 **138건**으로 질문 하나(302건)의 절반 아래입니다(p = 3.6×10⁻⁴⁸) | 실제 FAERS 440건 |
 | 빠른가 | 규제 용어로 나눈 7문항 판단이 한 번 호출에 **296 ms**입니다. 같은 문항을 자기회귀 생성으로 풀면 2,286 ms입니다 | 같은 사례 27건 |
 | 공인된 약물–이상반응 연관을 알아보는가 | FlyVigilance 지식 기반 판별 AUC **0.960**(OMOP), **0.983**(EU-ADR)으로 최고 통계 지표(0.815, 0.919)보다 유의하게 높습니다 | 공개 참조 세트 480쌍 |
+| 라벨에 적힌 반응을 불균형 지표가 잡는가 (파일럿) | 라벨 기재 참조 세트 64,796쌍에서 Evans 규칙 민감도 **0.30**, 하한 지표(ROR₀₂₅ · IC₀₂₅) AUC **0.62~0.63**입니다. 라벨 기재 쌍의 절반 넘게에 SDR이 서지 않습니다([평가 1-6](docs/EVALUATION.md#1-6-sider-라벨-기재-참조-세트-파일럿-하네스-저장소)) | SIDER 4.1 약 31종 · 팀 선행 저장소 |
+| 기전 근거가 라벨 기재를 가르는가 (파일럿) | Open Targets 표적-질환 연관 점수 AUC **0.559**(귀무 0.532)로, 같은 행의 불균형 지표(0.570~0.679)보다 낮습니다. 평가 행의 68.4%가 0점입니다([평가 7](docs/EVALUATION.md#7-기전-타당성-축-파일럿-open-targets)) | Open Targets 26.09 · 17,472쌍 |
 | 라벨이 바뀌기 전에 알 수 있었는가 | 2013년 이전 보고만으로 그해 라벨 변경 57건 중 **21건**에 SDR이 섰고, 오경보는 음성 70건 중 **1건**입니다(PPV **0.95**) | 구형 AERS 2004–2012 |
 | 과잉해석을 막는가 | 일부러 넣은 틀린 주장 **31/31**을 반려했고, 정상 주장 6/6은 통과했습니다. 공식 스킬 `nemotron-policy-generator`로 만든 PV 정책을 Nemotron 3.5 Content Safety에 넣자 가드 층만으로 PRR 인과 단정 **7/7**, 없는 발생률 **8/8**을 잡습니다(기본 가드 0/7, 0/8) | 실제 중대 사례 8건 · 평가 문장 50건 |
 | 문헌을 제대로 읽는가 | 연구 설계 판정이 MEDLINE 색인과 **92.0%** 일치합니다. NVIDIA Nemotron 리랭커로 후보를 재정렬하자 읽는 6편 중 관련 문헌 비율이 **0.65 → 0.85**로 올랐습니다(21쌍 개선, 0쌍 악화) | PubMed 598편 · 30쌍 575편 |
@@ -232,7 +234,7 @@ FV_CACHE_DIR=data/cache/api .venv/bin/python pipeline/bench/ablation.py
 - **참조 세트**: OMOP(Ryan et al. 2013), EU-ADR(Coloma et al. 2013) — OHDSI MethodEvaluation, Apache-2.0 · Time-indexed reference standard(Harpaz et al. 2014) — CC0
 - **EMA Designated Medical Events** 목록(EMA/326038/2020)
 - **MaleCNS v1.0 커넥텀**: Janelia FlyEM · Cambridge Drosophila Connectomics Group, CC-BY 4.0 (https://male-cns.janelia.org)
-- **팀 선행 저장소**: [kakyungkim/korea-agentic-hackathon-2026](https://github.com/kakyungkim/korea-agentic-hackathon-2026)
+- **팀 선행 저장소**: [Team-FlyGate/korea-agentic-hackathon-2026](https://github.com/Team-FlyGate/korea-agentic-hackathon-2026) (과잉해석 규칙 원본, 측정 스크립트, NAT 워크플로, OpenShell 정책, 1-6과 7절의 참조 세트 검증 코드)
 
 코드는 Apache-2.0입니다.
 

@@ -89,6 +89,82 @@ AUC의 95% 구간은 층화 부트스트랩 2,000회로 구했고, 방법 간 �
 .venv/bin/python pipeline/refsets/evaluate.py
 ```
 
+### 1-6. SIDER 라벨 기재 참조 세트 (파일럿, 하네스 저장소)
+
+팀 선행 저장소(korea-agentic-hackathon-2026)에서 같은 불균형 지표를 더 큰 참조 세트로 다시 쟀습니다. 질문은 "라벨에 적힌 약–이상반응 쌍을 불균형 지표가 얼마나 골라내는가"입니다.
+
+- **참조 세트**: SIDER 4.1(2015-10-21 릴리스, MedDRA 16.1) 라벨에 PT가 적힌 쌍이 양성입니다. 같은 약의 SIDER 목록에 없고 SIDER PT 우주(4,251개) 안에 있는 PT의 쌍이 음성입니다. 양성 6,222쌍, 음성 58,574쌍이고 유병률은 9.6%입니다. 두 쪽 모두 웨어하우스 보고가 3건 이상(a≥3)인 쌍만 넣었습니다.
+- **약**: SIDER 이름을 웨어하우스 성분명과 정확히 맞춘 1,011종 가운데 FAERS 의심약 사례 수 상위 30종에 와파린을 더해 31종을 골랐습니다.
+- **통계 계산 데이터**: 이 저장소 커밋 `fdc046d`의 스크립트로 재구축한 FAERS 웨어하우스(2012Q4–2026Q2, 55개 분기)의 `sig_signal` 표입니다. 그림 속 "FlyVigilante 웨어하우스"가 이것입니다.
+- **귀무 AUC**: 양성 쌍의 PT를 약 사이에 뒤섞은 "귀무 양성"으로 100회 쟀습니다. 뒤섞은 PT의 약 42%가 여전히 다른 쌍의 라벨 양성과 겹치므로 귀무 AUC는 0.5가 아닙니다. 지표의 AUC는 귀무 평균과 나란히 읽습니다.
+
+| 지표 | AUC | 귀무 AUC 평균 |
+| --- | --- | --- |
+| PRR · ROR · IC (점추정치) | 0.562–0.563 | 0.465 |
+| PRR 하한 · ROR₀₂₅ | 0.619 | 0.520 |
+| IC₀₂₅ | 0.634 | 0.535 |
+| χ² (Yates) | 0.679 | 0.644 |
+
+고정 규칙은 문턱이 하나라 ROC 위의 한 점입니다. PPV는 유병률 9.6%에서의 값입니다.
+
+| 규칙 | 조건 | 민감도 | 특이도 | PPV |
+| --- | --- | --- | --- | --- |
+| Evans | PRR≥2, χ²≥4, a≥3 | 0.304 | 0.754 | 0.116 |
+| ROR 기준 | ROR₀₂₅>1, a≥3 | 0.474 | 0.676 | 0.134 |
+| IC 기준 | IC₀₂₅>0 | 0.461 | 0.706 | 0.143 |
+
+<a href="images/sider_metric_roc_2026-09-28.png"><img src="images/sider_metric_roc_2026-09-28.png" width="100%" alt="SIDER 라벨 기재 참조 세트 64,796쌍에서 잰 불균형 지표 일곱 개의 ROC 곡선과 고정 규칙 세 점. 카이제곱 AUC 0.679, IC025 0.634, 하한 지표 0.619, 점추정치 0.562–0.563입니다."></a>
+
+1. **라벨 기재 쌍의 절반 넘게에 SDR이 서지 않습니다.** 팀 선행 저장소의 근거 등급은 Evans 또는 ROR₀₂₅>1을 넘은 쌍을 신호로 봅니다. 이 조건으로도 라벨 기재 쌍의 52.6%(3,273쌍)가 기준을 넘지 못했습니다. 이 저장소의 3중 기준 SDR은 Evans를 포함하므로 민감도가 Evans(0.304)보다 높을 수 없습니다. 3중 기준 자체는 이 세트에서 따로 재지 않았습니다. PV 분류에서 라벨에 있으나 SDR이 없는 칸("알려진 위험 · SDR 없음")은 드문 경우가 아닙니다.
+2. **신뢰구간 하한이 점추정치보다 낫습니다.** 같은 계열에서 PRR 0.562가 PRR 하한 0.619로, IC 0.563이 IC₀₂₅ 0.634로 오릅니다. 고정 규칙에서도 하한을 쓰는 ROR·IC 기준의 민감도가 Evans보다 높습니다. 3중 기준에 ROR₀₂₅와 IC₀₂₅를 넣은 것과 맞는 결과입니다.
+3. **χ²의 AUC는 보고량을 따라갑니다.** 귀무 평균 0.644와 0.035밖에 차이 나지 않습니다. 그래서 이 세트에서는 χ²의 AUC가 가장 높아도 라벨을 가장 잘 가른다고 읽지 않습니다.
+
+1-1–1-4의 공개 참조 세트 검증과는 재는 것이 다릅니다.
+
+| | 1-1–1-4 공개 참조 세트 | 1-6 SIDER 파일럿 |
+| --- | --- | --- |
+| 양성의 뜻 | 라벨·문헌·규제 조치에서 뽑은 공인된 연관 | 2015년 라벨에 PT가 적힘 |
+| 음성의 뜻 | 참조 세트가 정한 음성 대조군 | 그 약의 SIDER 목록에 없음 |
+| 규모 | OMOP·EU-ADR 평가 가능 쌍 480쌍 | 약 31종, 64,796쌍 |
+| 반응 정의 | Harpaz 세트의 PT 정의와 공개 정규식으로 묶음 | PT 문자열 정확 일치, MedDRA 버전 사이 매핑 없음 |
+
+측정 범위입니다.
+- 인과성이 아니라 라벨 기재를 얼마나 맞히는지를 잽니다.
+- SIDER 4.1은 2015년 라벨입니다. 그 뒤 라벨에 오른 이상반응은 음성으로 세어집니다.
+- PT 문자열을 정확히 맞췄기 때문에 SIDER PT 우주 밖의 웨어하우스 쌍 50,246쌍(PT 8,828종)이 빠졌습니다. `off label use` 같은 행정 용어뿐 아니라 `pyrexia`, `acute kidney injury` 같은 임상 용어도 빠졌습니다. 웨어하우스 행이 없는 SIDER 양성 478쌍도 빠졌습니다. 팀 선행 저장소는 MedDRA 코드 수준 대조를 적용 범위의 해법으로 두었습니다.
+- 보고 수 상위 31종이라 결과가 낙관적일 수 있습니다. 약별 IC₀₂₅ AUC는 0.522에서 0.870까지 벌어집니다.
+- 라벨에는 여러 약에 두루 흔해서 어느 한 약에서도 불균형이 서지 않는 반응이 적혀 있습니다. 낮은 민감도 가운데 얼마가 지표의 한계이고 얼마가 참조 세트의 성격인지는 이 측정으로 가르지 못합니다.
+
+재현(팀 선행 저장소, `metric-validation` 브랜치): 참조 세트는 `scripts/build_refset.py`, 지표 성능은 `scripts/metric_validation.py`, 그림은 `scripts/plot_metric_roc.py`로 만듭니다. 참조 세트 64,796쌍의 지표 표(`eval/refsets/pilot_sider_2026-09-28_pairs.tsv.gz`)가 그 저장소에 있어 지표 성능은 웨어하우스 없이 다시 계산됩니다. 전체 명령과 인자는 [불균형 지표 실측 노트](https://github.com/Team-FlyGate/korea-agentic-hackathon-2026/blob/metric-validation/docs/notes/metric-validation-2026-09-28.md) 5절에 있습니다.
+```bash
+.venv/bin/python scripts/metric_validation.py --refset eval/refsets/pilot_sider_2026-09-28.json.gz \
+    --pairs-tsv eval/refsets/pilot_sider_2026-09-28_pairs.tsv.gz --out eval/results/metric_validation_2026-09-28.json
+python scripts/plot_metric_roc.py --results eval/results/metric_validation_2026-09-28.json   # matplotlib 필요
+```
+
+### 1-7. Jev 비교 팔 (파일럿)
+
+같은 참조 세트에 판단 모델(Jev)을 모델 단독 조건으로 붙였습니다. 질문은 "이 약–이상반응 쌍이 라벨에 아직 없는 신호일 수 있는가"이고, 라벨 기재 여부는 맞힐 대상이라 입력에 넣지 않습니다. 약·반응 이름을 보인 팔(novel)과 가린 팔(blind)을 따로 돌렸습니다. 질문대로 답하면 라벨 기재 쌍의 확률이 낮게 나오므로 AUC와 뒤집은 AUC를 함께 읽습니다.
+
+200쌍 파일럿(2026-09-28)입니다. 쌍은 참조 세트 시드로 무작위로 뽑았고, 두 팔이 같은 200쌍을 봅니다.
+
+| 팔 | 확률 받음 / 실패 | 양성 / 음성 | AUC | 뒤집은 AUC | 귀무 AUC 평균 [2.5, 97.5] | 입력 토큰 합 |
+| --- | --- | --- | --- | --- | --- | --- |
+| 이름 보임 (novel) | 200 / 0 | 12 / 188 | 0.369 | 0.631 | 0.369 [0.272, 0.474] | 115,072 |
+| 이름 가림 (blind) | 200 / 0 | 12 / 188 | 0.498 | 0.502 | 0.428 [0.317, 0.535] | 114,732 |
+
+같은 200행에서 잰 지표 AUC는 PRR 0.423, ROR₀₂₅ 0.508, IC₀₂₅ 0.523, χ² 0.701입니다.
+
+- **표본이 작습니다.** 양성이 12쌍뿐이라 어느 AUC도 귀무 구간을 벗어나지 않습니다. 이 파일럿은 연결과 비용을 확인한 것이고, 판별 성능은 전체 실행에서 읽습니다.
+- **비용**: 실측 입력은 쌍당 약 575토큰이고, 팔마다 약 USD 0.005(입력 USD 0.042/M 토큰)였습니다. 응답 모델은 `jev-1.13.0`, 호출 지연 중앙값은 0.22초입니다.
+- **전체 실행**: 64,796쌍을 팔마다 돌리는 실행이 진행 중이며, 결과는 아직 없습니다. 실측 토큰으로 어림하면 팔마다 약 37M 토큰, USD 1.6 안팎입니다.
+
+<a href="images/sider_jev_pilot_roc_2026-09-28.png"><img src="images/sider_jev_pilot_roc_2026-09-28.png" width="100%" alt="1-6의 ROC 그림에 Jev 200쌍 파일럿 곡선 둘을 더한 그림. 이름 보임 AUC 0.369, 이름 가림 AUC 0.498입니다."></a>
+
+<sub>Jev 곡선 둘은 200쌍에서, 지표 곡선은 64,796쌍 전체에서 그렸습니다. 같은 200행에서 잰 지표 AUC는 표 아래 문단에 있습니다.</sub>
+
+재현: 팀 선행 저장소 `scripts/metric_validation_jev.py --arm novel|blind --limit 200 --pairs-tsv eval/refsets/pilot_sider_2026-09-28_pairs.tsv.gz --yes`(키는 `TYPESAFE_API_KEY` 환경 변수). 실행 기록은 불균형 지표 실측 노트 7절에 있습니다.
+
 ## 2. 사례 트리아지 비교 실험 (결과 코드 가림)
 
 ### 2-1. 설정
@@ -277,6 +353,48 @@ p3(가짜 근거 ID)는 문장만으로는 가려지지 않으므로 크리틱 T
 - 불균형 지표·AUC·ROC 계산
 - PubMed XML 파싱과 문헌 요약 상태
 
+## 7. 기전 타당성 축 파일럿 (Open Targets)
+
+팀 선행 저장소에서 약의 작용기전 표적과 이상반응 사이의 표적-질환 연관 점수가 라벨 기재 쌍을 가르는지 쟀습니다. 참조 세트는 1-6과 같은 약 31종, 64,796쌍이고, 불균형 지표도 같은 행에서 다시 쟀습니다. FlyVigilance의 PV 분류와 화면에는 아직 넣지 않았습니다.
+
+### 7-1. 방법
+
+- **소스**: Open Targets Platform GraphQL(API 26.9.0, 데이터 26.09, CC0 1.0)입니다. 약 이름이 풀리지 않을 때 ChEMBL REST(ChEMBL_37)로 찾는 대체 경로를 두었지만, 31종 모두 Open Targets에서 풀려 쓰이지 않았습니다.
+- **표적**: Open Targets `drug.mechanismsOfAction`에 나온 유전자입니다. 31종 가운데 29종에 표적이 있었고, 서로 다른 표적은 117개입니다.
+- **PT 매핑**: 질환 검색의 첫 결과 이름이 PT와 대소문자 무시로 정확히 같을 때만 매핑합니다. 동의어 일치와 상위·하위 용어 확장은 하지 않습니다.
+- **점수**: 표적별 연관 점수의 최댓값입니다. Europe PMC 문헌 근거를 뺀 점수도 함께 남깁니다.
+- **호출**: 259회, 실패 0회입니다. 응답은 요청 본문 기준으로 캐시해 다시 돌려도 같은 값이 나옵니다.
+
+### 7-2. 결과
+
+PT 3,929개 가운데 963개(24.5%)가 매핑되어, 참조 세트 64,796쌍 가운데 17,472쌍(양성 2,655, 음성 14,817)만 점수를 받았습니다. 제외된 쌍은 PT 매핑 없음 42,499쌍, 약 표적 없음 4,825쌍(카보플라틴, 사이클로포스파마이드)입니다.
+
+| 점수 (같은 17,472행) | AUC | 귀무 AUC 평균 [2.5, 97.5] |
+| --- | --- | --- |
+| **Open Targets 연관 점수** | **0.559** | 0.532 [0.526, 0.541] |
+| Open Targets 연관 점수 · 문헌 제외 | 0.537 | 0.520 [0.515, 0.526] |
+| PRR | 0.570 | 0.484 |
+| ROR₀₂₅ | 0.625 | 0.536 |
+| IC₀₂₅ | 0.638 | 0.549 |
+| χ² (Yates) | 0.679 | 0.645 |
+
+<a href="images/omics_roc_2026-09-28.png"><img src="images/omics_roc_2026-09-28.png" width="100%" alt="같은 17,472행에서 잰 불균형 지표 넷과 Open Targets 점수 셋의 ROC 곡선. Open Targets 연관 AUC 0.559, 문헌 제외 0.537로 지표 넷(0.570–0.679)보다 낮습니다."></a>
+
+1. **귀무는 넘지만 폭이 작고, 불균형 지표보다 낮습니다.** 연관 점수는 귀무 평균보다 0.028 높고, 문헌을 뺀 점수는 0.017 높습니다. 같은 행에서 PRR, ROR₀₂₅, IC₀₂₅는 귀무 평균보다 0.086–0.089 높습니다.
+2. **점수 대부분이 0입니다.** 평가 행의 68.4%(11,955행)가 0점이라 ROC 곡선 대부분이 직선입니다. 0이 아닌 5,517행 가운데 2,841행은 Europe PMC 문헌 근거만으로 점수를 받았습니다. 4절의 세 쌍(클로자핀·호중구감소증 0.0015, 니라파립·혈소판감소증 0.0125, 이소트레티노인·염증성장질환 0.0085)도 모두 문헌 근거만 있었고, 문헌을 빼면 0입니다.
+3. **문헌 근거가 이상반응 보고를 다시 세는 것일 수 있습니다.** 문헌 근거는 표적과 질환의 문헌 동시 언급입니다. 그 글에 약물 이상반응 증례나 약물감시 논문이 섞이면, 점수는 기전의 그럴듯함이 아니라 "이미 보고되었다"를 다시 셉니다. 이번 측정은 이 가능성을 확인하지 않았습니다. 문헌을 뺀 점수도 양성의 21.4%, 음성의 14.2%에서 0보다 크고 귀무를 조금 넘으므로 문헌만으로 설명되지는 않습니다.
+
+### 7-3. 측정 범위
+
+- 라벨 기재를 예측하는 기전 근거이며, 개별 사례에서 약이 반응을 일으켰다는 인과 근거가 아닙니다.
+- 적용 범위가 먼저 풀 한계입니다. 0.559는 이름이 정확히 맞는 PT에 한정된 값이고, 매핑을 넓히면 AUC도 바뀔 수 있습니다. 온톨로지 응답에 MedDRA 교차 참조가 없어 코드 수준 매핑에는 UMLS 같은 라이선스 소스가 필요합니다.
+- 표적은 한 소스의 작용기전 표적만 썼습니다. 표적 수는 약마다 크게 다릅니다(메트포르민 51개, 프레가발린 26개, 나머지 1–4개). 최댓값 규칙에서는 표적이 많은 약이 0보다 큰 점수를 받을 기회가 많습니다.
+- 표적 없는 약은 0점으로 넣지 않고 뺐습니다.
+- 매핑된 963개 용어는 MONDO 610개, HP 212개, EFO 135개 등 여러 온톨로지에 걸쳐 있고, 질환 용어와 표현형 용어의 점수를 한 척도로 썼습니다.
+- 약 31종, 소스 하나, 연관 축 하나의 파일럿입니다. 조직 발현 축은 아직 없습니다.
+
+재현(팀 선행 저장소, `omics-plausibility` 브랜치): `scripts/omics_plausibility.py --refset eval/refsets/pilot_sider_2026-09-28.json.gz`로 점수를 매기고, `scripts/plot_metric_roc.py --omics eval/results/omics_plausibility_refset_2026-09-28.json.gz`로 그림을 그립니다. 캐시 경로는 `OMICS_DIR` 환경 변수로 줍니다. 전체 절차는 [기전 타당성 축 노트](https://github.com/Team-FlyGate/korea-agentic-hackathon-2026/blob/omics-plausibility/docs/notes/omics-plausibility-2026-09-28.md) 5절에 있습니다.
+
 ## 출처
 
 - Ryan PB et al. Defining a Reference Set to Support Methodological Research in Drug Safety. Drug Saf 2013. https://link.springer.com/article/10.1007/s40264-013-0097-8
@@ -284,3 +402,9 @@ p3(가짜 근거 ID)는 문장만으로는 가려지지 않으므로 크리틱 T
 - Harpaz R et al. A time-indexed reference standard of adverse drug reactions. Sci Data 2014. https://www.nature.com/articles/sdata201443
 - Hauben M et al. Evidence of misclassification of drug–event associations classified as gold standard negative controls by OMOP. Drug Saf 2016. https://pubmed.ncbi.nlm.nih.gov/26879560
 - FDA AERS/FAERS quarterly data files. https://fis.fda.gov/extensions/FPD-QDE-FAERS/FPD-QDE-FAERS.html
+- SIDER 4.1, 2015-10-21 릴리스. https://sideeffects.embl.de/download/ (부작용 파일 `meddra_all_se.tsv.gz` CC BY-SA 4.0, 이름 파일 `drug_names.tsv` CC0 1.0)
+- Open Targets Platform GraphQL, API 26.9.0 · 데이터 26.09, CC0 1.0. https://platform-docs.opentargets.org/licence
+- ChEMBL REST, ChEMBL_37(대체 경로, 이번 실행에서는 쓰이지 않음). https://www.ebi.ac.uk/chembl/api/data
+- 팀 선행 저장소 노트(1-6, 1-7): 불균형 지표 실측, `metric-validation` 브랜치. https://github.com/Team-FlyGate/korea-agentic-hackathon-2026/blob/metric-validation/docs/notes/metric-validation-2026-09-28.md
+- 팀 선행 저장소 노트(7절): 기전 타당성 축 파일럿, `omics-plausibility` 브랜치. https://github.com/Team-FlyGate/korea-agentic-hackathon-2026/blob/omics-plausibility/docs/notes/omics-plausibility-2026-09-28.md
+- 팀 선행 저장소 노트(1-6 적용 범위 해법): 약사 검토 반영 5절, `omics-plausibility` 브랜치. https://github.com/Team-FlyGate/korea-agentic-hackathon-2026/blob/omics-plausibility/docs/notes/pharmacist-review-2026-09-28.md
