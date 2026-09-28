@@ -176,7 +176,7 @@ export default function SelectivityMap({ scenes }: { scenes: Record<string, Redo
             <div className="divider" />
             <div className="mono dim" style={{ fontSize: 10.5 }}>누른 칸</div>
             <div style={{ fontSize: 13 }}>{cap(s.l)} → <b>{s.t.gene}</b> · PDB {s.t.pdb} · 신뢰도 <span className="num">{s.v === null ? '–' : s.v.toFixed(2)}</span> · 이 약물 안에서 {s.r}위</div>
-            <div className="dim" style={{ fontSize: 11.5 }}>위 “직접 도킹해 보기” 장면에 이 조합이 도킹됩니다</div>
+            <a className="btn" href={`#/d-diffdock?dock=${encodeURIComponent(`${s.t.key}|${s.l}`)}`} style={{ textDecoration: 'none', fontSize: 12.5, padding: '6px 12px', alignSelf: 'flex-start' }}>DiffDock 페이지에서 이 조합 직접 도킹해 보기 →</a>
             <Step2Handoff drug={s.l} />
           </div>
         )}

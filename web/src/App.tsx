@@ -4,6 +4,7 @@ import { api, type Health } from './lib/data'
 import Overview from './pages/Overview'
 import Discovery from './pages/Discovery'
 import DiscoveryStep from './pages/DiscoveryStep'
+import DiscoveryEvidence from './pages/DiscoveryEvidence'
 import Agent from './pages/Agent'
 import CliTutorial from './pages/CliTutorial'
 import MissionControl from './pages/MissionControl'
@@ -37,9 +38,10 @@ const GROUPS: { step?: string; name?: string; color?: string; pages: Page[] }[] 
     { id: 'discovery', label: '후보 탐색 개요', en: 'Discovery · 약물 패널', icon: I('M12 3l7.8 4.5v9L12 21l-7.8-4.5v-9ZM12 8.5l3 1.75v3.5L12 15.5l-3-1.75v-3.5Z'), el: () => <Discovery /> },
     { id: 'd-msa', label: 'MSA-Search', en: '01 · 상동 서열 정렬', icon: I('M4 6h16M4 10h10M4 14h16M4 18h7'), el: () => <DiscoveryStep key="msa" step="msa" /> },
     { id: 'd-of3', label: 'OpenFold3', en: '02 · 복합체 구조 예측', icon: I('M6 4c6 0 6 4 12 4M6 10c6 0 6 4 12 4M6 16c6 0 6 4 12 4'), el: () => <DiscoveryStep key="of3" step="of3" /> },
-    { id: 'd-diffdock', label: 'DiffDock', en: '03 · 도킹 · 재도킹 14건', icon: I('M12 3a9 9 0 1 0 9 9M12 8a4 4 0 1 0 4 4M3 3l6 6'), el: () => <DiscoveryStep key="dd" step="dd" /> },
+    { id: 'd-diffdock', label: 'DiffDock', en: '03 · 도킹 · 재도킹', icon: I('M12 3a9 9 0 1 0 9 9M12 8a4 4 0 1 0 4 4M3 3l6 6'), el: () => <DiscoveryStep key="dd" step="dd" /> },
     { id: 'd-boltz', label: 'Boltz-2', en: '04 · 친화도 예측 · 실측 대조', icon: I('M4 20 20 4M6 14l2 2M10 10l2 2M14 6l2 2'), el: () => <DiscoveryStep key="bz" step="bz" /> },
     { id: 'd-critic', label: '크리틱', en: '05 · 근거를 넘는 주장 반려', icon: I('M9 12l2 2 4-4M12 3 4 7v6c0 4 3.5 7 8 8 4.5-1 8-4 8-8V7l-8-4Z'), el: () => <DiscoveryStep key="critic" step="critic" /> },
+    { id: 'd-evidence', label: '근거 검증', en: '06 · 검증 → 선택성 → 후보 카드', icon: I('M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14ZM21 21l-5-5M8 11l2 2 4-4'), el: () => <DiscoveryEvidence /> },
   ] },
   { step: 'STEP 2 · 시판 후', name: 'FlyVigilance', color: 'var(--nvidia)', pages: [
     { id: 'mission', label: '관제 센터', en: 'Mission Control', icon: I('M12 3a9 9 0 1 0 9 9M12 7a5 5 0 1 0 5 5M12 11a1 1 0 1 0 1 1M21 3l-7.5 7.5'), el: () => <MissionControl /> },

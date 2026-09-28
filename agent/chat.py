@@ -17,7 +17,14 @@ from contextlib import contextmanager
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 ALLOWED = {'discover', 'signals', 'triage', 'grade', 'critic', 'kr-causality', 'watch'}
 HELP = '''  /help                 도움말
-  /run discover parp1    명령 실행 (확인 후 실행)
+  /discover parp1       저장 근거 조회 · 새 도킹은 --live 옵션
+  /signals <약물>       이상사례 신호 통계
+  /triage               사례 분류
+  /grade                근거 등급 평가
+  /critic               근거·수치·해석 검토
+  /kr-causality         한국형 인과성 평가
+  /watch                모니터링·검토 대기열
+  도구별 옵션: /discover --help처럼 입력 (분석은 확인 후 실행)
   /last                 마지막 도구 결과 다시 보기
   /login                NVIDIA · Jev 키 연결·변경
   /model                현재 대화 모델
@@ -135,17 +142,19 @@ def message_input():
     from prompt_toolkit import Application
     from prompt_toolkit.key_binding import KeyBindings
     from prompt_toolkit.layout import Layout, HSplit
+    from prompt_toolkit.layout.dimension import Dimension
     from prompt_toolkit.styles import Style
     from prompt_toolkit.widgets import Frame, TextArea, Label
     bindings = KeyBindings()
-    editor = TextArea(multiline=True, wrap_lines=True, height=4,
+    editor = TextArea(multiline=True, wrap_lines=True,
+                      height=lambda: Dimension.exact(min(4, max(1, editor.document.line_count))),
                       prompt='  ', style='class:composer',
                       focus_on_click=True)
     from prompt_toolkit.layout.processors import ConditionalProcessor, BeforeInput
-    from prompt_toolkit.filters import Condition
+    from prompt_toolkit.filters import Condition, has_focus
     editor.control.input_processors.append(ConditionalProcessor(
-        BeforeInput([('class:hint', 'FlyGate에게 질문하세요… 예: PARP1 후보 근거를 보여줘')]),
-        filter=Condition(lambda: not editor.text)))
+        BeforeInput([('class:placeholder', 'FlyGate에게 질문하세요… 예: PARP1 후보 근거를 보여줘')]),
+        filter=Condition(lambda: not editor.text) & ~has_focus(editor)))
     @bindings.add('enter')
     def send(event):
         if editor.text.strip(): event.app.exit(result=editor.text)
@@ -160,16 +169,19 @@ def message_input():
         if not editor.text: event.app.exit(exception=EOFError())
         else: event.current_buffer.delete()
     view = HSplit([
-        Frame(editor, title=' FlyGate에게 메시지 보내기 ', style='class:frame'),
+        Frame(editor, style='class:frame'),
         Label('  Enter 전송  ·  Alt+Enter / Ctrl+J 줄바꿈  ·  Ctrl+C 취소', style='class:hint'),
     ])
-    style = Style.from_dict({'frame':'#37e6ff', 'frame.label':'bold #37e6ff',
-                            'composer':'bg:#101b2b #e8eefc',
-                            'text-area':'bg:#101b2b #e8eefc',
-                            'hint':'#9bacc6'})
+    # Inherit terminal colors so light and dark themes both remain readable.
+    style = Style.from_dict({'frame':'bg:default #37e6ff',
+                            'composer':'bg:default fg:default',
+                            'text-area':'bg:default fg:default',
+                            'placeholder':'#a0a0a0',
+                            'hint':'#808080'})
     if 'NO_COLOR' in os.environ: style = Style.from_dict({})
     return Application(layout=Layout(view, focused_element=editor), key_bindings=bindings,
-                       style=style, full_screen=False, mouse_support=True).run()
+                       # Keep wheel/trackpad scrolling in the terminal scrollback.
+                       style=style, full_screen=False, mouse_support=False).run()
 
 
 def run(*, model=None, plain=False, reader=input, writer=print, responder=ask_model, runner=execute):
@@ -226,11 +238,13 @@ def run(*, model=None, plain=False, reader=input, writer=print, responder=ask_mo
         try:
             if text.startswith('/run '):
                 command = validate_command(shlex.split(text[5:])); reply = '요청한 FlyGate 명령입니다.'
+            elif text.startswith('/') and text.split(maxsplit=1)[0][1:] in ALLOWED:
+                command = validate_command(shlex.split(text[1:])); reply = '요청한 FlyGate 명령입니다.'
             elif text.startswith('/'):
                 writer('  알 수 없는 명령입니다. /help를 입력하세요.'); continue
             else:
                 if not config.NVIDIA_API_KEY:
-                    writer('  자연어 대화에는 NVIDIA_API_KEY가 필요합니다. /run discover parp1은 키 없이 사용할 수 있습니다.'); continue
+                    writer('  자연어 대화에는 NVIDIA_API_KEY가 필요합니다. /discover parp1은 키 없이 사용할 수 있습니다.'); continue
                 messages.append({'role':'user','content':text})
                 with busy(color): answer = asyncio.run(responder(messages, model))
                 reply, command = answer['reply'], answer.get('command')
