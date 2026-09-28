@@ -209,9 +209,345 @@
    "top1_rmsd": 0.813,
    "best_rmsd": 0.622,
    "top1_success": true
+  },
+  "parp1-7kk3--talazoparib": {
+   "drug": "talazoparib",
+   "target": "PARP1 catalytic domain",
+   "gene": "PARP1",
+   "pdb": "7KK3",
+   "ligand": "2YQ",
+   "note": "니라파립과 같은 PARP 억제제",
+   "chain": "A",
+   "smiles": "Cn1c(ncn1)[C@@H]2[C@H](Nc3cc(cc4c3C2=NNC4=O)F)c5ccc(cc5)F",
+   "heavy_atoms": 28,
+   "seconds": 4.2,
+   "poses": [
+    {
+     "rank": 1,
+     "confidence": 0.407,
+     "rmsd": 0.578
+    },
+    {
+     "rank": 2,
+     "confidence": 0.397,
+     "rmsd": 0.404
+    },
+    {
+     "rank": 3,
+     "confidence": 0.316,
+     "rmsd": 0.524
+    },
+    {
+     "rank": 4,
+     "confidence": 0.308,
+     "rmsd": 1.079
+    },
+    {
+     "rank": 5,
+     "confidence": 0.278,
+     "rmsd": 0.445
+    }
+   ],
+   "top1_rmsd": 0.578,
+   "best_rmsd": 0.404,
+   "top1_success": true
+  },
+  "5ht2a-8zmg--pimavanserin": {
+   "drug": "pimavanserin",
+   "target": "Serotonin 2A receptor",
+   "gene": "HTR2A",
+   "pdb": "8ZMG",
+   "ligand": "A1L11",
+   "note": "",
+   "chain": "A",
+   "smiles": "CC(C)COc1ccc(cc1)CNC(=O)N(Cc2ccc(cc2)F)C3CCN(CC3)C",
+   "heavy_atoms": 31,
+   "seconds": 2.3,
+   "poses": [
+    {
+     "rank": 1,
+     "confidence": -0.527,
+     "rmsd": 2.4
+    },
+    {
+     "rank": 2,
+     "confidence": -0.674,
+     "rmsd": 1.831
+    },
+    {
+     "rank": 3,
+     "confidence": -2.054,
+     "rmsd": 31.266
+    },
+    {
+     "rank": 4,
+     "confidence": -2.322,
+     "rmsd": 5.926
+    },
+    {
+     "rank": 5,
+     "confidence": -2.992,
+     "rmsd": 3.339
+    }
+   ],
+   "top1_rmsd": 2.4,
+   "best_rmsd": 1.831,
+   "top1_success": false
+  },
+  "5ht2a-7voe--aripiprazole": {
+   "drug": "aripiprazole",
+   "target": "Serotonin 2A receptor",
+   "gene": "HTR2A",
+   "pdb": "7VOE",
+   "ligand": "9SC",
+   "note": "",
+   "chain": "A",
+   "smiles": "c1cc(c(c(c1)Cl)Cl)N2CCN(CC2)CCCCOc3ccc4c(c3)NC(=O)CC4",
+   "heavy_atoms": 30,
+   "seconds": 2.9,
+   "poses": [
+    {
+     "rank": 1,
+     "confidence": -1.479,
+     "rmsd": 12.953
+    },
+    {
+     "rank": 2,
+     "confidence": -1.555,
+     "rmsd": 12.177
+    },
+    {
+     "rank": 3,
+     "confidence": -1.815,
+     "rmsd": 11.717
+    },
+    {
+     "rank": 4,
+     "confidence": -2.268,
+     "rmsd": 12.626
+    },
+    {
+     "rank": 5,
+     "confidence": -3.468,
+     "rmsd": 12.165
+    }
+   ],
+   "top1_rmsd": 12.953,
+   "best_rmsd": 11.717,
+   "top1_success": false
+  },
+  "sglt2-7vsi--empagliflozin": {
+   "drug": "empagliflozin",
+   "target": "SGLT2 (SGLT2-MAP17)",
+   "gene": "SLC5A2",
+   "pdb": "7VSI",
+   "ligand": "7R3",
+   "note": "cryo-EM 구조",
+   "chain": "A",
+   "smiles": "c1cc(ccc1Cc2cc(ccc2Cl)[C@H]3[C@@H]([C@H]([C@@H]([C@H](O3)CO)O)O)O)O[C@H]4CCOC4",
+   "heavy_atoms": 31,
+   "seconds": 3.7,
+   "poses": [
+    {
+     "rank": 1,
+     "confidence": -0.932,
+     "rmsd": 8.93
+    },
+    {
+     "rank": 2,
+     "confidence": -2.501,
+     "rmsd": 9.699
+    },
+    {
+     "rank": 3,
+     "confidence": -2.535,
+     "rmsd": 9.405
+    },
+    {
+     "rank": 4,
+     "confidence": -2.882,
+     "rmsd": 9.717
+    },
+    {
+     "rank": 5,
+     "confidence": -3.45,
+     "rmsd": 9.845
+    }
+   ],
+   "top1_rmsd": 8.93,
+   "best_rmsd": 8.93,
+   "top1_success": false
+  },
+  "fxa-2p16--apixaban": {
+   "drug": "apixaban",
+   "target": "Coagulation factor Xa",
+   "gene": "F10",
+   "pdb": "2P16",
+   "ligand": "GG2",
+   "note": "케이스 스터디의 대조 약물과 같은 구조",
+   "chain": "A",
+   "smiles": "COc1ccc(cc1)n2c3c(c(n2)C(=O)N)CCN(C3=O)c4ccc(cc4)N5CCCCC5=O",
+   "heavy_atoms": 34,
+   "seconds": 2.0,
+   "poses": [
+    {
+     "rank": 1,
+     "confidence": 0.902,
+     "rmsd": 0.564
+    },
+    {
+     "rank": 2,
+     "confidence": 0.793,
+     "rmsd": 0.738
+    },
+    {
+     "rank": 3,
+     "confidence": 0.517,
+     "rmsd": 0.901
+    },
+    {
+     "rank": 4,
+     "confidence": 0.513,
+     "rmsd": 1.027
+    },
+    {
+     "rank": 5,
+     "confidence": 0.5,
+     "rmsd": 1.271
+    }
+   ],
+   "top1_rmsd": 0.564,
+   "best_rmsd": 0.564,
+   "top1_success": true
+  },
+  "mor-8ef5--fentanyl": {
+   "drug": "fentanyl",
+   "target": "Mu-opioid receptor (Gi complex)",
+   "gene": "OPRM1",
+   "pdb": "8EF5",
+   "ligand": "7V7",
+   "note": "cryo-EM 구조",
+   "chain": "R",
+   "smiles": "CCC(=O)N(c1ccccc1)C2CCN(CC2)CCc3ccccc3",
+   "heavy_atoms": 25,
+   "seconds": 2.1,
+   "poses": [
+    {
+     "rank": 1,
+     "confidence": -0.177,
+     "rmsd": 8.568
+    },
+    {
+     "rank": 2,
+     "confidence": -0.221,
+     "rmsd": 8.487
+    },
+    {
+     "rank": 3,
+     "confidence": -0.461,
+     "rmsd": 8.272
+    },
+    {
+     "rank": 4,
+     "confidence": -1.235,
+     "rmsd": 8.579
+    },
+    {
+     "rank": 5,
+     "confidence": -1.817,
+     "rmsd": 4.555
+    }
+   ],
+   "top1_rmsd": 8.568,
+   "best_rmsd": 4.555,
+   "top1_success": false
+  },
+  "pde5-1tbf--sildenafil": {
+   "drug": "sildenafil",
+   "target": "PDE5A catalytic domain",
+   "gene": "PDE5A",
+   "pdb": "1TBF",
+   "ligand": "VIA",
+   "note": "",
+   "chain": "A",
+   "smiles": "CCCc1c2c(n(n1)C)C(=O)NC(=N2)c3cc(ccc3OCC)S(=O)(=O)N4CCN(CC4)C",
+   "heavy_atoms": 33,
+   "seconds": 2.3,
+   "poses": [
+    {
+     "rank": 1,
+     "confidence": -0.281,
+     "rmsd": 2.87
+    },
+    {
+     "rank": 2,
+     "confidence": -0.286,
+     "rmsd": 2.968
+    },
+    {
+     "rank": 3,
+     "confidence": -0.318,
+     "rmsd": 1.025
+    },
+    {
+     "rank": 4,
+     "confidence": -0.709,
+     "rmsd": 1.353
+    },
+    {
+     "rank": 5,
+     "confidence": -0.807,
+     "rmsd": 3.175
+    }
+   ],
+   "top1_rmsd": 2.87,
+   "best_rmsd": 1.025,
+   "top1_success": false
+  },
+  "dhfr-1u72--methotrexate": {
+   "drug": "methotrexate",
+   "target": "Dihydrofolate reductase",
+   "gene": "DHFR",
+   "pdb": "1U72",
+   "ligand": "MTX",
+   "note": "보조인자 NADPH 는 수용체에 넣지 않았다 (ATOM 만 사용)",
+   "chain": "A",
+   "smiles": "CN(Cc1cnc2c(n1)c(nc(n2)N)N)c3ccc(cc3)C(=O)N[C@@H](CCC(=O)O)C(=O)O",
+   "heavy_atoms": 33,
+   "seconds": 1.8,
+   "poses": [
+    {
+     "rank": 1,
+     "confidence": -0.197,
+     "rmsd": 0.727
+    },
+    {
+     "rank": 2,
+     "confidence": -0.217,
+     "rmsd": 1.195
+    },
+    {
+     "rank": 3,
+     "confidence": -0.602,
+     "rmsd": 2.421
+    },
+    {
+     "rank": 4,
+     "confidence": -0.805,
+     "rmsd": 1.211
+    },
+    {
+     "rank": 5,
+     "confidence": -0.858,
+     "rmsd": 2.767
+    }
+   ],
+   "top1_rmsd": 0.727,
+   "best_rmsd": 0.727,
+   "top1_success": true
   }
  },
  "endpoint": "https://health.api.nvidia.com/v1/biology/mit/diffdock",
  "criterion": "top-1 heavy-atom RMSD <= 2.0 A (symmetry-aware, no alignment)",
- "updated": "2026-09-28 13:36 KST"
+ "updated": "2026-09-28 15:15 KST"
 }

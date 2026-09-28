@@ -223,7 +223,11 @@
     }
    ],
    "docking": {
-    "status": "not_run"
+    "status": "measured",
+    "pdb": "8ZMG",
+    "gene": "HTR2A",
+    "top1_rmsd": 2.4,
+    "success": false
    }
   },
   {
@@ -459,6 +463,30 @@
    }
   },
   {
+   "drug": "EMPAGLIFLOZIN",
+   "cases": 2,
+   "serious": 1,
+   "chembl_id": "CHEMBL2107830",
+   "pref_name": "EMPAGLIFLOZIN",
+   "molecule_type": "Small molecule",
+   "max_phase": "4.0",
+   "mechanism": "Sodium/glucose cotransporter 2 inhibitor",
+   "targets": [
+    {
+     "id": "CHEMBL3884",
+     "name": "Sodium/glucose cotransporter 2",
+     "action": "INHIBITOR"
+    }
+   ],
+   "docking": {
+    "status": "measured",
+    "pdb": "7VSI",
+    "gene": "SLC5A2",
+    "top1_rmsd": 8.93,
+    "success": false
+   }
+  },
+  {
    "drug": "RISPERIDONE",
    "cases": 3,
    "serious": 3,
@@ -486,7 +514,161 @@
     "top1_rmsd": 2.122,
     "success": false
    }
+  },
+  {
+   "drug": "TALAZOPARIB",
+   "cases": 1,
+   "serious": 0,
+   "chembl_id": "CHEMBL3137320",
+   "pref_name": "TALAZOPARIB",
+   "molecule_type": "Small molecule",
+   "max_phase": "4.0",
+   "mechanism": "Poly [ADP-ribose] polymerase 2 inhibitor",
+   "targets": [
+    {
+     "id": "CHEMBL5366",
+     "name": "Poly [ADP-ribose] polymerase 2",
+     "action": "INHIBITOR"
+    },
+    {
+     "id": "CHEMBL3105",
+     "name": "Poly [ADP-ribose] polymerase 1",
+     "action": "INHIBITOR"
+    }
+   ],
+   "docking": {
+    "status": "measured",
+    "pdb": "7KK3",
+    "gene": "PARP1",
+    "top1_rmsd": 0.578,
+    "success": true
+   }
+  },
+  {
+   "drug": "FENTANYL",
+   "cases": 1,
+   "serious": 0,
+   "chembl_id": "CHEMBL596",
+   "pref_name": "FENTANYL",
+   "molecule_type": "Small molecule",
+   "max_phase": "4.0",
+   "mechanism": "Mu opioid receptor agonist",
+   "targets": [
+    {
+     "id": "CHEMBL233",
+     "name": "Mu-type opioid receptor",
+     "action": "AGONIST"
+    }
+   ],
+   "docking": {
+    "status": "measured",
+    "pdb": "8EF5",
+    "gene": "OPRM1",
+    "top1_rmsd": 8.568,
+    "success": false
+   }
+  },
+  {
+   "drug": "SILDENAFIL",
+   "cases": 1,
+   "serious": 0,
+   "chembl_id": "CHEMBL192",
+   "pref_name": "SILDENAFIL",
+   "molecule_type": "Small molecule",
+   "max_phase": "4.0",
+   "mechanism": "Phosphodiesterase 5A inhibitor",
+   "targets": [
+    {
+     "id": "CHEMBL1827",
+     "name": "cGMP-specific 3',5'-cyclic phosphodiesterase",
+     "action": "INHIBITOR"
+    }
+   ],
+   "docking": {
+    "status": "measured",
+    "pdb": "1TBF",
+    "gene": "PDE5A",
+    "top1_rmsd": 2.87,
+    "success": false
+   }
+  },
+  {
+   "drug": "ARIPIPRAZOLE",
+   "cases": 3,
+   "serious": 3,
+   "chembl_id": "CHEMBL1112",
+   "pref_name": "ARIPIPRAZOLE",
+   "molecule_type": "Small molecule",
+   "max_phase": "4.0",
+   "mechanism": "Dopamine D2 receptor partial agonist",
+   "targets": [
+    {
+     "id": "CHEMBL217",
+     "name": "D(2) dopamine receptor",
+     "action": "PARTIAL AGONIST"
+    },
+    {
+     "id": "CHEMBL214",
+     "name": "5-hydroxytryptamine receptor 1A",
+     "action": "PARTIAL AGONIST"
+    }
+   ],
+   "docking": {
+    "status": "measured",
+    "pdb": "7VOE",
+    "gene": "HTR2A",
+    "top1_rmsd": 12.953,
+    "success": false
+   }
+  },
+  {
+   "drug": "APIXABAN",
+   "cases": 2,
+   "serious": 2,
+   "chembl_id": "CHEMBL231779",
+   "pref_name": "APIXABAN",
+   "molecule_type": "Small molecule",
+   "max_phase": "4.0",
+   "mechanism": "Coagulation factor X inhibitor",
+   "targets": [
+    {
+     "id": "CHEMBL244",
+     "name": "Coagulation factor X",
+     "action": "INHIBITOR"
+    }
+   ],
+   "docking": {
+    "status": "measured",
+    "pdb": "2P16",
+    "gene": "F10",
+    "top1_rmsd": 0.564,
+    "success": true
+   }
+  },
+  {
+   "drug": "METHOTREXATE",
+   "cases": 1,
+   "serious": 1,
+   "chembl_id": "CHEMBL34259",
+   "pref_name": "METHOTREXATE",
+   "molecule_type": "Small molecule",
+   "max_phase": "4.0",
+   "mechanism": "Dihydrofolate reductase inhibitor",
+   "targets": [
+    {
+     "id": "CHEMBL202",
+     "name": "Dihydrofolate reductase",
+     "action": "INHIBITOR"
+    }
+   ],
+   "docking": {
+    "status": "measured",
+    "pdb": "1U72",
+    "gene": "DHFR",
+    "top1_rmsd": 0.727,
+    "success": true
+   }
   }
  ],
- "updated": "2026-09-28 14:03 KST"
+ "updated": "2026-09-28 15:18 KST"
 }
