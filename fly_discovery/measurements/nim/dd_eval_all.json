@@ -1,0 +1,50 @@
+{
+ "parp1-4r6e-chain-a--15r": {
+  "top_conf": -1.96,
+  "pocket_dist": 4.2,
+  "rmsd_xtal": null,
+  "vina": -13.093
+ },
+ "parp1-4r6e-chain-a--pamiparib": {
+  "top_conf": 1.1,
+  "pocket_dist": 2.0,
+  "rmsd_xtal": null,
+  "vina": -11.085
+ },
+ "parp1-4r6e-chain-a--niraparib": {
+  "top_conf": 0.696,
+  "pocket_dist": 0.3,
+  "rmsd_xtal": 0.71,
+  "vina": -10.178
+ },
+ "parp1-4r6e-chain-a--rucaparib": {
+  "top_conf": 0.653,
+  "pocket_dist": 1.1,
+  "rmsd_xtal": null,
+  "vina": -9.769
+ },
+ "cox2-3ln1--celecoxib": {
+  "top_conf": 0.313,
+  "pocket_dist": 0.1,
+  "rmsd_xtal": 0.55,
+  "vina": -11.88
+ },
+ "cox2-3ln1--niraparib": {
+  "top_conf": -0.699,
+  "pocket_dist": 2.4,
+  "rmsd_xtal": null,
+  "vina": -6.605
+ },
+ "factor-xa-2p16--apixaban": {
+  "top_conf": 0.687,
+  "pocket_dist": 0.2,
+  "rmsd_xtal": 0.56,
+  "vina": -10.248
+ },
+ "factor-xa-2p16--niraparib": {
+  "top_conf": -0.044,
+  "pocket_dist": 0.8,
+  "rmsd_xtal": null,
+  "vina": -7.967
+ }
+}
