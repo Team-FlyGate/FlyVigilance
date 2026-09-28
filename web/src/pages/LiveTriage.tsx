@@ -372,9 +372,11 @@ export default function LiveTriage() {
 
   return (
     <div className="page">
-      <PageHead eyebrow="Live Triage · real FAERS 2026Q2"
-        title={<>한 건의 ICSR이 <span style={{ color: 'var(--jev)' }}>반사</span>에서 <span style={{ color: 'var(--nvidia)' }}>숙고</span>까지 가는 길</>}
-        lede="실제 FAERS 케이스를 골라 FlyVigilance 반사 층에 보냅니다. 규칙 게이트와 라벨 조회를 거친 뒤 타입 있는 판단 7개가 비자기회귀 판단 모델(Jev) 한 번 호출로 돌아오고, 결정 정책은 필요할 때만 근거 수집과 NVIDIA Nemotron System-2, 3단 크리틱으로 올립니다. 모든 호출은 지금 이 순간 실제 API로 나갑니다." />
+      <PageHead eyebrow="사례 분류(트리아지) · 실제 FAERS 2026Q2 · 실시간 API"
+        title={<>이상사례 보고 한 건을 <span style={{ color: 'var(--jev)' }}>분류</span>하고, 필요하면 <span style={{ color: 'var(--nvidia)' }}>숙고</span>까지 보냅니다</>}
+        lede={<><b>트리아지</b>는 응급실의 환자 분류처럼, 들어온 이상사례 보고 한 건이 얼마나 급한지 가려 처리 경로를 정하는 첫 단계입니다.
+          중대한지, 허가 라벨에 있는 반응인지, 약과 관련 있을 가능성이 있는지를 보고 <b>신속보고 → 사람</b>, <b>신호 검토 → System-2</b>, <b>추가정보 요청</b>, <b>모니터링</b>, <b>종결</b> 중 하나로 보냅니다.
+          왼쪽에서 사례를 고르고 <b>① 반사 판단 실행</b>을 누르면 규칙 게이트, 라벨 조회, 비자기회귀 판단 모델의 7문항 판단, 결정 정책이 실제 API로 돌아갑니다. 이어서 <b>② Nemotron 숙고 실행</b>을 누르면 근거를 모아 NVIDIA Nemotron이 평가 메모를 쓰고 3단 크리틱이 검사합니다.</>} />
 
       <div className="grid" style={{ gridTemplateColumns: '300px minmax(0,1fr) 380px', alignItems: 'start' }}>
         <Card title="케이스 큐" sub={`${list.length} / ${cases.length} cases`} style={{ position: 'sticky', top: 0 }}>
@@ -387,7 +389,7 @@ export default function LiveTriage() {
               const ps = c.drugs.find((d) => d.role === 'PS')?.drug ?? c.drugs[0]?.drug
               const on = sel?.primaryid === c.primaryid
               return (
-                <button key={c.primaryid} onClick={() => pick(c)} style={{
+                <button key={c.primaryid} className="pick" onClick={() => pick(c)} style={{
                   textAlign: 'left', cursor: 'pointer', padding: '8px 10px', borderRadius: 10, border: `1px solid ${on ? 'rgba(55,230,255,0.5)' : 'var(--line)'}`,
                   background: on ? 'rgba(55,230,255,0.08)' : 'rgba(10,16,30,0.45)',
                 }}>
@@ -407,9 +409,9 @@ export default function LiveTriage() {
           {sel && <Card title="ICSR" sub="FAERS 원천 → 정제 계층에서 복원한 케이스"
             right={<div className="row" style={{ gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
               <button className="btn jev" onClick={runReflex} disabled={stage === 'reflex' || stage === 'evidence' || stage === 'deliberate'}>
-                {stage === 'reflex' ? <span className="spin" /> : '⚡'} Reflex · FlyVigilance</button>
+                {stage === 'reflex' ? <span className="spin" /> : '⚡'} ① 반사 판단 실행</button>
               <button className="btn nv" onClick={runDeliberate} disabled={!tri || stage === 'evidence' || stage === 'deliberate'}>
-                {stage === 'evidence' || stage === 'deliberate' ? <span className="spin" /> : '◆'} Deliberate · Nemotron</button>
+                {stage === 'evidence' || stage === 'deliberate' ? <span className="spin" /> : '◆'} ② Nemotron 숙고 실행</button>
             </div>}>
             <CaseCard c={sel} />
           </Card>}

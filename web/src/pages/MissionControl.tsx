@@ -3,7 +3,7 @@ import BrainView from '../components/BrainView'
 import { Card, Kpi, PageHead, Spark } from '../components/ui'
 import { useBrain } from '../lib/brain'
 import { CHANNEL_COLOR, LAYER_COLOR, fmt, getJSON } from '../lib/data'
-import type { Overview, Bench, BenchExample } from '../lib/types'
+import type { Overview, Bench } from '../lib/types'
 
 const ACTION_META: Record<string, { label: string; color: string; layers: string[] }> = {
   close: { label: '종결', color: '#6c7aa8', layers: ['reflex'] },
@@ -34,47 +34,84 @@ function LayerMeter() {
   )
 }
 
-function Stream({ examples }: { examples: BenchExample[] }) {
+// 관제 센터 스트림: 데모 440건을 층(사망 · 중대 · 비중대 · 소아)이 번갈아 나오게 재생합니다(pipeline/bench/stream_examples.py).
+// 판단 입력에서는 FAERS 결과 코드를 가렸고, 왼쪽 태그의 정답(결과 코드)과 오른쪽 결정을 나란히 보여 드립니다.
+export interface StreamRow {
+  primaryid: number; bucket: string; outcomes: string[]; serious_truth: boolean; action: string; reasons: string[]
+  serious_p: number; latency_ms: number; suspect: string; reactions: string[]
+}
+interface StreamData { summary: { n: number; serious: number; serious_reviewed: number; actions: Record<string, number> }; rows: StreamRow[] }
+const BUCKET_KO: Record<string, string> = { death: '사망', serious: '중대', nonserious: '비중대', pediatric: '소아' }
+const OUTCOME_KO: Record<string, string> = { DE: '사망', LT: '생명 위협', HO: '입원', DS: '장애', CA: '선천 기형', RI: '중재 필요', OT: '기타 중대' }
+const REVIEWED = new Set(['expedite', 'signal_review', 'follow_up'])
+function verdict(r: StreamRow) {
+  if (r.serious_truth) return REVIEWED.has(r.action) ? { t: '중대 → 검토', c: 'var(--ok)', ok: true } : { t: '중대 → 자동 큐', c: 'var(--bad)', ok: false }
+  if (r.action === 'expedite') return { t: '비중대 → 사람 우선', c: 'var(--warn)', ok: false }
+  return { t: '비중대 → 사람 우선 아님', c: 'var(--ok)', ok: true }
+}
+
+function Stream({ data }: { data: StreamData }) {
   const { sim } = useBrain()
+  const rows = data.rows
   const [i, setI] = useState(0)
-  const [feed, setFeed] = useState<BenchExample[]>([])
   useEffect(() => {
-    if (!examples.length) return
-    const id = setInterval(() => setI((k) => k + 1), 1700)
+    if (!rows.length) return
+    const id = setInterval(() => setI((k) => k + 1), 1500)
     return () => clearInterval(id)
-  }, [examples.length])
+  }, [rows.length])
   const simRef = useRef(sim)
   simRef.current = sim
   useEffect(() => {
-    if (!examples.length) return
-    const e = examples[i % examples.length]
-    setFeed((f) => (f[0] === e ? f : [e, ...f].slice(0, 7)))
-    const sim = simRef.current
-    if (!sim) return
-    sim.stimulate('channel', 'faers', 1, 6)
+    const e = rows[i % rows.length]
+    const s = simRef.current
+    if (!e || !s) return
+    s.stimulate('channel', 'faers', 1, 6)
     const meta = ACTION_META[e.action] ?? ACTION_META.monitor
-    meta.layers.forEach((l, k) => setTimeout(() => sim.stimulate('layer', l, 0.9, 5), 250 + k * 260))
-  }, [i, examples])
+    meta.layers.forEach((l, k) => setTimeout(() => s.stimulate('layer', l, 0.9, 5), 250 + k * 260))
+  }, [i, rows])
+  const played = rows.slice(0, Math.min(rows.length, i + 1))
+  const feed = played.slice(-7).reverse()
+  const tally = useMemo(() => {
+    const t: Record<string, number> = {}
+    for (const r of played) t[r.action] = (t[r.action] ?? 0) + 1
+    const ser = played.filter((r) => r.serious_truth)
+    return { t, ser: ser.length, serRev: ser.filter((r) => REVIEWED.has(r.action)).length,
+      nonExp: played.filter((r) => !r.serious_truth && r.action === 'expedite').length }
+  }, [played])
   return (
     <div className="stack" style={{ gap: 8 }}>
+      <div className="row wrap" style={{ gap: 6, fontSize: 11 }}>
+        {Object.entries(ACTION_META).map(([a, m]) => (
+          <span key={a} className="chip" style={{ fontSize: 10.5, color: m.color, borderColor: m.color + '55' }}>{m.label} {tally.t[a] ?? 0}</span>
+        ))}
+      </div>
+      <div className="mono dim" style={{ fontSize: 10.5 }}>
+        재생 {played.length}/{rows.length}건 · 중대 {tally.ser}건 중 검토 도달 {tally.serRev} · 비중대를 사람 우선으로 {tally.nonExp}건
+      </div>
       {feed.map((e, k) => {
         const m = ACTION_META[e.action] ?? ACTION_META.monitor
+        const v = verdict(e)
+        const oc = e.outcomes.map((o) => OUTCOME_KO[o] ?? o).join(' · ')
         return (
-          <div key={`${e.primaryid}-${k}-${i}`} className={k === 0 ? 'fade-in' : ''} style={{
+          <div key={`${e.primaryid}-${played.length - k}`} className={k === 0 ? 'fade-in' : ''} style={{
             display: 'grid', gridTemplateColumns: '1fr auto', gap: 10, padding: '9px 12px', borderRadius: 11,
             background: k === 0 ? 'rgba(55,230,255,0.07)' : 'rgba(10,16,30,0.5)', border: `1px solid ${k === 0 ? 'rgba(55,230,255,0.3)' : 'var(--line)'}`,
             opacity: 1 - k * 0.1,
           }}>
-            <div style={{ minWidth: 0 }}>
-              <div className="row" style={{ gap: 8 }}>
-                <span className="mono dim" style={{ fontSize: 10.5 }}>#{e.primaryid}</span>
-                <b style={{ fontSize: 12.5, fontFamily: 'var(--font)' }}>{e.suspect}</b>
+            <div style={{ minWidth: 0, overflow: 'hidden' }}>
+              <div className="row" style={{ gap: 8, minWidth: 0 }}>
+                <span className="chip" style={{ fontSize: 9.5, flex: 'none', color: e.serious_truth ? '#ff9ca6' : 'var(--text-2)' }} title={oc ? `FAERS 결과 코드: ${oc}` : 'FAERS 결과 코드 없음'}>
+                  정답 · {BUCKET_KO[e.bucket] ?? e.bucket}{oc ? ` (${oc})` : ''}
+                </span>
+                <b style={{ fontSize: 12.5, fontFamily: 'var(--font)', minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={e.suspect}>{e.suspect}</b>
               </div>
               <div className="dim" style={{ fontSize: 11.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.reactions.join(' · ')}</div>
+              {e.reasons[0] && <div className="mono dim" style={{ fontSize: 9.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={e.reasons.join(' / ')}>{e.reasons[0]}</div>}
             </div>
             <div style={{ textAlign: 'right' }}>
               <span className="chip" style={{ color: m.color, borderColor: m.color + '66' }}>{m.label}</span>
-              <div className="mono dim" style={{ fontSize: 10, marginTop: 3 }}>reflex {Math.round(e.latency_ms)} ms · serious {(e.answers.serious as { noul: number }).noul.toFixed(2)}</div>
+              <div className="mono" style={{ fontSize: 10, marginTop: 3, color: v.c }}>{v.ok ? '✓' : '!'} {v.t}</div>
+              <div className="mono dim" style={{ fontSize: 10 }}>중대성 p {e.serious_p.toFixed(2)}{e.latency_ms ? ` · ${e.latency_ms} ms` : ''}</div>
             </div>
           </div>
         )
@@ -86,10 +123,12 @@ function Stream({ examples }: { examples: BenchExample[] }) {
 export default function MissionControl() {
   const [ov, setOv] = useState<Overview | null>(null)
   const [bench, setBench] = useState<Bench | null>(null)
+  const [stream, setStream] = useState<StreamData | null>(null)
   const { sim, conn, tick } = useBrain()
   useEffect(() => {
     getJSON<Overview>('/data/faers/overview.json').then(setOv)
     getJSON<Bench>('/data/bench.json').then(setBench).catch(() => null)
+    getJSON<StreamData>('/data/stream.json').then(setStream).catch(() => null)
   }, [])
 
   // 분기 부하 퍼널: 표본 버킷별 행동 비율을 최신 분기 실제 구성비로 재가중
@@ -99,12 +138,15 @@ export default function MissionControl() {
     const w = { death: L.death / L.cases, serious: (L.serious - L.death) / L.cases, nonserious: (L.cases - L.serious) / L.cases }
     const share: Record<string, number> = {}
     for (const [b, wt] of Object.entries(w)) {
-      const acts = bench.jev_triage.actions_by_bucket[b] ?? {}
+      // 결과 코드를 가린 재생 데이터(stream.json)가 있으면 그 층별 경로 비율을 씁니다
+      const acts: Record<string, number> = stream
+        ? stream.rows.filter((r) => r.bucket === b).reduce((o, r) => ({ ...o, [r.action]: (o[r.action] ?? 0) + 1 }), {} as Record<string, number>)
+        : bench.jev_triage.actions_by_bucket[b] ?? {}
       const tot = Object.values(acts).reduce((a, c) => a + c, 0) || 1
       for (const [a, c] of Object.entries(acts)) share[a] = (share[a] ?? 0) + wt * (c / tot)
     }
     return { cases: L.cases, share }
-  }, [bench, ov])
+  }, [bench, ov, stream])
 
   const perQ = ov?.per_quarter.map((q) => q.reports) ?? []
   const jt = bench?.jev_triage
@@ -156,9 +198,9 @@ export default function MissionControl() {
         </Card>
 
         <div className="stack" style={{ gap: 16 }}>
-          <Card title="Reflex Stream" sub={`실제 ${bench?.dataset.source ?? 'FAERS'} 케이스에 대한 FlyVigilance 반사 판단 재생 (실측)`}
+          <Card title="Reflex Stream" sub="FAERS 2026Q2 실제 사례 440건을 층이 번갈아 나오게 재생합니다. 판단 입력에서는 결과 코드를 가렸고, 왼쪽 태그가 정답(결과 코드)입니다"
             right={<span className="chip jev"><span className="dot on pulse" style={{ background: 'var(--jev)' }} />live replay</span>}>
-            {bench ? <Stream examples={bench.jev_triage.examples} /> : <div className="shimmer" style={{ height: 300 }} />}
+            {stream ? <Stream data={stream} /> : <div className="shimmer" style={{ height: 300 }} />}
           </Card>
         </div>
       </div>
