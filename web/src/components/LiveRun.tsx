@@ -94,7 +94,8 @@ export default function LiveRun({ step, drug }: { step: StepId; drug: string }) 
       // 앞 단계 MSA 를 이번 세션에서 돌렸으면 그 정렬을 넘기고, 아니면 지난 측정 정렬을 씁니다(OpenFold3 · Boltz-2)
       if (kind === 'openfold3' || kind === 'boltz2') {
         // 이번 세션 MSA 는 같은 표적일 때만 넘기고, 지난 측정 정렬은 PARP1 것이라 PARP1 일 때만 씁니다(다른 표적에 PARP1 정렬을 붙이지 않게)
-        const msaSame = !custom && (envs.msa?.params?.target ?? 'parp1') === target
+        // 표적을 바꾸면 저장소가 앞 단계 결과를 비우므로(selectTarget), 남아 있는 MSA 는 지금 표적(직접 찾은 단백질 포함)의 것입니다
+        const msaSame = Boolean(runs.msa) && (custom || (envs.msa?.params?.target ?? 'parp1') === target)
         if (msaSame && runs.msa?.a3m) params.a3m = runs.msa.a3m
         else if (msaSame && runs.msa?.a3m_key) params.a3m_key = runs.msa.a3m_key
         else if (kind === 'openfold3' && !custom && target === 'parp1') params.a3m_measured = true
@@ -129,7 +130,7 @@ export default function LiveRun({ step, drug }: { step: StepId; drug: string }) 
               <span className="mono dim" style={{ fontSize: 11 }}> · 위 선택기에서 바꿉니다</span></div>
           )}
           {(kind === 'openfold3' || kind === 'boltz2') && (
-            <div className="mono dim" style={{ fontSize: 11 }}>MSA 입력: {runs.msa && !custom && (envs.msa?.params?.target ?? 'parp1') === target ? '이번 세션의 MSA-Search 결과'
+            <div className="mono dim" style={{ fontSize: 11 }}>MSA 입력: {runs.msa && (custom || (envs.msa?.params?.target ?? 'parp1') === target) ? '이번 세션의 MSA-Search 결과'
               : !custom && target === 'parp1' ? '지난 측정 정렬(MSA 단계를 먼저 돌리면 그 결과를 넘깁니다)' : '없음(단일 서열) · 이 표적으로 MSA 단계를 먼저 돌리면 그 정렬을 넘깁니다'}</div>
           )}
           {kind === 'critic' && (
@@ -164,6 +165,14 @@ export default function LiveRun({ step, drug }: { step: StepId; drug: string }) 
                   <span className={`chip ${src?.cls ?? 'ok'}`} style={{ fontSize: 10, marginRight: 6 }}>{src?.text ?? '응답'}</span>
                   {lastAt.toLocaleTimeString('ko-KR', { hour12: false })}에 받은 응답{env?.req_id ? <span className="mono dim"> · 요청 {env.req_id.slice(0, 8)}</span> : null}
                   {env?.source === 'cache' && <div className="dim">같은 입력의 이전 라이브 결과를 캐시에서 꺼냈습니다. '캐시 무시'를 켜면 NIM 을 새로 부릅니다</div>}
+                  {kind === 'openfold3' && liveRes && (() => {
+                    const r = liveRes as unknown as Of3Result, rows = Number((env?.request as { molecules?: { msa_rows?: number }[] } | undefined)?.molecules?.[0]?.msa_rows ?? 0)
+                    const pl = r.scores.plddt ?? r.mean_plddt, ip = r.scores.iptm
+                    return <>
+                      {pl !== null && pl < 70 && rows <= 1 && <div style={{ color: 'var(--warn)' }}>MSA 없이 단일 서열로 예측해 신뢰도가 낮습니다(pLDDT {pl.toFixed(1)}). MSA 단계에서 이 표적을 먼저 돌리면 그 정렬을 넣어 다시 예측합니다</div>}
+                      {ip !== null && ip < 0.3 && <div style={{ color: 'var(--warn)' }}>ipTM {ip.toFixed(2)} · 단백질-리간드 접촉면 신뢰도가 낮습니다. 이 리간드가 이 단백질에 붙는다는 근거로 쓰면 안 됩니다</div>}
+                    </>
+                  })()}
                   {same && env?.source !== 'cache' && <div className="dim">지난 측정과 값이 같습니다. 같은 서열 · 같은 데이터베이스 · 같은 설정이면 NIM 결과가 같게 나옵니다(재현성). 다른 표적을 골라 보면 값이 바뀝니다</div>}
                 </div>
               )}
