@@ -1,0 +1,20 @@
+# OpenClaw 상시 실행 점검 (NemoClaw 과정 03c) · 샌드박스 flygate-smoke · 2026-09-28T05:29:38Z
+# 게이트웨이: 샌드박스 안 loopback 18790, 토큰 인증(토큰은 샌드박스 /tmp 에만 있고 기록하지 않습니다)
+
+## openclaw gateway 로그 (마지막 줄)
+2026-09-28T05:29:00.874+00:00 [gateway] ready
+2026-09-28T05:29:00.953+00:00 [heartbeat] started
+
+## openclaw cron list
+ID                                   Declaration              Name                     Schedule                         Next       Last       Status       Target    Delivery                                                         Agent ID   Owner                    Model               
+0415ae0e-3398-4dc7-96… -                        flygate-daily-watch      cron 0 7 * * * @ Asia/Seoul (... in 17h     -          idle         isolated  not requested (not requested)                                    -          -                        -
+
+## openclaw cron status
+{
+  "enabled": true,
+  "storePath": "/sandbox/.openclaw/cron/jobs.json",
+  "storage": "sqlite",
+  "sqlitePath": "/sandbox/.openclaw/state/openclaw.sqlite",
+  "jobs": 1,
+  "nextWakeAtMs": 1790632800000
+}

@@ -84,7 +84,7 @@ SANDBOX=flygate agent/openshell_smoke.sh     # 결과: agent/evidence/openshell_
 | 02c | 딥 에이전트 | 공유 저장소(근거 ID 카탈로그)를 독립 작업자가 채우고 Nemotron 이 종합, 크리틱이 검사합니다(7절). | 구현 | `api/_fv/evidence.py::bundle`, `api/_fv/assess.py` |
 | 03a | NemoClaw 스택 연결 | 게이트웨이 `nemoclaw-8090` 에 샌드박스 `flygate-smoke` 를 만들고 exec 로 도구를 돌렸습니다. | 구현 | `agent/openshell_smoke.sh`, `agent/evidence/` |
 | 03b | OpenClaw 작업 공간 | 작업 공간 파일 7개를 `/sandbox/.openclaw/workspace` 에 올려 확인했습니다. 날짜별 메모는 `flygate watch` 가 씁니다. | 구현 | `agent/workspace/` |
-| 03c | 상시 실행 | 스킬 설치와 하트비트 점검(`flygate watch`)을 샌드박스 안에서 돌렸습니다. cron 등록과 하위 에이전트 위임은 배포 스크립트와 트리거 표(6절)에 정의했습니다. | 일부 구현 | `agent/workspace/HEARTBEAT.md`, `agent/deploy_nemoclaw.sh` |
+| 03c | 상시 실행 | 샌드박스 안에 OpenClaw 게이트웨이(loopback, 토큰 인증)를 띄워 하트비트가 도는 것을 확인했고, `flygate-daily-watch` cron(매일 07:00 서울, 격리 세션, 전달 없음)을 등록했습니다. 하트비트 점검 `flygate watch` 도 샌드박스 안에서 돌렸습니다. 하위 에이전트 위임은 트리거 표(6절)에 정의했습니다. | 구현 | `agent/workspace/HEARTBEAT.md`, `agent/deploy_nemoclaw.sh`, `agent/evidence/openclaw_cron_2026-09-28.txt` |
 | 04a | OpenShell 샌드박스 | 기본 거부, 파이썬 바인딩, L7 메서드·경로 규칙, Landlock, 비루트, seccomp 를 실제 샌드박스에서 확인했습니다(9절). | 구현 | `agent/policy/flygate.yaml`, `tests/test_agent.py` |
 | 04b | 현대 CLI 에이전트 | 작업 디렉터리, 도구 팔레트, 기억, 무인 실행, 네트워크의 자유도를 `flygate` CLI 와 정책으로 하나씩 묶었습니다. | 구현 | `agent/flygate.py`, `agent/bin/flygate` |
 | 04c | 배포, 자체 데이터, 오픈 모델 | 자체 데이터(FAERS 2012Q4–2026Q2 웨어하우스, 공개 참조 세트)와 build.nvidia.com NIM, BioNeMo NIM 으로 배포 경로를 만들었습니다. | 구현 | `agent/deploy_nemoclaw.sh`, `pipeline/` |
