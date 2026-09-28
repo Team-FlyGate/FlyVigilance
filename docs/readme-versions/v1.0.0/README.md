@@ -1,24 +1,10 @@
-<p align="center">
-  <a href="https://project-flygate.vercel.app"><img src="docs/images/flygate-hero_v2.0.0.png" width="100%" alt="FlyGate — Evidence before inference. Discovery / Vigilance."></a>
-</p>
+# Project-FlyGate
 
-<p align="center"><strong>신약 후보 탐색부터 시판 후 약물감시까지, 판단이 근거를 넘지 않도록.</strong></p>
-<p align="center">NVIDIA Korea Agentic AI Hackathon 2026 · Team FlyGate</p>
-<p align="center">
-  <a href="https://project-flygate.vercel.app"><strong>라이브 대시보드 ↗</strong></a> &nbsp; · &nbsp;
-  <a href="https://project-flygate.vercel.app/showreel/FlyGate_showreel_v3.0.0.html">쇼릴 ↗</a> &nbsp; · &nbsp;
-  <a href="docs/EVALUATION.md">평가 보고서</a> &nbsp; · &nbsp;
-  <a href="#06--meet-the-team">Team</a> &nbsp; · &nbsp;
-  <a href="#07--build--run">Quickstart</a>
-</p>
-
----
-
-## 01 / Two perspectives. One evidence trail.
-
-**FlyGate = FlyDiscovery + FlyVigilance.** 시판 전에는 후보 물질의 표적 결합을, 시판 후에는 허가 약물의 이상사례를 살핍니다.
+**약물 전 주기의 안전성 근거를 다루는 에이전트: 시판 전에는 후보 물질의 표적 결합을, 시판 후에는 허가 약물의 이상사례를 봅니다**
 
 데모에서는 이미 허가된 PARP1 억제제 니라파립으로 시판 전 단계를 되짚어 재현하고, 같은 약의 실제 시판 후 보고로 이어서 보여 드립니다. 두 단계 모두 다른 표적과 약물에 그대로 씁니다.
+
+NVIDIA Korea Agentic AI Hackathon 2026 · Team FlyGate
 
 | | |
 | --- | --- |
@@ -32,17 +18,14 @@
 Project-FlyGate는 **NVIDIA 스킬 위에 구성한 에이전트 워크플로**입니다. build.nvidia.com NIM, NVIDIA Agent Skills, NemoClaw · OpenShell · OpenClaw를 씁니다.
 글을 써야 하는 일은 NVIDIA Nemotron이 맡고, 확률만 필요한 판단에는 **비자기회귀(non-autoregressive) 판단 모델을 병용**합니다. 이 조합으로 높은 속도와 통계적으로 유의한 개선을 얻었습니다.
 
-<p align="center"><img src="docs/images/flygate-modules_v2.0.0.png" width="100%" alt="FlyDiscovery: 구조·결합·근거. FlyVigilance: 보고·신호·검토."></p>
-<p align="center"><sub>히어로와 모듈 아트는 AI 생성 개념 이미지이며, 실제 분자 구조나 임상 데이터를 나타내지 않습니다.</sub></p>
-
 | 단계 | 이름 | 하는 일 |
 | --- | --- | --- |
 | STEP 1 · 시판 전 | **FlyDiscovery** | 후보 물질을 NVIDIA BioNeMo NIM으로 표적 구조 예측 → 도킹 → 친화도까지 평가하고, 근거를 넘는 주장을 반려합니다(데모: 니라파립 · PARP1, 대조 약물 2종, 친화도 벤치마크 39종) |
 | STEP 2 · 시판 후 | **FlyVigilance** | FAERS 이상사례(약물 2,563종의 SDR 표)를 한 건씩 분류(트리아지: 급한 정도를 가려 처리 경로를 정하는 첫 단계)하고, SDR·라벨·문헌으로 PV 분류를 매기고, 사람 검토 대기열과 신속보고 기한을 만듭니다 |
 
-## 02 / Measured, not assumed.
+![Project-FlyGate agentic workflow](docs/images/flygate_agent_diagram_v1.1.0.png)
 
-평가 질문, 측정값, 데이터 범위를 함께 제시합니다. 상세 조건과 재현 절차는 [평가 보고서](docs/EVALUATION.md)를 참고하세요.
+## 한눈에 보는 결과
 
 | 질문 | 결과 | 데이터 |
 | --- | --- | --- |
@@ -54,7 +37,7 @@ Project-FlyGate는 **NVIDIA 스킬 위에 구성한 에이전트 워크플로**�
 | 문헌을 제대로 읽는가 | 연구 설계 판정이 MEDLINE 색인과 **92.0%** 일치합니다. NVIDIA Nemotron 리랭커로 후보를 재정렬하자 읽는 6편 중 관련 문헌 비율이 **0.65 → 0.85**로 올랐습니다(21쌍 개선, 0쌍 악화) | PubMed 598편 · 30쌍 575편 |
 | 시판 전 예측이 믿을 만한가 | OpenFold3 PARP1 구조 CA RMSD **1.0 Å**, DiffDock 재도킹 **0.71 Å**, Boltz-2 친화도 Spearman **0.767** | 4R6E, ChEMBL 39종 |
 
-### 심사 기준별 요약
+## 심사 기준별 요약
 
 | 심사 기준 | Project-FlyGate의 근거 |
 | --- | --- |
@@ -63,24 +46,29 @@ Project-FlyGate는 **NVIDIA 스킬 위에 구성한 에이전트 워크플로**�
 | **완성도** | 라이브 대시보드와 API, 실제 FAERS 55개 분기 웨어하우스, 공개 참조 세트 3종 검증, 오프라인 테스트 147개, 재현 스크립트, 쇼릴 v3를 갖췄습니다 |
 | **커스터마이징 · 독창성** | 판단은 비자기회귀 모델(7문항 296 ms), 글쓰기는 Nemotron으로 나눴습니다. 과잉해석 13규칙 크리틱과 약물감시 전용 가드 정책을 두고, 시판 전 결합 예측과 시판 후 감시를 한 에이전트로 이었습니다 |
 
-## 03 / Why FlyGate
+## 왜 만들었나
 
 약물 안전성 검토자는 흩어진 근거를 모아 판단을 씁니다. 도킹 점수, 참조 친화도, 허가 라벨, 이상사례 보고, 문헌입니다.
 - **양**: FAERS에는 한 분기에 42만 건이 넘는 보고가 들어옵니다(2026Q2 422,459건).
 - **배분**: 질문 하나로 선별하면 중대 사례를 놓치지 않으려고 사람에게 과하게 넘기거나, 중대 사례가 아무도 보지 않는 자동 큐에 남습니다.
 - **과잉해석**: 숫자와 출처가 다 맞는데 결론만 근거를 넘는 주장이 있습니다. 서로 다른 단백질의 도킹 점수로 선택성을 말하거나, 불균형 지표(PRR)를 인과로 읽는 식입니다. 형식 검사로는 걸러지지 않습니다.
 
-### 두 단계, 하나의 에이전트
+## 구조
 
 단계는 둘, 에이전트는 하나입니다. 에이전트는 OpenShell 샌드박스 안의 OpenClaw이고, 도구는 `flygate` CLI 하나입니다.
 
-<a href="docs/images/flygate-architecture_v2.0.0.png"><img src="docs/images/flygate-architecture_v2.0.0.png" width="100%" alt="OpenShell 안의 OpenClaw 에이전트가 flygate CLI를 통해 FlyDiscovery와 FlyVigilance를 실행합니다. 근거 ID, 수치, 해석·안전성 검증을 거쳐 사람이 검토합니다."></a>
-
-<sub>핵심 처리 경로를 요약한 구조도입니다. 모든 사례에 모델을 호출하지 않으며, 규칙과 결정 정책이 사람 우선·System-2·추가정보 요청·모니터링으로 경로를 나눕니다.</sub>
-
-- **FlyDiscovery:** PARP1 서열 → MSA-Search → OpenFold3 구조 → DiffDock 포즈 → Boltz-2 친화도 → 전통 기준 채점 → 크리틱 3단.
-- **FlyVigilance:** FAERS 사례 → ICH 최소 4요소 확인 → FDA 라벨 원문 조회 → 7문항 판단 → 결정 정책과 EMA DME 안전망. 필요한 사례만 Nemotron 평가와 크리틱·Safety Guard로 보냅니다.
-- **공통 사례:** 니라파립의 시판 전 예측을 시판 후 근거와 연결합니다. 보고서의 판정과 제출은 사람이 담당합니다.
+```
+STEP 1 FlyDiscovery                         STEP 2 FlyVigilance
+ PARP1 서열                                   FAERS 사례 (분기 40만 건)
+  → MSA-Search → OpenFold3 (구조)              → 규칙 게이트 (ICH 최소 4요소)
+  → DiffDock (포즈) → Boltz-2 (친화도)          → FDA 라벨 원문 조회 (예측성)
+  → 전통 기준 채점                              → 7문항 타입 판단 (비자기회귀, 296 ms)
+  → 크리틱 3단                                  → 결정 정책 + EMA DME 안전망
+          │                                     ├ 사람 우선 · 신속보고 기한
+          └──── 니라파립 ───────────────────────┤ System-2: Nemotron 평가 → 크리틱 3단 + Safety Guard
+                                                ├ 추가정보 요청
+                                                └ 모니터링 · 종결
+```
 
 | 부품 | 하는 일 | 모델 |
 | --- | --- | --- |
@@ -98,7 +86,7 @@ Project-FlyGate는 **NVIDIA 스킬 위에 구성한 에이전트 워크플로**�
 
 상세 구조는 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), 에이전트 배치는 [docs/AGENT.md](docs/AGENT.md)에 있습니다.
 
-## 04 / Built with NVIDIA
+## NVIDIA 기술 활용
 
 | 기술 | 어디에 | 비고 |
 | --- | --- | --- |
@@ -111,7 +99,7 @@ Project-FlyGate는 **NVIDIA 스킬 위에 구성한 에이전트 워크플로**�
 
 비자기회귀 판단 모델로는 TypeSafe AI의 Jev를 FlyVigilance 안에서 씁니다.
 
-### 전문가 검토 반영
+## 전문가 검토 반영
 
 현업 약사의 검토 의견 15개를 반영했습니다. 주요 항목은 다음과 같습니다([전체 내역](docs/PHARMACIST_REVIEW.md)).
 - 통계 기준을 넘은 상태를 **SDR**(불균형 보고 신호)로 부르고, 한 글자 등급 대신 **PV 분류**(라벨 상태 × SDR)와 검토 우선순위를 앞에 둡니다.
@@ -121,14 +109,7 @@ Project-FlyGate는 **NVIDIA 스킬 위에 구성한 에이전트 워크플로**�
 - **국내 15일 규칙**은 중대한 약물이상반응(인과관계 배제 불가)을 기준으로 적용합니다.
 - 주 측정은 **결과 코드를 가린 조건**으로 합니다.
 
-## 05 / Inside the workbench
-
-<table>
-<tr><td width="50%"><strong>01 / FlyDiscovery</strong><br><sub>구조·결합·친화도와 주장 검증</sub></td><td width="50%"><strong>02 / FlyVigilance</strong><br><sub>이상사례·검토 경로와 안전성 근거</sub></td></tr>
-<tr><td><a href="docs/images/flydiscovery-workbench_v2.0.0.png"><img src="docs/images/flydiscovery-workbench_v2.0.0.png" width="100%" alt="실제 FlyDiscovery 탐색 워크벤치"></a></td><td><a href="docs/images/flyvigilance-workbench_v2.0.0.png"><img src="docs/images/flyvigilance-workbench_v2.0.0.png" width="100%" alt="실제 FlyVigilance 관제 화면"></a></td></tr>
-</table>
-
-<sub>라이브 데모의 실제 화면입니다. 이미지를 클릭하면 원본 크기로 볼 수 있습니다.</sub>
+## 대시보드
 
 | 화면 | 내용 |
 | --- | --- |
@@ -142,31 +123,7 @@ Project-FlyGate는 **NVIDIA 스킬 위에 구성한 에이전트 워크플로**�
 
 MaleCNS 초파리 커넥텀(뉴런 49,244개) 화면은 에이전트의 라우팅 위상을 시각화한 것입니다.
 
-## 06 / Meet the team
-
-면역학, 바이오 데이터, 의료영상 AI, 약학, 에이전트 개발의 관점을 하나의 검토 흐름으로 연결합니다.
-
-<table>
-<tr>
-<td align="center" width="20%"><a href="https://github.com/kakyungkim"><img src="https://avatars.githubusercontent.com/u/84395053?v=4" width="88" alt="Ka-Kyung Kim"><br><strong>김가경</strong><br>Ka-Kyung Kim</a><br><sub>TEAM COORDINATION<br>PV EVIDENCE</sub></td>
-<td align="center" width="20%"><a href="https://github.com/AwesomeZun"><img src="https://avatars.githubusercontent.com/u/55944204?v=4" width="88" alt="Seong-Jun Kang"><br><strong>강성준</strong><br>Seong-Jun Kang</a><br><sub>INTEGRATION<br>FLYVIGILANCE</sub></td>
-<td align="center" width="20%"><a href="https://github.com/Geongyu"><img src="https://avatars.githubusercontent.com/u/37532168?v=4" width="88" alt="Geon-Gyu LEE"><br><strong>이건규</strong><br>Geon-Gyu LEE</a><br><sub>FLYDISCOVERY<br>AI & INTERFACE</sub></td>
-<td align="center" width="20%"><a href="https://github.com/ybaeus"><img src="https://avatars.githubusercontent.com/u/47170687?v=4" width="88" alt="Yeji Bae"><br><strong>배예지</strong><br>Yeji Bae</a><br><sub>AGENT WORKFLOWS<br>PV EXTENSION</sub></td>
-<td align="center" width="20%"><a href="https://github.com/YMYDGenie"><img src="https://avatars.githubusercontent.com/u/133306595?v=4" width="88" alt="Eunjin Jeon"><br><strong>전은진</strong><br>Eunjin Jeon</a><br><sub>PHARMACY<br>DOMAIN REVIEW</sub></td>
-</tr>
-</table>
-
-| Member | Background | Contribution to FlyGate |
-| :--- | :--- | :--- |
-| **김가경** · [@kakyungkim](https://github.com/kakyungkim) | 바이오 데이터 분석 · 혈중 암세포 및 신약개발 바이오마커 분석 경험 | FlyVigilance 개발 · 팀 조율과 제출 기획 · 약물감시 근거 설계 · 보고서 양식 매핑과 근거 등급 규칙 |
-| **강성준** <sup><a href="https://kangseongjun.com" title="강성준 개인 웹사이트">↗</a></sup> · [@AwesomeZun](https://github.com/AwesomeZun) | 단일세포·공간오믹스 · 신약 후보 평가 · 『AI 신약개발 실전가이드』 출간 | FlyVigilance, FlyDiscovery 개발 · 데이터·평가 파이프라인 · 두 모듈 통합과 시각화 · FDDD 개발 ([https://github.com/AwesomeZun/FDDD](https://github.com/AwesomeZun/FDDD)) |
-| **이건규** · [@Geongyu](https://github.com/Geongyu) | AI researcher · 병리·영상의학 및 오믹스를 결합한 예후·약물 반응 예측 | FlyDiscovery 개발 · 탐색 워크벤치와 사용자 인터페이스 개선 |
-| **배예지** · [@ybaeus](https://github.com/ybaeus) | 병원 데이터 사이언티스트 · 멀티오믹스·공간·이미지 데이터 | FlyVigilance 개발 · Jev 기반 약물감시 확장 · 문헌 검토 흐름 설계 · 약사 피드백 반영 |
-| **전은진** · [@YMYDGenie](https://github.com/YMYDGenie) | 약사 · 약사를 위한 AI 제품 개발 | FlyVigilance 개발 · 약학 관점의 요구사항 검토 · 이상사례·국내 보고 사례 조사 · 워크플로 자문 |
-
-## 07 / Build & run
-
-### flygate CLI
+## flygate CLI
 
 에이전트가 쓰는 도구와 사람이 쓰는 명령이 같습니다. 모든 명령은 근거 ID(`evidence_ids`)가 붙은 JSON을 출력합니다.
 
@@ -186,7 +143,7 @@ flygate watch                             # 하트비트 · cron 점검 (제출�
 
 OpenShell 샌드박스 배포는 `agent/deploy_nemoclaw.sh worker|assistant`, 점검은 `agent/openshell_smoke.sh`로 합니다([docs/AGENT.md](docs/AGENT.md)).
 
-### 로컬 실행과 검증
+## 실행
 
 ```bash
 # 데이터: 빌드된 FAERS 웨어하우스(DuckDB)를 릴리스에서 받습니다 (zstd 필요)
@@ -212,7 +169,7 @@ FV_CACHE_DIR=data/cache/api .venv/bin/python pipeline/bench/ablation.py
 
 처음부터 재현하는 절차(FAERS 55개 분기 적재, 참조 세트, 구형 AERS)는 [docs/EVALUATION.md](docs/EVALUATION.md)의 각 절 끝에 있습니다.
 
-### 저장소 구조
+## 저장소 구조
 
 | 경로 | 내용 |
 | --- | --- |
@@ -224,7 +181,7 @@ FV_CACHE_DIR=data/cache/api .venv/bin/python pipeline/bench/ablation.py
 | `web/` | 라이브 대시보드(React + Vite) |
 | `docs/` | 평가 보고서, 아키텍처, 에이전트 구성, 약사 검토 반영 |
 
-## 08 / Sources & license
+## 출처와 라이선스
 
 - **FDA FAERS / AERS** 공개 분기 데이터. 자발 보고는 인과관계를 증명하지 않습니다.
 - **openFDA**, **DailyMed**, **PubMed E-utilities**, **RCSB PDB**, **ChEMBL**
@@ -234,7 +191,3 @@ FV_CACHE_DIR=data/cache/api .venv/bin/python pipeline/bench/ablation.py
 - **팀 선행 저장소**: [kakyungkim/korea-agentic-hackathon-2026](https://github.com/kakyungkim/korea-agentic-hackathon-2026)
 
 코드는 Apache-2.0입니다.
-
----
-
-<p align="center"><strong>FlyDiscovery + FlyVigilance = FlyGate</strong><br><sub>Evidence before inference.</sub></p>
