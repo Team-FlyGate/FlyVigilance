@@ -1,6 +1,7 @@
 // STEP 1 FlyDiscovery: 라이브 NIM 호출과 단계 사이에 결과를 넘기는 작은 공용 저장소입니다.
 // 모든 실행은 /api/discovery/* 를 거쳐 NVIDIA BioNeMo NIM 을 실제로 부릅니다.
 import { useSyncExternalStore } from 'react'
+import { isEn, t } from './i18n'
 
 export type StepKind = 'msa' | 'openfold3' | 'diffdock' | 'boltz2'
 export interface Skill { name: string; repo: string; url: string; step: string }
@@ -273,14 +274,89 @@ export function plddtColor(v: number): string {
   return '#ff5d6c'
 }
 
-export const REWARD_NOTE =
-  '커넥텀 반응은 결합력 측정값을 초파리 보상 회로 자극으로 옮긴 시각화이며 생물학적 효능 주장이 아닙니다.'
+// 언어에 따라 바뀌므로 렌더할 때 부르는 함수로 둡니다.
+export const rewardNote = () => t(
+  '커넥텀 반응은 결합력 측정값을 초파리 보상 회로 자극으로 옮긴 시각화이며 생물학적 효능 주장이 아닙니다.',
+  'The connectome response is a visualization that maps measured binding strength onto stimulation of the fruit-fly reward circuit; it is not a claim of biological efficacy.')
 
 export const fmtS = (s: number | null | undefined) =>
-  s === null || s === undefined ? '–' : s >= 60 ? `${Math.floor(s / 60)}분 ${Math.round(s % 60)}초` : `${s.toFixed(1)}초`
+  s === null || s === undefined ? '–' : s >= 60 ? t(`${Math.floor(s / 60)}분 ${Math.round(s % 60)}초`, `${Math.floor(s / 60)} min ${Math.round(s % 60)} s`) : t(`${s.toFixed(1)}초`, `${s.toFixed(1)} s`)
 
+// text 는 읽을 때마다 지금 언어로 계산되도록 getter 로 둡니다.
 export const SOURCE_LABEL: Record<string, { text: string; cls: string }> = {
-  live: { text: '라이브 호출', cls: 'ok' },
-  cache: { text: '라이브 결과 캐시', cls: 'ok' },
-  measured: { text: '지난 측정으로 대체', cls: 'warn' },
+  live: { get text() { return t('라이브 호출', 'Live call') }, cls: 'ok' },
+  cache: { get text() { return t('라이브 결과 캐시', 'Cached live result') }, cls: 'ok' },
+  measured: { get text() { return t('지난 측정으로 대체', 'Fell back to a previous measurement') }, cls: 'warn' },
+}
+
+// ---------------------------------------------------------------- 데이터 문구 영어 대응표
+// fly_discovery/measurements/*.json 에 한국어로 적힌 짧은 문구(재도킹 메모, 크리틱 평가 주장)를 영어 화면에서 바꿔 보여 줍니다.
+// 데이터 파일은 고치지 않고, 표에 없는 문구는 원문 그대로 둡니다.
+const DATA_EN: Record<string, string> = {
+  '케이스 스터디 데모 약물': 'Case-study demo drug',
+  '공유결합 억제제. DiffDock 은 비공유 결합만 모사하므로 참고용이다': 'Covalent inhibitor. DiffDock models only non-covalent binding, so this result is for reference only',
+  '니라파립과 같은 PARP 억제제': 'A PARP inhibitor, like niraparib',
+  'cryo-EM 구조': 'Cryo-EM structure',
+  '케이스 스터디의 대조 약물과 같은 구조': 'Same structure as the case study’s comparator drug',
+  '보조인자 NADPH 는 수용체에 넣지 않았다 (ATOM 만 사용)': 'The NADPH cofactor was not included in the receptor (ATOM records only)',
+  'PARP1 Vina 순위는 15R > pamiparib > niraparib > rucaparib이다.': 'The PARP1 Vina ranking is 15R > pamiparib > niraparib > rucaparib.',
+  'DiffDock이 니라파립을 4R6E 공결정 위치에 RMSD 0.71A로 재현했다.': 'DiffDock reproduced niraparib’s 4R6E co-crystal position with an RMSD of 0.71 Å.',
+  'ChEMBL 실측 중앙값은 pamiparib 8.89 > rucaparib 8.70 > niraparib 7.79이다.': 'The ChEMBL measured medians are pamiparib 8.89 > rucaparib 8.70 > niraparib 7.79.',
+  'Boltz-2는 니라파립@PARP1 pIC50 8.909를 예측했고 ChEMBL 실측 중앙값은 7.79이다.': 'Boltz-2 predicted pIC50 8.909 for niraparib@PARP1, and the ChEMBL measured median is 7.79.',
+  '니라파립은 PARP1 -10.178, Xa -7.967이므로 PARP1에 선택적이다.': 'Niraparib scores PARP1 −10.178 and Xa −7.967, so it is selective for PARP1.',
+  'DiffDock 신뢰도 1.10인 pamiparib이 rucaparib보다 친화도가 높다.': 'Pamiparib, with a DiffDock confidence of 1.10, has higher affinity than rucaparib.',
+  'Boltz-2 예측 pIC50 8.909는 니라파립의 측정된 PARP1 친화도이다.': 'The Boltz-2 predicted pIC50 of 8.909 is niraparib’s measured PARP1 affinity.',
+  'PARP1 3종의 Boltz-2와 실측 Spearman이 -1.0이므로 Boltz-2는 실측과 역상관한다.': 'Because the Spearman correlation between Boltz-2 and measurements across three PARP1 inhibitors is −1.0, Boltz-2 is inversely correlated with measurement.',
+}
+/** 데이터에 담긴 한국어 문구를 지금 언어에 맞춰 돌려줍니다. 표에 없으면 원문을 그대로 돌려줍니다. */
+export const dataText = (s: string | null | undefined): string => (s ? t(s, DATA_EN[s.trim()] ?? s) : s ?? '')
+
+// 라이브 크리틱 서버(api/_fv/discovery.py)가 실행 결과로 만드는 한국어 주장 문장을 영어 화면에서 바꿔 보여 줍니다.
+// 숫자와 이름은 문장에서 그대로 떼어 옮기고, 틀에 맞지 않는 문장(직접 넣은 주장 등)은 원문을 그대로 둡니다.
+const CLAIM_EN: [RegExp, (...m: string[]) => string][] = [
+  [/^MSA-Search 가 (.+) 에서 상동 서열 (\S+)개를 찾아 OpenFold3 입력으로 썼습니다\.$/, (db, n) => `MSA-Search found ${n} homologous sequences in ${db} and passed them to OpenFold3 as input.`],
+  [/^OpenFold3 예측 구조는 결정 구조 대비 CA RMSD (\S+) Å 로 맞았고 pLDDT 는 (\S+) 입니다\.$/, (r, p) => `The OpenFold3 predicted structure matched the crystal structure with a Cα RMSD of ${r} Å, and its pLDDT is ${p}.`],
+  [/^pLDDT (\S+) 이므로 이 리간드는 강하게 결합합니다\.$/, (p) => `Because pLDDT is ${p}, this ligand binds strongly.`],
+  [/^DiffDock 이 공결정 리간드를 RMSD (\S+) Å 로 재현해 도킹 설정이 작동함을 확인했습니다\.$/, (r) => `DiffDock reproduced the co-crystal ligand with an RMSD of ${r} Å, confirming that the docking setup works.`],
+  [/^DiffDock 신뢰도 (\S+) 이므로 이 화합물의 친화도가 더 높습니다\.$/, (c) => `Because the DiffDock confidence is ${c}, this compound has higher affinity.`],
+  [/^Boltz-2 는 pIC50 (\S+) 를 예측했고 ChEMBL 실측 중앙값은 (\S+) 입니다\.$/, (p, m) => `Boltz-2 predicted a pIC50 of ${p}, and the ChEMBL measured median is ${m}.`],
+  [/^Boltz-2 예측 pIC50 (\S+) 는 이 화합물의 측정된 친화도입니다\.$/, (p) => `The Boltz-2 predicted pIC50 of ${p} is this compound's measured affinity.`],
+  [/^니라파립은 PARP1 (\S+), Factor Xa (\S+) 이므로 PARP1 에 선택적입니다\.$/, (a, b) => `Niraparib scores PARP1 ${a} and Factor Xa ${b}, so it is selective for PARP1.`],
+  [/^아직 실행 결과가 없습니다\.$/, () => 'No run results yet.'],
+]
+/** 크리틱 주장 문장을 지금 언어로 돌려줍니다. */
+export function claimText(s: string): string {
+  if (!isEn()) return s
+  const x = s.trim()
+  for (const [re, f] of CLAIM_EN) { const m = x.match(re); if (m) return f(...m.slice(1)) }
+  return DATA_EN[x] ?? s
+}
+
+// 카탈로그(api/_data/discovery.json.gz)의 한국어 표적 설명 · 리간드 이름을 영어 화면에서 바꿉니다.
+const TARGET_DESC_EN: Record<string, string> = {
+  parp1: 'PARP1 catalytic domain · 4R6E chain A',
+  xa: 'Coagulation factor Xa · 2P16',
+  cox2: 'COX-2 · 3LN1 (mouse protein)',
+}
+export const targetDesc = (key: string, desc: string | undefined): string => t(desc ?? '', TARGET_DESC_EN[key] ?? desc ?? '')
+/** 리간드 표시 이름: 한국어 화면은 카탈로그의 한국어 이름, 영어 화면은 키에서 만든 영문 이름입니다. */
+export function ligandName(key: string, ko?: string | null): string {
+  if (!isEn()) return ko ?? key
+  if (key === '15r') return '15R (PARP1 co-crystal ligand)'
+  return key.charAt(0).toUpperCase() + key.slice(1)
+}
+// 단백질 검색 서버(api/_fv/bio_search.py)가 돌려주는 구간 이름 · 점검 사유 문장을 옮깁니다.
+const BIO_EN: [RegExp, (...m: string[]) => string][] = [
+  [/^전체 서열$/, () => 'Full sequence'],
+  [/^(\S+) 체인 (\S+) 구간$/, (pdb, ch) => `${pdb} chain ${ch} region`],
+  [/^서열이 비어 있습니다\.$/, () => 'The sequence is empty.'],
+  [/^아미노산이 아닌 문자가 있습니다\.$/, () => 'The sequence contains characters that are not amino acids.'],
+  [/^(\d+)잔기입니다\. MSA-Search 와 Boltz-2 의 상한이 (\d+)잔기이므로 도메인 구간을 골라 주세요\.$/, (n, mx) => `${n} residues. MSA-Search and Boltz-2 accept up to ${mx} residues, so please pick a domain region.`],
+  [/^(\d+)잔기입니다\. OpenFold3 는 약 (\d+)잔기를 넘으면 80 GB GPU 가 필요해 호스팅 경로에서 실패할 수 있습니다\.?$/, (n, mx) => `${n} residues. Beyond about ${mx} residues OpenFold3 needs an 80 GB GPU and may fail on the hosted endpoint.`],
+]
+export function bioText(s: string | null | undefined): string {
+  if (!s) return ''
+  if (!isEn()) return s
+  for (const [re, f] of BIO_EN) { const m = s.trim().match(re); if (m) return f(...m.slice(1)) }
+  return s
 }

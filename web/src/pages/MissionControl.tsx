@@ -5,13 +5,16 @@ import { useBrain } from '../lib/brain'
 import { CHANNEL_COLOR, LAYER_COLOR, fmt, getJSON } from '../lib/data'
 import type { Overview, Bench } from '../lib/types'
 import Term from '../components/Term'
+import { t } from '../lib/i18n'
 
-const ACTION_META: Record<string, { label: string; color: string; layers: string[] }> = {
-  close: { label: '종결', color: '#6c7aa8', layers: ['reflex'] },
-  monitor: { label: '모니터링', color: '#37e6ff', layers: ['reflex', 'memory'] },
-  signal_review: { label: '신호 검토 → System-2', color: '#76b900', layers: ['reflex', 'memory', 'deliberate', 'critic'] },
-  expedite: { label: '신속보고 → 사람', color: '#ff5d6c', layers: ['reflex', 'memory', 'deliberate', 'critic', 'action'] },
-  follow_up: { label: '추가정보 요청', color: '#a58bff', layers: ['encode'] },
+// label 은 getter 라서 읽는 시점의 언어로 문구가 나옵니다(다른 페이지도 이 표를 가져다 씁니다).
+const meta = (ko: string, en: string, color: string, layers: string[]) => ({ get label() { return t(ko, en) }, color, layers })
+const ACTION_META: Record<string, { readonly label: string; color: string; layers: string[] }> = {
+  close: meta('종결', 'Close', '#6c7aa8', ['reflex']),
+  monitor: meta('모니터링', 'Monitor', '#37e6ff', ['reflex', 'memory']),
+  signal_review: meta('신호 검토 → System-2', 'Signal review → System-2', '#76b900', ['reflex', 'memory', 'deliberate', 'critic']),
+  expedite: meta('신속보고 → 사람', 'Expedite → human', '#ff5d6c', ['reflex', 'memory', 'deliberate', 'critic', 'action']),
+  follow_up: meta('추가정보 요청', 'Request follow-up', '#a58bff', ['encode']),
 }
 export { ACTION_META }
 
@@ -42,13 +45,13 @@ export interface StreamRow {
   serious_p: number; latency_ms: number; suspect: string; reactions: string[]
 }
 interface StreamData { summary: { n: number; serious: number; serious_reviewed: number; actions: Record<string, number> }; rows: StreamRow[] }
-const BUCKET_KO: Record<string, string> = { death: '사망', serious: '중대', nonserious: '비중대', pediatric: '소아' }
-const OUTCOME_KO: Record<string, string> = { DE: '사망', LT: '생명 위협', HO: '입원', DS: '장애', CA: '선천 기형', RI: '중재 필요', OT: '기타 중대' }
+const bucketName = (b: string) => (({ death: t('사망', 'Death'), serious: t('중대', 'Serious'), nonserious: t('비중대', 'Non-serious'), pediatric: t('소아', 'Pediatric') }) as Record<string, string>)[b] ?? b
+const outcomeName = (o: string) => (({ DE: t('사망', 'death'), LT: t('생명 위협', 'life-threatening'), HO: t('입원', 'hospitalization'), DS: t('장애', 'disability'), CA: t('선천 기형', 'congenital anomaly'), RI: t('중재 필요', 'required intervention'), OT: t('기타 중대', 'other serious') }) as Record<string, string>)[o] ?? o
 const REVIEWED = new Set(['expedite', 'signal_review', 'follow_up'])
 function verdict(r: StreamRow) {
-  if (r.serious_truth) return REVIEWED.has(r.action) ? { t: '중대 → 검토', c: 'var(--ok)', ok: true } : { t: '중대 → 자동 큐', c: 'var(--bad)', ok: false }
-  if (r.action === 'expedite') return { t: '비중대 → 사람 우선', c: 'var(--warn)', ok: false }
-  return { t: '비중대 → 사람 우선 아님', c: 'var(--ok)', ok: true }
+  if (r.serious_truth) return REVIEWED.has(r.action) ? { t: t('중대 → 검토', 'Serious → reviewed'), c: 'var(--ok)', ok: true } : { t: t('중대 → 자동 큐', 'Serious → auto queue'), c: 'var(--bad)', ok: false }
+  if (r.action === 'expedite') return { t: t('비중대 → 사람 우선', 'Non-serious → human first'), c: 'var(--warn)', ok: false }
+  return { t: t('비중대 → 사람 우선 아님', 'Non-serious → not escalated'), c: 'var(--ok)', ok: true }
 }
 
 function Stream({ data }: { data: StreamData }) {
@@ -87,12 +90,13 @@ function Stream({ data }: { data: StreamData }) {
         ))}
       </div>
       <div className="mono dim" style={{ fontSize: 10.5 }}>
-        재생 {played.length}/{rows.length}건 · 중대 {tally.ser}건 중 검토 도달 {tally.serRev} · 비중대를 사람 우선으로 {tally.nonExp}건
+        {t(<>재생 {played.length}/{rows.length}건 · 중대 {tally.ser}건 중 검토 도달 {tally.serRev} · 비중대를 사람 우선으로 {tally.nonExp}건</>,
+          <>Replayed {played.length}/{rows.length} · {tally.serRev} of {tally.ser} serious cases reached review · {tally.nonExp} non-serious escalated to a human</>)}
       </div>
       {feed.map((e, k) => {
         const m = ACTION_META[e.action] ?? ACTION_META.monitor
         const v = verdict(e)
-        const oc = e.outcomes.map((o) => OUTCOME_KO[o] ?? o).join(' · ')
+        const oc = e.outcomes.map(outcomeName).join(' · ')
         return (
           <div key={`${e.primaryid}-${played.length - k}`} className={k === 0 ? 'fade-in' : ''} style={{
             display: 'grid', gridTemplateColumns: '1fr auto', gap: 10, padding: '9px 12px', borderRadius: 11,
@@ -101,8 +105,8 @@ function Stream({ data }: { data: StreamData }) {
           }}>
             <div style={{ minWidth: 0, overflow: 'hidden' }}>
               <div className="row" style={{ gap: 8, minWidth: 0 }}>
-                <span className="chip" style={{ fontSize: 9.5, flex: 'none', color: e.serious_truth ? '#ff9ca6' : 'var(--text-2)' }} title={oc ? `FAERS 결과 코드: ${oc}` : 'FAERS 결과 코드 없음'}>
-                  정답 · {BUCKET_KO[e.bucket] ?? e.bucket}{oc ? ` (${oc})` : ''}
+                <span className="chip" style={{ fontSize: 9.5, flex: 'none', color: e.serious_truth ? '#ff9ca6' : 'var(--text-2)' }} title={oc ? t(`FAERS 결과 코드: ${oc}`, `FAERS outcome codes: ${oc}`) : t('FAERS 결과 코드 없음', 'No FAERS outcome code')}>
+                  {t('정답', 'Truth')} · {bucketName(e.bucket)}{oc ? ` (${oc})` : ''}
                 </span>
                 <b style={{ fontSize: 12.5, fontFamily: 'var(--font)', minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={e.suspect}>{e.suspect}</b>
               </div>
@@ -112,7 +116,7 @@ function Stream({ data }: { data: StreamData }) {
             <div style={{ textAlign: 'right' }}>
               <span className="chip" style={{ color: m.color, borderColor: m.color + '66' }}>{m.label}</span>
               <div className="mono" style={{ fontSize: 10, marginTop: 3, color: v.c }}>{v.ok ? '✓' : '!'} {v.t}</div>
-              <div className="mono dim" style={{ fontSize: 10 }}>중대성 p {e.serious_p.toFixed(2)}{e.latency_ms ? ` · ${e.latency_ms} ms` : ''}</div>
+              <div className="mono dim" style={{ fontSize: 10 }}>{t('중대성', 'Seriousness')} p {e.serious_p.toFixed(2)}{e.latency_ms ? ` · ${e.latency_ms} ms` : ''}</div>
             </div>
           </div>
         )
@@ -156,14 +160,18 @@ export default function MissionControl() {
   return (
     <div className="page">
       <PageHead eyebrow="Project-FlyGate · STEP 2 FlyVigilance · Mission Control"
-        title={<>초파리 <Term k="connectome">커넥텀</Term>으로 라우팅되는 <span style={{ color: 'var(--c-sense)' }}><Term k="PV">약물감시</Term> 에이전트</span></>}
-        lede={<>분기마다 40만 건이 넘는 <Term k="FAERS" ko /> 이상사례가 들어옵니다. FlyVigilance는 <b style={{ color: 'var(--nvidia)' }}>NVIDIA 스킬</b>(build.nvidia.com <Term k="NIM" /> · <Term k="AgentSkills" /> · <Term k="NemoClaw" />/<Term k="OpenShell" />/<Term k="OpenClaw" />) 위에 짠 약물감시 워크플로입니다.
+        title={t(<>초파리 <Term k="connectome">커넥텀</Term>으로 라우팅되는 <span style={{ color: 'var(--c-sense)' }}><Term k="PV">약물감시</Term> 에이전트</span></>,
+          <>A <span style={{ color: 'var(--c-sense)' }}><Term k="PV">pharmacovigilance</Term> agent</span> routed through the fruit-fly <Term k="connectome" /></>)}
+        lede={t(<>분기마다 40만 건이 넘는 <Term k="FAERS" ko /> 이상사례가 들어옵니다. FlyVigilance는 <b style={{ color: 'var(--nvidia)' }}>NVIDIA 스킬</b>(build.nvidia.com <Term k="NIM" /> · <Term k="AgentSkills" /> · <Term k="NemoClaw" />/<Term k="OpenShell" />/<Term k="OpenClaw" />) 위에 짠 약물감시 워크플로입니다.
           초파리 뇌가 감각 입력을 반사, 기억, 숙고, 행동으로 나누듯, 모든 케이스를 규칙·라벨 근거·결정 정책으로 된 반사 층에서 수백 밀리초 안에 판단하고
-          꼭 필요한 케이스만 <b style={{ color: 'var(--nvidia)' }}>NVIDIA <Term k="Nemotron" /> <Term k="System2" /></b>(숙고 단계)와 사람에게 올립니다. <Term k="reflex">반사 층</Term>의 확률 판단에는 <b style={{ color: 'var(--jev)' }}><Term k="NAR">비자기회귀 판단 모델</Term>(<Term k="Jev" />, TypeSafe AI)</b>을 함께 씁니다.</>}
+          꼭 필요한 케이스만 <b style={{ color: 'var(--nvidia)' }}>NVIDIA <Term k="Nemotron" /> <Term k="System2" /></b>(숙고 단계)와 사람에게 올립니다. <Term k="reflex">반사 층</Term>의 확률 판단에는 <b style={{ color: 'var(--jev)' }}><Term k="NAR">비자기회귀 판단 모델</Term>(<Term k="Jev" />, TypeSafe AI)</b>을 함께 씁니다.</>,
+          <>More than 400,000 adverse-event reports arrive in the <Term k="FAERS">FDA Adverse Event Reporting System (FAERS)</Term> every quarter. FlyVigilance is a pharmacovigilance workflow for marketed drugs, built on <b style={{ color: 'var(--nvidia)' }}>NVIDIA Skills</b> (build.nvidia.com <Term k="NIM">NVIDIA Inference Microservices (NIM)</Term> · <Term k="AgentSkills" /> · <Term k="NemoClaw" />/<Term k="OpenShell" />/<Term k="OpenClaw" />).
+          Just as a fly brain splits sensory input into reflex, memory, deliberation and action, every case is judged within a few hundred milliseconds by a reflex layer made of rules, label evidence and a decision policy,
+          and only the cases that truly need it are escalated to <b style={{ color: 'var(--nvidia)' }}>NVIDIA <Term k="Nemotron" /> <Term k="System2" /></b> (the deliberation stage) and to a human. The <Term k="reflex">reflex layer</Term> makes its probability judgments with a <b style={{ color: 'var(--jev)' }}><Term k="NAR">non-autoregressive judgment model</Term> (<Term k="Jev" />, TypeSafe AI)</b>.</>)}
         right={<div className="row wrap" style={{ justifyContent: 'flex-end', maxWidth: 380 }}>
           <span className="chip nv">NVIDIA NIM · Nemotron 3</span><span className="chip nv">NVIDIA Agent Skills</span>
           <span className="chip nv">NemoClaw · OpenShell · OpenClaw</span>
-          <span className="chip jev">비자기회귀 판단 모델 · Jev (TypeSafe AI)</span>
+          <span className="chip jev">{t('비자기회귀 판단 모델 · Jev (TypeSafe AI)', 'Non-autoregressive judgment model · Jev (TypeSafe AI)')}</span>
           <span className="chip"><Term k="MaleCNS">MaleCNS v1.0</Term> · Janelia FlyEM</span><span className="chip">openFDA · DailyMed · PubMed</span>
         </div>} />
 
@@ -199,7 +207,8 @@ export default function MissionControl() {
         </Card>
 
         <div className="stack" style={{ gap: 16 }}>
-          <Card title="Reflex Stream" sub={<>FAERS 2026Q2 실제 사례 440건을 층이 번갈아 나오게 재생합니다. 판단 입력에서는 <Term k="outcome">결과 코드</Term>(사망 · 입원 같은 결과 표시)를 가렸고, 왼쪽 태그가 정답(결과 코드)입니다</>}
+          <Card title="Reflex Stream" sub={t(<>FAERS 2026Q2 실제 사례 440건을 층이 번갈아 나오게 재생합니다. 판단 입력에서는 <Term k="outcome">결과 코드</Term>(사망 · 입원 같은 결과 표시)를 가렸고, 왼쪽 태그가 정답(결과 코드)입니다</>,
+              <>Replays 440 real FAERS 2026Q2 cases, alternating between strata. The <Term k="outcome">outcome codes</Term> (flags such as death or hospitalization) are hidden from the model input; the tag on the left shows the ground truth (outcome codes)</>)}
             right={<span className="chip jev"><span className="dot on pulse" style={{ background: 'var(--jev)' }} />live replay</span>}>
             {stream ? <Stream data={stream} /> : <div className="shimmer" style={{ height: 300 }} />}
           </Card>
@@ -207,18 +216,18 @@ export default function MissionControl() {
       </div>
 
       <div className="grid g4" style={{ marginBottom: 16 }}>
-        <Kpi label={<><Term k="FAERS" /> reports ingested</>} hint="FAERS에서 적재한 원천 보고 수" value={ov?.raw_reports ?? 0} color="var(--c-sense)"
+        <Kpi label={<><Term k="FAERS" /> reports ingested</>} hint={t('FAERS에서 적재한 원천 보고 수', 'Raw reports loaded from FAERS')} value={ov?.raw_reports ?? 0} color="var(--c-sense)"
           sub={ov ? `${ov.first} – ${ov.asof} · ${ov.quarters} quarters` : '…'} />
-        <Kpi label={<>Unique cases after <Term k="caseid">dedupe</Term></>} hint="같은 사례의 옛 버전과 FDA 삭제분을 뺀 고유 사례 수" value={ov?.cases ?? 0} color="var(--c-encode)"
+        <Kpi label={<>Unique cases after <Term k="caseid">dedupe</Term></>} hint={t('같은 사례의 옛 버전과 FDA 삭제분을 뺀 고유 사례 수', 'Unique cases after removing older versions of the same case and FDA deletions')} value={ov?.cases ?? 0} color="var(--c-encode)"
           sub={ov ? `${fmt.int(ov.raw_reports - ov.cases)} versions & deletions removed` : '…'} />
-        <Kpi label={<><Term k="SDR">SDRs</Term> · <Term k="evans">Evans</Term> ∧ <Term k="ROR" /> ∧ <Term k="IC025">IC025</Term></>} hint="불균형 보고 신호: 세 통계 기준을 모두 넘은 약물–반응 쌍" value={ov?.all3 ?? 0} color="var(--c-memory)"
+        <Kpi label={<><Term k="SDR">SDRs</Term> · <Term k="evans">Evans</Term> ∧ <Term k="ROR" /> ∧ <Term k="IC025">IC025</Term></>} hint={t('불균형 보고 신호: 세 통계 기준을 모두 넘은 약물–반응 쌍', 'Signals of disproportionate reporting: drug–event pairs that pass all three statistical thresholds')} value={ov?.all3 ?? 0} color="var(--c-memory)"
           sub={ov ? `of ${fmt.int(ov.pairs)} drug–event pairs (a ≥ 3) · SDR ≠ validated signal` : '…'} />
-        <Kpi label={<>FlyVigilance <Term k="reflex">reflex</Term> <Term k="pct">p50</Term></>} hint="보고 한 건을 1차 분류하는 데 걸린 시간의 중앙값" value={jt?.latency_ms?.p50 ?? 0} color="var(--jev)" format={(n) => `${Math.round(n)} ms`}
-          sub={jt ? `비자기회귀 판단 7문항을 1회 호출로 · 같은 7문항을 자기회귀로 생성하면 p50 ${nt ? fmt.ms(nt.p50) : '…'}` : '…'} />
+        <Kpi label={<>FlyVigilance <Term k="reflex">reflex</Term> <Term k="pct">p50</Term></>} hint={t('보고 한 건을 1차 분류하는 데 걸린 시간의 중앙값', 'Median time to triage one report')} value={jt?.latency_ms?.p50 ?? 0} color="var(--jev)" format={(n) => `${Math.round(n)} ms`}
+          sub={jt ? t(`비자기회귀 판단 7문항을 1회 호출로 · 같은 7문항을 자기회귀로 생성하면 p50 ${nt ? fmt.ms(nt.p50) : '…'}`, `7 non-autoregressive judgments in one call · generating the same 7 autoregressively: p50 ${nt ? fmt.ms(nt.p50) : '…'}`) : '…'} />
       </div>
 
       <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1.2fr) minmax(0,1fr)', gap: 16 }}>
-        <Card title="분기당 부하와 라우팅 퍼널" sub={funnel ? `${ov?.asof} 실제 케이스 ${fmt.int(funnel.cases)}건에 표본 실측 라우팅 비율을 적용한 투영치` : ''}>
+        <Card title={t('분기당 부하와 라우팅 퍼널', 'Quarterly load and routing funnel')} sub={funnel ? t(`${ov?.asof} 실제 케이스 ${fmt.int(funnel.cases)}건에 표본 실측 라우팅 비율을 적용한 투영치`, `Projection: routing rates measured on the sample, applied to ${fmt.int(funnel.cases)} real ${ov?.asof} cases`) : ''}>
           {funnel && jt ? (
             <div className="stack" style={{ gap: 12 }}>
               {Object.entries(ACTION_META).filter(([a]) => funnel.share[a]).sort((a, b) => (funnel.share[b[0]] ?? 0) - (funnel.share[a[0]] ?? 0)).map(([a, m]) => {
@@ -235,18 +244,18 @@ export default function MissionControl() {
               <div className="grid g3">
                 <div><div className="k-label mono dim" style={{ fontSize: 10.5 }}>REFLEX ONLY</div>
                   <div className="num" style={{ fontSize: 22 }}>{fmt.pct((funnel.share.close ?? 0) + (funnel.share.monitor ?? 0) + (funnel.share.follow_up ?? 0), 1)}</div>
-                  <div className="dim" style={{ fontSize: 11 }}>System-2 호출 없이 처리</div></div>
+                  <div className="dim" style={{ fontSize: 11 }}>{t('System-2 호출 없이 처리', 'Handled without calling System-2')}</div></div>
                 <div><div className="k-label mono dim" style={{ fontSize: 10.5 }}>REFLEX COST / QUARTER</div>
                   <div className="num" style={{ fontSize: 22 }}>{fmt.usd((jt.usd_per_case ?? 0) * funnel.cases)}</div>
-                  <div className="dim" style={{ fontSize: 11 }}>입력 {jt.tokens_in_mean} <Term k="token">tok</Term>/case × $0.042/M</div></div>
+                  <div className="dim" style={{ fontSize: 11 }}>{t('입력', 'Input')} {jt.tokens_in_mean} <Term k="token">tok</Term>/case × $0.042/M</div></div>
                 <div><div className="k-label mono dim" style={{ fontSize: 10.5 }}>REFLEX WALL-CLOCK</div>
                   <div className="num" style={{ fontSize: 22 }}>{(funnel.cases / jt.throughput_cases_per_s / 3600).toFixed(1)} h</div>
-                  <div className="dim" style={{ fontSize: 11 }}>동시성 {jt.concurrency}, 실측 처리량 기준</div></div>
+                  <div className="dim" style={{ fontSize: 11 }}>{t(`동시성 ${jt.concurrency}, 실측 처리량 기준`, `Concurrency ${jt.concurrency}, measured throughput`)}</div></div>
               </div>
             </div>
           ) : <div className="shimmer" style={{ height: 200 }} />}
         </Card>
-        <Card title="FAERS 분기별 보고량" sub="원천 계층 적재 행 수 (보고 버전 포함)">
+        <Card title={t('FAERS 분기별 보고량', 'FAERS reports per quarter')} sub={t('원천 계층 적재 행 수 (보고 버전 포함)', 'Rows loaded into the raw layer (including report versions)')}>
           {ov && <>
             <Spark values={perQ} height={120} />
             <div className="row between mono dim" style={{ fontSize: 10.5, marginTop: 6 }}><span>{ov.first}</span><span>{ov.asof}</span></div>

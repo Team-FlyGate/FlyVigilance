@@ -3,6 +3,7 @@ import type { RedockScene } from './DockingView'
 import { Card } from './ui'
 import Step2Handoff from './Step2Handoff'
 import { getJSON } from '../lib/data'
+import { t as tr } from '../lib/i18n'
 
 // 선택성 착시 히트맵: 약물 20 × 표적 14 의 DiffDock NIM 1순위 포즈 신뢰도.
 // 값은 미리 계산 결과(dock_matrix.json, 266건)와 재도킹(redock_scenes.json, 원래 리간드 14건)을 그대로 씁니다.
@@ -68,7 +69,7 @@ export default function SelectivityMap({ scenes }: { scenes: Record<string, Redo
   }
   useEffect(() => { if (grid && !sel) setSel({ lig: 'aripiprazole', tgt: grid.ligs.length ? (lib!.targets.map((t) => t.key).sort((a, b) => (grid.conf('aripiprazole', b) ?? -99) - (grid.conf('aripiprazole', a) ?? -99))[0]) : '' }) }, [grid, sel, lib])
 
-  if (!lib || !grid) return <Card title="선택성 착시 히트맵"><div className="shimmer" style={{ height: 360 }} /></Card>
+  if (!lib || !grid) return <Card title={tr('선택성 착시 히트맵', 'Selectivity illusion heatmap')}><div className="shimmer" style={{ height: 360 }} /></Card>
   const T = lib.targets
   const ev = (lig: string, tgt: string): EvCell | null => { const g = T.find((x) => x.key === tgt)?.gene; return (g && evd?.cells[`${g}|${lig}`]) || null }
   const nStrong = evd ? T.reduce((k, t) => k + grid.ligs.filter((l) => ev(l.name, t.key)?.evidence === 'strong').length, 0) : 0
@@ -79,8 +80,9 @@ export default function SelectivityMap({ scenes }: { scenes: Record<string, Redo
   const best = s ? T.map((t) => ({ t, v: grid.conf(s.l, t.key) ?? -99 })).sort((a, b) => b.v - a.v)[0] : undefined
 
   return (
-    <Card title="선택성 착시 히트맵 · 약물 20 × 표적 14"
-      sub={`DiffDock NIM 1순위 포즈 신뢰도. ★ 는 그 약물의 원래 표적입니다. 원래 표적이 14개 중 신뢰도 단독 1위인 약물은 ${grid.top1}/${grid.natives.length}개뿐입니다${grid.coTop.length ? ` (공동 1위 ${grid.coTop.map(cap).join(', ')})` : ''}.${evd ? ` 흰 점은 ChEMBL 실측 결합 기록입니다. 실측 결합이 있는 ${nStrong}칸 중 도킹 신뢰도도 그 약물 1위였던 칸은 ${strongTop}칸입니다` : ''}`}
+    <Card title={tr('선택성 착시 히트맵 · 약물 20 × 표적 14', 'Selectivity illusion heatmap · 20 drugs × 14 targets')}
+      sub={tr(`DiffDock NIM 1순위 포즈 신뢰도. ★ 는 그 약물의 원래 표적입니다. 원래 표적이 14개 중 신뢰도 단독 1위인 약물은 ${grid.top1}/${grid.natives.length}개뿐입니다${grid.coTop.length ? ` (공동 1위 ${grid.coTop.map(cap).join(', ')})` : ''}.${evd ? ` 흰 점은 ChEMBL 실측 결합 기록입니다. 실측 결합이 있는 ${nStrong}칸 중 도킹 신뢰도도 그 약물 1위였던 칸은 ${strongTop}칸입니다` : ''}`,
+        `Top-pose confidence from DiffDock NIM (NVIDIA Inference Microservice). ★ marks each drug's known target. Only ${grid.top1} of ${grid.natives.length} drugs score their known target as the sole #1 of 14${grid.coTop.length ? ` (tied for #1: ${grid.coTop.map(cap).join(', ')})` : ''}.${evd ? ` White dots are measured binding records from ChEMBL. Of the ${nStrong} cells with measured binding, ${strongTop} were also that drug's top docking score` : ''}`)}
       right={<span className="chip bad">rule:cross-target</span>} style={{ marginBottom: 16 }}>
       <div className="grid" style={{ gridTemplateColumns: 'minmax(0, 1.6fr) minmax(300px, 1fr)', gap: 18 }}>
         <div style={{ overflowX: 'auto' }}>
@@ -94,11 +96,11 @@ export default function SelectivityMap({ scenes }: { scenes: Record<string, Redo
                 {T.map((t) => {
                   const v = grid.conf(l.name, t.key), native = t.native === l.name, on = sel?.lig === l.name && sel?.tgt === t.key
                   return (
-                    <button key={t.key} onClick={() => pick(l.name, t.key)} title={`${cap(l.name)} → ${t.gene} · 신뢰도 ${v === null ? '–' : v.toFixed(2)}${native ? ' · 원래 표적' : ''}`}
+                    <button key={t.key} onClick={() => pick(l.name, t.key)} title={`${cap(l.name)} → ${t.gene} · ${tr('신뢰도', 'confidence')} ${v === null ? '–' : v.toFixed(2)}${native ? tr(' · 원래 표적', ' · known target') : ''}`}
                       style={{ position: 'relative', height: 22, borderRadius: 4, cursor: 'pointer', padding: 0, background: color(v), fontSize: 10, color: '#fff',
                         border: on ? '2px solid var(--jev)' : native ? '1px solid rgba(255,181,71,0.85)' : '1px solid transparent' }}>
                       {native ? '★' : ''}
-                      {(() => { const e = ev(l.name, t.key); return e && <i title={`ChEMBL pChEMBL 중앙값 ${e.median} · ${e.n}건`} style={{ position: 'absolute', right: 2, top: 2, width: 6, height: 6, borderRadius: 3,
+                      {(() => { const e = ev(l.name, t.key); return e && <i title={tr(`ChEMBL pChEMBL 중앙값 ${e.median} · ${e.n}건`, `ChEMBL median pChEMBL ${e.median} · ${e.n} records`)} style={{ position: 'absolute', right: 2, top: 2, width: 6, height: 6, borderRadius: 3,
                         background: e.evidence === 'strong' ? '#f4f7ff' : 'transparent', border: '1.5px solid #f4f7ff', boxShadow: '0 0 0 1px rgba(5,9,18,0.8)' }} /> })()}
                     </button>
                   )
@@ -107,31 +109,35 @@ export default function SelectivityMap({ scenes }: { scenes: Record<string, Redo
             ))}
           </div>
           <div className="row" style={{ gap: 8, marginTop: 10, fontSize: 10.5 }}>
-            <span className="mono dim">신뢰도</span>
+            <span className="mono dim">{tr('신뢰도', 'Confidence')}</span>
             {[-3.5, -2, -0.5, 1].map((v) => <span key={v} className="row" style={{ gap: 4 }}><i style={{ display: 'inline-block', width: 14, height: 10, borderRadius: 2, background: color(v) }} /><span className="mono dim">{v}</span></span>)}
-            <span className="mono" style={{ color: 'var(--jev)', marginLeft: 8 }}>★ 원래 표적</span>
-            {evd && <><span className="row mono" style={{ gap: 4, marginLeft: 8 }}><i style={{ display: 'inline-block', width: 7, height: 7, borderRadius: 4, background: '#f4f7ff' }} />ChEMBL 실측 결합 (pChEMBL ≥ {evd.strong_pchembl})</span>
-              <span className="row mono dim" style={{ gap: 4 }}><i style={{ display: 'inline-block', width: 7, height: 7, borderRadius: 4, border: '1.5px solid #f4f7ff' }} />측정됨 · 약함</span></>}
+            <span className="mono" style={{ color: 'var(--jev)', marginLeft: 8 }}>{tr('★ 원래 표적', '★ known target')}</span>
+            {evd && <><span className="row mono" style={{ gap: 4, marginLeft: 8 }}><i style={{ display: 'inline-block', width: 7, height: 7, borderRadius: 4, background: '#f4f7ff' }} />{tr('ChEMBL 실측 결합', 'ChEMBL measured binding')} (pChEMBL ≥ {evd.strong_pchembl})</span>
+              <span className="row mono dim" style={{ gap: 4 }}><i style={{ display: 'inline-block', width: 7, height: 7, borderRadius: 4, border: '1.5px solid #f4f7ff' }} />{tr('측정됨 · 약함', 'measured · weak')}</span></>}
           </div>
         </div>
 
         {s && (
           <div className="stack fade-in" key={`${s.l}-${s.t.key}`} style={{ gap: 10 }}>
-            <div className="mono dim" style={{ fontSize: 10.5 }}>에이전트가 쓴 주장</div>
+            <div className="mono dim" style={{ fontSize: 10.5 }}>{tr('에이전트가 쓴 주장', 'Claim written by the agent')}</div>
             <div style={{ fontSize: 14.5, fontWeight: 600, lineHeight: 1.5 }}>
-              “{cap(s.l)} 은(는) 표적 14개 중 {best?.t.gene} 에서 가장 높은 DiffDock 신뢰도({best?.v.toFixed(2)})를 보였으므로 {best?.t.gene} 에 선택적이다.”
+              {tr(<>“{cap(s.l)} 은(는) 표적 14개 중 {best?.t.gene} 에서 가장 높은 DiffDock 신뢰도({best?.v.toFixed(2)})를 보였으므로 {best?.t.gene} 에 선택적이다.”</>,
+                <>“{cap(s.l)} showed its highest DiffDock confidence ({best?.v.toFixed(2)}) on {best?.t.gene} among 14 targets, so it is selective for {best?.t.gene}.”</>)}
             </div>
             <div className="stack" style={{ gap: 6 }}>
-              <div className="row between"><span style={{ fontSize: 12.5 }}>1단 · 근거 ID</span><span className="chip ok">PASS</span></div>
+              <div className="row between"><span style={{ fontSize: 12.5 }}>{tr('1단 · 근거 ID', 'Tier 1 · evidence ID')}</span><span className="chip ok">PASS</span></div>
               <div className="mono dim" style={{ fontSize: 10.5, marginTop: -4 }}>{best?.t.native === s.l ? `diffdock:redock:${best?.t.key}:pose:1` : `diffdock:matrix:${best?.t.key}|${s.l}:pose:1`}</div>
-              <div className="row between"><span style={{ fontSize: 12.5 }}>2단 · 숫자 대조</span><span className="chip ok">PASS</span></div>
-              <div className="mono dim" style={{ fontSize: 10.5, marginTop: -4 }}>원본 {best?.v.toFixed(3)} = 주장 {best?.v.toFixed(2)}</div>
-              <div className="row between"><span style={{ fontSize: 12.5 }}>3단 · 추론 검사</span><span className="chip bad">REJECT</span></div>
+              <div className="row between"><span style={{ fontSize: 12.5 }}>{tr('2단 · 숫자 대조', 'Tier 2 · number check')}</span><span className="chip ok">PASS</span></div>
+              <div className="mono dim" style={{ fontSize: 10.5, marginTop: -4 }}>{tr('원본', 'source')} {best?.v.toFixed(3)} = {tr('주장', 'claim')} {best?.v.toFixed(2)}</div>
+              <div className="row between"><span style={{ fontSize: 12.5 }}>{tr('3단 · 추론 검사', 'Tier 3 · reasoning check')}</span><span className="chip bad">REJECT</span></div>
               <div style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.55 }}>
-                DiffDock 신뢰도는 포즈가 맞을 가능성이지 결합 세기가 아니고, 서로 다른 표적의 점수는 비교할 수 없습니다.
+                {tr('DiffDock 신뢰도는 포즈가 맞을 가능성이지 결합 세기가 아니고, 서로 다른 표적의 점수는 비교할 수 없습니다.',
+                  'DiffDock confidence is the likelihood that a pose is correct, not binding strength, and scores from different targets cannot be compared.')}
                 {nativeT && (grid.rank(s.l, nativeT.key) === 1
-                  ? <> 이번에는 원래 표적 <b>{nativeT.gene}</b> 이 1위였지만, 원래 표적이 단독 1위인 약물은 {grid.top1}/{grid.natives.length}개뿐이라 맞았더라도 근거가 되지 않습니다.</>
-                  : <> 실제로 {cap(s.l)} 의 원래 표적 <b>{nativeT.gene}</b> 은 14개 중 <b style={{ color: 'var(--jev)' }}>{grid.rank(s.l, nativeT.key)}위</b>입니다.</>)}
+                  ? tr(<> 이번에는 원래 표적 <b>{nativeT.gene}</b> 이 1위였지만, 원래 표적이 단독 1위인 약물은 {grid.top1}/{grid.natives.length}개뿐이라 맞았더라도 근거가 되지 않습니다.</>,
+                    <> This time the known target <b>{nativeT.gene}</b> did rank #1, but only {grid.top1} of {grid.natives.length} drugs rank their known target as the sole #1, so a correct ranking is still not evidence.</>)
+                  : tr(<> 실제로 {cap(s.l)} 의 원래 표적 <b>{nativeT.gene}</b> 은 14개 중 <b style={{ color: 'var(--jev)' }}>{grid.rank(s.l, nativeT.key)}위</b>입니다.</>,
+                    <> In fact, {cap(s.l)}'s known target <b>{nativeT.gene}</b> ranks <b style={{ color: 'var(--jev)' }}>#{grid.rank(s.l, nativeT.key)}</b> of 14.</>))}
               </div>
             </div>
             {evd && (() => {
@@ -146,37 +152,41 @@ export default function SelectivityMap({ scenes }: { scenes: Record<string, Redo
               return (
                 <div className="stack" style={{ gap: 4 }}>
                   <div className="divider" />
-                  <div className="row between"><span className="mono" style={{ fontSize: 10.5, letterSpacing: 1.2, color: 'var(--ok)' }}>선택성 근거 표 · {cap(s.l)}</span>
-                    <span className="mono dim" style={{ fontSize: 10 }}>ChEMBL {evd.ligands[s.l]?.chembl ?? '없음'}</span></div>
+                  <div className="row between"><span className="mono" style={{ fontSize: 10.5, letterSpacing: 1.2, color: 'var(--ok)' }}>{tr('선택성 근거 표', 'Selectivity evidence')} · {cap(s.l)}</span>
+                    <span className="mono dim" style={{ fontSize: 10 }}>ChEMBL {evd.ligands[s.l]?.chembl ?? tr('없음', 'none')}</span></div>
                   <div className="mono dim" style={{ display: 'grid', gridTemplateColumns: '1fr 80px 132px 34px', gap: 6, fontSize: 9.5 }}>
-                    <span>표적</span><span>도킹 신뢰도</span><span>ChEMBL 실측</span><span>근거</span></div>
+                    <span>{tr('표적', 'Target')}</span><span>{tr('도킹 신뢰도', 'Docking conf.')}</span><span>{tr('ChEMBL 실측', 'ChEMBL measured')}</span><span>{tr('근거', 'Evidence')}</span></div>
                   {rows.slice(0, 7).map((r) => (
                     <div key={r.gene} style={{ display: 'grid', gridTemplateColumns: '1fr 80px 132px 34px', gap: 6, fontSize: 11.5, alignItems: 'center' }}>
                       <span style={{ fontWeight: r.e?.evidence === 'strong' ? 700 : 500 }}>{r.gene}</span>
-                      <span className="num dim">{r.v === null ? '–' : r.v.toFixed(2)} <span style={{ fontSize: 9.5 }}>({r.rank}위)</span></span>
+                      <span className="num dim">{r.v === null ? '–' : r.v.toFixed(2)} <span style={{ fontSize: 9.5 }}>{tr(`(${r.rank}위)`, `(#${r.rank})`)}</span></span>
                       <span className="num" style={{ color: r.e ? (r.e.evidence === 'strong' ? 'var(--text)' : 'var(--text-2)') : 'var(--text-3)' }}>
-                        {r.e ? `pChEMBL ${r.e.median} · ${r.e.n}건` : '기록 없음'}</span>
+                        {r.e ? tr(`pChEMBL ${r.e.median} · ${r.e.n}건`, `pChEMBL ${r.e.median} · ${r.e.n} rec.`) : tr('기록 없음', 'no record')}</span>
                       <span style={{ color: r.e?.evidence === 'strong' ? 'var(--ok)' : r.e ? 'var(--jev)' : 'var(--text-3)', fontSize: 11 }}>{STARS[r.e?.evidence ?? 'none']}</span>
                     </div>
                   ))}
-                  <div className="mono dim" style={{ fontSize: 9.5 }}>★★★ 실측 결합(중앙값 ≥ {evd.strong_pchembl}) · ★★ 측정됨·약함 · ★ 도킹만 있음(탐색적) · 도킹 신뢰도는 등급에 넣지 않습니다</div>
+                  <div className="mono dim" style={{ fontSize: 9.5 }}>{tr(`★★★ 실측 결합(중앙값 ≥ ${evd.strong_pchembl}) · ★★ 측정됨·약함 · ★ 도킹만 있음(탐색적) · 도킹 신뢰도는 등급에 넣지 않습니다`, `★★★ measured binding (median ≥ ${evd.strong_pchembl}) · ★★ measured, weak · ★ docking only (exploratory) · docking confidence is not part of the grade`)}</div>
                   <div style={{ marginTop: 6, padding: '8px 10px', borderRadius: 9, background: 'rgba(61,220,151,0.06)', border: '1px solid rgba(61,220,151,0.3)', fontSize: 12, lineHeight: 1.55 }}>
-                    <span className="chip ok" style={{ fontSize: 9.5, marginRight: 6 }}>허용</span>
-                    {strong.length === 0 ? <>이 표적들에는 {cap(s.l)} 의 결합을 뒷받침하는 ChEMBL 실측이 없습니다. 도킹만으로는 결합을 말할 수 없습니다.</>
-                      : strong.length === 1 ? <>ChEMBL 실측(pChEMBL 중앙값 {strong[0].e!.median}, {strong[0].e!.n}건)이 {cap(s.l)} 의 <b>{strong[0].gene}</b> 결합을 뒷받침합니다.</>
-                      : <>ChEMBL 실측이 {strong.map((r) => `${r.gene}(${r.e!.median})`).join(', ')} 결합을 모두 뒷받침합니다. 어느 쪽에 선택적인지는 같은 조건의 비교 실험이 있어야 말할 수 있습니다.</>}
+                    <span className="chip ok" style={{ fontSize: 9.5, marginRight: 6 }}>{tr('허용', 'Allowed')}</span>
+                    {strong.length === 0 ? tr(<>이 표적들에는 {cap(s.l)} 의 결합을 뒷받침하는 ChEMBL 실측이 없습니다. 도킹만으로는 결합을 말할 수 없습니다.</>,
+                        <>No ChEMBL measurement supports {cap(s.l)} binding to these targets. Docking alone cannot establish binding.</>)
+                      : strong.length === 1 ? tr(<>ChEMBL 실측(pChEMBL 중앙값 {strong[0].e!.median}, {strong[0].e!.n}건)이 {cap(s.l)} 의 <b>{strong[0].gene}</b> 결합을 뒷받침합니다.</>,
+                        <>ChEMBL measurements (median pChEMBL {strong[0].e!.median}, {strong[0].e!.n} records) support {cap(s.l)} binding to <b>{strong[0].gene}</b>.</>)
+                      : tr(<>ChEMBL 실측이 {strong.map((r) => `${r.gene}(${r.e!.median})`).join(', ')} 결합을 모두 뒷받침합니다. 어느 쪽에 선택적인지는 같은 조건의 비교 실험이 있어야 말할 수 있습니다.</>,
+                        <>ChEMBL measurements support binding to all of {strong.map((r) => `${r.gene} (${r.e!.median})`).join(', ')}. Selectivity between them requires a head-to-head experiment under the same conditions.</>)}
                   </div>
                   <div style={{ padding: '8px 10px', borderRadius: 9, background: 'rgba(255,93,108,0.05)', border: '1px solid rgba(255,93,108,0.3)', fontSize: 12, lineHeight: 1.55 }}>
-                    <span className="chip bad" style={{ fontSize: 9.5, marginRight: 6 }}>불허</span>
-                    “{best?.t.gene} 에서 도킹 신뢰도가 가장 높으므로 {best?.t.gene} 에 선택적이다” — 위 크리틱 3단 반려와 같은 이유입니다
+                    <span className="chip bad" style={{ fontSize: 9.5, marginRight: 6 }}>{tr('불허', 'Rejected')}</span>
+                    {tr(<>“{best?.t.gene} 에서 도킹 신뢰도가 가장 높으므로 {best?.t.gene} 에 선택적이다” — 위 크리틱 3단 반려와 같은 이유입니다</>,
+                      <>“Docking confidence is highest on {best?.t.gene}, so it is selective for {best?.t.gene}” — rejected for the same reason as the tier-3 critic check above</>)}
                   </div>
                 </div>
               )
             })()}
             <div className="divider" />
-            <div className="mono dim" style={{ fontSize: 10.5 }}>누른 칸</div>
-            <div style={{ fontSize: 13 }}>{cap(s.l)} → <b>{s.t.gene}</b> · PDB {s.t.pdb} · 신뢰도 <span className="num">{s.v === null ? '–' : s.v.toFixed(2)}</span> · 이 약물 안에서 {s.r}위</div>
-            <a className="btn" href={`#/d-diffdock?dock=${encodeURIComponent(`${s.t.key}|${s.l}`)}`} style={{ textDecoration: 'none', fontSize: 12.5, padding: '6px 12px', alignSelf: 'flex-start' }}>DiffDock 페이지에서 이 조합 직접 도킹해 보기 →</a>
+            <div className="mono dim" style={{ fontSize: 10.5 }}>{tr('누른 칸', 'Selected cell')}</div>
+            <div style={{ fontSize: 13 }}>{cap(s.l)} → <b>{s.t.gene}</b> · PDB {s.t.pdb} · {tr('신뢰도', 'confidence')} <span className="num">{s.v === null ? '–' : s.v.toFixed(2)}</span> · {tr(`이 약물 안에서 ${s.r}위`, `#${s.r} for this drug`)}</div>
+            <a className="btn" href={`#/d-diffdock?dock=${encodeURIComponent(`${s.t.key}|${s.l}`)}`} style={{ textDecoration: 'none', fontSize: 12.5, padding: '6px 12px', alignSelf: 'flex-start' }}>{tr('DiffDock 페이지에서 이 조합 직접 도킹해 보기 →', 'Dock this pair yourself on the DiffDock page →')}</a>
             <Step2Handoff drug={s.l} />
           </div>
         )}

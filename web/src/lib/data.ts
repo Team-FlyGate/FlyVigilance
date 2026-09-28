@@ -1,4 +1,5 @@
 // 정적 데이터(빌드 시 생성)와 라이브 API 접근
+import { t } from './i18n'
 
 const cache = new Map<string, Promise<unknown>>()
 
@@ -103,9 +104,28 @@ export const fmt = {
   f: (x: number, d = 2) => (x === null || x === undefined || Number.isNaN(x) ? '–' : x.toFixed(d)),
 }
 
-export const OUTCOME_LABEL: Record<string, string> = {
-  DE: '사망', LT: '생명위협', HO: '입원', DS: '장애', CA: '선천이상', RI: '개입필요', OT: '기타 중요',
+// 두 표는 렌더할 때마다 지금 언어로 읽히도록 속성을 getter 로 둡니다(호출하는 쪽은 그대로 씁니다).
+function bilingual(ko: Record<string, string>, en: Record<string, string>): Record<string, string> {
+  const o: Record<string, string> = {}
+  for (const k of Object.keys(ko)) Object.defineProperty(o, k, { enumerable: true, get: () => t(ko[k], en[k] ?? ko[k]) })
+  return o
 }
-export const OCCP_LABEL: Record<string, string> = {
-  MD: '의사', PH: '약사', OT: '기타 의료인', HP: '의료인', LW: '변호사', CN: '소비자', NA: '미상',
+
+export const OUTCOME_LABEL: Record<string, string> = bilingual(
+  { DE: '사망', LT: '생명위협', HO: '입원', DS: '장애', CA: '선천이상', RI: '개입필요', OT: '기타 중요' },
+  { DE: 'Death', LT: 'Life-threatening', HO: 'Hospitalization', DS: 'Disability', CA: 'Congenital anomaly', RI: 'Required intervention', OT: 'Other serious' },
+)
+export const OCCP_LABEL: Record<string, string> = bilingual(
+  { MD: '의사', PH: '약사', OT: '기타 의료인', HP: '의료인', LW: '변호사', CN: '소비자', NA: '미상' },
+  { MD: 'Physician', PH: 'Pharmacist', OT: 'Other health professional', HP: 'Health professional', LW: 'Lawyer', CN: 'Consumer', NA: 'Unknown' },
+)
+
+// validation.json 의 판별 방법 이름은 한국어로 저장돼 있어 key 로 영어 이름을 찾습니다.
+const METHOD_EN: Record<string, string> = {
+  a: 'Report count a',
+  chi2s: 'χ² (signed)',
+  fv: 'FlyVigilance · statistics-based (names hidden)',
+  raw_blind: 'Model alone · names hidden',
+  raw_named: 'FlyVigilance · knowledge-based (names shown)',
 }
+export const methodLabel = (m: { key: string; label: string }): string => t(m.label, METHOD_EN[m.key] ?? m.label)

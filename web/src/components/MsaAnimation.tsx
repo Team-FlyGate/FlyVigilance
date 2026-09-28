@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { t } from '../lib/i18n'
 
 // MSA-Search 단계의 가운데 장면: 상동 서열 100개가 한 줄씩 들어와 PARP1 서열 아래에 맞춰지는 모습.
 // 위: 결합 포켓 근처 잔기를 글자로 확대한 정렬 창(같은 아미노산 = 시안, 다름 = 흐림, 빈칸 = -, 포켓 열 = 주황)
@@ -45,7 +46,7 @@ export default function MsaAnimation({ msa, query, duration = 9000, loop = false
         if (c % 5 === 0) x.fillText(String(r), padL + c * cw + cw / 2, top - 14)
         x.fillStyle = '#f4f7ff'; x.fillText(query[r - 1] ?? AA_QUERY_FALLBACK, padL + c * cw + cw / 2, top + 2)
       }
-      x.textAlign = 'left'; x.fillStyle = '#37e6ff'; x.fillText('PARP1 (쿼리)', 14, top + 2)
+      x.textAlign = 'left'; x.fillStyle = '#37e6ff'; x.fillText(t('PARP1 (쿼리)', 'PARP1 (query)'), 14, top + 2)
       // 최근에 들어온 서열이 위에 오도록
       for (let j = 0; j < vis; j++) {
         const idx = arrived - 1 - j + (frac > 0 ? 1 : 0)
@@ -96,13 +97,13 @@ export default function MsaAnimation({ msa, query, duration = 9000, loop = false
       }
       x.textAlign = 'left'; x.font = '500 11px "JetBrains Mono", monospace'
       x.fillStyle = 'rgba(169,182,211,0.85)'
-      x.fillText(`정렬 ${Math.min(arrived, N)} / ${N} 서열 · 잔기별 보존도(위 막대) · 전체 정렬 지도(아래)`, mapL, barTop - 12)
-      x.fillStyle = '#ffb547'; x.textAlign = 'right'; x.fillText('주황 = 결합 포켓 잔기', w - 14, barTop - 12)
+      x.fillText(t(`정렬 ${Math.min(arrived, N)} / ${N} 서열 · 잔기별 보존도(위 막대) · 전체 정렬 지도(아래)`, `Aligned ${Math.min(arrived, N)} / ${N} sequences · per-residue conservation (bars above) · full alignment map (below)`), mapL, barTop - 12)
+      x.fillStyle = '#ffb547'; x.textAlign = 'right'; x.fillText(t('주황 = 결합 포켓 잔기', 'Orange = binding-pocket residues'), w - 14, barTop - 12)
       raf = requestAnimationFrame(draw)
     }
     raf = requestAnimationFrame(draw)
     return () => { disposed = true; cancelAnimationFrame(raf) }
   }, [msa, query, duration, loop])
   return <canvas ref={ref} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block', borderRadius: 14 }}
-    aria-label="상동 서열 100개가 PARP1 서열 아래에 한 줄씩 정렬되는 모습과, 들어온 서열로 계산되는 잔기별 보존도" />
+    aria-label={t('상동 서열 100개가 PARP1 서열 아래에 한 줄씩 정렬되는 모습과, 들어온 서열로 계산되는 잔기별 보존도', '100 homologous sequences aligning one by one beneath the PARP1 sequence, with per-residue conservation recomputed from the arrived sequences')} />
 }
