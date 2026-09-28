@@ -50,18 +50,18 @@ def dashboard(root, model, nvidia=False, jev=False, width=100, color=True, sessi
     skills=sorted({p.parent.name for base in (root/'skills', root/'agent/skills') for p in base.glob('*/SKILL.md')})
     tools=['discover    saved evidence / live docking','signals     disproportionality statistics','triage      case routing','grade       labels / literature / PV class','critic      evidence / numbers / interpretation','kr-causality Korean report assessment','watch       monitoring / review queue']
     art=[
-        '                              ',
-        '   ▄▄▄                  ▄▄▄   ',
-        '   █████▄            ▄█████   ',
-        '    ▀██████▄      ▄██████▀    ',
-        '       ▀█████    █████▀       ',
-        '          ▀██    ██▀          ',
-        '           ██    ██           ',
-        '           ██    ██           ',
-        '           ██    ██           ',
-        '           ▀▀    ▀▀           ',
-        '       DISCOVER  /  REVIEW    ',
-        '                              ',
+        '       ▄▄             ▄▄       ',
+        '    ▄████▄           ▄████▄    ',
+        '  ▄████████▄       ▄████████▄  ',
+        ' ████████████▄   ▄████████████ ',
+        '  ▀███████▀  ██ ██  ▀███████▀  ',
+        '     ▀▀▀     █████     ▀▀▀     ',
+        '          ▄███ ███▄           ',
+        '         ██  █ █  ██          ',
+        '         ██  █ █  ██          ',
+        '          ▀███ ███▀           ',
+        '             █ █              ',
+        '             ▀▀▀              ',
     ]
     right=['AVAILABLE TOOLS',*tools,'','PROJECT SKILLS',*skills,'',f'7 tools / {len(skills)} skills', '/help commands /login credentials']
     maxw=min(width-2,116)
