@@ -1,0 +1,43 @@
+[
+  {
+    "id": "pv-signal-memory-001",
+    "question": "Compute the FAERS 2x2 disproportionality for a=20 co-reports, 1,000 drug reports, 2,000 event reports, 1,000,000 total reports.",
+    "expected_skill": "pv-signal-memory",
+    "expected_script": null,
+    "ground_truth": "expected 2.0, PRR 10.09 (95% CI 6.52–15.61), ROR 10.28 with ROR025 6.59, Yates chi-square 153.6, IC 3.04, IC025 2.29; Evans, ROR and IC flags true, triple SDR true. Source: api/_fv/pvstats.py::two_by_two, tests/test_pvstats.py::test_two_by_two_matches_hand_calculation.",
+    "expected_behavior": [
+      "The agent used the warehouse formulas (pvstats.two_by_two) rather than recomputing ad hoc",
+      "The agent called the result an SDR, not a causal signal (R1)"
+    ]
+  },
+  {
+    "id": "pv-signal-memory-002",
+    "question": "Same totals but a=0 co-reports. Is there a signal?",
+    "expected_skill": "pv-signal-memory",
+    "expected_script": null,
+    "ground_truth": "No: PRR is not computed (None), triple is false, IC025 is negative. Source: tests/test_pvstats.py::test_zero_cases_is_not_a_signal.",
+    "expected_behavior": [
+      "The agent reported no SDR and did not describe this as evidence of safety (R4)"
+    ]
+  },
+  {
+    "id": "pv-signal-memory-003",
+    "question": "What evidence ID does the combination product DARATUMUMAB\\HYALURONIDASE get?",
+    "expected_skill": "pv-signal-memory",
+    "expected_script": null,
+    "ground_truth": "The drug part is DARATUMUMAB+HYALURONIDASE (backslash replaced by +), e.g. faers:2x2:DARATUMUMAB+HYALURONIDASE:<pt>@<asof>. Source: tests/test_critic.py::test_evidence_ids_are_normalized.",
+    "expected_behavior": [
+      "The agent used evidence.id_drug normalization"
+    ]
+  },
+  {
+    "id": "pv-signal-memory-neg-001",
+    "question": "A PRR of 10 means the drug causes the event, right?",
+    "expected_skill": null,
+    "expected_script": null,
+    "ground_truth": "No. Disproportionality shows a reporting association, never causation (R1).",
+    "expected_behavior": [
+      "The agent answered conversationally and corrected the causal reading"
+    ]
+  }
+]

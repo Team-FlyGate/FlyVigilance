@@ -1,0 +1,57 @@
+[
+  {
+    "id": "pv-reflex-triage-001",
+    "question": "Triage this FAERS case under the US regime. The judgment model returned serious=0.90, expected=0.10, deep=0.20, priority score 1.0, route=monitor (confidence 0.9), WHO-UMC possible (confidence 0.9). All four ICH minimum elements are present. What action and deadline apply?",
+    "expected_skill": "pv-reflex-triage",
+    "expected_script": null,
+    "ground_truth": "action=expedite, tier=human, report15=true, deadline '15 calendar days (21 CFR 314.80: serious and unexpected)'. Source: tests/test_routing.py::test_us_serious_unexpected_gets_15_day_deadline.",
+    "expected_behavior": [
+      "The agent loaded pv-reflex-triage and applied route_policy (api/_fv/triage.py) rather than improvising thresholds",
+      "The agent reported expedite with the US 15-calendar-day deadline",
+      "The agent stated that the decision goes to a human reviewer and the probabilities are population-calibrated (R10)"
+    ]
+  },
+  {
+    "id": "pv-reflex-triage-002",
+    "question": "Same judgment-model answers but serious=0.90, expected=0.95 and the Korean regime (regime=KR). Does the 15-day expedited deadline apply?",
+    "expected_skill": "pv-reflex-triage",
+    "expected_script": null,
+    "ground_truth": "Yes. KR: a serious adverse drug reaction is a 15-day expedited candidate regardless of expectedness; action=expedite, deadline starts with '15일 이내'. Source: tests/test_routing.py::test_kr_serious_is_15_day_regardless_of_expectedness.",
+    "expected_behavior": [
+      "The agent applied the KR regime (별표 4의3 제7호) and did not require 'unexpected'",
+      "The agent reported expedite with the 15-day deadline"
+    ]
+  },
+  {
+    "id": "pv-reflex-triage-003",
+    "question": "KR regime, serious=0.90, expected=0.95, WHO-UMC 'unlikely' with confidence 0.90. Should the case carry the 15-day deadline?",
+    "expected_skill": "pv-reflex-triage",
+    "expected_script": null,
+    "ground_truth": "No 15-day deadline: action=expedite, report15=false, deadline is an immediate human check of causality exclusion citing 별표 4의3 제1호 차목. With confidence 0.40 the 15-day deadline stays. Source: tests/test_routing.py::test_kr_15_day_requires_causality_not_excluded.",
+    "expected_behavior": [
+      "The agent kept the case on the human path (expedite) instead of closing it",
+      "The agent explained that only the reporter and the marketing authorization holder can exclude causality"
+    ]
+  },
+  {
+    "id": "pv-reflex-triage-004",
+    "question": "US regime: serious=0.10, expected=0.90, route=close, but the reported PT is 'anaphylactic shock'. What does triage do?",
+    "expected_skill": "pv-reflex-triage",
+    "expected_script": null,
+    "ground_truth": "anaphylactic shock is an EMA designated medical event: action=expedite with dme=true and a '[DME]' reason first; the deadline says it does not meet the 15-day expedited criteria. Source: tests/test_routing.py::test_dme_goes_to_human_regardless_of_scores.",
+    "expected_behavior": [
+      "The agent applied the DME safety net regardless of low scores",
+      "The agent did not attach a 15-day reporting deadline"
+    ]
+  },
+  {
+    "id": "pv-reflex-triage-neg-001",
+    "question": "In general terms, what is the difference between WHO-UMC 'probable' and 'possible'?",
+    "expected_skill": null,
+    "expected_script": null,
+    "ground_truth": "A conversational definition answer; no case is triaged and no API is called.",
+    "expected_behavior": [
+      "The agent answered conversationally without running triage or calling the judgment model"
+    ]
+  }
+]

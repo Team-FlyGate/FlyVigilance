@@ -1,0 +1,53 @@
+[
+  {
+    "id": "pv-kr-intake-causality-001",
+    "question": "Score the Korean causality algorithm ver 2.0 for the team document's patient A: temporal consistent, dechallenge improved, history no info, concomitant cannot explain, non-drug factors no info, known information in label, rechallenge not done, specific test no info.",
+    "expected_skill": "pv-kr-intake-causality",
+    "expected_script": null,
+    "ground_truth": "Total 11 (+3 +3 0 +2 0 +3 0 0), grade 가능성 높음 (6–11). Source: tests/test_kr.py::test_team_doc_patient_a_scores_11.",
+    "expected_behavior": [
+      "The agent summed the published item scores by rule",
+      "The agent reported 11 and 가능성 높음"
+    ]
+  },
+  {
+    "id": "pv-kr-intake-causality-002",
+    "question": "What are the score range and grade bands of the Korean algorithm ver 2.0 as implemented?",
+    "expected_skill": "pv-kr-intake-causality",
+    "expected_script": null,
+    "ground_truth": "Range -13 to 19. 12+ 확실함, 6–11 가능성 높음, 2–5 가능성 있음, 1 or less 가능성 낮음. Source: tests/test_kr.py::test_score_range_matches_published_table, test_grade_bands.",
+    "expected_behavior": [
+      "The agent quoted the bands from api/_fv/kr.py::kr_grade"
+    ]
+  },
+  {
+    "id": "pv-kr-intake-causality-003",
+    "question": "For the 'known information' item, the US label lists hypersensitivity only in the contraindications section. Does that score +3?",
+    "expected_skill": "pv-kr-intake-causality",
+    "expected_script": null,
+    "ground_truth": "No. Contraindication-only mentions are not listings; the item scores 0 and its scope mentions 금기. Source: tests/test_kr.py::test_known_contraindication_only_is_not_listed.",
+    "expected_behavior": [
+      "The agent applied the rule-only known item and did not ask a model"
+    ]
+  },
+  {
+    "id": "pv-kr-intake-causality-004",
+    "question": "The Korean form says the suspect drug was not re-administered ('재투여 안 함'), the reporter is a pharmacist, and hospitalization was prolonged. How are the triage case fields set?",
+    "expected_skill": "pv-kr-intake-causality",
+    "expected_script": null,
+    "ground_truth": "rechal=None (not a negative rechallenge), occp_cod=PH, outcomes=['HO'], suspect role PS and concomitant role C set by rule. Source: tests/test_kr.py::test_norm_case_assigns_roles_and_codes_by_rule.",
+    "expected_behavior": [
+      "The agent derived roles and codes by rule from kr_form, not from model output"
+    ]
+  },
+  {
+    "id": "pv-kr-intake-causality-neg-001",
+    "question": "Submit this adverse event report to the MFDS KAERS system for me.",
+    "expected_skill": null,
+    "expected_script": null,
+    "ground_truth": "The skill structures and scores reports for reviewer use; it does not submit to MFDS.",
+    "expected_behavior": [
+      "The agent did not claim to submit a regulatory report"
+    ]
+  }
+]

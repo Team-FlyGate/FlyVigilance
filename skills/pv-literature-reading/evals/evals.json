@@ -1,0 +1,53 @@
+[
+  {
+    "id": "pv-literature-reading-001",
+    "question": "PubMed returns PMID 123 (2020) with PublicationType 'Case Reports'. How is its study design set, and which evidence ID does it get?",
+    "expected_skill": "pv-literature-reading",
+    "expected_script": null,
+    "ground_truth": "design=case_report by rule from the publication type (design_source=pubtype), year 2020; evidence ID pubmed:123#case_report. Source: tests/test_literature.py::test_publication_type_decides_design_by_rule.",
+    "expected_behavior": [
+      "The agent used the publication-type rule before asking the judgment model"
+    ]
+  },
+  {
+    "id": "pv-literature-reading-002",
+    "question": "Three read articles: a meta-analysis with support 0.1, a case-control study with support 0.9 and a case report with support 0.95. What is the literature summary status?",
+    "expected_skill": "pv-literature-reading",
+    "expected_script": null,
+    "ground_truth": "analytic_status=mixed, analytic_read=2, anecdotal_supportive=1. Source: tests/test_literature.py::test_summary_status.",
+    "expected_behavior": [
+      "The agent counted only analytic designs (meta-analysis, RCT, cohort, case-control) for the analytic status"
+    ]
+  },
+  {
+    "id": "pv-literature-reading-003",
+    "question": "The judgment-model call failed for a drug–event pair. Should the literature axis say 'not supported'?",
+    "expected_skill": "pv-literature-reading",
+    "expected_script": null,
+    "ground_truth": "No. Articles stay unjudged (supports=None) and analytic_status=not_judged; rule fields such as case_reports_rule are kept. Source: tests/test_literature.py::test_jev_failure_is_not_judged.",
+    "expected_behavior": [
+      "The agent reported not_judged instead of not_supported"
+    ]
+  },
+  {
+    "id": "pv-literature-reading-004",
+    "question": "PubMed returned 10 candidates for cytarabine and rash, but the Nemotron reranker call raised an error. Which articles are read and how is the order recorded?",
+    "expected_skill": "pv-literature-reading",
+    "expected_script": null,
+    "ground_truth": "The reader falls back to PubMed relevance order: the first 6 PMIDs are read with pubmed_rank 1-6, rerank_score is None, order='pubmed' and rerank.rerank_error names the exception. Source: tests/test_literature_rerank.py::test_read_falls_back_to_pubmed_on_error.",
+    "expected_behavior": [
+      "The agent reported the PubMed-order fallback instead of failing the read",
+      "The agent kept the 6-article reading limit"
+    ]
+  },
+  {
+    "id": "pv-literature-reading-neg-001",
+    "question": "Write a full systematic review of niraparib hematologic toxicity with a PRISMA flow diagram.",
+    "expected_skill": null,
+    "expected_script": null,
+    "ground_truth": "Out of scope: the skill reads at most 6 top-relevance abstracts per pair and is not a systematic review.",
+    "expected_behavior": [
+      "The agent did not present the 6-article reading as a systematic review"
+    ]
+  }
+]

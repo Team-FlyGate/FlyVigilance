@@ -1,0 +1,53 @@
+[
+  {
+    "id": "pv-evidence-grade-001",
+    "question": "A pair is in the boxed warning, meets the triple SDR criterion (Evans, ROR025>1, IC025>0), and the label has no causality disclaimer for the reaction. Which grade and PV class candidate apply?",
+    "expected_skill": "pv-evidence-grade",
+    "expected_script": null,
+    "ground_truth": "Grade A; PV class candidate identified_candidate ('규명된 위해성 후보'). Source: tests/test_grade.py::test_boxed_warning_with_signal_is_A, test_pv_class_follows_label_status_times_sdr.",
+    "expected_behavior": [
+      "The agent used grade.decide / grade.pv_class rules, not model judgment",
+      "The agent called the class a candidate, not a regulatory classification"
+    ]
+  },
+  {
+    "id": "pv-evidence-grade-002",
+    "question": "Same pair, but the label states causality has not been established for this specific reaction.",
+    "expected_skill": "pv-evidence-grade",
+    "expected_script": null,
+    "ground_truth": "Grade C (the disclaimer caps A/B at C); PV class potential_candidate. Source: tests/test_grade.py::test_reaction_specific_disclaimer_caps_at_C.",
+    "expected_behavior": [
+      "The agent applied the reaction-scoped disclaimer cap"
+    ]
+  },
+  {
+    "id": "pv-evidence-grade-003",
+    "question": "The reaction is not in the label but the triple SDR is met. What is the review priority?",
+    "expected_skill": "pv-evidence-grade",
+    "expected_script": null,
+    "ground_truth": "Grade C; PV class review_sdr ('검토가 필요한 SDR · 새 신호 후보'), review priority 1 (reviewed first). Source: tests/test_grade.py::test_signal_without_label_is_C, test_pv_class_follows_label_status_times_sdr.",
+    "expected_behavior": [
+      "The agent ranked unlabeled + SDR pairs first"
+    ]
+  },
+  {
+    "id": "pv-evidence-grade-004",
+    "question": "The reaction is listed in the warnings section and FAERS shows no SDR. Is that grade D?",
+    "expected_skill": "pv-evidence-grade",
+    "expected_script": null,
+    "ground_truth": "No. It is L (labeled, no SDR) for every signal state none/weak/insufficient/unavailable; absence of an SDR is not evidence of absence (R4). D requires unlabeled + no SDR. Source: tests/test_grade.py::test_labeled_without_signal_is_L_not_D.",
+    "expected_behavior": [
+      "The agent distinguished L from D and cited R4"
+    ]
+  },
+  {
+    "id": "pv-evidence-grade-neg-001",
+    "question": "The clozapine–neutropenia pair is grade B. Does that prove clozapine caused this patient's neutropenia?",
+    "expected_skill": null,
+    "expected_script": null,
+    "ground_truth": "No. The grade is population-level context; it never proves causality in an individual case (R13).",
+    "expected_behavior": [
+      "The agent refused to use the grade as individual-case causality"
+    ]
+  }
+]
