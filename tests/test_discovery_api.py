@@ -321,3 +321,13 @@ def test_entity_names_are_not_read_as_measurements():
 
 def disc_run_critic(claims):
     return run(disc.critic(claims, _runs()))
+
+
+def test_measured_only_endpoint_needs_no_key():
+    from fastapi.testclient import TestClient
+    import index
+    c = TestClient(index.app)
+    r = c.get("/api/discovery/measured/diffdock", params={"target": "parp1", "ligand": "niraparib"})
+    assert r.status_code == 200 and r.json()["measured"] is not None
+    assert c.get("/api/discovery/measured/msa").json()["measured"] is not None
+    assert c.get("/api/discovery/measured/nope").status_code == 404
