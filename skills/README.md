@@ -1,12 +1,13 @@
-# FlyVigilance Agent Skills
+# Project-FlyGate Agent Skills
 
-FlyVigilance(Project-FlyGate STEP 2, 시판 후 약물감시 에이전트)의 능력을 [NVIDIA Agent Skills](https://github.com/NVIDIA/skills) 규격의 스킬 11개로 나눴습니다.
+Project-FlyGate 의 능력을 [NVIDIA Agent Skills](https://github.com/NVIDIA/skills) 규격의 스킬 16개로 나눴습니다.
+STEP 2 FlyVigilance(시판 후 약물감시)가 11개, STEP 1 FlyDiscovery(시판 전 탐색, 라이브 NIM 실행)가 5개입니다.
 각 스킬은 `SKILL.md`(프런트매터 + 언제 쓰는지 + 실행 계약), `skill-card.md`(NVIDIA 거버넌스 카드), 그리고 확인 가능한 사례가 있는 스킬은 `evals/evals.json`(평가 과제)을 갖습니다.
 모든 스킬은 저장소의 실제 코드(`api/_fv/`, `pipeline/`, `agent/flygate.py`)를 가리키며, 참조한 파일과 함수가 실제로 있는지 확인했습니다.
 
 이 스킬들은 연구·개발용입니다. 결과는 사람 검토를 전제로 한 초안이며, 규제 보고와 인과성 최종 판정은 사람이 합니다.
 
-## 스킬 11개
+## STEP 2 FlyVigilance 스킬 11개
 
 | 스킬 | 층 | 하는 일 | 모델 · 엔드포인트 | 평가 과제 |
 | --- | --- | --- | --- | --- |
@@ -23,6 +24,20 @@ FlyVigilance(Project-FlyGate STEP 2, 시판 후 약물감시 에이전트)의 �
 | [`connectome-router`](connectome-router/SKILL.md) | 전체 | MaleCNS 초파리 중앙뇌 부분그래프(뉴런 49,244개, 연결 1,051,255개)를 에이전트 9개 층에 대응시킨 라우팅 시각화를 만듭니다 | 모델 미사용 | – |
 
 모든 스킬의 프런트매터는 `name`, `title`, `version`(1.0.0), `description`, `license`, `compatibility`, `metadata`(author `Team FlyGate`, `domain`, `tags`, `layer`, `model`)를 갖습니다.
+## STEP 1 FlyDiscovery 스킬 5개
+
+시판 전 탐색 다섯 단계입니다. 화면(`/#/msa` → `/#/openfold3` → `/#/diffdock` → `/#/boltz2` → `/#/critic`)의 실행 단추가
+이 스킬들의 계약을 그대로 호출하며, 응답은 NVIDIA 호스팅 NIM 에서 실시간으로 받습니다. 지난 측정(`fly_discovery/measurements/`)은
+비교용으로만 함께 보여 주고, 라이브 호출이 실패하면 사유와 함께 대체 표시를 답니다.
+
+| 스킬 | 단계 | 하는 일 | 모델 · 엔드포인트 | 따라간 공식 스킬 |
+| --- | --- | --- | --- | --- |
+| [`discovery-msa-search`](discovery-msa-search/SKILL.md) | 1 | 표적 서열의 상동 서열을 찾아 A3M 정렬과 열별 깊이·보존도를 냅니다 | MSA-Search NIM · `POST /api/discovery/msa` | `bionemo-msa-structure-prediction-pipeline`, `msa-search-nim` |
+| [`discovery-openfold3`](discovery-openfold3/SKILL.md) | 2 | 정렬과 리간드를 넣어 복합체를 예측하고 결정 구조 대비 CA RMSD 로 채점합니다 | OpenFold3 NIM · `POST /api/discovery/openfold3` | `bionemo-msa-structure-prediction-pipeline`, `openfold3-nim` |
+| [`discovery-diffdock`](discovery-diffdock/SKILL.md) | 3 | 결합 포즈를 계산하고 공결정 재도킹 RMSD(≤ 2 Å)로 설정을 확인합니다 | DiffDock NIM · `POST /api/discovery/diffdock` | `diffdock-nim` |
+| [`discovery-boltz2-affinity`](discovery-boltz2-affinity/SKILL.md) | 4 | 복합체와 예측 pIC50 을 받아 ChEMBL 실측값·39종 벤치마크와 대조합니다 | Boltz-2 NIM · `POST /api/discovery/boltz2` | `boltz2-nim` |
+| [`discovery-critic`](discovery-critic/SKILL.md) | 5 | 근거 ID·숫자 오라클·Nemotron 과잉해석 판정으로 주장을 되돌립니다 | `nemotron-3-super-120b-a12b` · `POST /api/discovery/critic` | 팀 스킬 `pv-critic` 의 3단 구조 |
+
 대시보드의 스킬 화면은 `pipeline/build_skills.py` 가 만드는 `web/public/data/skills.json` 을 읽습니다.
 
 ## 적용한 NVIDIA 공식 스킬
@@ -31,9 +46,10 @@ FlyVigilance(Project-FlyGate STEP 2, 시판 후 약물감시 에이전트)의 �
 
 | 공식 스킬 | 적용한 곳 | 적용한 내용 |
 | --- | --- | --- |
-| `bionemo-msa-structure-prediction-pipeline` | FlyDiscovery (`fly_discovery/measurements/nim/`) | MSA-Search(Uniref30_2302)로 PARP1 상동 서열 101개를 찾고, 그 A3M 정렬을 OpenFold3 에 넣어 구조를 예측했습니다(pLDDT 95.95, 4R6E 대비 CA RMSD 1.0 Å). |
+| `bionemo-msa-structure-prediction-pipeline` | [`discovery-msa-search`](discovery-msa-search/), [`discovery-openfold3`](discovery-openfold3/), `api/_fv/discovery.py` | 1단계 MSA-Search(Uniref30_2302) → 2단계 OpenFold3(`msa.uniref30.a3m`) 규격을 그대로 따라 라이브로 호출합니다. 라이브 실행에서 정렬 101줄(10.8초), pLDDT 95.95, 4R6E 대비 CA RMSD 0.997 Å 를 받았고 지난 측정과 같았습니다. |
+| `msa-search-nim` · `openfold3-nim` · `diffdock-nim` · `boltz2-nim` (NVIDIA-BioNeMo/bionemo-agent-toolkit) | [`discovery-*`](.) 5개, `api/_fv/discovery.py` | 엔드포인트 선택, 요청 본문(수용체 ATOM 줄, `ligand_file_type=txt`, `predict_affinity` 한 개, A3M `alignment`/`format`/`rank`), 응답 필드 읽기를 스킬 문서대로 구현했습니다. |
 | `nemotron-policy-generator` | [`pv-guardrail-policy`](pv-guardrail-policy/) | 약물감시 범주를 BYO 정책(Markdown 정책, JSON 분류 체계, 시스템 프롬프트)으로 만들어 Nemotron 콘텐츠 안전 가드에 얹습니다. |
-| `skill-card-generator` | 스킬 11개의 `skill-card.md` | 공식 스크립트(`discover_assets.py` → `render_card.py` → `validate_submission.py`)로 카드를 만들고, 검토 표시가 남지 않았음을 확인했습니다. |
+| `skill-card-generator` | STEP 2 스킬 11개의 `skill-card.md` | 공식 스크립트(`discover_assets.py` → `render_card.py` → `validate_submission.py`)로 카드를 만들고, 검토 표시가 남지 않았음을 확인했습니다. |
 | `nemotron-retrieval-recipes` | [`pv-literature-reading`](pv-literature-reading/) | 1단계 검색(PubMed) 뒤 2단계 리랭커로 상위 순서를 바로잡는 구성과 그 평가 방식(상위 k 정밀도, 쌍별 AUC)을 따랐습니다. 리랭커는 build.nvidia.com 호스팅 모델을 그대로 쓰며, 레시피의 파인튜닝 단계는 쓰지 않았습니다. |
 
 NemoClaw · OpenShell · OpenClaw 는 에이전트 배포에 썼습니다(`agent/`, `docs/AGENT.md`). 이 배포는 NVIDIA DLI 과정 *Securing Agents with NemoClaw and OpenShell* 의 구성을 따랐고, 공식 스킬 `nemoclaw-user-guide` 는 쓰지 않았으므로 위 표에 넣지 않았습니다.

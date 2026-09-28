@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { TARGET_PALETTE, ballStick, chainGradient, disposeAll, dust, makeRenderer, ribbon, type Ligand } from '../lib/molScene'
 
@@ -10,11 +10,13 @@ export interface XaSplit { pdb: string; chain: string; ca: [number, number, numb
 
 export default function SplitTarget({ xa }: { xa: XaSplit }) {
   const host = useRef<HTMLDivElement>(null)
+  // WebGL 컨텍스트가 강제로 죽으면 올려서 장면을 새로 만듭니다
+  const [epoch, setEpoch] = useState(0)
   useEffect(() => {
     const el = host.current
     if (!el) return
     let disposed = false, raf = 0
-    const { scene, camera, composer, film, renderer, resize, shown } = makeRenderer(el)
+    const { scene, camera, composer, film, renderer, resize, shown } = makeRenderer(el, () => setEpoch((k) => k + 1))
     scene.add(dust(300, 90))
     const cols = chainGradient(xa.ca.length, ...(TARGET_PALETTE.F10))
     const rb = ribbon(xa.ca.map((c, i) => ({ p: new THREE.Vector3(c[0], c[1], c[2]), resseq: c[3], color: cols[i] })), 0.3)
@@ -36,6 +38,6 @@ export default function SplitTarget({ xa }: { xa: XaSplit }) {
     }
     raf = requestAnimationFrame(loop)
     return () => { disposed = true; cancelAnimationFrame(raf); ro.disconnect(); disposeAll(scene); composer.dispose(); renderer.dispose(); renderer.forceContextLoss(); renderer.domElement.remove() }
-  }, [xa])
+  }, [xa, epoch])
   return <div ref={host} style={{ position: 'absolute', inset: 0 }} aria-label="니라파립을 Factor Xa(2P16)에 넣은 DiffDock 포즈" />
 }
