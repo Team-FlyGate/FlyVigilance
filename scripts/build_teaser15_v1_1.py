@@ -1,14 +1,16 @@
-"""Project-FlyGate 15초 티저를 파일 하나로 완결된 HTML 로 만듭니다(가로 1920×1080, 세로 1080×1920).
+"""Project-FlyGate 15초 티저를 파일 하나로 완결된 HTML 로 만듭니다(가로 1920×1080, 세로 1080×1920, 정사각 1080×1080).
 
 쇼릴 v3 와 같은 시각 언어(캔버스 2D, 결정론적 타임라인)를 쓰되, 소셜 공유용으로 컷을 짧게 끊습니다.
 템플릿(scripts/reel/flygate_teaser15_v1.template.html)의 `/*__DATA__*/null` 자리에 실측 수치를 JSON 으로 넣고,
-세로판은 `/*__VERT__*/false` 자리를 true 로 바꿔 따로 씁니다(가로판도 ?v=1 을 붙이면 세로로 열립니다).
+세로판은 `/*__VERT__*/false`, 정사각판은 `/*__SQ__*/false` 자리를 true 로 바꿔 따로 씁니다
+(가로판도 ?v=1 · ?fmt=vertical 을 붙이면 세로로, ?fmt=square 를 붙이면 정사각으로 열립니다).
+--en 을 주면 화면 글자를 영어로 바꾼 판을 파일 이름 끝에 -en 을 붙여 씁니다(데이터의 lang 이 'en').
 수치는 모두 빌드할 때 저장소의 JSON 에서 읽으므로, 측정을 다시 하면 이 스크립트만 다시 돌리면 됩니다.
 외부 폰트, CDN, fetch 를 쓰지 않습니다. render_reel.py 가 쓰는 window.__reel.renderAt(t) / DUR 를 그대로 둡니다.
 
 사용:
-  .venv/bin/python scripts/build_teaser15.py [가로판 출력 경로] [세로판 출력 경로]
-  기본값: web/public/showreel/FlyGate_teaser_15s_v1.0.0.html, web/public/showreel/FlyGate_teaser_15s_vertical_v1.0.0.html
+  .venv/bin/python scripts/build_teaser15_v1_1.py [--en] [가로판 출력 경로] [세로판 출력 경로] [정사각판 출력 경로]
+  기본값: web/public/showreel/FlyGate_teaser_15s{,_vertical,_square}_v1.1.0{,-en}.html
 
 입력(모두 저장소 안의 파일입니다):
   web/public/data/bench.json (jev_triage, ablation_blind), validation.json, guard_policy_eval.json, literature_rerank_eval.json,
@@ -27,6 +29,7 @@ DISC = ROOT / "fly_discovery/measurements"
 TEMPLATE = ROOT / "scripts/reel/flygate_teaser15_v1_1.template.html"
 OUT_H = PUB / "showreel/FlyGate_teaser_15s_v1.1.0.html"
 OUT_V = PUB / "showreel/FlyGate_teaser_15s_vertical_v1.1.0.html"
+OUT_S = PUB / "showreel/FlyGate_teaser_15s_square_v1.1.0.html"
 LIVE = "https://flygate.kr"
 HACK = "NVIDIA Korea Agentic AI Hackathon 2026"
 KB_KEYS = ("raw_named", "knowledge", "fv_knowledge", "kb", "named")
@@ -35,6 +38,12 @@ STAT_NAME = {"a": "보고 건수", "prr": "PRR", "ror_lo": "ROR₀₂₅", "chi2
 Q_KO = {"serious": "중대성", "expected": "라벨 기재 여부", "causality": "인과성 (WHO-UMC)", "special": "특수 상황",
         "priority": "검토 우선순위", "route": "다음 처리 경로", "deep": "정밀 검토 필요"}
 Q_TYPE = {"noul": "예 · 아니오", "choice": "선택", "score": "점수"}
+# 영어판 화면 이름입니다. 전문가가 아니어도 읽히게 풀어 씁니다.
+STAT_NAME_EN = {"a": "report count", "prr": "PRR", "ror_lo": "ROR₀₂₅", "chi2s": "χ²", "ic025": "IC₀₂₅"}
+Q_EN = {"serious": "Serious?", "expected": "Listed on the label?", "causality": "Caused by the drug?",
+        "special": "Special situation?", "priority": "Review priority", "route": "Next step", "deep": "Needs expert review?"}
+Q_TYPE_EN = {"noul": "yes / no", "choice": "pick one", "score": "score"}
+EN = "--en" in __import__("sys").argv
 
 
 def jload(p: pathlib.Path):
@@ -100,6 +109,8 @@ def questions() -> list:
     body = src[src.index("def questions("):]
     body = body[:body.index("\ndef ", 10)]
     qs = re.findall(r'"(\w+)":\s*\{"type":\s*"(\w+)"', body)
+    if EN:
+        return [[Q_EN.get(k, k), Q_TYPE_EN.get(t, t)] for k, t in qs]
     return [[Q_KO.get(k, k), Q_TYPE.get(t, t)] for k, t in qs]
 
 
@@ -134,7 +145,7 @@ def auc_part() -> dict:
     eu = jload(PUB / "data/validation.json")["refsets"].get("EU-ADR", {}).get("methods", [])
     eu_kb = next((m["auc"] for k in KB_KEYS for m in eu if m.get("key") == k), None)
     return {"set": "OMOP", "n": r["n"], "kb": round(kb["auc"], 3),
-            "best_name": STAT_NAME.get(best["key"], best["key"]), "best": round(best["auc"], 3),
+            "best_name": (STAT_NAME_EN if EN else STAT_NAME).get(best["key"], best["key"]), "best": round(best["auc"], 3),
             "eu": round(eu_kb, 3) if eu_kb else None}
 
 
@@ -169,21 +180,30 @@ def brain_part(n_target: int = 6000) -> dict:
 
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
-    out_h = pathlib.Path(args[0]) if args else OUT_H
-    out_v = pathlib.Path(args[1]) if len(args) > 1 else OUT_V
+    sfx = (lambda p: p.with_name(p.stem + "-en" + p.suffix)) if EN else (lambda p: p)
+    out_h = pathlib.Path(args[0]) if args else sfx(OUT_H)
+    out_v = pathlib.Path(args[1]) if len(args) > 1 else sfx(OUT_V)
+    out_s = pathlib.Path(args[2]) if len(args) > 2 else sfx(OUT_S)
     data = {
         "meta": {"built": time.strftime("%Y-%m-%d %H:%M"), "live": LIVE, "hack": HACK},
+        "lang": "en" if EN else "ko",
         "disc": disc_part(), "fv": fv_part(), "blind": blind_part(), "auc": auc_part(),
         "guard": guard_part(), "rerank": rerank_part(), "agent": agent_part(), "brain": brain_part(),
     }
     html = TEMPLATE.read_text()
-    for marker in ("/*__DATA__*/null", "/*__VERT__*/false"):
+    for marker in ("/*__DATA__*/null", "/*__VERT__*/false", "/*__SQ__*/false"):
         assert html.count(marker) == 1, f"template marker missing: {marker}"
     blob = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
     html = html.replace("/*__DATA__*/null", blob)
-    for out, vert in ((out_h, False), (out_v, True)):
+    if EN:
+        html = html.replace('<html lang="ko">', '<html lang="en">', 1)
+        html = re.sub(r'<meta name="description" content="[^"]*"',
+                      '<meta name="description" content="Project-FlyGate 15-second teaser: from pre-market target binding'
+                      ' (FlyDiscovery) to post-market side effects (FlyVigilance), one agentic workflow"', html, count=1)
+    for out, fmt in ((out_h, "wide"), (out_v, "vertical"), (out_s, "square")):
         out.parent.mkdir(parents=True, exist_ok=True)
-        out.write_text(html.replace("/*__VERT__*/false", "true" if vert else "false"))
+        out.write_text(html.replace("/*__VERT__*/false", "true" if fmt == "vertical" else "false")
+                       .replace("/*__SQ__*/false", "true" if fmt == "square" else "false"))
         print(f"wrote {out} ({out.stat().st_size / 1024:.0f} KB)")
     b, d, f = data["blind"], data["disc"], data["fv"]
     print(f"  STEP1: MSA {d['msa_n']} · pLDDT {d['plddt']} · DiffDock {d['dd_rmsd']} Å · redock {d['redock_ok']}/{d['redock_n']}"
