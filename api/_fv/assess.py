@@ -7,6 +7,7 @@
 반려되면 사유를 붙여 작성자에게 한 번 되돌린다.
 """
 import asyncio
+import functools
 import json
 import re
 import time
@@ -154,6 +155,43 @@ def parse_guard(content: str) -> dict:
     return {"safe": None if us is None else str(us).strip().lower() == "safe", "categories": verdict.get("Safety Categories")}
 
 
+# PV BYO 정책(skills/pv-guardrail-policy, NVIDIA/skills nemotron-policy-generator v0.1.0 로 생성)의 사용자 정의 범주입니다.
+# 값: (범주 이름에서 PV 번호를 뺀 부분, FlyVigilance 규칙 코드). policy_taxonomy.json 과 같아야 합니다(테스트가 확인합니다).
+PV_CATEGORIES = {
+    "PV-1": ("Individual Treatment Advice", "R11"),
+    "PV-2": ("Disproportionality Overclaim", "R1"),
+    "PV-3": ("Incidence Estimate from Spontaneous Reports", "R2"),
+    "PV-4": ("Re-identification of Reporter or Patient", "PV-4"),
+    "PV-5": ("Tool or Network Use Outside Allowed Hosts", "PV-5"),
+}
+PV_POLICY_NAME = "FlyVigilance PV Guardrail Policy v1.0.0"
+
+
+@functools.lru_cache(maxsize=1)
+def pv_policy() -> str:
+    """BYO 정책 본문(chat_template_kwargs.custom_policy 로 보내는 문자열)입니다. 배포 함수에 실리도록 api/_data 에 둡니다."""
+    return (config.DATA / "pv_guard_policy.txt").read_text()
+
+
+def pv_ids(categories) -> list[str]:
+    """모델이 낸 범주 목록에서 PV 번호를 찾습니다. 모델은 'PV-3', 'PV3 ...', 번호 없는 이름을 섞어 냅니다."""
+    if not categories:
+        return []
+    text = ", ".join(categories) if isinstance(categories, list) else str(categories)
+    found = {f"PV-{m}" for m in re.findall(r"\bPV\s*-?\s*([1-5])\b", text, flags=re.I)}
+    low = text.lower()
+    found |= {pid for pid, (name, _) in PV_CATEGORIES.items() if name.lower() in low}
+    return sorted(found)
+
+
+def parse_policy_guard(content: str) -> dict:
+    """BYO 정책 가드 응답을 읽습니다. parse_guard 결과에 발동한 PV 범주(pv)와 대응 규칙(rule)을 더합니다.
+    reasoning 을 켠 경우의 <think>...</think> 는 떼고 읽습니다."""
+    v = parse_guard(re.sub(r"<think>.*?</think>", "", content or "", flags=re.S))
+    pv = pv_ids(v.get("categories")) if v["safe"] is False else []
+    return {**v, "pv": pv, "rule": PV_CATEGORIES[pv[0]][1] if pv else None}
+
+
 async def guard(text: str, timeout_s: float = 20.0) -> dict:
     """NVIDIA Nemotron Safety Guard 로 메모 문장을 검사한다. 개별 치료 조언(Unauthorized Advice)을 막는다 (R11).
     기본 가드가 응답하지 않으면 대체 가드로 넘어가고, 둘 다 안 되면 timeout_s 안에 포기해 '사람 확인'으로 표시한다."""
@@ -179,29 +217,103 @@ async def guard(text: str, timeout_s: float = 20.0) -> dict:
     return {"safe": None, "error": "; ".join(errors)[:200] or "time budget exhausted"}  # 가드 장애는 통과가 아니라 사람 확인
 
 
+async def policy_guard(text: str, timeout_s: float = 20.0, think: bool = False) -> dict:
+    """Nemotron-3.5 Content Safety 에 PV BYO 정책을 실어 주장 하나를 검사합니다.
+    정책은 chat_template_kwargs.custom_policy 로, 범주 목록은 request_categories='/categories' 로 요청합니다.
+    한 번 재시도한 뒤에도 읽을 수 있는 판정이 없으면 safe=None 으로 돌려 '사람 확인'으로 처리합니다."""
+    if not text.strip():
+        return {"safe": True, "skipped": True}
+    end = time.monotonic() + timeout_s
+    errors = []
+    for _ in range(2):
+        left = end - time.monotonic()
+        if left < 2:
+            break
+        try:
+            out = await clients.nim_chat(
+                [{"role": "user", "content": text[:4000]}], [config.MODEL_SAFETY_FALLBACK],
+                max_tokens=600 if think else 60, temperature=0.0, deadline=time.monotonic() + left,
+                template_kwargs={"custom_policy": pv_policy(), "request_categories": "/categories",
+                                 "enable_thinking": think})
+        except Exception as e:
+            errors.append(f"pv-policy: {type(e).__name__}")
+            continue
+        v = parse_policy_guard(out["content"])
+        if v["safe"] is None:
+            errors.append("pv-policy: unreadable verdict")
+            continue
+        return {**v, "model": out["model"], "policy": PV_POLICY_NAME, "latency_ms": out["latency_ms"]}
+    return {"safe": None, "error": "; ".join(errors)[:200] or "time budget exhausted"}
+
+
+def combine_guards(default: dict, byo: dict) -> dict:
+    """두 가드 가운데 하나라도 걸면 걸린 것으로 칩니다. 둘 다 통과시키지 않았고 하나라도 판정을 못 냈으면 None(사람 확인)입니다."""
+    fired = []
+    if default.get("safe") is False:
+        fired.append({"guard": "safety_guard", "model": default.get("model"), "categories": default.get("categories")})
+    if byo.get("safe") is False:
+        fired.append({"guard": "pv_policy", "model": byo.get("model"), "categories": byo.get("categories"),
+                      "pv": byo.get("pv", []), "rule": byo.get("rule")})
+    if fired:
+        safe = False
+    elif default.get("safe") is None or byo.get("safe") is None:
+        safe = None
+    else:
+        safe = True
+    cats = ", ".join(str(f["categories"]) for f in fired if f.get("categories")) or None
+    return {"safe": safe, "categories": cats, "fired": fired,
+            "pv": sorted({p for f in fired for p in f.get("pv", [])}),
+            "model": default.get("model") or byo.get("model"),
+            "default": default, "pv_policy": byo}
+
+
 async def guard_claims(claims: list[dict], narrative: str = "", timeout_s: float = 20.0) -> dict:
-    """주장마다 따로 가드에 넣습니다. 메모 전체를 이어 붙이면 치료 조언 한 문장이 다른 문장에 묻혀 통과했습니다."""
+    """주장마다 따로 가드에 넣습니다. 메모 전체를 이어 붙이면 치료 조언 한 문장이 다른 문장에 묻혀 통과했습니다.
+    주장마다 기본 Safety Guard 와 PV BYO 정책 가드를 동시에 부르고, 단계 전체를 timeout_s 안에서 끝냅니다."""
     items = [(c.get("id") or f"c{i + 1}", c.get("text", "")) for i, c in enumerate(claims)]
     if narrative.strip():
         items.append(("narrative", narrative))
+    stage_end = time.monotonic() + timeout_s
     sem = asyncio.Semaphore(4)
 
     async def one(text):
         async with sem:
-            return await guard(text, timeout_s)
+            left = stage_end - time.monotonic()
+            d, b = await asyncio.gather(guard(text, left), policy_guard(text, left))
+            return combine_guards(d, b)
     res = await asyncio.gather(*(one(t) for _, t in items))
     per = [{"claim": cid, **r} for (cid, _), r in zip(items, res)]
     flagged = [x for x in per if x.get("safe") is False]
     unknown = [x["claim"] for x in per if x.get("safe") is None]
+
+    def by(key):
+        return {"flagged": [x["claim"] for x in per if x[key].get("safe") is False],
+                "unchecked": [x["claim"] for x in per if x[key].get("safe") is None],
+                "model": next((x[key].get("model") for x in per if x[key].get("model")), None)}
     return {"safe": False if flagged else (None if unknown else True),
             "categories": ", ".join(sorted({str(x.get("categories")) for x in flagged})) or None,
             "flagged": [x["claim"] for x in flagged], "unchecked": unknown,
-            "model": next((x.get("model") for x in per if x.get("model")), None), "items": len(per)}
+            "model": next((x.get("model") for x in per if x.get("model")), None), "items": len(per),
+            "policy": PV_POLICY_NAME,
+            "fired": [{"claim": x["claim"], **f} for x in flagged for f in x["fired"]],
+            "by_guard": {"safety_guard": by("default"), "pv_policy": by("pv_policy")}}
 
 
 def guard_issues(g: dict) -> list[dict]:
-    return [{"claim": cid, "tier": 3, "rule": "R11", "detail": f"NVIDIA safety guard: {g.get('categories')}"}
-            for cid in g.get("flagged", [])]
+    """가드가 건 주장마다 사유 하나를 만듭니다. PV 정책 범주가 걸렸으면 그 규칙(R1/R2/R11/PV-4/PV-5)을, 아니면 R11 을 붙입니다."""
+    fired = {}
+    for f in g.get("fired", []):
+        fired.setdefault(f["claim"], []).append(f)
+    out = []
+    for cid in g.get("flagged", []):
+        fs = fired.get(cid, [])
+        pv = sorted({p for f in fs for p in f.get("pv", [])})
+        rule = next((f["rule"] for f in fs if f.get("rule")), None) or "R11"
+        names = " + ".join(f["guard"] for f in fs) or "safety_guard"
+        cats = "; ".join(str(f["categories"]) for f in fs if f.get("categories")) or g.get("categories")
+        out.append({"claim": cid, "tier": 3, "rule": rule, "guards": [f["guard"] for f in fs], "pv": pv,
+                    "detail": f"NVIDIA safety guard ({names}): {cats}"})
+    return out
 
 
 async def assess(case_state: str, triage_answers: dict, bundle: dict, max_rounds: int = 2, budget_s: float = 100.0) -> dict:

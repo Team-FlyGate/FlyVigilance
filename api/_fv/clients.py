@@ -41,12 +41,15 @@ async def jev(state: str, questions: dict, client: httpx.AsyncClient | None = No
 
 
 async def nim_chat(messages: list, models: list[str], max_tokens: int = 1200, temperature: float = 0.2,
-                   client: httpx.AsyncClient | None = None, deadline: float | None = None, json_mode: bool = False) -> dict:
+                   client: httpx.AsyncClient | None = None, deadline: float | None = None, json_mode: bool = False,
+                   template_kwargs: dict | None = None) -> dict:
     """NVIDIA NIM chat/completions. 모델 사슬을 따라 폴백하고 사고 과정은 끈다.
 
     deadline(time.monotonic 기준)이 있으면 모든 시도를 그 안에서 끝냅니다. 서버리스 함수 제한 시간을 넘기지 않으려는 장치입니다.
     시간 초과는 같은 모델로 다시 시도하지 않고 다음 모델로 넘어갑니다.
     json_mode 는 NIM 의 response_format(json_object)을 켭니다. 모델이 이를 거절하면(HTTP 400) 끄고 한 번 더 시도합니다.
+    template_kwargs 는 chat_template_kwargs 에 덧붙입니다. Nemotron-3.5 Content Safety 의 BYO 정책(custom_policy,
+    request_categories)이 이 경로로 들어갑니다. 이 모델의 chat template 은 system 메시지를 버리기 때문입니다.
     """
     if not config.NVIDIA_API_KEY:
         raise NotConfigured("NVIDIA_API_KEY")
@@ -63,7 +66,7 @@ async def nim_chat(messages: list, models: list[str], max_tokens: int = 1200, te
                     raise RuntimeError("all NIM models failed: " + "; ".join(errors))
                 body = {"model": model, "messages": messages, "max_tokens": max_tokens,
                         "temperature": temperature,
-                        "chat_template_kwargs": {"enable_thinking": False}}
+                        "chat_template_kwargs": {"enable_thinking": False, **(template_kwargs or {})}}
                 if use_json:
                     body["response_format"] = {"type": "json_object"}
                 t0 = time.perf_counter()
