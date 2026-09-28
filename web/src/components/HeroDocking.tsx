@@ -348,7 +348,7 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
       <Stepper step={step} done={done} onPick={jump} m={m} x={extras} ddRmsd={D.dd_rmsd} />
       <div className="grid" style={{ gridTemplateColumns: 'minmax(0, 1.35fr) minmax(320px, 1fr)', gap: 16, alignItems: 'start' }}>
         <div style={{ position: 'relative', height }}>
-          <div ref={host} style={{ position: 'absolute', inset: 0, cursor: 'grab', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--line)' }}
+          <div ref={host} style={{ position: 'absolute', inset: 0, cursor: 'grab', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--line)', visibility: step === 'msa' ? 'hidden' : 'visible' }}
             aria-label="OpenFold3 가 예측한 PARP1 과 니라파립, DiffDock 포즈, 결정 구조 4R6E. 드래그로 회전, 휠로 확대 · 축소, 오른쪽 드래그로 이동합니다." />
           {(step === 'of3' || step === 'dd' || step === 'bz') && <div className="row" style={{ position: 'absolute', right: 40, top: 14, zIndex: 3, gap: 8, alignItems: 'center' }}>
             <button className="btn" style={{ padding: '6px 12px', fontSize: 12 }} onClick={() => resetCam.current()}
@@ -370,7 +370,8 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
             </div>
           )}
           {step === 'msa' && (
-            <div key="ov-msa" className="fade-in" style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
+            // MSA 단계에서는 뒤의 3D 단백질을 숨기고 불투명한 바탕을 깔아, 페이드 동안 단백질 잔상이 비치지 않게 합니다
+            <div key="ov-msa" style={{ position: 'absolute', inset: 0, zIndex: 1, background: '#070b16', borderRadius: 14 }}>
               <MsaAnimation msa={hero.msa} query={hero.msa.query} duration={only ? 9000 : 2800} />
             </div>
           )}

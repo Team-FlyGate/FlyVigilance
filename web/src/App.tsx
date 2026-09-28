@@ -91,7 +91,7 @@ export default function App() {
       <div className="shell">
         <nav className="nav">
           <a className="brand" href="#/overview" onClick={() => go('overview')} title="홈(개요)으로" aria-label="FlyGate 홈으로" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-            <svg className="brand-mark" viewBox="0 0 64 64"><defs><radialGradient id="bm" cx="50%" cy="45%" r="55%"><stop offset="0" stopColor="#9ffcff" /><stop offset="0.55" stopColor="#2bd9ff" /><stop offset="1" stopColor="#0a1830" /></radialGradient></defs><rect width="64" height="64" rx="14" fill="#0a1122" /><ellipse cx="32" cy="30" rx="20" ry="15" fill="url(#bm)" opacity=".9" /><path d="M12 30c6-8 14-8 20 0s14 8 20 0" stroke="#76b900" strokeWidth="3" fill="none" strokeLinecap="round" /><circle cx="32" cy="46" r="4" fill="#ffb547" /></svg>
+            <img className="brand-mark" src="/brand/flygate-logo-192_v1.0.0.png" alt="" width="44" height="44" />
             <div>
               <div className="brand-name">FlyGate</div>
               <div className="brand-sub" style={{ letterSpacing: 0.4, textTransform: 'none' }}>Discovery → Vigilance</div>

@@ -46,7 +46,8 @@ export default function MsaAnimation({ msa, query, duration = 9000, loop = false
         x.fillStyle = '#f4f7ff'; x.fillText(query[r - 1] ?? AA_QUERY_FALLBACK, padL + c * cw + cw / 2, top + 2)
       }
       x.textAlign = 'left'; x.fillStyle = '#37e6ff'; x.fillText('PARP1 (쿼리)', 14, top + 2)
-      // 최근에 들어온 서열이 위에 오도록
+      // 최근에 들어온 서열이 위에 오도록. 오른쪽에서 미끄러져 들어오는 줄이 창 밖으로 넘치지 않게 잘라 그립니다
+      x.save(); x.beginPath(); x.rect(0, top + 8, w - 14, rowH * (vis + 1)); x.clip()
       for (let j = 0; j < vis; j++) {
         const idx = arrived - 1 - j + (frac > 0 ? 1 : 0)
         if (idx < 0 || idx >= N) continue
@@ -66,6 +67,7 @@ export default function MsaAnimation({ msa, query, duration = 9000, loop = false
         }
         x.globalAlpha = 1
       }
+      x.restore()
 
       // ── 아래: 전체 정렬 지도 + 보존도 막대 ──
       const mapTop = h * 0.6, mapH = h - mapTop - 44, mapL = 14, mapW = w - 28

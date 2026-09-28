@@ -84,8 +84,8 @@ a { color: var(--c-sense); }
   display: flex; flex-direction: column; padding: 18px 12px; gap: 4px;
 }
 .brand { display: flex; align-items: center; gap: 10px; padding: 4px 8px 18px; }
-.brand-mark { width: 34px; height: 34px; }
-.brand-name { font-family: var(--font); font-weight: 700; font-size: 17px; letter-spacing: 0.2px; }
+.brand-mark { width: 44px; height: 44px; border-radius: 10px; background: #fff; object-fit: contain; }
+.brand-name { font-family: var(--font); font-weight: 800; font-size: 23px; letter-spacing: 0.1px; line-height: 1.1; }
 .brand-sub { font-family: var(--mono); font-size: 9.5px; color: var(--text-3); letter-spacing: 1.4px; text-transform: uppercase; }
 .nav-sec { font-family: var(--mono); font-size: 10px; letter-spacing: 1.6px; color: var(--text-3); text-transform: uppercase; padding: 14px 10px 6px; }
 .nav-item {
@@ -245,6 +245,7 @@ svg text { font-family: var(--mono); }
   display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 12px 10px 4px;
   font-family: var(--mono); font-size: 10px; letter-spacing: 1.2px; color: var(--text-3); text-transform: uppercase;
 }
+.nav-grp span, .nav-grp b { white-space: nowrap; }
 .nav-grp b { font-family: var(--font); font-size: 11.5px; font-weight: 600; letter-spacing: .2px; text-transform: none; }
 .nav-item.nav-reel { margin-top: 10px; text-decoration: none; border-color: rgba(255, 79, 216, 0.35); }
 .nav-sublink { font-family: var(--mono); font-size: 10.5px; color: var(--text-3); text-decoration: none; padding: 3px 10px 0 39px; }
