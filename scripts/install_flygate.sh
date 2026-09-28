@@ -9,7 +9,7 @@ BIN="${1:-$HOME/.local/bin}"
 if [ ! -x "$ROOT/.venv/bin/python" ]; then
   python3 -m venv "$ROOT/.venv"
 fi
-"$ROOT/.venv/bin/pip" install -q -r "$ROOT/requirements.txt" duckdb
+"$ROOT/.venv/bin/pip" install -q -r "$ROOT/requirements.txt" duckdb keyring
 
 mkdir -p "$BIN"
 ln -sf "$ROOT/agent/bin/flygate" "$BIN/flygate"
