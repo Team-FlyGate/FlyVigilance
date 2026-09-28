@@ -6,6 +6,7 @@ import SplitTarget, { type XaSplit } from './SplitTarget'
 import MsaAnimation from './MsaAnimation'
 import AffinityMeter from './AffinityMeter'
 import { useBrain } from '../lib/brain'
+import { t } from '../lib/i18n'
 import { ballStick, conservationColor, disposeAll, dust, glowSprite, makeRenderer, plddtColor, ribbon, setOpacity, type Ligand } from '../lib/molScene'
 
 // STEP 1 대표 장면(쇼릴 03 장면의 3D 판): OpenFold3 NIM 이 예측한 PARP1 + 니라파립 복합체를 가운데 두고,
@@ -31,7 +32,11 @@ export interface HeroDrug {
   xa: { ligand: Ligand; dd_conf: number; vina: number | null }
 }
 export const HERO_DRUGS = ['niraparib', 'talazoparib', 'rucaparib'] as const
-export const DRUG_LABEL: Record<string, string> = { niraparib: '니라파립', talazoparib: '탈라조파립', rucaparib: '루카파립' }
+// 약물 표시 이름은 읽을 때마다 지금 언어로 돌려줍니다(getter). 부르는 쪽은 DRUG_LABEL[d] 그대로 씁니다.
+const DRUG_KO: Record<string, string> = { niraparib: '니라파립', talazoparib: '탈라조파립', rucaparib: '루카파립' }
+const DRUG_EN: Record<string, string> = { niraparib: 'Niraparib', talazoparib: 'Talazoparib', rucaparib: 'Rucaparib' }
+export const DRUG_LABEL: Record<string, string> = Object.defineProperties({} as Record<string, string>,
+  Object.fromEntries(Object.keys(DRUG_KO).map((k) => [k, { enumerable: true, get: () => t(DRUG_KO[k], DRUG_EN[k]) }])))
 // Boltz-2 장면에서 고르지 않은 억제제의 색 (고른 약물은 늘 주황)
 export const PARP_COLOR: Record<string, string> = { '15r': '#2fd6c8', pamiparib: '#a58bff', rucaparib: '#ff7ab6', talazoparib: '#7ce38b', niraparib: '#f2e36b' }
 // 고른 약물은 단계 페이지를 옮겨 다녀도 유지합니다
@@ -49,20 +54,23 @@ const STEPS = [
   { id: 'of3', label: 'OpenFold3', tech: 'NIM', t0: 3000, t1: 11000 },
   { id: 'dd', label: 'DiffDock', tech: 'NIM', t0: 11000, t1: 19000 },
   { id: 'bz', label: 'Boltz-2', tech: 'NIM', t0: 19000, t1: 24500 },
-  { id: 'critic', label: '크리틱', tech: 'NEMOTRON', t0: 24500, t1: 31000 },
+  { id: 'critic', label: 'Critic', tech: 'NEMOTRON', t0: 24500, t1: 31000 },
 ] as const
 const LOOP = 31000
 // 3D 장면 HUD (FDDD 쇼릴처럼 한 줄 태그 + 타자처럼 찍히는 제목)
-const HUD: Record<string, [string, string]> = {
-  msa: ['MSA-SEARCH · 101 SEQUENCES · 보존도', '약물이 붙는 자리는 더 잘 보존됩니다'],
-  of3: ['OPENFOLD3 · PARP1 촉매 도메인 · 352 잔기', '서열에서 단백질 구조를 그립니다'],
-  dd: ['DIFFDOCK · POSE 1 / 5 · 4R6E', '니라파립 → PARP1 결합 자리'],
-  bz: ['BOLTZ-2 · PARP1 억제제 4종 · 같은 포켓', '같은 표적 안에서만 세기를 비교합니다'],
-  critic: ['CRITIC · PARP1 | FACTOR XA', '다른 표적의 점수는 비교할 수 없습니다'],
-}
+const HUD = (): Record<string, [string, string]> => ({
+  msa: [t('MSA-SEARCH · 101 SEQUENCES · 보존도', 'MSA-SEARCH · 101 SEQUENCES · CONSERVATION'), t('약물이 붙는 자리는 더 잘 보존됩니다', 'Drug-binding sites are better conserved')],
+  of3: [t('OPENFOLD3 · PARP1 촉매 도메인 · 352 잔기', 'OPENFOLD3 · PARP1 CATALYTIC DOMAIN · 352 RESIDUES'), t('서열에서 단백질 구조를 그립니다', 'Drawing protein structure from sequence')],
+  dd: ['DIFFDOCK · POSE 1 / 5 · 4R6E', t('니라파립 → PARP1 결합 자리', 'Niraparib → PARP1 binding site')],
+  bz: [t('BOLTZ-2 · PARP1 억제제 4종 · 같은 포켓', 'BOLTZ-2 · 4 PARP1 INHIBITORS · SAME POCKET'), t('같은 표적 안에서만 세기를 비교합니다', 'Strength is compared only within one target')],
+  critic: ['CRITIC · PARP1 | FACTOR XA', t('다른 표적의 점수는 비교할 수 없습니다', 'Scores across targets are not comparable')],
+})
 // 메뉴가 바뀔 때 커넥텀에서 반짝일 층 (STEP 2 관제 센터와 같은 시뮬레이터를 씁니다)
 const STEP_LAYERS: Record<string, string[]> = { msa: ['sense'], of3: ['encode'], dd: ['reflex', 'memory'], bz: ['memory', 'deliberate'], critic: ['critic', 'action'] }
-const FOCUS: Record<string, string> = { msa: '감각 입력 · 서열 정렬', of3: '특징 부호화 · 구조 예측', dd: '반사 · 기억 · 포즈 판단', bz: '기억 · 숙고 · 친화도', critic: '억제성 크리틱 · 행동' }
+const FOCUS = (): Record<string, string> => t(
+  { msa: '감각 입력 · 서열 정렬', of3: '특징 부호화 · 구조 예측', dd: '반사 · 기억 · 포즈 판단', bz: '기억 · 숙고 · 친화도', critic: '억제성 크리틱 · 행동' },
+  { msa: 'Sensory input · sequence alignment', of3: 'Feature encoding · structure prediction', dd: 'Reflex · memory · pose judgment', bz: 'Memory · deliberation · affinity', critic: 'Inhibitory critic · action' },
+)
 // 장면 속 사건이 일어나는 시각(ms)과 자극할 층. 반복 재생 때마다 다시 울립니다
 const EVENTS: [number, string, number][] = [
   [600, 'sense', 0.45], [2200, 'sense', 0.45],
@@ -76,8 +84,8 @@ const ease = (k: number) => 1 - Math.pow(1 - clamp(k), 3)
 
 function Stepper({ step, done, onPick, m, x, ddRmsd }: { step: StepId; done: (id: StepId) => boolean; onPick: (id: StepId) => void; m: HeroScene['metrics']; x: HeroExtras; ddRmsd: number | null }) {
   const val: Record<StepId, string> = {
-    msa: `상동 서열 ${m.msa_homologs}개`, of3: `pLDDT ${m.plddt.toFixed(2)}`, dd: `재도킹 ${ddRmsd?.toFixed(2) ?? '–'} Å`,
-    bz: x.bench ? `Spearman ${x.bench.spearman.toFixed(3)}` : 'Boltz-2', critic: x.critic ? `과잉해석 ${x.critic.caught}/${x.critic.n_over} 반려` : '크리틱',
+    msa: t(`상동 서열 ${m.msa_homologs}개`, `${m.msa_homologs} homologs`), of3: `pLDDT ${m.plddt.toFixed(2)}`, dd: t(`재도킹 ${ddRmsd?.toFixed(2) ?? '–'} Å`, `Redock ${ddRmsd?.toFixed(2) ?? '–'} Å`),
+    bz: x.bench ? `Spearman ${x.bench.spearman.toFixed(3)}` : 'Boltz-2', critic: x.critic ? t(`과잉해석 ${x.critic.caught}/${x.critic.n_over} 반려`, `${x.critic.caught}/${x.critic.n_over} overclaims rejected`) : t('크리틱', 'Critic'),
   }
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 10 }}>
@@ -299,47 +307,51 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
       {[['#37e6ff', '≥ 90'], ['#4d8dff', '70–90'], ['#ffcc4d', '50–70'], ['#ff8b35', '< 50']].map(([c, l]) => <span key={l}><i style={{ display: 'inline-block', width: 16, height: 3, background: c, marginRight: 6, verticalAlign: 'middle', boxShadow: `0 0 8px ${c}` }} />{l}</span>)}
     </div>
   )
-  const hud: [string, string] = step === 'dd' ? [`DIFFDOCK · POSE 1 / 5 · ${D.crystal_pdb}`, `${dname} → PARP1 결합 자리`]
-    : step === 'bz' ? [`BOLTZ-2 · PARP1 억제제 ${hero.parp_set.length}종 · 같은 포켓`, HUD.bz[1]] : HUD[step]
+  const hudAll = HUD()
+  const hud: [string, string] = step === 'dd' ? [`DIFFDOCK · POSE 1 / 5 · ${D.crystal_pdb}`, t(`${dname} → PARP1 결합 자리`, `${dname} → PARP1 binding site`)]
+    : step === 'bz' ? [t(`BOLTZ-2 · PARP1 억제제 ${hero.parp_set.length}종 · 같은 포켓`, `BOLTZ-2 · ${hero.parp_set.length} PARP1 INHIBITORS · SAME POCKET`), hudAll.bz[1]] : hudAll[step]
   // 크리틱이 반려하는 주장: Vina 가 두 표적 모두 있으면 Vina, 아니면 DiffDock 신뢰도로 씁니다(어느 쪽이든 교차 표적 비교)
   const useVina = D.vina !== null && D.xa.vina !== null
   const pv = useVina ? D.vina! : D.dd_conf, xv = useVina ? D.xa.vina! : D.xa.dd_conf
   const hi = useVina ? (pv <= xv ? 'PARP1' : 'Factor Xa') : (pv >= xv ? 'PARP1' : 'Factor Xa')
-  const critClaim = `“${dname}은(는) ${useVina ? 'Vina' : 'DiffDock 신뢰도'} PARP1 ${pv}, Factor Xa ${xv} 이므로 ${hi} 에 선택적이다”`
+  const critClaim = t(`“${dname}은(는) ${useVina ? 'Vina' : 'DiffDock 신뢰도'} PARP1 ${pv}, Factor Xa ${xv} 이므로 ${hi} 에 선택적이다”`,
+    `“${dname} scores ${useVina ? 'Vina' : 'DiffDock confidence'} PARP1 ${pv} and Factor Xa ${xv}, so it is selective for ${hi}”`)
   const stat: Record<StepId, ReactNode> = {
-    msa: <Big eyebrow="MSA-Search NIM · 상동 서열 정렬" value={String(m.msa_homologs)} unit="서열"
-      lines={[<span>결합 포켓 잔기 {hero.msa.pocket_residues.length}개의 보존도 <b style={{ color: 'var(--jev)' }}>{hero.msa.pocket_mean.toFixed(2)}</b> · 단백질 전체 {hero.msa.overall_mean.toFixed(2)}</span>,
-        <span className="dim">보존도 = 상동 서열 중 PARP1 과 같은 아미노산의 비율 · 이 정렬이 OpenFold3 입력이 됩니다</span>]}
-      foot={<span className="mono" style={{ fontSize: 11, color: 'var(--ok)' }}>포켓 잔기가 더 잘 보존된다는 것은 여러 종에서 약물이 붙는 자리를 지켜 왔다는 뜻입니다</span>} />,
-    of3: <Big eyebrow={`OpenFold3 NIM · 복합체 예측 · ${m.of3_seconds} s`} value={m.plddt.toFixed(2)} unit="pLDDT"
-      lines={[`pTM ${m.ptm} · ipTM ${m.iptm}`, `4R6E 결정 구조 대비 Cα RMSD ${m.ca_rmsd_kabsch.toFixed(1)} Å · ${m.matched_ca} Cα`, <span style={{ color: 'var(--jev)' }}>리간드 RMSD {m.of3_ligand_rmsd} Å</span>]}
-      foot={<div className="stack" style={{ gap: 12 }}>{legend}<div className="mono" style={{ fontSize: 11, color: 'var(--ok)' }}>고전 기준 · pLDDT ≥ 90 · 결정 구조 대비 Cα RMSD ≤ 2 Å</div></div>} />,
-    dd: <Big eyebrow={`DiffDock NIM · ${dname} · 포즈 ${D.pose_eval.length}개 중 1순위`} value={D.dd_rmsd?.toFixed(2) ?? '–'} unit="Å RMSD"
-      lines={[`결정 구조 ${D.crystal_pdb}${D.crystal_pdb !== '4R6E' ? '(4R6E 에 Cα 로 겹침)' : ''} 의 ${dname} 자리 재현 · 신뢰도 ${D.dd_conf}`,
-        <span className="dim">나머지 포즈 {D.pose_eval.slice(1).map((p) => (p.rmsd === null ? '–' : p.rmsd.toFixed(2))).join(' · ')} Å</span>,
-        D.dd_rmsd !== null && D.dd_rmsd <= 2 ? <span style={{ color: 'var(--ok)' }}>고전 기준 · 1순위 포즈 RMSD ≤ 2 Å 통과</span> : <span style={{ color: 'var(--bad)' }}>고전 기준 · 1순위 포즈 RMSD ≤ 2 Å 미달</span>,
-        D.dd_conf < 0 && D.dd_rmsd !== null && D.dd_rmsd <= 2 ? <span className="dim" style={{ fontSize: 13 }}>신뢰도는 음수인데 자리는 맞았습니다 · 신뢰도는 정답 여부의 확률 추정일 뿐입니다</span> : '']} />,
-    bz: <Big eyebrow="Boltz-2 NIM · 같은 PARP1 포켓 · 친화도 예측" value={D.boltz_pic50?.toFixed(2) ?? '–'} unit={`pIC50 · ${dname}`}
+    msa: <Big eyebrow={t('MSA-Search NIM · 상동 서열 정렬', 'MSA-Search NIM · homologous sequence alignment')} value={String(m.msa_homologs)} unit={t('서열', 'sequences')}
+      lines={[t(<span>결합 포켓 잔기 {hero.msa.pocket_residues.length}개의 보존도 <b style={{ color: 'var(--jev)' }}>{hero.msa.pocket_mean.toFixed(2)}</b> · 단백질 전체 {hero.msa.overall_mean.toFixed(2)}</span>,
+          <span>Conservation of the {hero.msa.pocket_residues.length} binding-pocket residues <b style={{ color: 'var(--jev)' }}>{hero.msa.pocket_mean.toFixed(2)}</b> · whole protein {hero.msa.overall_mean.toFixed(2)}</span>),
+        <span className="dim">{t('보존도 = 상동 서열 중 PARP1 과 같은 아미노산의 비율 · 이 정렬이 OpenFold3 입력이 됩니다', 'Conservation = share of homologous sequences with the same amino acid as PARP1 · this alignment becomes the OpenFold3 input')}</span>]}
+      foot={<span className="mono" style={{ fontSize: 11, color: 'var(--ok)' }}>{t('포켓 잔기가 더 잘 보존된다는 것은 여러 종에서 약물이 붙는 자리를 지켜 왔다는 뜻입니다', 'Better-conserved pocket residues mean the drug-binding site has been preserved across species')}</span>} />,
+    of3: <Big eyebrow={t(`OpenFold3 NIM · 복합체 예측 · ${m.of3_seconds} s`, `OpenFold3 NIM · complex prediction · ${m.of3_seconds} s`)} value={m.plddt.toFixed(2)} unit="pLDDT"
+      lines={[`pTM ${m.ptm} · ipTM ${m.iptm}`, t(`4R6E 결정 구조 대비 Cα RMSD ${m.ca_rmsd_kabsch.toFixed(1)} Å · ${m.matched_ca} Cα`, `Cα RMSD vs. the 4R6E crystal structure ${m.ca_rmsd_kabsch.toFixed(1)} Å · ${m.matched_ca} Cα`), <span style={{ color: 'var(--jev)' }}>{t('리간드 RMSD', 'Ligand RMSD')} {m.of3_ligand_rmsd} Å</span>]}
+      foot={<div className="stack" style={{ gap: 12 }}>{legend}<div className="mono" style={{ fontSize: 11, color: 'var(--ok)' }}>{t('고전 기준 · pLDDT ≥ 90 · 결정 구조 대비 Cα RMSD ≤ 2 Å', 'Classic criteria · pLDDT ≥ 90 · Cα RMSD ≤ 2 Å vs. the crystal structure')}</div></div>} />,
+    dd: <Big eyebrow={t(`DiffDock NIM · ${dname} · 포즈 ${D.pose_eval.length}개 중 1순위`, `DiffDock NIM · ${dname} · top pose of ${D.pose_eval.length}`)} value={D.dd_rmsd?.toFixed(2) ?? '–'} unit="Å RMSD"
+      lines={[t(`결정 구조 ${D.crystal_pdb}${D.crystal_pdb !== '4R6E' ? '(4R6E 에 Cα 로 겹침)' : ''} 의 ${dname} 자리 재현 · 신뢰도 ${D.dd_conf}`,
+          `Reproduces the ${dname} site in crystal structure ${D.crystal_pdb}${D.crystal_pdb !== '4R6E' ? ' (superposed on 4R6E by Cα)' : ''} · confidence ${D.dd_conf}`),
+        <span className="dim">{t('나머지 포즈', 'Other poses')} {D.pose_eval.slice(1).map((p) => (p.rmsd === null ? '–' : p.rmsd.toFixed(2))).join(' · ')} Å</span>,
+        D.dd_rmsd !== null && D.dd_rmsd <= 2 ? <span style={{ color: 'var(--ok)' }}>{t('고전 기준 · 1순위 포즈 RMSD ≤ 2 Å 통과', 'Classic criterion · top-pose RMSD ≤ 2 Å: pass')}</span> : <span style={{ color: 'var(--bad)' }}>{t('고전 기준 · 1순위 포즈 RMSD ≤ 2 Å 미달', 'Classic criterion · top-pose RMSD ≤ 2 Å: not met')}</span>,
+        D.dd_conf < 0 && D.dd_rmsd !== null && D.dd_rmsd <= 2 ? <span className="dim" style={{ fontSize: 13 }}>{t('신뢰도는 음수인데 자리는 맞았습니다 · 신뢰도는 정답 여부의 확률 추정일 뿐입니다', 'Confidence is negative, yet the site is correct · confidence is only an estimated probability of being right')}</span> : '']} />,
+    bz: <Big eyebrow={t('Boltz-2 NIM · 같은 PARP1 포켓 · 친화도 예측', 'Boltz-2 NIM · same PARP1 pocket · affinity prediction')} value={D.boltz_pic50?.toFixed(2) ?? '–'} unit={`pIC50 · ${dname}`}
       lines={[...hero.parp_set.map((x) => (
         <div className="row between" style={{ fontSize: 13.5, gap: 10, fontWeight: x.name === drug ? 700 : 500 }} key={x.name}>
           <span><i style={{ display: 'inline-block', width: 9, height: 9, borderRadius: 5, marginRight: 8, background: x.name === drug ? '#ffb547' : PARP_COLOR[x.name] }} />{x.name === '15r' ? '15R' : x.name.charAt(0).toUpperCase() + x.name.slice(1)}</span>
-          <span className="num">예측 {x.boltz_pic50?.toFixed(2) ?? '–'} · 실측 {x.chembl ?? '기록 없음'}</span>
+          <span className="num">{t('예측', 'Predicted')} {x.boltz_pic50?.toFixed(2) ?? '–'} · {t('실측', 'measured')} {x.chembl ?? t('기록 없음', 'no record')}</span>
         </div>)),
-        extras.bench ? <span className="dim" style={{ fontSize: 13 }}>PARP1 {extras.bench.n}종 벤치마크 Spearman {extras.bench.spearman.toFixed(3)} · MAE {extras.bench.mae} log</span> : '']} />,
-    critic: <Big eyebrow={extras.critic ? `크리틱 3단 · ${extras.critic.model} · ${extras.critic.sec} s` : '크리틱 3단'} value={extras.critic ? `${extras.critic.caught}/${extras.critic.n_over}` : '–'} unit="과잉해석 반려"
+        extras.bench ? <span className="dim" style={{ fontSize: 13 }}>{t(`PARP1 ${extras.bench.n}종 벤치마크`, `PARP1 benchmark of ${extras.bench.n} drugs ·`)} Spearman {extras.bench.spearman.toFixed(3)} · MAE {extras.bench.mae} log</span> : '']} />,
+    critic: <Big eyebrow={extras.critic ? t(`크리틱 3단 · ${extras.critic.model} · ${extras.critic.sec} s`, `Three-stage critic · ${extras.critic.model} · ${extras.critic.sec} s`) : t('크리틱 3단', 'Three-stage critic')} value={extras.critic ? `${extras.critic.caught}/${extras.critic.n_over}` : '–'} unit={t('과잉해석 반려', 'overclaims rejected')}
       lines={[<span style={{ fontSize: 14 }}>{critClaim}</span>,
-        <span><span className="chip bad">REJECT</span> <span className="dim" style={{ fontSize: 13 }}>숫자는 모두 실측이지만 다른 표적의 도킹 점수는 비교할 수 없습니다</span></span>,
-        extras.critic ? <span className="dim" style={{ fontSize: 13 }}>정상 주장 {extras.critic.passed}/{extras.critic.n_valid} 통과</span> : '']} />,
+        <span><span className="chip bad">REJECT</span> <span className="dim" style={{ fontSize: 13 }}>{t('숫자는 모두 실측이지만 다른 표적의 도킹 점수는 비교할 수 없습니다', 'All numbers are real, but docking scores for different targets cannot be compared')}</span></span>,
+        extras.critic ? <span className="dim" style={{ fontSize: 13 }}>{t(`정상 주장 ${extras.critic.passed}/${extras.critic.n_valid} 통과`, `Valid claims passed ${extras.critic.passed}/${extras.critic.n_valid}`)}</span> : '']} />,
   }
 
   return (
     <div className="stack" style={{ gap: 14 }}>
       {!only && <div className="row between" style={{ marginBottom: -4 }}>
-        <span className="mono dim" style={{ fontSize: 10.5 }}>{held ? `${STEPS.find((s) => s.id === held)!.label} 단계를 반복 재생 중` : '다섯 단계를 차례로 재생 중 · 단계를 누르면 그 단계에 머뭅니다'}</span>
-        {held && <button className="chip" style={{ cursor: 'pointer' }} onClick={resume}>▶ 전체 자동 재생</button>}
+        <span className="mono dim" style={{ fontSize: 10.5 }}>{held ? t(`${STEPS.find((s) => s.id === held)!.label} 단계를 반복 재생 중`, `Looping the ${STEPS.find((s) => s.id === held)!.label} step`) : t('다섯 단계를 차례로 재생 중 · 단계를 누르면 그 단계에 머뭅니다', 'Playing all five steps in order · click a step to stay on it')}</span>
+        {held && <button className="chip" style={{ cursor: 'pointer' }} onClick={resume}>{t('▶ 전체 자동 재생', '▶ Play all steps')}</button>}
       </div>}
       <div className="row" style={{ gap: 8, alignItems: 'center' }}>
-        <span className="mono dim" style={{ fontSize: 10.5, letterSpacing: 1.2 }}>약물 선택 · PARP1 억제제</span>
+        <span className="mono dim" style={{ fontSize: 10.5, letterSpacing: 1.2 }}>{t('약물 선택 · PARP1 억제제', 'Choose a drug · PARP1 inhibitors')}</span>
         {HERO_DRUGS.filter((d) => d === 'niraparib' || hero.drugs?.[d]).map((d) => (
           <button key={d} className={`chip ${d === drug ? 'jev' : ''}`} style={{ cursor: 'pointer', fontSize: 12, padding: '4px 12px', fontWeight: d === drug ? 700 : 500 }}
             onClick={() => setDrug(d)}>{DRUG_LABEL[d]}{hero.drugs?.[d] && <span className="mono dim" style={{ marginLeft: 6, fontSize: 10 }}>{hero.drugs[d].crystal_pdb}</span>}</button>
@@ -349,10 +361,10 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
       <div className="grid" style={{ gridTemplateColumns: 'minmax(0, 1.35fr) minmax(320px, 1fr)', gap: 16, alignItems: 'start' }}>
         <div style={{ position: 'relative', height }}>
           <div ref={host} style={{ position: 'absolute', inset: 0, cursor: 'grab', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--line)', visibility: step === 'msa' ? 'hidden' : 'visible' }}
-            aria-label="OpenFold3 가 예측한 PARP1 과 니라파립, DiffDock 포즈, 결정 구조 4R6E. 드래그로 회전, 휠로 확대 · 축소, 오른쪽 드래그로 이동합니다." />
+            aria-label={t('OpenFold3 가 예측한 PARP1 과 니라파립, DiffDock 포즈, 결정 구조 4R6E. 드래그로 회전, 휠로 확대 · 축소, 오른쪽 드래그로 이동합니다.', 'PARP1 and niraparib as predicted by OpenFold3, DiffDock poses, and crystal structure 4R6E. Drag to rotate, scroll to zoom, right-drag to pan.')} />
           {(step === 'of3' || step === 'dd' || step === 'bz') && <div className="row" style={{ position: 'absolute', right: 40, top: 14, zIndex: 3, gap: 8, alignItems: 'center' }}>
             <button className="btn" style={{ padding: '6px 12px', fontSize: 12 }} onClick={() => resetCam.current()}
-              title="드래그로 회전 · 휠로 확대/축소 · 오른쪽 드래그로 이동합니다. 누르면 단백질 전체가 보이는 시점으로 돌아갑니다.">⤢ 전체 보기</button>
+              title={t('드래그로 회전 · 휠로 확대/축소 · 오른쪽 드래그로 이동합니다. 누르면 단백질 전체가 보이는 시점으로 돌아갑니다.', 'Drag to rotate · scroll to zoom · right-drag to pan. Click to return to a view of the whole protein.')}>{t('⤢ 전체 보기', '⤢ Fit view')}</button>
           </div>}
           {step === 'critic' && (
             <div className="fade-in" style={{ position: 'absolute', top: 0, bottom: 0, right: 0, width: '50%', zIndex: 1, borderLeft: '1px solid var(--line2)', borderRadius: '0 14px 14px 0', overflow: 'hidden' }}>
@@ -385,11 +397,11 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
           <div ref={label} style={{ position: 'absolute', left: 0, top: 0, pointerEvents: 'none', transition: 'opacity .4s', opacity: 0,
             padding: '7px 11px', borderRadius: 8, background: 'rgba(5,9,18,0.82)', border: '1px solid rgba(255,181,71,0.45)', whiteSpace: 'nowrap' }}>
             <div className="mono" style={{ fontSize: 10, letterSpacing: 1.3, color: 'var(--jev)' }}>LIGAND · {dname}</div>
-            <div style={{ fontSize: 13.5, fontWeight: 600 }}>{tNow < 11000 ? '단백질과 함께 예측 (OpenFold3)' : tNow < 16400 ? 'DiffDock 1순위 포즈' : `결정 구조와 ${D.dd_rmsd ?? '–'} Å`}</div>
+            <div style={{ fontSize: 13.5, fontWeight: 600 }}>{tNow < 11000 ? t('단백질과 함께 예측 (OpenFold3)', 'Co-predicted with the protein (OpenFold3)') : tNow < 16400 ? t('DiffDock 1순위 포즈', 'DiffDock top pose') : t(`결정 구조와 ${D.dd_rmsd ?? '–'} Å`, `${D.dd_rmsd ?? '–'} Å from the crystal structure`)}</div>
           </div>
         </div>
         <div className="stack" style={{ gap: 14, alignSelf: 'stretch' }}>
-          <ConnectomePanel height={Math.round(height * 0.42)} focus={FOCUS[step]} />
+          <ConnectomePanel height={Math.round(height * 0.42)} focus={FOCUS()[step]} />
           <div style={{ minHeight: 280 }}>{stat[step]}</div>
         </div>
       </div>

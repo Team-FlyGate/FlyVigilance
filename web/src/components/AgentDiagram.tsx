@@ -1,4 +1,5 @@
 import { useMemo, type CSSProperties } from 'react'
+import { t } from '../lib/i18n'
 
 // Project-FlyGate 에이전트 구성도입니다. docs/images/flygate_agent_diagram_v1.1.0.png 와 같은 배치로
 // NemoClaw 과정의 네 층을 위에서 아래로 쌓습니다.
@@ -10,7 +11,8 @@ const W = 1360, H = 826
 const C = { green: '#76b900', tan: '#e2a74e', cyan: '#37e6ff', jev: '#ffb547', rule: '#8a97bd', critic: '#ff5d6c', human: '#f4f7ff', magenta: '#ff4fd8' }
 type Kind = 'data' | 'nim' | 'jev' | 'rule' | 'critic'
 const KC: Record<Kind, string> = { data: C.cyan, nim: C.green, jev: C.jev, rule: C.rule, critic: C.critic }
-const LEGEND: [string, string][] = [[C.cyan, '데이터 · 조회'], [C.green, 'NVIDIA NIM'], [C.jev, '비자기회귀 판단 모델'], [C.rule, '규칙'], [C.critic, '크리틱'], [C.human, '사람']]
+// 문구가 언어에 따라 바뀌는 목록은 렌더할 때 만듭니다.
+const legend = (): [string, string][] => [[C.cyan, t('데이터 · 조회', 'Data · lookup')], [C.green, 'NVIDIA NIM'], [C.jev, t('비자기회귀 판단 모델', 'Non-autoregressive judgment model')], [C.rule, t('규칙', 'Rule')], [C.critic, t('크리틱', 'Critic')], [C.human, t('사람', 'Human')]]
 const KR: CSSProperties = { fontFamily: 'var(--font-kr)' }
 const EN: CSSProperties = { fontFamily: 'var(--font)' }
 
@@ -30,29 +32,29 @@ function Icon({ d, x, y, s = 1, c, w = 1.6 }: { d: string; x: number; y: number;
   return <path d={d} transform={`translate(${x},${y}) scale(${s})`} fill="none" stroke={c} strokeWidth={w / s} strokeLinecap="round" strokeLinejoin="round" />
 }
 
-const NIM = [
-  { title: 'Nemotron 3 Super', lines: ['숙고 메모', '국내 보고 서식 구조화'], host: 'integrate.api', icon: ICON.chat },
+const nims = () => [
+  { title: 'Nemotron 3 Super', lines: [t('숙고 메모', 'Deliberation memos'), t('국내 보고 서식 구조화', 'Structuring Korean reports')], host: 'integrate.api', icon: ICON.chat },
   { title: 'BioNeMo NIM', lines: ['MSA-Search · OpenFold3', 'DiffDock · Boltz-2'], host: 'health.api', icon: ICON.molecule },
-  { title: 'Nemotron Safety Guard', lines: ['주장별 안전 검사', '개별 치료 조언 차단'], host: 'integrate.api', icon: ICON.shield },
+  { title: 'Nemotron Safety Guard', lines: [t('주장별 안전 검사', 'Per-claim safety check'), t('개별 치료 조언 차단', 'Blocks individual treatment advice')], host: 'integrate.api', icon: ICON.shield },
 ]
-const OTHER = [
-  { title: '비자기회귀 판단 모델', lines: ['Jev · TypeSafe AI', '타입 있는 확률 판단'], icon: ICON.bars, c: C.jev },
-  { title: 'openFDA · PubMed', lines: ['라벨 절 조회', '문헌 초록'], icon: ICON.doc, c: C.rule },
+const others = () => [
+  { title: t('비자기회귀 판단 모델', 'Judgment model'), lines: ['Jev · TypeSafe AI', t('타입 있는 확률 판단', 'Typed probabilities')], icon: ICON.bars, c: C.jev },
+  { title: 'openFDA · PubMed', lines: [t('라벨 절 조회', 'Label section lookup'), t('문헌 초록', 'Literature abstracts')], icon: ICON.doc, c: C.rule },
 ]
 
 type Step = [name: string, tech: string, kind: Kind]
-const STEP1: Step[] = [
-  ['PARP1 표적', 'PDB 4R6E', 'data'], ['MSA-Search', 'BioNeMo NIM', 'nim'], ['OpenFold3', 'BioNeMo NIM', 'nim'],
-  ['DiffDock', 'BioNeMo NIM', 'nim'], ['Boltz-2', 'BioNeMo NIM', 'nim'], ['크리틱', 'Nemotron 3 Super', 'critic'],
+const step1 = (): Step[] => [
+  [t('PARP1 표적', 'PARP1 target'), 'PDB 4R6E', 'data'], ['MSA-Search', 'BioNeMo NIM', 'nim'], ['OpenFold3', 'BioNeMo NIM', 'nim'],
+  ['DiffDock', 'BioNeMo NIM', 'nim'], ['Boltz-2', 'BioNeMo NIM', 'nim'], [t('크리틱', 'Critic'), 'Nemotron 3 Super', 'critic'],
 ]
-const STEP2: Step[] = [
-  ['FAERS 접수', 'DuckDB SQL', 'data'], ['규칙 게이트', 'ICH 최소 4요소', 'rule'], ['라벨 조회', 'openFDA', 'data'],
-  ['비자기회귀 판단', '7문항 · 한 번 호출', 'jev'], ['Nemotron 숙고', 'Nemotron 3 Super', 'nim'], ['크리틱 3단', '+ Safety Guard', 'critic'],
+const step2 = (): Step[] => [
+  [t('FAERS 접수', 'FAERS intake'), 'DuckDB SQL', 'data'], [t('규칙 게이트', 'Rule gate'), t('ICH 최소 4요소', 'ICH min. 4 items'), 'rule'], [t('라벨 조회', 'Label lookup'), 'openFDA', 'data'],
+  [t('비자기회귀 판단', 'NAR judgment'), t('7문항 · 한 번 호출', '7 Qs · one call'), 'jev'], [t('Nemotron 숙고', 'Deliberation'), 'Nemotron 3 Super', 'nim'], [t('크리틱 3단', '3-tier critic'), '+ Safety Guard', 'critic'],
 ]
 const EVIDENCE = ['faers:NIRAPARIB:thrombocytopenia', 'label:setid#warnings', 'pubmed:PMID#rct', 'nim:diffdock']
-const MECH: [string, string][] = [
-  [ICON.ban, '기본 차단 egress · 허용 목록만 통과'], [ICON.folder, 'Landlock · 쓰기 경로를 작업 폴더로 제한'],
-  [ICON.gear, 'seccomp · 위험한 시스템 호출 차단'], [ICON.user, 'non-root · 권한 낮은 사용자로 실행'],
+const mech = (): [string, string][] => [
+  [ICON.ban, t('기본 차단 egress · 허용 목록만 통과', 'Default-deny egress · allow list only')], [ICON.folder, t('Landlock · 쓰기 경로를 작업 폴더로 제한', 'Landlock · writes only to work folders')],
+  [ICON.gear, t('seccomp · 위험한 시스템 호출 차단', 'seccomp · blocks risky system calls')], [ICON.user, t('non-root · 권한 낮은 사용자로 실행', 'non-root · runs as a low-privilege user')],
 ]
 const DEFAULT_FILES = ['SOUL.md', 'AGENTS.md', 'TOOLS.md', 'HEARTBEAT.md', 'MEMORY.md']
 
@@ -96,6 +98,7 @@ export default function AgentDiagram({ files, skills }: { files?: string[]; skil
   const still = useMemo(() => typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches, [])
   const ws = files && files.length ? files : DEFAULT_FILES
   const shown = ws.length > 8 ? [...ws.slice(0, 7), `+${ws.length - 7}`] : ws
+  const NIM = nims(), OTHER = others(), STEP1 = step1(), STEP2 = step2(), MECH = mech(), LEGEND = legend()
   const nimX = NIM.map((_, i) => 36 + i * 282)
   const othX = OTHER.map((_, i) => 910 + i * 214)
   const ends = [...nimX.map((x) => x + 136), ...othX.map((x) => x + 102)]
@@ -109,7 +112,7 @@ export default function AgentDiagram({ files, skills }: { files?: string[]; skil
   return (
     <div>
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block' }} role="img"
-        aria-label="Project-FlyGate 에이전트 구성도: ① LLM 엔드포인트 ② OpenClaw 하네스 ③ OpenShell 샌드박스 ④ NemoClaw 블루프린트. 하네스 안에서 STEP 1 FlyDiscovery는 시판 전 후보 물질을, STEP 2 FlyVigilance는 시판 후 허가 약물을 다룹니다(데모: 니라파립)">
+        aria-label={t('Project-FlyGate 에이전트 구성도: ① LLM 엔드포인트 ② OpenClaw 하네스 ③ OpenShell 샌드박스 ④ NemoClaw 블루프린트. 하네스 안에서 STEP 1 FlyDiscovery는 시판 전 후보 물질을, STEP 2 FlyVigilance는 시판 후 허가 약물을 다룹니다(데모: 니라파립)', 'Project-FlyGate agent diagram: ① LLM endpoints ② OpenClaw harness ③ OpenShell sandbox ④ NemoClaw blueprint. Inside the harness, STEP 1 FlyDiscovery handles pre-market candidate compounds and STEP 2 FlyVigilance handles marketed, approved drugs (demo drug: niraparib)')}>
         <defs>
           <filter id="ad-glow"><feGaussianBlur stdDeviation="2.5" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
           <marker id="ad-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="rgba(169,182,211,0.85)" /></marker>
@@ -118,7 +121,7 @@ export default function AgentDiagram({ files, skills }: { files?: string[]; skil
 
         {/* ① LLM 엔드포인트: NVIDIA NIM */}
         <rect x={20} y={14} width={864} height={132} rx={14} fill="rgba(118,185,0,0.05)" stroke={C.green} strokeOpacity={0.6} />
-        <text x={38} y={40} fill={C.green} fontSize={15} fontWeight={700} style={KR}>① LLM 엔드포인트 · NVIDIA NIM</text>
+        <text x={38} y={40} fill={C.green} fontSize={15} fontWeight={700} style={KR}>{t('① LLM 엔드포인트 · NVIDIA NIM', '① LLM endpoints · NVIDIA NIM')}</text>
         <text x={866} y={40} textAnchor="end" fill="var(--text-3)" fontSize={11}>*.api.nvidia.com</text>
         {NIM.map((e, i) => {
           const x = nimX[i]
@@ -135,7 +138,7 @@ export default function AgentDiagram({ files, skills }: { files?: string[]; skil
 
         {/* 그 밖에 허용된 외부 API (NVIDIA 밖) */}
         <rect x={896} y={14} width={444} height={132} rx={14} fill="rgba(138,151,189,0.04)" stroke={C.rule} strokeOpacity={0.6} strokeDasharray="7 5" />
-        <text x={914} y={40} fill="var(--text-2)" fontSize={15} fontWeight={700} style={KR}>허용된 외부 API</text>
+        <text x={914} y={40} fill="var(--text-2)" fontSize={15} fontWeight={700} style={KR}>{t('허용된 외부 API', 'Allowed external APIs')}</text>
         {OTHER.map((e, i) => {
           const x = othX[i]
           return (
@@ -166,8 +169,8 @@ export default function AgentDiagram({ files, skills }: { files?: string[]; skil
         {/* ③ OpenShell 샌드박스 */}
         <rect x={20} y={SAND} width={1320} height={522} rx={20} fill="rgba(226,167,78,0.03)" stroke={C.tan} strokeWidth={1.8} strokeDasharray="10 6" className={still ? '' : 'ants'} />
         <Icon d={ICON.shield} x={36} y={229} s={0.9} c={C.tan} />
-        <text x={62} y={246} fill={C.tan} fontSize={15} fontWeight={700} style={KR}>③ OpenShell 샌드박스</text>
-        <text x={234} y={246} fill="var(--text-3)" fontSize={12.5} style={KR}>정책이 허용한 네트워크 · 파일 · 시스템 호출만 통과합니다</text>
+        <text x={62} y={246} fill={C.tan} fontSize={15} fontWeight={700} style={KR}>{t('③ OpenShell 샌드박스', '③ OpenShell sandbox')}</text>
+        <text x={234} y={246} fill="var(--text-3)" fontSize={12.5} style={KR}>{t('정책이 허용한 네트워크 · 파일 · 시스템 호출만 통과합니다', 'Only network · file · system calls the policy allows get through')}</text>
 
         {/* egress 관문 알약: 샌드박스 윗변 위에 얹습니다 */}
         <path d={`M${GATE},${HARN} V${SAND + 15}`} stroke={C.tan} strokeWidth={1.6} strokeDasharray="3 4" />
@@ -176,16 +179,16 @@ export default function AgentDiagram({ files, skills }: { files?: string[]; skil
         <rect x={GATE - 86} y={SAND - 15} width={172} height={30} rx={15} fill="#140f06" stroke={C.tan} strokeWidth={1.6} />
         <rect x={GATE - 71} y={SAND - 4} width={13} height={10} rx={2} fill="none" stroke={C.tan} strokeWidth={1.6} />
         <path d={`M${GATE - 68.5},${SAND - 4} v-3 a4,4 0 0 1 8,0 v3`} fill="none" stroke={C.tan} strokeWidth={1.6} />
-        <text x={GATE - 50} y={SAND + 5} fill={C.tan} fontSize={13} fontWeight={700} style={KR}>egress 허용 목록</text>
+        <text x={GATE - 50} y={SAND + 5} fill={C.tan} fontSize={13} fontWeight={700} style={KR}>{t('egress 허용 목록', 'egress allow list')}</text>
 
         {/* ② OpenClaw 하네스 */}
         <rect x={40} y={HARN} width={1280} height={408} rx={14} fill="rgba(118,185,0,0.035)" stroke={C.green} strokeOpacity={0.7} strokeWidth={1.4} />
-        <text x={58} y={284} fill={C.green} fontSize={15} fontWeight={700} style={KR}>② OpenClaw 하네스</text>
-        <text x={218} y={284} fill="var(--text-3)" fontSize={12.5} style={KR}>세션 · 워크스페이스 파일 · 도구를 가진 에이전트 런타임</text>
+        <text x={58} y={284} fill={C.green} fontSize={15} fontWeight={700} style={KR}>{t('② OpenClaw 하네스', '② OpenClaw harness')}</text>
+        <text x={218} y={284} fill="var(--text-3)" fontSize={12.5} style={KR}>{t('세션 · 워크스페이스 파일 · 도구를 가진 에이전트 런타임', 'Agent runtime with sessions · workspace files · tools')}</text>
 
         {/* 워크스페이스 */}
         <rect x={58} y={298} width={222} height={352} rx={12} fill="rgba(8,13,26,0.6)" stroke="rgba(118,185,0,0.35)" />
-        <text x={74} y={323} fill="var(--text)" fontSize={14} fontWeight={600} style={KR}>워크스페이스</text>
+        <text x={74} y={323} fill="var(--text)" fontSize={14} fontWeight={600} style={KR}>{t('워크스페이스', 'Workspace')}</text>
         {shown.map((f, i) => {
           const cx = i % 2 === 0 ? 114 : 224, y = 338 + Math.floor(i / 2) * 50
           return (
@@ -195,80 +198,80 @@ export default function AgentDiagram({ files, skills }: { files?: string[]; skil
             </g>
           )
         })}
-        {[skills ? `Agent Skills ${skills}개` : 'Agent Skills', '세션 · 메모리', '하트비트 · cron'].map((t, i) => (
-          <g key={t}>
+        {[skills ? t(`Agent Skills ${skills}개`, `Agent Skills × ${skills}`) : 'Agent Skills', t('세션 · 메모리', 'Sessions · memory'), t('하트비트 · cron', 'Heartbeat · cron')].map((label, i) => (
+          <g key={label}>
             <rect x={74} y={556 + i * 30} width={190} height={23} rx={11.5} fill="rgba(118,185,0,0.1)" stroke="rgba(118,185,0,0.5)" />
-            <text x={169} y={572 + i * 30} textAnchor="middle" fill="#c8f36b" fontSize={12} style={KR}>{t}</text>
+            <text x={169} y={572 + i * 30} textAnchor="middle" fill="#c8f36b" fontSize={12} style={KR}>{label}</text>
           </g>
         ))}
 
         {/* STEP 1 레인: 제목 위, 상자 아래 */}
         <rect x={296} y={298} width={852} height={114} rx={12} fill="rgba(55,230,255,0.035)" stroke="rgba(55,230,255,0.35)" />
         <text x={312} y={321} fill={C.cyan} fontSize={14} fontWeight={700} style={KR}>STEP 1 · FlyDiscovery</text>
-        <text x={488} y={321} fill="var(--text-3)" fontSize={12.5} style={KR}>시판 전 · 구조 예측 → 도킹 → 친화도, 단계마다 전통 기준으로 채점</text>
+        <text x={488} y={321} fill="var(--text-3)" fontSize={12.5} style={KR}>{t('시판 전 · 구조 예측 → 도킹 → 친화도, 단계마다 전통 기준으로 채점', 'Pre-market · structure → docking → affinity, each scored on classical criteria')}</text>
         <Lane steps={STEP1} y={y1} still={still} />
 
         {/* 데모 약물: STEP 1 의 표적 상자에서 STEP 2 의 접수 상자로 이어집니다 */}
         <path d={`M${firstCx},${y1 + BOX_H} V${y2 - 3}`} stroke={C.human} strokeOpacity={0.65} strokeWidth={1.5} strokeDasharray="4 4" markerEnd="url(#ad-arrow)" />
         <rect x={firstCx + 12} y={429} width={176} height={24} rx={12} fill="#0b1122" stroke="rgba(244,247,255,0.45)" />
-        <text x={firstCx + 100} y={445} textAnchor="middle" fill="var(--text)" fontSize={12.5} style={KR}>데모 약물 · 니라파립</text>
+        <text x={firstCx + 100} y={445} textAnchor="middle" fill="var(--text)" fontSize={12.5} style={KR}>{t('데모 약물 · 니라파립', 'Demo drug · niraparib')}</text>
 
         {/* STEP 2 레인: 상자 위, 제목 아래 */}
         <rect x={296} y={458} width={852} height={122} rx={12} fill="rgba(118,185,0,0.035)" stroke="rgba(118,185,0,0.4)" />
         <Lane steps={STEP2} y={y2} still={still} />
         <text x={312} y={563} fill={C.green} fontSize={14} fontWeight={700} style={KR}>STEP 2 · FlyVigilance</text>
-        <text x={486} y={563} fill="var(--text-3)" fontSize={12.5} style={KR}>시판 후 · 같은 약의 FAERS 보고를 분류하고 필요한 건만 숙고와 사람에게</text>
+        <text x={486} y={563} fill="var(--text-3)" fontSize={12.5} style={KR}>{t('시판 후 · 같은 약의 FAERS 보고를 분류하고 필요한 건만 숙고와 사람에게', 'Post-market · triages FAERS reports on the same drug; escalates only as needed')}</text>
 
         {/* 사람 승인 */}
         <rect x={1164} y={298} width={138} height={282} rx={12} fill="rgba(8,13,26,0.92)" stroke="rgba(244,247,255,0.45)" />
         <Icon d={ICON.user} x={1209} y={372} s={2} c={C.human} w={1.8} />
         <circle cx={1252} cy={410} r={10} fill={C.green} />
         <path d="M1247,410 l3.5,3.5 l6,-7" fill="none" stroke="#0b1400" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" />
-        <text x={1233} y={456} textAnchor="middle" fill="var(--text)" fontSize={15} fontWeight={700} style={KR}>사람 승인</text>
-        <text x={1233} y={478} textAnchor="middle" fill="var(--text-2)" fontSize={12} style={KR}>보고 · 인과성</text>
-        <text x={1233} y={495} textAnchor="middle" fill="var(--text-2)" fontSize={12} style={KR}>최종 판정</text>
+        <text x={1233} y={456} textAnchor="middle" fill="var(--text)" fontSize={15} fontWeight={700} style={KR}>{t('사람 승인', 'Human approval')}</text>
+        <text x={1233} y={478} textAnchor="middle" fill="var(--text-2)" fontSize={12} style={KR}>{t('보고 · 인과성', 'Reporting · causality')}</text>
+        <text x={1233} y={495} textAnchor="middle" fill="var(--text-2)" fontSize={12} style={KR}>{t('최종 판정', 'final decisions')}</text>
         {[y1 + BOX_H / 2, y2 + BOX_H / 2].map((y) => (
           <path key={y} d={`M${lastX + 3},${y} H1160`} stroke="rgba(169,182,211,0.85)" strokeWidth={1.6} markerEnd="url(#ad-arrow)" />
         ))}
 
         {/* 공유 근거 ID: 두 워크플로의 모든 주장이 같은 방식으로 근거에 묶입니다 */}
         <rect x={296} y={594} width={1006} height={56} rx={12} fill="rgba(255,79,216,0.05)" stroke="rgba(255,79,216,0.4)" />
-        <text x={312} y={627} fill={C.magenta} fontSize={13.5} fontWeight={700} style={KR}>공유 근거 ID</text>
-        {EVIDENCE.map((t) => {
-          const w = t.length * 6.9 + 20, x0 = evX
+        <text x={312} y={627} fill={C.magenta} fontSize={13.5} fontWeight={700} style={KR}>{t('공유 근거 ID', 'Evidence IDs')}</text>
+        {EVIDENCE.map((ev) => {
+          const w = ev.length * 6.9 + 20, x0 = evX
           evX += w + 8
           return (
-            <g key={t}>
+            <g key={ev}>
               <rect x={x0} y={610} width={w} height={24} rx={7} fill="rgba(20,12,30,0.9)" stroke="rgba(255,79,216,0.35)" />
-              <text x={x0 + w / 2} y={626} textAnchor="middle" fill="#ffa6ec" fontSize={11.5}>{t}</text>
+              <text x={x0 + w / 2} y={626} textAnchor="middle" fill="#ffa6ec" fontSize={11.5}>{ev}</text>
             </g>
           )
         })}
-        <text x={1288} y={627} textAnchor="end" fill="var(--text-2)" fontSize={12.5} style={KR}>주장마다 근거 ID · 크리틱이 원본과 대조</text>
+        <text x={1288} y={627} textAnchor="end" fill="var(--text-2)" fontSize={12.5} style={KR}>{t('주장마다 근거 ID · 크리틱이 원본과 대조', 'An evidence ID per claim · critic checks the source')}</text>
 
         {/* 샌드박스의 네 장치 */}
-        {MECH.map(([d, t], i) => {
+        {MECH.map(([d, label], i) => {
           const x = 40 + i * 322
           return (
-            <g key={t}>
+            <g key={label}>
               <rect x={x} y={680} width={314} height={36} rx={10} fill="rgba(226,167,78,0.07)" stroke="rgba(226,167,78,0.45)" />
               <Icon d={d} x={x + 12} y={687} s={0.92} c={C.tan} />
-              <text x={x + 44} y={703} fill="var(--text)" fontSize={12.5} style={KR}>{t}</text>
+              <text x={x + 44} y={703} fill="var(--text)" fontSize={12.5} style={KR}>{label}</text>
             </g>
           )
         })}
 
         {/* ④ NemoClaw 블루프린트 */}
         {[210, 1150].map((x) => <path key={x} d={`M${x},760 V741`} stroke={C.green} strokeWidth={1.6} markerEnd="url(#ad-arrow-g)" />)}
-        <text x={222} y={754} fill={C.green} fontSize={11.5} style={KR}>구성</text>
+        <text x={222} y={754} fill={C.green} fontSize={11.5} style={KR}>{t('구성', 'builds')}</text>
         <rect x={20} y={762} width={1320} height={52} rx={14} fill="rgba(118,185,0,0.1)" stroke={C.green} strokeOpacity={0.75} />
         <Icon d={ICON.doc} x={38} y={776} s={1} c={C.green} />
-        <text x={70} y={794} fill={C.green} fontSize={16} fontWeight={700} style={KR}>④ NemoClaw 블루프린트</text>
-        <text x={262} y={794} fill="var(--text-2)" fontSize={13} style={KR}>하네스와 샌드박스를 한 벌로 구성합니다 · 정책 프리셋 · 수명주기 명령(onboard · status · logs)</text>
+        <text x={70} y={794} fill={C.green} fontSize={16} fontWeight={700} style={KR}>{t('④ NemoClaw 블루프린트', '④ NemoClaw blueprint')}</text>
+        <text x={262} y={794} fill="var(--text-2)" fontSize={13} style={KR}>{t('하네스와 샌드박스를 한 벌로 구성합니다 · 정책 프리셋 · 수명주기 명령(onboard · status · logs)', 'Packages the harness and sandbox as one set · policy presets · lifecycle commands (onboard · status · logs)')}</text>
       </svg>
       <div className="row wrap" style={{ gap: 14, padding: '10px 4px 0' }}>
-        {LEGEND.map(([c, t]) => <span key={t} className="row" style={{ gap: 6, fontSize: 11.5, color: 'var(--text-3)' }}><span className="legend-dot" style={{ background: c }} />{t}</span>)}
-        <span className="row" style={{ gap: 6, fontSize: 11.5, color: 'var(--text-3)' }}><span className="legend-dot" style={{ background: 'transparent', border: `1.5px dashed ${C.tan}` }} />OpenShell 경계 · egress 관문</span>
+        {LEGEND.map(([c, label]) => <span key={label} className="row" style={{ gap: 6, fontSize: 11.5, color: 'var(--text-3)' }}><span className="legend-dot" style={{ background: c }} />{label}</span>)}
+        <span className="row" style={{ gap: 6, fontSize: 11.5, color: 'var(--text-3)' }}><span className="legend-dot" style={{ background: 'transparent', border: `1.5px dashed ${C.tan}` }} />{t('OpenShell 경계 · egress 관문', 'OpenShell boundary · egress gate')}</span>
       </div>
     </div>
   )

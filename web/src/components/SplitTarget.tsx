@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { TARGET_PALETTE, ballStick, chainGradient, disposeAll, dust, makeRenderer, ribbon, type Ligand } from '../lib/molScene'
+import { t as tr } from '../lib/i18n'
 
 // 크리틱 단계의 오른쪽 절반: 니라파립을 Factor Xa(2P16)에 넣은 DiffDock NIM 포즈.
 // 왼쪽 PARP1 장면과 나란히 놓아 "다른 표적의 점수는 비교할 수 없다"는 반려 이유를 보여 줍니다(FDDD 쇼릴의 분할 화면).
@@ -39,5 +40,5 @@ export default function SplitTarget({ xa }: { xa: XaSplit }) {
     raf = requestAnimationFrame(loop)
     return () => { disposed = true; cancelAnimationFrame(raf); ro.disconnect(); disposeAll(scene); composer.dispose(); renderer.dispose(); renderer.forceContextLoss(); renderer.domElement.remove() }
   }, [xa, epoch])
-  return <div ref={host} style={{ position: 'absolute', inset: 0 }} aria-label="니라파립을 Factor Xa(2P16)에 넣은 DiffDock 포즈" />
+  return <div ref={host} style={{ position: 'absolute', inset: 0 }} aria-label={tr('니라파립을 Factor Xa(2P16)에 넣은 DiffDock 포즈', 'DiffDock pose of niraparib placed into Factor Xa (2P16)')} />
 }

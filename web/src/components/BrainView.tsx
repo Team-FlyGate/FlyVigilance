@@ -3,6 +3,7 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { useBrain } from '../lib/brain'
+import { t } from '../lib/i18n'
 import { LAYER_COLOR, getJSON } from '../lib/data'
 
 interface Props {
@@ -242,7 +243,7 @@ export default function BrainView({ height = 520, highlight = null, autoRotate =
     <div ref={host} style={{ position: 'relative', width: '100%', height }}>
       {!ready && (
         <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center' }}>
-          <div className="row dim mono" style={{ fontSize: 12 }}><span className="spin" /> MaleCNS 커넥텀 로딩 중 · 49,244 neurons · 1.05M connections</div>
+          <div className="row dim mono" style={{ fontSize: 12 }}><span className="spin" /> {t('MaleCNS 커넥텀 로딩 중', 'Loading the MaleCNS connectome')} · 49,244 neurons · 1.05M connections</div>
         </div>
       )}
     </div>
