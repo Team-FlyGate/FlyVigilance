@@ -5,6 +5,7 @@ import Step2Handoff from '../components/Step2Handoff'
 import { Card, Loading, PageHead } from '../components/ui'
 import { CriticStream, MissingCard, RedockBench, STEP_PAGES, Tile, title, useDiscoveryData } from './Discovery'
 import Term from '../components/Term'
+import LiveRun from '../components/LiveRun'
 
 // STEP 1 FlyDiscovery 의 다섯 단계 페이지. 가운데 3D 장면(HeroDocking)은 그 단계에 고정되고,
 // 위 단계 표시를 누르면 다른 단계 페이지로 갑니다. 왼쪽 위 초파리 커넥텀은 단계마다 다른 층을 자극합니다.
@@ -63,6 +64,9 @@ export default function DiscoveryStep({ step }: { step: StepId }) {
           <Card className="" style={{ marginBottom: 16 }}>
             <HeroDocking key={step} hero={hero} extras={extras} only={step} nav={STEP_PAGES} height={600} />
           </Card>
+
+          {/* 3D 장면과 아래 분석은 그대로 두고, 이 단계의 NIM 을 지금 다시 부르는 카드만 더합니다 */}
+          <LiveRun step={step} drug={drug} />
 
           {step === 'msa' && (
             <div className="grid g3" style={{ marginBottom: 16 }}>
