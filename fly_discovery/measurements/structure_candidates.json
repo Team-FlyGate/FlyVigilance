@@ -1,0 +1,4557 @@
+{
+ "n_drugs": 224,
+ "rows": [
+  {
+   "drug": "LENALIDOMIDE",
+   "cases": 9,
+   "chembl": "CHEMBL848",
+   "targets": [
+    {
+     "target": "CRL4(CRBN) E3 ubiquitin ligase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "Q96SW2",
+      "Q16531",
+      "Q13619",
+      "P62877"
+     ]
+    },
+    {
+     "target": "CRL4(CRBN) E3 ubiquitin ligase",
+     "action": "MODULATOR",
+     "uniprot": [
+      "Q96SW2",
+      "Q16531",
+      "Q13619",
+      "P62877"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "ACETAMINOPHEN",
+   "cases": 5,
+   "chembl": "CHEMBL112",
+   "targets": [
+    {
+     "target": "Cyclooxygenase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P35354",
+      "P23219"
+     ]
+    },
+    {
+     "target": "Fatty-acid amide hydrolase 1",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "O00519"
+     ]
+    },
+    {
+     "target": "Transient receptor potential cation channel subfamily V member 1",
+     "action": "OPENER",
+     "uniprot": [
+      "Q8NER1"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "TYL"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "TENAPANOR",
+   "cases": 5,
+   "chembl": "CHEMBL3304485",
+   "targets": [
+    {
+     "target": "Sodium/hydrogen exchanger 3",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P48764"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "RUXOLITINIB",
+   "cases": 5,
+   "chembl": "CHEMBL1789941",
+   "targets": [
+    {
+     "target": "Tyrosine-protein kinase JAK1",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P23458"
+     ]
+    },
+    {
+     "target": "Tyrosine-protein kinase JAK2",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "O60674"
+     ]
+    },
+    {
+     "target": "Tyrosine-protein kinase JAK3",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P52333"
+     ]
+    },
+    {
+     "target": "Tyrosine-protein kinase JAK2",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "O60674"
+     ]
+    },
+    {
+     "target": "Tyrosine-protein kinase JAK1",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P23458"
+     ]
+    },
+    {
+     "target": "Non-receptor tyrosine-protein kinase TYK2",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P29597"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "RXT"
+   ],
+   "structures": [
+    {
+     "pdb": "9T1U",
+     "ligand": "RXT"
+    },
+    {
+     "pdb": "6WTN",
+     "ligand": "RXT"
+    },
+    {
+     "pdb": "6VGL",
+     "ligand": "RXT"
+    },
+    {
+     "pdb": "6VNK",
+     "ligand": "RXT"
+    },
+    {
+     "pdb": "9T1Z",
+     "ligand": "RXT"
+    }
+   ]
+  },
+  {
+   "drug": "PIMAVANSERIN",
+   "cases": 4,
+   "chembl": "CHEMBL2111101",
+   "targets": [
+    {
+     "target": "5-hydroxytryptamine receptor 2A",
+     "action": "INVERSE AGONIST",
+     "uniprot": [
+      "P28223"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "A1L11"
+   ],
+   "structures": [
+    {
+     "pdb": "9UJM",
+     "ligand": "A1L11"
+    },
+    {
+     "pdb": "8ZMG",
+     "ligand": "A1L11"
+    }
+   ]
+  },
+  {
+   "drug": "FOSCARBIDOPA",
+   "cases": 4,
+   "chembl": "CHEMBL4802240",
+   "targets": [
+    {
+     "target": "Aromatic-L-amino-acid decarboxylase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P20711"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "FOSLEVODOPA",
+   "cases": 4,
+   "chembl": "CHEMBL4594379",
+   "targets": [
+    {
+     "target": "Beta-1 adrenergic receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P08588"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "NIRMATRELVIR",
+   "cases": 4,
+   "chembl": "CHEMBL4802135",
+   "targets": [
+    {
+     "target": "Replicase polyprotein 1a",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P0C6U8"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "ZGW"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "RITONAVIR",
+   "cases": 4,
+   "chembl": "CHEMBL163",
+   "targets": [
+    {
+     "target": "Human immunodeficiency virus type 1 protease",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "Q72874"
+     ]
+    },
+    {
+     "target": "Cytochrome P450 3A",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P08684",
+      "P20815",
+      "Q9HB55",
+      "P24462"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "RIT"
+   ],
+   "structures": [
+    {
+     "pdb": "3NXU",
+     "ligand": "RIT"
+    },
+    {
+     "pdb": "5VCE",
+     "ligand": "RIT"
+    },
+    {
+     "pdb": "5VC0",
+     "ligand": "RIT"
+    },
+    {
+     "pdb": "5VEU",
+     "ligand": "RIT"
+    }
+   ]
+  },
+  {
+   "drug": "PALIPERIDONE PALMITATE",
+   "cases": 4,
+   "chembl": "CHEMBL2107360",
+   "targets": [
+    {
+     "target": "D(2) dopamine receptor",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "P14416"
+     ]
+    },
+    {
+     "target": "5-hydroxytryptamine receptor 2A",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "P28223"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "UPADACITINIB",
+   "cases": 4,
+   "chembl": "CHEMBL3622821",
+   "targets": [
+    {
+     "target": "Non-receptor tyrosine-protein kinase TYK2",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P29597"
+     ]
+    },
+    {
+     "target": "Tyrosine-protein kinase JAK3",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P52333"
+     ]
+    },
+    {
+     "target": "Tyrosine-protein kinase JAK2",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "O60674"
+     ]
+    },
+    {
+     "target": "Tyrosine-protein kinase JAK1",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P23458"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "DEXAMETHASONE",
+   "cases": 3,
+   "chembl": "CHEMBL384467",
+   "targets": [
+    {
+     "target": "Glucocorticoid receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P04150"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "DEX"
+   ],
+   "structures": [
+    {
+     "pdb": "1M2Z",
+     "ligand": "DEX"
+    },
+    {
+     "pdb": "4UDC",
+     "ligand": "DEX"
+    },
+    {
+     "pdb": "7KRJ",
+     "ligand": "DEX"
+    },
+    {
+     "pdb": "1P93",
+     "ligand": "DEX"
+    },
+    {
+     "pdb": "8FFV",
+     "ligand": "DEX"
+    }
+   ]
+  },
+  {
+   "drug": "METFORMIN",
+   "cases": 3,
+   "chembl": "CHEMBL1431",
+   "targets": [
+    {
+     "target": "Mitochondrial complex I (NADH dehydrogenase)",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P03923",
+      "O95299",
+      "O00217",
+      "P03901",
+      "P56556",
+      "P03886"
+     ]
+    },
+    {
+     "target": "Glycerol-3-phosphate dehydrogenase, mitochondrial",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P43304"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "MF8"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "RISPERIDONE",
+   "cases": 3,
+   "chembl": "CHEMBL85",
+   "targets": [
+    {
+     "target": "5-hydroxytryptamine receptor 2A",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "P28223"
+     ]
+    },
+    {
+     "target": "5-hydroxytryptamine receptor 2C",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "P28335"
+     ]
+    },
+    {
+     "target": "D(2) dopamine receptor",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "P14416"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "8NU"
+   ],
+   "structures": [
+    {
+     "pdb": "6CM4",
+     "ligand": "8NU"
+    },
+    {
+     "pdb": "6A93",
+     "ligand": "8NU"
+    }
+   ]
+  },
+  {
+   "drug": "CARBIDOPA",
+   "cases": 3,
+   "chembl": "CHEMBL1201236",
+   "targets": [
+    {
+     "target": "Aromatic-L-amino-acid decarboxylase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P20711"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "142"
+   ],
+   "structures": [
+    {
+     "pdb": "9GNS",
+     "ligand": "142"
+    }
+   ]
+  },
+  {
+   "drug": "LEVODOPA",
+   "cases": 3,
+   "chembl": "CHEMBL1009",
+   "targets": [
+    {
+     "target": "D(3) dopamine receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P35462"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "DAH"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "TROFINETIDE",
+   "cases": 3,
+   "chembl": "CHEMBL197084",
+   "targets": [],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "ARIPIPRAZOLE",
+   "cases": 3,
+   "chembl": "CHEMBL1112",
+   "targets": [
+    {
+     "target": "D(2) dopamine receptor",
+     "action": "PARTIAL AGONIST",
+     "uniprot": [
+      "P14416"
+     ]
+    },
+    {
+     "target": "5-hydroxytryptamine receptor 1A",
+     "action": "PARTIAL AGONIST",
+     "uniprot": [
+      "P08908"
+     ]
+    },
+    {
+     "target": "5-hydroxytryptamine receptor 2A",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "P28223"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "9SC"
+   ],
+   "structures": [
+    {
+     "pdb": "7VOE",
+     "ligand": "9SC"
+    },
+    {
+     "pdb": "7E2Z",
+     "ligand": "9SC"
+    }
+   ]
+  },
+  {
+   "drug": "PREGABALIN",
+   "cases": 3,
+   "chembl": "CHEMBL1059",
+   "targets": [
+    {
+     "target": "Voltage-gated calcium channel",
+     "action": "MODULATOR",
+     "uniprot": [
+      "O95180",
+      "P54289",
+      "Q13936",
+      "Q8IZS8",
+      "Q13698",
+      "Q9NY47"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "MYCOPHENOLATE MOFETIL",
+   "cases": 2,
+   "chembl": "CHEMBL1456",
+   "targets": [
+    {
+     "target": "Inosine-5'-monophosphate dehydrogenase (IMPDH)",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P20839",
+      "P12268"
+     ]
+    },
+    {
+     "target": "Inosine-5'-monophosphate dehydrogenase (IMPDH)",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P20839",
+      "P12268"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "OXYCODONE",
+   "cases": 2,
+   "chembl": "CHEMBL656",
+   "targets": [
+    {
+     "target": "Mu-type opioid receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P35372"
+     ]
+    },
+    {
+     "target": "Mu-type opioid receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P35372"
+     ]
+    },
+    {
+     "target": "Mu-type opioid receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P35372"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "OOX"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "LENVATINIB",
+   "cases": 2,
+   "chembl": "CHEMBL1289601",
+   "targets": [
+    {
+     "target": "Vascular endothelial growth factor receptor",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P17948",
+      "P35916",
+      "P35968"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "LEV"
+   ],
+   "structures": [
+    {
+     "pdb": "3WZD",
+     "ligand": "LEV"
+    }
+   ]
+  },
+  {
+   "drug": "AMPHETAMINE ASPARTATE",
+   "cases": 2,
+   "chembl": "CHEMBL405",
+   "targets": [
+    {
+     "target": "Sodium-dependent dopamine transporter",
+     "action": "RELEASING AGENT",
+     "uniprot": [
+      "Q01959"
+     ]
+    },
+    {
+     "target": "Sodium-dependent dopamine transporter",
+     "action": "RELEASING AGENT",
+     "uniprot": [
+      "Q01959"
+     ]
+    },
+    {
+     "target": "Sodium-dependent dopamine transporter",
+     "action": "RELEASING AGENT",
+     "uniprot": [
+      "Q01959"
+     ]
+    },
+    {
+     "target": "Sodium-dependent dopamine transporter",
+     "action": "RELEASING AGENT",
+     "uniprot": [
+      "Q01959"
+     ]
+    },
+    {
+     "target": "Sodium-dependent noradrenaline transporter",
+     "action": "RELEASING AGENT",
+     "uniprot": [
+      "P23975"
+     ]
+    },
+    {
+     "target": "Sodium-dependent noradrenaline transporter",
+     "action": "RELEASING AGENT",
+     "uniprot": [
+      "P23975"
+     ]
+    },
+    {
+     "target": "Sodium-dependent noradrenaline transporter",
+     "action": "RELEASING AGENT",
+     "uniprot": [
+      "P23975"
+     ]
+    },
+    {
+     "target": "Sodium-dependent noradrenaline transporter",
+     "action": "RELEASING AGENT",
+     "uniprot": [
+      "P23975"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "AMPHETAMINE",
+   "cases": 2,
+   "chembl": "CHEMBL405",
+   "targets": [
+    {
+     "target": "Sodium-dependent dopamine transporter",
+     "action": "RELEASING AGENT",
+     "uniprot": [
+      "Q01959"
+     ]
+    },
+    {
+     "target": "Sodium-dependent dopamine transporter",
+     "action": "RELEASING AGENT",
+     "uniprot": [
+      "Q01959"
+     ]
+    },
+    {
+     "target": "Sodium-dependent dopamine transporter",
+     "action": "RELEASING AGENT",
+     "uniprot": [
+      "Q01959"
+     ]
+    },
+    {
+     "target": "Sodium-dependent dopamine transporter",
+     "action": "RELEASING AGENT",
+     "uniprot": [
+      "Q01959"
+     ]
+    },
+    {
+     "target": "Sodium-dependent noradrenaline transporter",
+     "action": "RELEASING AGENT",
+     "uniprot": [
+      "P23975"
+     ]
+    },
+    {
+     "target": "Sodium-dependent noradrenaline transporter",
+     "action": "RELEASING AGENT",
+     "uniprot": [
+      "P23975"
+     ]
+    },
+    {
+     "target": "Sodium-dependent noradrenaline transporter",
+     "action": "RELEASING AGENT",
+     "uniprot": [
+      "P23975"
+     ]
+    },
+    {
+     "target": "Sodium-dependent noradrenaline transporter",
+     "action": "RELEASING AGENT",
+     "uniprot": [
+      "P23975"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "DEXTROAMPHETAMINE SACCHARATE",
+   "cases": 2,
+   "chembl": "CHEMBL612",
+   "targets": [
+    {
+     "target": "Sodium-dependent dopamine transporter",
+     "action": "RELEASING AGENT",
+     "uniprot": [
+      "Q01959"
+     ]
+    },
+    {
+     "target": "Sodium-dependent dopamine transporter",
+     "action": "RELEASING AGENT",
+     "uniprot": [
+      "Q01959"
+     ]
+    },
+    {
+     "target": "Sodium-dependent dopamine transporter",
+     "action": "RELEASING AGENT",
+     "uniprot": [
+      "Q01959"
+     ]
+    },
+    {
+     "target": "Sodium-dependent dopamine transporter",
+     "action": "RELEASING AGENT",
+     "uniprot": [
+      "Q01959"
+     ]
+    },
+    {
+     "target": "Sodium-dependent noradrenaline transporter",
+     "action": "RELEASING AGENT",
+     "uniprot": [
+      "P23975"
+     ]
+    },
+    {
+     "target": "Sodium-dependent noradrenaline transporter",
+     "action": "RELEASING AGENT",
+     "uniprot": [
+      "P23975"
+     ]
+    },
+    {
+     "target": "Sodium-dependent noradrenaline transporter",
+     "action": "RELEASING AGENT",
+     "uniprot": [
+      "P23975"
+     ]
+    },
+    {
+     "target": "Sodium-dependent noradrenaline transporter",
+     "action": "RELEASING AGENT",
+     "uniprot": [
+      "P23975"
+     ]
+    },
+    {
+     "target": "Synaptic vesicular amine transporter",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "Q05940"
+     ]
+    },
+    {
+     "target": "Synaptic vesicular amine transporter",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "Q05940"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "1WE"
+   ],
+   "structures": [
+    {
+     "pdb": "8UCO",
+     "ligand": "1WE"
+    }
+   ]
+  },
+  {
+   "drug": "DEXTROAMPHETAMINE",
+   "cases": 2,
+   "chembl": "CHEMBL612",
+   "targets": [
+    {
+     "target": "Sodium-dependent dopamine transporter",
+     "action": "RELEASING AGENT",
+     "uniprot": [
+      "Q01959"
+     ]
+    },
+    {
+     "target": "Sodium-dependent dopamine transporter",
+     "action": "RELEASING AGENT",
+     "uniprot": [
+      "Q01959"
+     ]
+    },
+    {
+     "target": "Sodium-dependent dopamine transporter",
+     "action": "RELEASING AGENT",
+     "uniprot": [
+      "Q01959"
+     ]
+    },
+    {
+     "target": "Sodium-dependent dopamine transporter",
+     "action": "RELEASING AGENT",
+     "uniprot": [
+      "Q01959"
+     ]
+    },
+    {
+     "target": "Sodium-dependent noradrenaline transporter",
+     "action": "RELEASING AGENT",
+     "uniprot": [
+      "P23975"
+     ]
+    },
+    {
+     "target": "Sodium-dependent noradrenaline transporter",
+     "action": "RELEASING AGENT",
+     "uniprot": [
+      "P23975"
+     ]
+    },
+    {
+     "target": "Sodium-dependent noradrenaline transporter",
+     "action": "RELEASING AGENT",
+     "uniprot": [
+      "P23975"
+     ]
+    },
+    {
+     "target": "Sodium-dependent noradrenaline transporter",
+     "action": "RELEASING AGENT",
+     "uniprot": [
+      "P23975"
+     ]
+    },
+    {
+     "target": "Synaptic vesicular amine transporter",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "Q05940"
+     ]
+    },
+    {
+     "target": "Synaptic vesicular amine transporter",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "Q05940"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "1WE"
+   ],
+   "structures": [
+    {
+     "pdb": "8UCO",
+     "ligand": "1WE"
+    }
+   ]
+  },
+  {
+   "drug": "AVACOPAN",
+   "cases": 2,
+   "chembl": "CHEMBL3989871",
+   "targets": [
+    {
+     "target": "C5a anaphylatoxin chemotactic receptor 1",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "P21730"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "EFD"
+   ],
+   "structures": [
+    {
+     "pdb": "6C1R",
+     "ligand": "EFD"
+    }
+   ]
+  },
+  {
+   "drug": "DAPAGLIFLOZIN",
+   "cases": 2,
+   "chembl": "CHEMBL429910",
+   "targets": [
+    {
+     "target": "Sodium/glucose cotransporter 2",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P31639"
+     ]
+    },
+    {
+     "target": "Sodium/glucose cotransporter 2",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P31639"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "LE6"
+   ],
+   "structures": [
+    {
+     "pdb": "8HEZ",
+     "ligand": "LE6"
+    }
+   ]
+  },
+  {
+   "drug": "TOLVAPTAN",
+   "cases": 2,
+   "chembl": "CHEMBL344159",
+   "targets": [
+    {
+     "target": "Vasopressin V2 receptor",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "P30518"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "EMPAGLIFLOZIN",
+   "cases": 2,
+   "chembl": "CHEMBL2107830",
+   "targets": [
+    {
+     "target": "Sodium/glucose cotransporter 2",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P31639"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "7R3"
+   ],
+   "structures": [
+    {
+     "pdb": "7VSI",
+     "ligand": "7R3"
+    }
+   ]
+  },
+  {
+   "drug": "ROTIGOTINE",
+   "cases": 2,
+   "chembl": "CHEMBL1303",
+   "targets": [
+    {
+     "target": "D2-like dopamine receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P14416",
+      "P35462",
+      "P21917"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "R5F"
+   ],
+   "structures": [
+    {
+     "pdb": "8IRT",
+     "ligand": "R5F"
+    },
+    {
+     "pdb": "8IRS",
+     "ligand": "R5F"
+    }
+   ]
+  },
+  {
+   "drug": "POMALIDOMIDE",
+   "cases": 2,
+   "chembl": "CHEMBL43452",
+   "targets": [
+    {
+     "target": "CRL4(CRBN) E3 ubiquitin ligase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "Q96SW2",
+      "Q16531",
+      "Q13619",
+      "P62877"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "SIROLIMUS",
+   "cases": 2,
+   "chembl": "CHEMBL413",
+   "targets": [
+    {
+     "target": "Peptidyl-prolyl cis-trans isomerase FKBP1A",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P62942"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "RAP"
+   ],
+   "structures": [
+    {
+     "pdb": "1FKB",
+     "ligand": "RAP"
+    },
+    {
+     "pdb": "2DG3",
+     "ligand": "RAP"
+    },
+    {
+     "pdb": "2DG4",
+     "ligand": "RAP"
+    },
+    {
+     "pdb": "2DG9",
+     "ligand": "RAP"
+    },
+    {
+     "pdb": "8XI9",
+     "ligand": "RAP"
+    }
+   ]
+  },
+  {
+   "drug": "CABOTEGRAVIR",
+   "cases": 2,
+   "chembl": "CHEMBL2403238",
+   "targets": [
+    {
+     "target": "Human immunodeficiency virus type 1 integrase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "Q7ZJM1"
+     ]
+    },
+    {
+     "target": "Human immunodeficiency virus type 1 integrase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "Q7ZJM1"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "RILPIVIRINE",
+   "cases": 2,
+   "chembl": "CHEMBL175691",
+   "targets": [
+    {
+     "target": "Human immunodeficiency virus type 1 reverse transcriptase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "Q72547"
+     ]
+    },
+    {
+     "target": "Human immunodeficiency virus type 1 reverse transcriptase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "Q72547"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "T27"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "DEXTROMETHORPHAN",
+   "cases": 2,
+   "chembl": "CHEMBL52440",
+   "targets": [
+    {
+     "target": "Sigma non-opioid intracellular receptor 1",
+     "action": "AGONIST",
+     "uniprot": [
+      "Q99720"
+     ]
+    },
+    {
+     "target": "Sigma non-opioid intracellular receptor 1",
+     "action": "AGONIST",
+     "uniprot": [
+      "Q99720"
+     ]
+    },
+    {
+     "target": "Glutamate receptor ionotropic, NMDA 2A",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "Q12879"
+     ]
+    },
+    {
+     "target": "Glutamate receptor ionotropic, NMDA 2A",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "Q12879"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "4NQ"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "GUAIFENESIN",
+   "cases": 2,
+   "chembl": "CHEMBL980",
+   "targets": [],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "AMLODIPINE",
+   "cases": 2,
+   "chembl": "CHEMBL1491",
+   "targets": [
+    {
+     "target": "Voltage-gated L-type calcium channel",
+     "action": "BLOCKER",
+     "uniprot": [
+      "Q13936",
+      "Q13698",
+      "Q01668",
+      "O60840"
+     ]
+    },
+    {
+     "target": "Voltage-gated L-type calcium channel",
+     "action": "BLOCKER",
+     "uniprot": [
+      "Q13936",
+      "Q13698",
+      "Q01668",
+      "O60840"
+     ]
+    },
+    {
+     "target": "Voltage-gated L-type calcium channel",
+     "action": "BLOCKER",
+     "uniprot": [
+      "Q13936",
+      "Q13698",
+      "Q01668",
+      "O60840"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "ALBUTEROL",
+   "cases": 2,
+   "chembl": "CHEMBL714",
+   "targets": [
+    {
+     "target": "Beta-2 adrenergic receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P07550"
+     ]
+    },
+    {
+     "target": "Beta-2 adrenergic receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P07550"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "BUDESONIDE",
+   "cases": 2,
+   "chembl": "CHEMBL1370",
+   "targets": [
+    {
+     "target": "Glucocorticoid receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P04150"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "IBUPROFEN",
+   "cases": 2,
+   "chembl": "CHEMBL521",
+   "targets": [
+    {
+     "target": "Cyclooxygenase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P35354",
+      "P23219"
+     ]
+    },
+    {
+     "target": "Cyclooxygenase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P35354",
+      "P23219"
+     ]
+    },
+    {
+     "target": "Cyclooxygenase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P35354",
+      "P23219"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "POLYETHYLENE GLYCOL 3350",
+   "cases": 2,
+   "chembl": "CHEMBL1201479",
+   "targets": [],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "MINOXIDIL",
+   "cases": 2,
+   "chembl": "CHEMBL802",
+   "targets": [
+    {
+     "target": "Sulfonylurea receptor 2, Kir6.2",
+     "action": "OPENER",
+     "uniprot": [
+      "Q14654",
+      "O60706"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "MXD"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "TOPIRAMATE",
+   "cases": 2,
+   "chembl": "CHEMBL220492",
+   "targets": [
+    {
+     "target": "Carbonic anhydrase 2",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P00918"
+     ]
+    },
+    {
+     "target": "Carbonic anhydrase 4",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P22748"
+     ]
+    },
+    {
+     "target": "Glutamate receptor ionotropic AMPA",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "P48058",
+      "P42263",
+      "P42262",
+      "P42261"
+     ]
+    },
+    {
+     "target": "Glutamate receptor ionotropic kainate",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "P39086",
+      "Q16478",
+      "Q16099",
+      "Q13002",
+      "Q13003"
+     ]
+    },
+    {
+     "target": "GABA-A receptor; anion channel",
+     "action": "POSITIVE MODULATOR",
+     "uniprot": [
+      "P14867",
+      "P47870",
+      "P18507",
+      "P28472",
+      "P48169",
+      "Q99928"
+     ]
+    },
+    {
+     "target": "Sodium channel alpha subunit",
+     "action": "BLOCKER",
+     "uniprot": [
+      "P35498",
+      "Q14524",
+      "P35499",
+      "Q01118",
+      "Q99250",
+      "Q15858"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "TOR"
+   ],
+   "structures": [
+    {
+     "pdb": "3HKU",
+     "ligand": "TOR"
+    },
+    {
+     "pdb": "5JNA",
+     "ligand": "TOR"
+    },
+    {
+     "pdb": "9RL5",
+     "ligand": "TOR"
+    }
+   ]
+  },
+  {
+   "drug": "BRENSOCATIB",
+   "cases": 2,
+   "chembl": "CHEMBL3900409",
+   "targets": [
+    {
+     "target": "Dipeptidyl peptidase 1",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P53634"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "VAMOROLONE",
+   "cases": 2,
+   "chembl": "CHEMBL2348780",
+   "targets": [
+    {
+     "target": "Glucocorticoid receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P04150"
+     ]
+    },
+    {
+     "target": "Mineralocorticoid receptor",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "P08235"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "TACROLIMUS",
+   "cases": 2,
+   "chembl": "CHEMBL269732",
+   "targets": [
+    {
+     "target": "Peptidyl-prolyl cis-trans isomerase FKBP1A",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P62942"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "FK5"
+   ],
+   "structures": [
+    {
+     "pdb": "1BKF",
+     "ligand": "FK5"
+    },
+    {
+     "pdb": "1FKF",
+     "ligand": "FK5"
+    },
+    {
+     "pdb": "1FKJ",
+     "ligand": "FK5"
+    },
+    {
+     "pdb": "2FKE",
+     "ligand": "FK5"
+    },
+    {
+     "pdb": "4ODR",
+     "ligand": "FK5"
+    }
+   ]
+  },
+  {
+   "drug": "CYCLOPHOSPHAMIDE",
+   "cases": 2,
+   "chembl": "CHEMBL88",
+   "targets": [
+    {
+     "target": "DNA",
+     "action": "INHIBITOR",
+     "uniprot": []
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "BRIMONIDINE",
+   "cases": 2,
+   "chembl": "CHEMBL844",
+   "targets": [
+    {
+     "target": "Adrenergic receptor alpha-2",
+     "action": "AGONIST",
+     "uniprot": [
+      "P08913",
+      "P18825",
+      "P18089"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "J59"
+   ],
+   "structures": [
+    {
+     "pdb": "7EJ8",
+     "ligand": "J59"
+    }
+   ]
+  },
+  {
+   "drug": "MENTHOL",
+   "cases": 2,
+   "chembl": "CHEMBL256087",
+   "targets": [
+    {
+     "target": "Transient receptor potential cation channel subfamily M member 8",
+     "action": "OPENER",
+     "uniprot": [
+      "Q7Z2W7"
+     ]
+    },
+    {
+     "target": "Transient receptor potential cation channel subfamily A member 1",
+     "action": "OPENER",
+     "uniprot": [
+      "O75762"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "APIXABAN",
+   "cases": 2,
+   "chembl": "CHEMBL231779",
+   "targets": [
+    {
+     "target": "Coagulation factor X",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P00742"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "GG2"
+   ],
+   "structures": [
+    {
+     "pdb": "2P16",
+     "ligand": "GG2"
+    }
+   ]
+  },
+  {
+   "drug": "PEMETREXED",
+   "cases": 2,
+   "chembl": "CHEMBL225072",
+   "targets": [
+    {
+     "target": "Thymidylate synthase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P04818"
+     ]
+    },
+    {
+     "target": "Dihydrofolate reductase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P00374"
+     ]
+    },
+    {
+     "target": "Trifunctional purine biosynthetic protein adenosine-3",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P22102"
+     ]
+    },
+    {
+     "target": "Dihydrofolate reductase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P00374"
+     ]
+    },
+    {
+     "target": "Trifunctional purine biosynthetic protein adenosine-3",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P22102"
+     ]
+    },
+    {
+     "target": "Thymidylate synthase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P0A884"
+     ]
+    },
+    {
+     "target": "Dihydrofolate reductase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P00374"
+     ]
+    },
+    {
+     "target": "Thymidylate synthase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P04818"
+     ]
+    },
+    {
+     "target": "Trifunctional purine biosynthetic protein adenosine-3",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P22102"
+     ]
+    },
+    {
+     "target": "Trifunctional purine biosynthetic protein adenosine-3",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P22102"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "LYA"
+   ],
+   "structures": [
+    {
+     "pdb": "1JU6",
+     "ligand": "LYA"
+    },
+    {
+     "pdb": "1JUJ",
+     "ligand": "LYA"
+    }
+   ]
+  },
+  {
+   "drug": "CARBOPLATIN",
+   "cases": 2,
+   "chembl": "CHEMBL1351",
+   "targets": [
+    {
+     "target": "DNA",
+     "action": "INHIBITOR",
+     "uniprot": []
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "AMOXICILLIN",
+   "cases": 1,
+   "chembl": "CHEMBL1082",
+   "targets": [
+    {
+     "target": "Bacterial penicillin-binding protein",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P24228",
+      "P0AD68",
+      "P02918",
+      "P02919",
+      "P0AEB2",
+      "P0AD65"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "CLAVULANIC ACID",
+   "cases": 1,
+   "chembl": "CHEMBL777",
+   "targets": [
+    {
+     "target": "Beta-lactamase TEM",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P62593"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "J01"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "GENTAMICIN",
+   "cases": 1,
+   "chembl": "CHEMBL6067485",
+   "targets": [
+    {
+     "target": "Bacterial 70S ribosome",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P0A7V0",
+      "P60723",
+      "P0AG67",
+      "P0A7R5",
+      "P0A7R9",
+      "P0A7S3"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "LORLATINIB",
+   "cases": 1,
+   "chembl": "CHEMBL3286830",
+   "targets": [
+    {
+     "target": "ALK tyrosine kinase receptor",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "Q9UM73"
+     ]
+    },
+    {
+     "target": "EML4-ALK",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "Q9UM73",
+      "Q9HC35"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "5P8"
+   ],
+   "structures": [
+    {
+     "pdb": "5A9U",
+     "ligand": "5P8"
+    },
+    {
+     "pdb": "4CLJ",
+     "ligand": "5P8"
+    },
+    {
+     "pdb": "5AA8",
+     "ligand": "5P8"
+    },
+    {
+     "pdb": "5AA9",
+     "ligand": "5P8"
+    },
+    {
+     "pdb": "4CLI",
+     "ligand": "5P8"
+    }
+   ]
+  },
+  {
+   "drug": "BUDESONIDE",
+   "cases": 1,
+   "chembl": "CHEMBL1370",
+   "targets": [
+    {
+     "target": "Glucocorticoid receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P04150"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "FORMOTEROL",
+   "cases": 1,
+   "chembl": "CHEMBL1256786",
+   "targets": [
+    {
+     "target": "Beta-2 adrenergic receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P07550"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "GLYCOPYRRONIUM",
+   "cases": 1,
+   "chembl": "CHEMBL1201335",
+   "targets": [
+    {
+     "target": "Muscarinic acetylcholine receptor M3",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "P20309"
+     ]
+    },
+    {
+     "target": "Muscarinic acetylcholine receptor M1",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "P11229"
+     ]
+    },
+    {
+     "target": "Muscarinic acetylcholine receptor",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P20309",
+      "P08173",
+      "P11229",
+      "P08172",
+      "P08912"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "NINTEDANIB",
+   "cases": 1,
+   "chembl": "CHEMBL502835",
+   "targets": [
+    {
+     "target": "Platelet-derived growth factor receptor",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P09619",
+      "P16234"
+     ]
+    },
+    {
+     "target": "Vascular endothelial growth factor receptor",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P17948",
+      "P35916",
+      "P35968"
+     ]
+    },
+    {
+     "target": "Fibroblast growth factor receptor",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P22607",
+      "P11362",
+      "P22455",
+      "P21802"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "XIN"
+   ],
+   "structures": [
+    {
+     "pdb": "3C7Q",
+     "ligand": "XIN"
+    }
+   ]
+  },
+  {
+   "drug": "OSIMERTINIB",
+   "cases": 1,
+   "chembl": "CHEMBL3353410",
+   "targets": [
+    {
+     "target": "Epidermal growth factor receptor",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P00533"
+     ]
+    },
+    {
+     "target": "Epidermal growth factor receptor",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P00533"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "YY3"
+   ],
+   "structures": [
+    {
+     "pdb": "6LUD",
+     "ligand": "YY3"
+    },
+    {
+     "pdb": "7JXP",
+     "ligand": "YY3"
+    },
+    {
+     "pdb": "7JXM",
+     "ligand": "YY3"
+    },
+    {
+     "pdb": "6JXT",
+     "ligand": "YY3"
+    },
+    {
+     "pdb": "7JXW",
+     "ligand": "YY3"
+    }
+   ]
+  },
+  {
+   "drug": "VANCOMYCIN",
+   "cases": 1,
+   "chembl": "CHEMBL262777",
+   "targets": [
+    {
+     "target": "Peptidoglycan",
+     "action": "INHIBITOR",
+     "uniprot": []
+    },
+    {
+     "target": "Peptidoglycan",
+     "action": "INHIBITOR",
+     "uniprot": []
+    }
+   ],
+   "ligand_codes": [
+    "PRD_000204"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "RISDIPLAM",
+   "cases": 1,
+   "chembl": "CHEMBL4297528",
+   "targets": [
+    {
+     "target": "SMN2 pre-mRNA",
+     "action": "POSITIVE MODULATOR",
+     "uniprot": [
+      "ENSG00000205571"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "CLADRIBINE",
+   "cases": 1,
+   "chembl": "CHEMBL1619",
+   "targets": [
+    {
+     "target": "DNA",
+     "action": "INHIBITOR",
+     "uniprot": []
+    }
+   ],
+   "ligand_codes": [
+    "CL9"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "QUETIAPINE",
+   "cases": 1,
+   "chembl": "CHEMBL716",
+   "targets": [
+    {
+     "target": "5-hydroxytryptamine receptor 2A",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "P28223"
+     ]
+    },
+    {
+     "target": "5-hydroxytryptamine receptor 2C",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "P28335"
+     ]
+    },
+    {
+     "target": "D(2) dopamine receptor",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "P14416"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "CABOZANTINIB",
+   "cases": 1,
+   "chembl": "CHEMBL2105717",
+   "targets": [
+    {
+     "target": "Vascular endothelial growth factor receptor 2",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P35968"
+     ]
+    },
+    {
+     "target": "Hepatocyte growth factor receptor",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P08581"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "A1JS8"
+   ],
+   "structures": [
+    {
+     "pdb": "9T3Q",
+     "ligand": "A1JS8"
+    },
+    {
+     "pdb": "9T2V",
+     "ligand": "A1JS8"
+    }
+   ]
+  },
+  {
+   "drug": "CYTARABINE",
+   "cases": 1,
+   "chembl": "CHEMBL803",
+   "targets": [
+    {
+     "target": "DNA",
+     "action": "INHIBITOR",
+     "uniprot": []
+    },
+    {
+     "target": "RNA",
+     "action": "INHIBITOR",
+     "uniprot": []
+    },
+    {
+     "target": "DNA polymerase (alpha/delta/epsilon)",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P09884",
+      "Q9HCU8",
+      "Q15054",
+      "P28340",
+      "P49005",
+      "Q07864"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "AR3"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "DAUNORUBICIN",
+   "cases": 1,
+   "chembl": "CHEMBL178",
+   "targets": [
+    {
+     "target": "DNA topoisomerase 2-alpha",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P11388"
+     ]
+    },
+    {
+     "target": "DNA topoisomerase 2-alpha",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P11388"
+     ]
+    },
+    {
+     "target": "DNA",
+     "action": "INHIBITOR",
+     "uniprot": []
+    },
+    {
+     "target": "DNA",
+     "action": "INHIBITOR",
+     "uniprot": []
+    },
+    {
+     "target": "DNA",
+     "action": "INHIBITOR",
+     "uniprot": []
+    },
+    {
+     "target": "DNA topoisomerase 2-alpha",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P11388"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "DM1"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "TALAZOPARIB",
+   "cases": 1,
+   "chembl": "CHEMBL3137320",
+   "targets": [
+    {
+     "target": "Poly [ADP-ribose] polymerase 2",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "Q9UGN5"
+     ]
+    },
+    {
+     "target": "Poly [ADP-ribose] polymerase 1",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P09874"
+     ]
+    },
+    {
+     "target": "Poly [ADP-ribose] polymerase 2",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "Q9UGN5"
+     ]
+    },
+    {
+     "target": "Poly [ADP-ribose] polymerase 1",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P09874"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "2YQ"
+   ],
+   "structures": [
+    {
+     "pdb": "7KK3",
+     "ligand": "2YQ"
+    },
+    {
+     "pdb": "4UND",
+     "ligand": "2YQ"
+    },
+    {
+     "pdb": "4PJT",
+     "ligand": "2YQ"
+    },
+    {
+     "pdb": "4PJV",
+     "ligand": "2YQ"
+    }
+   ]
+  },
+  {
+   "drug": "ZONGERTINIB",
+   "cases": 1,
+   "chembl": "CHEMBL5314498",
+   "targets": [],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "COPPER",
+   "cases": 1,
+   "chembl": "CHEMBL55643",
+   "targets": [],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "TROSPIUM",
+   "cases": 1,
+   "chembl": "CHEMBL1888176",
+   "targets": [
+    {
+     "target": "Muscarinic acetylcholine receptor M3",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "P20309"
+     ]
+    },
+    {
+     "target": "Muscarinic acetylcholine receptor M2",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "P08172"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "XANOMELINE",
+   "cases": 1,
+   "chembl": "CHEMBL21536",
+   "targets": [
+    {
+     "target": "Muscarinic acetylcholine receptor M4",
+     "action": "AGONIST",
+     "uniprot": [
+      "P08173"
+     ]
+    },
+    {
+     "target": "Muscarinic acetylcholine receptor M1",
+     "action": "AGONIST",
+     "uniprot": [
+      "P11229"
+     ]
+    },
+    {
+     "target": "Muscarinic acetylcholine receptor M4",
+     "action": "AGONIST",
+     "uniprot": [
+      "P08173"
+     ]
+    },
+    {
+     "target": "Muscarinic acetylcholine receptor M1",
+     "action": "AGONIST",
+     "uniprot": [
+      "P11229"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "XNO"
+   ],
+   "structures": [
+    {
+     "pdb": "8FX5",
+     "ligand": "XNO"
+    }
+   ]
+  },
+  {
+   "drug": "BUDESONIDE",
+   "cases": 1,
+   "chembl": "CHEMBL1370",
+   "targets": [
+    {
+     "target": "Glucocorticoid receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P04150"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "FORMOTEROL",
+   "cases": 1,
+   "chembl": "CHEMBL1256786",
+   "targets": [
+    {
+     "target": "Beta-2 adrenergic receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P07550"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "MIRABEGRON",
+   "cases": 1,
+   "chembl": "CHEMBL2095212",
+   "targets": [
+    {
+     "target": "Beta-3 adrenergic receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P13945"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "H6U"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "APALUTAMIDE",
+   "cases": 1,
+   "chembl": "CHEMBL3183409",
+   "targets": [
+    {
+     "target": "Androgen receptor",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "P10275"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "BIMATOPROST",
+   "cases": 1,
+   "chembl": "CHEMBL1200963",
+   "targets": [
+    {
+     "target": "Prostaglandin F2-alpha receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P43088"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "15M"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "ETHINYL ESTRADIOL",
+   "cases": 1,
+   "chembl": "CHEMBL691",
+   "targets": [
+    {
+     "target": "Estrogen receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P03372"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "3WF"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "NORELGESTROMIN",
+   "cases": 1,
+   "chembl": "CHEMBL1200807",
+   "targets": [
+    {
+     "target": "Progesterone receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P06401"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "ESCITALOPRAM OXALATE",
+   "cases": 1,
+   "chembl": "CHEMBL1508",
+   "targets": [
+    {
+     "target": "Sodium-dependent serotonin transporter",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P31645"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "68P"
+   ],
+   "structures": [
+    {
+     "pdb": "5I71",
+     "ligand": "68P"
+    },
+    {
+     "pdb": "5I73",
+     "ligand": "68P"
+    },
+    {
+     "pdb": "5I75",
+     "ligand": "68P"
+    }
+   ]
+  },
+  {
+   "drug": "SULFUR HEXAFLUORIDE",
+   "cases": 1,
+   "chembl": "CHEMBL1796998",
+   "targets": [],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "CLOMIPHENE",
+   "cases": 1,
+   "chembl": "CHEMBL2355051",
+   "targets": [
+    {
+     "target": "Estrogen receptor",
+     "action": "MODULATOR",
+     "uniprot": [
+      "P03372"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "MICONAZOLE NITRATE",
+   "cases": 1,
+   "chembl": "CHEMBL91",
+   "targets": [
+    {
+     "target": "Lanosterol 14-alpha demethylase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P10613"
+     ]
+    },
+    {
+     "target": "Lanosterol 14-alpha demethylase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P10613"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "LOTILANER",
+   "cases": 1,
+   "chembl": "CHEMBL3707310",
+   "targets": [],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "FENTANYL",
+   "cases": 1,
+   "chembl": "CHEMBL596",
+   "targets": [
+    {
+     "target": "Mu-type opioid receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P35372"
+     ]
+    },
+    {
+     "target": "Mu-type opioid receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P35372"
+     ]
+    },
+    {
+     "target": "Mu-type opioid receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P35372"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "7V7"
+   ],
+   "structures": [
+    {
+     "pdb": "8EF5",
+     "ligand": "7V7"
+    }
+   ]
+  },
+  {
+   "drug": "BUPIVACAINE",
+   "cases": 1,
+   "chembl": "CHEMBL1098",
+   "targets": [
+    {
+     "target": "Sodium channel protein type 4 subunit alpha",
+     "action": "BLOCKER",
+     "uniprot": [
+      "P35499"
+     ]
+    },
+    {
+     "target": "Sodium channel protein type 4 subunit alpha",
+     "action": "BLOCKER",
+     "uniprot": [
+      "P35499"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "ESTRADIOL",
+   "cases": 1,
+   "chembl": "CHEMBL135",
+   "targets": [
+    {
+     "target": "Estrogen receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P03372"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "EST"
+   ],
+   "structures": [
+    {
+     "pdb": "7NEL",
+     "ligand": "EST"
+    },
+    {
+     "pdb": "5DXE",
+     "ligand": "EST"
+    },
+    {
+     "pdb": "3UUD",
+     "ligand": "EST"
+    },
+    {
+     "pdb": "6CBZ",
+     "ligand": "EST"
+    },
+    {
+     "pdb": "5WGD",
+     "ligand": "EST"
+    }
+   ]
+  },
+  {
+   "drug": "TESTOSTERONE",
+   "cases": 1,
+   "chembl": "CHEMBL386630",
+   "targets": [
+    {
+     "target": "Androgen receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P10275"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "TES"
+   ],
+   "structures": [
+    {
+     "pdb": "2AM9",
+     "ligand": "TES"
+    },
+    {
+     "pdb": "2Q7K",
+     "ligand": "TES"
+    },
+    {
+     "pdb": "2Q7I",
+     "ligand": "TES"
+    },
+    {
+     "pdb": "2Q7J",
+     "ligand": "TES"
+    },
+    {
+     "pdb": "2Q7L",
+     "ligand": "TES"
+    }
+   ]
+  },
+  {
+   "drug": "KETOCONAZOLE",
+   "cases": 1,
+   "chembl": "CHEMBL157101",
+   "targets": [
+    {
+     "target": "Lanosterol 14-alpha demethylase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P10613"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "FEZOLINETANT",
+   "cases": 1,
+   "chembl": "CHEMBL3608680",
+   "targets": [
+    {
+     "target": "Neuromedin-K receptor",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "P29371"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "FOSTAMATINIB",
+   "cases": 1,
+   "chembl": "CHEMBL2103830",
+   "targets": [
+    {
+     "target": "Tyrosine-protein kinase SYK",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P43405"
+     ]
+    },
+    {
+     "target": "Tyrosine-protein kinase SYK",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P43405"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "2RC"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "RIBOCICLIB",
+   "cases": 1,
+   "chembl": "CHEMBL3545110",
+   "targets": [
+    {
+     "target": "Cyclin-dependent kinase 4",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P11802"
+     ]
+    },
+    {
+     "target": "Cyclin-dependent kinase 6",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "Q00534"
+     ]
+    },
+    {
+     "target": "Cyclin-dependent kinase 4",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P11802"
+     ]
+    },
+    {
+     "target": "Cyclin-dependent kinase 6",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "Q00534"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "6ZZ"
+   ],
+   "structures": [
+    {
+     "pdb": "5L2T",
+     "ligand": "6ZZ"
+    }
+   ]
+  },
+  {
+   "drug": "DIPHENHYDRAMINE",
+   "cases": 1,
+   "chembl": "CHEMBL657",
+   "targets": [
+    {
+     "target": "Histamine H1 receptor",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "P35367"
+     ]
+    },
+    {
+     "target": "Histamine H1 receptor",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "P35367"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "2PM"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "NAPROXEN",
+   "cases": 1,
+   "chembl": "CHEMBL154",
+   "targets": [
+    {
+     "target": "Cyclooxygenase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P35354",
+      "P23219"
+     ]
+    },
+    {
+     "target": "Cyclooxygenase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P35354",
+      "P23219"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "NPS"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "SILDENAFIL",
+   "cases": 1,
+   "chembl": "CHEMBL192",
+   "targets": [
+    {
+     "target": "cGMP-specific 3',5'-cyclic phosphodiesterase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "O76074"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "VIA"
+   ],
+   "structures": [
+    {
+     "pdb": "1TBF",
+     "ligand": "VIA"
+    },
+    {
+     "pdb": "1UDT",
+     "ligand": "VIA"
+    },
+    {
+     "pdb": "2H42",
+     "ligand": "VIA"
+    },
+    {
+     "pdb": "3JWQ",
+     "ligand": "VIA"
+    }
+   ]
+  },
+  {
+   "drug": "AVAPRITINIB",
+   "cases": 1,
+   "chembl": "CHEMBL4204794",
+   "targets": [
+    {
+     "target": "Mast/stem cell growth factor receptor Kit",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P10721"
+     ]
+    },
+    {
+     "target": "Platelet-derived growth factor receptor alpha",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P16234"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "9JI"
+   ],
+   "structures": [
+    {
+     "pdb": "8PQ9",
+     "ligand": "9JI"
+    },
+    {
+     "pdb": "9TF9",
+     "ligand": "9JI"
+    },
+    {
+     "pdb": "8PQG",
+     "ligand": "9JI"
+    },
+    {
+     "pdb": "8PQH",
+     "ligand": "9JI"
+    }
+   ]
+  },
+  {
+   "drug": "GIVINOSTAT",
+   "cases": 1,
+   "chembl": "CHEMBL1213492",
+   "targets": [
+    {
+     "target": "Histone deacetylase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "Q13547",
+      "O15379",
+      "Q9UBN7",
+      "Q92769",
+      "Q9UQL6",
+      "Q8WUI4"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "QCM"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "ACYCLOVIR",
+   "cases": 1,
+   "chembl": "CHEMBL184",
+   "targets": [
+    {
+     "target": "DNA polymerase catalytic subunit",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P04293"
+     ]
+    },
+    {
+     "target": "DNA polymerase catalytic subunit",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P04293"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "AC2"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "ISOPROPYL ALCOHOL",
+   "cases": 1,
+   "chembl": "CHEMBL582",
+   "targets": [],
+   "ligand_codes": [
+    "IPA"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "DIAZOXIDE CHOLINE",
+   "cases": 1,
+   "chembl": "CHEMBL181",
+   "targets": [
+    {
+     "target": "ATP-sensitive inward rectifier potassium channel 11",
+     "action": "OPENER",
+     "uniprot": [
+      "Q14654"
+     ]
+    },
+    {
+     "target": "ATP-sensitive inward rectifier potassium channel 8",
+     "action": "OPENER",
+     "uniprot": [
+      "Q15842"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "20J"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "ATOMOXETINE",
+   "cases": 1,
+   "chembl": "CHEMBL641",
+   "targets": [
+    {
+     "target": "Sodium-dependent noradrenaline transporter",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P23975"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "A1LX4"
+   ],
+   "structures": [
+    {
+     "pdb": "8ZP2",
+     "ligand": "A1LX4"
+    },
+    {
+     "pdb": "8Y92",
+     "ligand": "A1LX4"
+    },
+    {
+     "pdb": "8Z1L",
+     "ligand": "A1LX4"
+    }
+   ]
+  },
+  {
+   "drug": "AZATHIOPRINE",
+   "cases": 1,
+   "chembl": "CHEMBL1542",
+   "targets": [
+    {
+     "target": "Amidophosphoribosyltransferase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "Q06203"
+     ]
+    },
+    {
+     "target": "Amidophosphoribosyltransferase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "Q06203"
+     ]
+    },
+    {
+     "target": "DNA",
+     "action": "INHIBITOR",
+     "uniprot": []
+    },
+    {
+     "target": "DNA",
+     "action": "INHIBITOR",
+     "uniprot": []
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "DEFERIPRONE",
+   "cases": 1,
+   "chembl": "CHEMBL70927",
+   "targets": [],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "BOSENTAN",
+   "cases": 1,
+   "chembl": "CHEMBL957",
+   "targets": [
+    {
+     "target": "Endothelin receptor, ET-A/ET-B",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "P24530",
+      "P25101"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "K86"
+   ],
+   "structures": [
+    {
+     "pdb": "5XPR",
+     "ligand": "K86"
+    }
+   ]
+  },
+  {
+   "drug": "METHYLPHENIDATE",
+   "cases": 1,
+   "chembl": "CHEMBL796",
+   "targets": [
+    {
+     "target": "Sodium-dependent dopamine transporter",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "Q01959"
+     ]
+    },
+    {
+     "target": "Sodium-dependent dopamine transporter",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "Q01959"
+     ]
+    },
+    {
+     "target": "Sodium-dependent noradrenaline transporter",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P23975"
+     ]
+    },
+    {
+     "target": "Sodium-dependent noradrenaline transporter",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P23975"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "CANNABIDIOL",
+   "cases": 1,
+   "chembl": "CHEMBL190461",
+   "targets": [
+    {
+     "target": "Cannabinoid receptor 1",
+     "action": "NEGATIVE ALLOSTERIC MODULATOR",
+     "uniprot": [
+      "P21554"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "P0T"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "CETIRIZINE",
+   "cases": 1,
+   "chembl": "CHEMBL1000",
+   "targets": [
+    {
+     "target": "Histamine H1 receptor",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "P35367"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "ETOPOSIDE",
+   "cases": 1,
+   "chembl": "CHEMBL44657",
+   "targets": [
+    {
+     "target": "DNA topoisomerase II",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P11388",
+      "Q02880"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "EVP"
+   ],
+   "structures": [
+    {
+     "pdb": "3QX3",
+     "ligand": "EVP"
+    },
+    {
+     "pdb": "5ZRF",
+     "ligand": "EVP"
+    },
+    {
+     "pdb": "5GWK",
+     "ligand": "EVP"
+    },
+    {
+     "pdb": "6ZY5",
+     "ligand": "EVP"
+    },
+    {
+     "pdb": "7YQ8",
+     "ligand": "EVP"
+    }
+   ]
+  },
+  {
+   "drug": "SUMATRIPTAN",
+   "cases": 1,
+   "chembl": "CHEMBL128",
+   "targets": [
+    {
+     "target": "5-hydroxytryptamine receptor 1B",
+     "action": "AGONIST",
+     "uniprot": [
+      "P28222"
+     ]
+    },
+    {
+     "target": "5-hydroxytryptamine receptor 1B",
+     "action": "AGONIST",
+     "uniprot": [
+      "P28222"
+     ]
+    },
+    {
+     "target": "5-hydroxytryptamine receptor 1D",
+     "action": "AGONIST",
+     "uniprot": [
+      "P28221"
+     ]
+    },
+    {
+     "target": "5-hydroxytryptamine receptor 1D",
+     "action": "AGONIST",
+     "uniprot": [
+      "P28221"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "CALCIUM OXYBATE",
+   "cases": 1,
+   "chembl": "CHEMBL1342",
+   "targets": [
+    {
+     "target": "GABA-B receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "Q9UBS5",
+      "O75899"
+     ]
+    },
+    {
+     "target": "GABA-B receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "Q9UBS5",
+      "O75899"
+     ]
+    },
+    {
+     "target": "GABA-B receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "Q9UBS5",
+      "O75899"
+     ]
+    },
+    {
+     "target": "GABA-B receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "Q9UBS5",
+      "O75899"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "MAGNESIUM OXYBATE",
+   "cases": 1,
+   "chembl": "CHEMBL1342",
+   "targets": [
+    {
+     "target": "GABA-B receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "Q9UBS5",
+      "O75899"
+     ]
+    },
+    {
+     "target": "GABA-B receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "Q9UBS5",
+      "O75899"
+     ]
+    },
+    {
+     "target": "GABA-B receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "Q9UBS5",
+      "O75899"
+     ]
+    },
+    {
+     "target": "GABA-B receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "Q9UBS5",
+      "O75899"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "POTASSIUM OXYBATE",
+   "cases": 1,
+   "chembl": "CHEMBL1342",
+   "targets": [
+    {
+     "target": "GABA-B receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "Q9UBS5",
+      "O75899"
+     ]
+    },
+    {
+     "target": "GABA-B receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "Q9UBS5",
+      "O75899"
+     ]
+    },
+    {
+     "target": "GABA-B receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "Q9UBS5",
+      "O75899"
+     ]
+    },
+    {
+     "target": null,
+     "action": "AGONIST",
+     "uniprot": []
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "SODIUM OXYBATE",
+   "cases": 1,
+   "chembl": "CHEMBL1342",
+   "targets": [
+    {
+     "target": "GABA-B receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "Q9UBS5",
+      "O75899"
+     ]
+    },
+    {
+     "target": "GABA-B receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "Q9UBS5",
+      "O75899"
+     ]
+    },
+    {
+     "target": "GABA-B receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "Q9UBS5",
+      "O75899"
+     ]
+    },
+    {
+     "target": "GABA-B receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "Q9UBS5",
+      "O75899"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "ILOPROST",
+   "cases": 1,
+   "chembl": "CHEMBL494",
+   "targets": [
+    {
+     "target": "Prostacyclin receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P43119"
+     ]
+    },
+    {
+     "target": "Prostacyclin receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P43119"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "LOPERAMIDE",
+   "cases": 1,
+   "chembl": "CHEMBL841",
+   "targets": [
+    {
+     "target": "Mu-type opioid receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P35372"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "A1CMV"
+   ],
+   "structures": [
+    {
+     "pdb": "9PY4",
+     "ligand": "A1CMV"
+    },
+    {
+     "pdb": "9PY2",
+     "ligand": "A1CMV"
+    },
+    {
+     "pdb": "9PY3",
+     "ligand": "A1CMV"
+    }
+   ]
+  },
+  {
+   "drug": "CIPROFLOXACIN",
+   "cases": 1,
+   "chembl": "CHEMBL8",
+   "targets": [
+    {
+     "target": "Bacterial DNA gyrase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P0AES6",
+      "P0AES4"
+     ]
+    },
+    {
+     "target": "Bacterial DNA gyrase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P0AES6",
+      "P0AES4"
+     ]
+    },
+    {
+     "target": "Topoisomerase IV",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P0AFI2",
+      "P20083"
+     ]
+    },
+    {
+     "target": "Topoisomerase IV",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P0AFI2",
+      "P20083"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "CPF"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "PRALSETINIB",
+   "cases": 1,
+   "chembl": "CHEMBL4582651",
+   "targets": [
+    {
+     "target": "Proto-oncogene tyrosine-protein kinase receptor Ret",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P07949"
+     ]
+    },
+    {
+     "target": "Coiled-coil domain-containing protein 6/Tyrosine-protein kinase receptor RET",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P07949",
+      "Q16204"
+     ]
+    },
+    {
+     "target": "Kinesin-1 heavy chain/ Tyrosine-protein kinase receptor RET",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P07949",
+      "P33176"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "ENZALUTAMIDE",
+   "cases": 1,
+   "chembl": "CHEMBL1082407",
+   "targets": [
+    {
+     "target": "Androgen receptor",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "P10275"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "AMOXICILLIN",
+   "cases": 1,
+   "chembl": "CHEMBL1082",
+   "targets": [
+    {
+     "target": "Bacterial penicillin-binding protein",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P24228",
+      "P0AD68",
+      "P02918",
+      "P02919",
+      "P0AEB2",
+      "P0AD65"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "NAPROXEN",
+   "cases": 1,
+   "chembl": "CHEMBL154",
+   "targets": [
+    {
+     "target": "Cyclooxygenase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P35354",
+      "P23219"
+     ]
+    },
+    {
+     "target": "Cyclooxygenase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P35354",
+      "P23219"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "NPS"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "RESMETIROM",
+   "cases": 1,
+   "chembl": "CHEMBL3261331",
+   "targets": [
+    {
+     "target": "Thyroid hormone receptor beta",
+     "action": "AGONIST",
+     "uniprot": [
+      "P10828"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "CALCIFEDIOL",
+   "cases": 1,
+   "chembl": "CHEMBL1040",
+   "targets": [
+    {
+     "target": "Vitamin D3 receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P11473"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "VDY"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "GLUTAMINE",
+   "cases": 1,
+   "chembl": "CHEMBL930",
+   "targets": [],
+   "ligand_codes": [
+    "GLN"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "CLONAZEPAM",
+   "cases": 1,
+   "chembl": "CHEMBL452",
+   "targets": [
+    {
+     "target": "GABA-A receptor; anion channel",
+     "action": "POSITIVE ALLOSTERIC MODULATOR",
+     "uniprot": [
+      "P14867",
+      "P47870",
+      "P18507",
+      "P28472",
+      "P48169",
+      "Q99928"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "GEMCITABINE",
+   "cases": 1,
+   "chembl": "CHEMBL888",
+   "targets": [
+    {
+     "target": "Ribonucleoside-diphosphate reductase RR1",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P23921",
+      "Q7LG56",
+      "P31350"
+     ]
+    },
+    {
+     "target": "DNA polymerase (alpha/delta/epsilon)",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P09884",
+      "Q9HCU8",
+      "Q15054",
+      "P28340",
+      "P49005",
+      "Q07864"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "GEO"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "BARICITINIB",
+   "cases": 1,
+   "chembl": "CHEMBL2105759",
+   "targets": [
+    {
+     "target": "Tyrosine-protein kinase JAK1",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P23458"
+     ]
+    },
+    {
+     "target": "Tyrosine-protein kinase JAK2",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "O60674"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "3JW"
+   ],
+   "structures": [
+    {
+     "pdb": "6WTO",
+     "ligand": "3JW"
+    },
+    {
+     "pdb": "6VN8",
+     "ligand": "3JW"
+    }
+   ]
+  },
+  {
+   "drug": "FLOXURIDINE",
+   "cases": 1,
+   "chembl": "CHEMBL917",
+   "targets": [
+    {
+     "target": "Thymidylate synthase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P04818"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "INAVOLISIB",
+   "cases": 1,
+   "chembl": "CHEMBL4650215",
+   "targets": [
+    {
+     "target": "Phosphatidylinositol 4,5-bisphosphate 3-kinase catalytic subunit alpha isoform",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P42336"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "X3N"
+   ],
+   "structures": [
+    {
+     "pdb": "8EXV",
+     "ligand": "X3N"
+    },
+    {
+     "pdb": "8TGD",
+     "ligand": "X3N"
+    },
+    {
+     "pdb": "8TDU",
+     "ligand": "X3N"
+    }
+   ]
+  },
+  {
+   "drug": "ABEMACICLIB",
+   "cases": 1,
+   "chembl": "CHEMBL3301610",
+   "targets": [
+    {
+     "target": "Cyclin-dependent kinase 4",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P11802"
+     ]
+    },
+    {
+     "target": "Cyclin-dependent kinase 6",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "Q00534"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "6ZV"
+   ],
+   "structures": [
+    {
+     "pdb": "5L2S",
+     "ligand": "6ZV"
+    },
+    {
+     "pdb": "7SJ3",
+     "ligand": "6ZV"
+    }
+   ]
+  },
+  {
+   "drug": "METHOTREXATE",
+   "cases": 1,
+   "chembl": "CHEMBL34259",
+   "targets": [
+    {
+     "target": "Dihydrofolate reductase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P00374"
+     ]
+    },
+    {
+     "target": "Dihydrofolate reductase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P00374"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "MTX"
+   ],
+   "structures": [
+    {
+     "pdb": "3EIG",
+     "ligand": "MTX"
+    },
+    {
+     "pdb": "1U72",
+     "ligand": "MTX"
+    },
+    {
+     "pdb": "1DLS",
+     "ligand": "MTX"
+    }
+   ]
+  },
+  {
+   "drug": "GUANFACINE",
+   "cases": 1,
+   "chembl": "CHEMBL862",
+   "targets": [
+    {
+     "target": "Adrenergic receptor alpha-2",
+     "action": "AGONIST",
+     "uniprot": [
+      "P08913",
+      "P18825",
+      "P18089"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "DICLOFENAC",
+   "cases": 1,
+   "chembl": "CHEMBL139",
+   "targets": [
+    {
+     "target": "Cyclooxygenase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P35354",
+      "P23219"
+     ]
+    },
+    {
+     "target": "Cyclooxygenase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P35354",
+      "P23219"
+     ]
+    },
+    {
+     "target": "Cyclooxygenase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P35354",
+      "P23219"
+     ]
+    },
+    {
+     "target": "Cyclooxygenase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P35354",
+      "P23219"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "DIF"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "LINEZOLID",
+   "cases": 1,
+   "chembl": "CHEMBL126",
+   "targets": [
+    {
+     "target": "Bacterial 70S ribosome",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P0A7V0",
+      "P60723",
+      "P0AG67",
+      "P0A7R5",
+      "P0A7R9",
+      "P0A7S3"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "ZLD"
+   ],
+   "structures": [
+    {
+     "pdb": "7S1H",
+     "ligand": "ZLD"
+    },
+    {
+     "pdb": "7S1G",
+     "ligand": "ZLD"
+    }
+   ]
+  },
+  {
+   "drug": "VORICONAZOLE",
+   "cases": 1,
+   "chembl": "CHEMBL638",
+   "targets": [
+    {
+     "target": "Lanosterol 14-alpha demethylase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P10613"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "VOR"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "ISOTRETINOIN",
+   "cases": 1,
+   "chembl": "CHEMBL547",
+   "targets": [
+    {
+     "target": "Retinoic acid receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P13631",
+      "P10826",
+      "P10276"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "ANASTROZOLE",
+   "cases": 1,
+   "chembl": "CHEMBL1399",
+   "targets": [
+    {
+     "target": "Aromatase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P11511"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "TETRABENAZINE",
+   "cases": 1,
+   "chembl": "CHEMBL117785",
+   "targets": [
+    {
+     "target": "Synaptic vesicular amine transporter",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "Q05940"
+     ]
+    },
+    {
+     "target": "Synaptic vesicular amine transporter",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "Q05940"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "MINOCYCLINE",
+   "cases": 1,
+   "chembl": "CHEMBL1434",
+   "targets": [
+    {
+     "target": "Bacterial 70S ribosome",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P0A7V0",
+      "P60723",
+      "P0AG67",
+      "P0A7R5",
+      "P0A7R9",
+      "P0A7S3"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "PIRFENIDONE",
+   "cases": 1,
+   "chembl": "CHEMBL1256391",
+   "targets": [],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "VADADUSTAT",
+   "cases": 1,
+   "chembl": "CHEMBL3646221",
+   "targets": [
+    {
+     "target": "Egl nine homolog 1",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "Q9GZT9"
+     ]
+    },
+    {
+     "target": "Prolyl hydroxylase EGLN3",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "Q9H6Z9"
+     ]
+    },
+    {
+     "target": "Prolyl hydroxylase EGLN2",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "Q96KS0"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "A1Z"
+   ],
+   "structures": [
+    {
+     "pdb": "7UMP",
+     "ligand": "A1Z"
+    },
+    {
+     "pdb": "5OX6",
+     "ligand": "A1Z"
+    }
+   ]
+  },
+  {
+   "drug": "REPAGLINIDE",
+   "cases": 1,
+   "chembl": "CHEMBL1272",
+   "targets": [
+    {
+     "target": "Sulfonylurea receptor 1, Kir6.2",
+     "action": "BLOCKER",
+     "uniprot": [
+      "Q14654",
+      "Q09428"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "BJX"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "ETONOGESTREL",
+   "cases": 1,
+   "chembl": "CHEMBL1531",
+   "targets": [
+    {
+     "target": "Progesterone receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P06401"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "AMITRIPTYLINE",
+   "cases": 1,
+   "chembl": "CHEMBL629",
+   "targets": [
+    {
+     "target": "Sodium-dependent serotonin transporter",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P31645"
+     ]
+    },
+    {
+     "target": "Sodium-dependent noradrenaline transporter",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P23975"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "TP0"
+   ],
+   "structures": [
+    {
+     "pdb": "8Y93",
+     "ligand": "TP0"
+    }
+   ]
+  },
+  {
+   "drug": "ZOLPIDEM",
+   "cases": 1,
+   "chembl": "CHEMBL911",
+   "targets": [
+    {
+     "target": "GABA A receptor alpha-1/beta-1/gamma-2",
+     "action": "POSITIVE ALLOSTERIC MODULATOR",
+     "uniprot": [
+      "P14867",
+      "P18507",
+      "P18505"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "R5R"
+   ],
+   "structures": [
+    {
+     "pdb": "8DD2",
+     "ligand": "R5R"
+    }
+   ]
+  },
+  {
+   "drug": "LEVOTHYROXINE",
+   "cases": 1,
+   "chembl": "CHEMBL1624",
+   "targets": [
+    {
+     "target": "Thyroid hormone receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P10827",
+      "P10828"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "T44"
+   ],
+   "structures": [
+    {
+     "pdb": "4LNX",
+     "ligand": "T44"
+    },
+    {
+     "pdb": "1Y0X",
+     "ligand": "T44"
+    }
+   ]
+  },
+  {
+   "drug": "RIVAROXABAN",
+   "cases": 1,
+   "chembl": "CHEMBL198362",
+   "targets": [
+    {
+     "target": "Coagulation factor X",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P00742"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "RIV"
+   ],
+   "structures": [
+    {
+     "pdb": "2W26",
+     "ligand": "RIV"
+    },
+    {
+     "pdb": "5VOF",
+     "ligand": "RIV"
+    }
+   ]
+  },
+  {
+   "drug": "DAPAGLIFLOZIN",
+   "cases": 1,
+   "chembl": "CHEMBL429910",
+   "targets": [
+    {
+     "target": "Sodium/glucose cotransporter 2",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P31639"
+     ]
+    },
+    {
+     "target": "Sodium/glucose cotransporter 2",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P31639"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "LE6"
+   ],
+   "structures": [
+    {
+     "pdb": "8HEZ",
+     "ligand": "LE6"
+    }
+   ]
+  },
+  {
+   "drug": "METFORMIN",
+   "cases": 1,
+   "chembl": "CHEMBL1431",
+   "targets": [
+    {
+     "target": "Mitochondrial complex I (NADH dehydrogenase)",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P03923",
+      "O95299",
+      "O00217",
+      "P03901",
+      "P56556",
+      "P03886"
+     ]
+    },
+    {
+     "target": "Glycerol-3-phosphate dehydrogenase, mitochondrial",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P43304"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "MF8"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "PITAVASTATIN",
+   "cases": 1,
+   "chembl": "CHEMBL1201753",
+   "targets": [
+    {
+     "target": "3-hydroxy-3-methylglutaryl-coenzyme A reductase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P04035"
+     ]
+    },
+    {
+     "target": "3-hydroxy-3-methylglutaryl-coenzyme A reductase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P04035"
+     ]
+    },
+    {
+     "target": "3-hydroxy-3-methylglutaryl-coenzyme A reductase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P04035"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "PV9"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "ESKETAMINE",
+   "cases": 1,
+   "chembl": "CHEMBL395091",
+   "targets": [
+    {
+     "target": "Glutamate [NMDA] receptor",
+     "action": "NEGATIVE ALLOSTERIC MODULATOR",
+     "uniprot": [
+      "Q05586",
+      "Q12879",
+      "Q13224",
+      "O15399",
+      "O60391",
+      "Q14957"
+     ]
+    },
+    {
+     "target": "Glutamate [NMDA] receptor",
+     "action": "NEGATIVE ALLOSTERIC MODULATOR",
+     "uniprot": [
+      "Q05586",
+      "Q12879",
+      "Q13224",
+      "O15399",
+      "O60391",
+      "Q14957"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "JC9"
+   ],
+   "structures": [
+    {
+     "pdb": "7EU7",
+     "ligand": "JC9"
+    },
+    {
+     "pdb": "9D3C",
+     "ligand": "JC9"
+    },
+    {
+     "pdb": "7EU8",
+     "ligand": "JC9"
+    }
+   ]
+  },
+  {
+   "drug": "BUPRENORPHINE",
+   "cases": 1,
+   "chembl": "CHEMBL511142",
+   "targets": [
+    {
+     "target": "Mu-type opioid receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P35372"
+     ]
+    },
+    {
+     "target": "Mu-type opioid receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P35372"
+     ]
+    },
+    {
+     "target": "Kappa-type opioid receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P41145"
+     ]
+    },
+    {
+     "target": "Kappa-type opioid receptor",
+     "action": "AGONIST",
+     "uniprot": [
+      "P41145"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "FINASTERIDE",
+   "cases": 1,
+   "chembl": "CHEMBL710",
+   "targets": [
+    {
+     "target": "3-oxo-5-alpha-steroid 4-dehydrogenase 2",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P31213"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "FIT"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "OLANZAPINE",
+   "cases": 1,
+   "chembl": "CHEMBL715",
+   "targets": [
+    {
+     "target": "5-hydroxytryptamine receptor 2A",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "P28223"
+     ]
+    },
+    {
+     "target": "5-hydroxytryptamine receptor 2A",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "P28223"
+     ]
+    },
+    {
+     "target": "5-hydroxytryptamine receptor 2C",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "P28335"
+     ]
+    },
+    {
+     "target": "5-hydroxytryptamine receptor 2C",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "P28335"
+     ]
+    },
+    {
+     "target": "D2-like dopamine receptor",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "P14416",
+      "P35462",
+      "P21917"
+     ]
+    },
+    {
+     "target": "D2-like dopamine receptor",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "P14416",
+      "P35462",
+      "P21917"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "FLUOROURACIL",
+   "cases": 1,
+   "chembl": "CHEMBL185",
+   "targets": [
+    {
+     "target": "Thymidylate synthase",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P04818"
+     ]
+    },
+    {
+     "target": "DNA",
+     "action": "INHIBITOR",
+     "uniprot": []
+    },
+    {
+     "target": "RNA",
+     "action": "INHIBITOR",
+     "uniprot": []
+    }
+   ],
+   "ligand_codes": [
+    "URF"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "MITOMYCIN",
+   "cases": 1,
+   "chembl": "CHEMBL105",
+   "targets": [
+    {
+     "target": "DNA",
+     "action": "INHIBITOR",
+     "uniprot": []
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "LIDOCAINE",
+   "cases": 1,
+   "chembl": "CHEMBL79",
+   "targets": [
+    {
+     "target": "Sodium channel alpha subunit",
+     "action": "BLOCKER",
+     "uniprot": [
+      "P35498",
+      "Q14524",
+      "P35499",
+      "Q01118",
+      "Q99250",
+      "Q15858"
+     ]
+    },
+    {
+     "target": "Sodium channel alpha subunit",
+     "action": "BLOCKER",
+     "uniprot": [
+      "P35498",
+      "Q14524",
+      "P35499",
+      "Q01118",
+      "Q99250",
+      "Q15858"
+     ]
+    }
+   ],
+   "ligand_codes": [
+    "LQZ"
+   ],
+   "structures": []
+  },
+  {
+   "drug": "NADOLOL",
+   "cases": 1,
+   "chembl": "CHEMBL521606",
+   "targets": [
+    {
+     "target": "Beta-1 adrenergic receptor",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "P08588"
+     ]
+    },
+    {
+     "target": "Beta-2 adrenergic receptor",
+     "action": "ANTAGONIST",
+     "uniprot": [
+      "P07550"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  },
+  {
+   "drug": "EVEROLIMUS",
+   "cases": 1,
+   "chembl": "CHEMBL1908360",
+   "targets": [
+    {
+     "target": "Peptidyl-prolyl cis-trans isomerase FKBP1A",
+     "action": "INHIBITOR",
+     "uniprot": [
+      "P62942"
+     ]
+    }
+   ],
+   "ligand_codes": [],
+   "structures": []
+  }
+ ],
+ "updated": "2026-09-28 15:10 KST"
+}
