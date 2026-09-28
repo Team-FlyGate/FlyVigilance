@@ -151,7 +151,7 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
     const el = host.current
     if (!el) return
     let disposed = false, raf = 0
-    const { renderer, scene, camera, composer, bloom, film, resize } = makeRenderer(el)
+    const { renderer, scene, camera, composer, bloom, film, resize, shown } = makeRenderer(el)
     const controls = new OrbitControls(camera, renderer.domElement)
     controls.enableDamping = true; controls.autoRotate = true; controls.autoRotateSpeed = 0.45
     controls.minDistance = 8; controls.maxDistance = 220; controls.enablePan = true; controls.enableZoom = true
@@ -269,7 +269,7 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
       if (st.id === 'critic') camera.setViewOffset(W, H, W * 0.25, 0, W, H); else camera.clearViewOffset()
       if (!dragging && !userCam) { camera.position.lerp(want, 0.04); controls.target.lerp(tgt, 0.06) }
       bloom.strength = 0.3 + 0.2 * flash
-      controls.update(); composer.render()
+      controls.update(); if (shown()) composer.render()
       // 리간드 말풍선: 원점을 화면 좌표로 옮깁니다
       if (label.current) {
         v.set(0, 0, 0).project(camera)

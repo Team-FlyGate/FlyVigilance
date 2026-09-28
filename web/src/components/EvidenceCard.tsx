@@ -71,7 +71,7 @@ export default function EvidenceCard() {
             <Row k={`DiffDock (${c.receptor_pdb})`} v={`신뢰도 ${x.dd_conf} · 결정 자리 ${x.dd_rmsd ?? '–'} Å`} />
             <Row k="반복 재도킹" v={`${v.crystal_hits}/${v.runs}회 정답 · 등급 ${v.grade}`} ok={v.grade === 'HIGH'} />
             <Row k="포즈 수렴" v={`반복 간 ${v.pairwise_median ?? '–'} Å`} />
-            <Row k="신뢰도 흔들림" v={`표준편차 ${v.confidence_sd ?? '–'}`} />
+            <Row k="신뢰도 편차" v={`표준편차 ${v.confidence_sd ?? '–'}`} />
             {x.boltz_pic50 !== null && <Row k="Boltz-2 예측" v={`pIC50 ${x.boltz_pic50.toFixed(2)} (예측)`} />}
           </Section>
         </div>
