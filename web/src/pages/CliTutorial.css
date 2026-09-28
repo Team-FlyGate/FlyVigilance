@@ -77,3 +77,13 @@
 @media(max-width:1050px){.cli-launch{grid-template-columns:1fr;gap:26px}.cli-launch-copy{max-width:650px}.cli-launch-shot{max-width:900px}.cli-cinema-grid{grid-template-columns:1fr}.cli-film-script>p{min-height:0}.cli-film-script h3{margin:12px 0}.cli-film-steps{max-width:420px}}
 @media(max-width:650px){.cli-launch,.cli-cinema{padding:18px;border-radius:14px}.cli-launch{margin-bottom:30px}.cli-launch h2{letter-spacing:-1px}.cli-launch-command{gap:8px}.cli-launch-command small{font-size:9px}.cli-cinema header,.cli-section-heading{align-items:flex-start;flex-direction:column;gap:12px}.cli-film-badge{font-size:9px}.cli-chat-guide{grid-template-columns:1fr;gap:16px}.cli-shortcuts{grid-template-columns:repeat(3,1fr)}.cli-shortcuts>div{padding:12px}.cli-capture-tabs{display:grid;grid-template-columns:repeat(4,1fr)}.cli-capture-tabs button{padding:10px 5px}.cli-command-pair code{font-size:13px}.cli-launch-spec{gap:20px}.cli-proof-image>span{top:8px;right:8px;font-size:9px;padding:5px}.cli-shot-label{font-size:8px;letter-spacing:0}.cli-film-steps button{padding:9px 6px}}
 @media(prefers-reduced-motion:reduce){.cli-tutorial *{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+
+/* 실제 캡처 자동 전환 */
+.cli-slides { position: relative; display: block; aspect-ratio: 2112 / 1680; border-radius: 12px; overflow: hidden; background: #05070d; }
+.cli-slides img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; transition: opacity .7s ease; }
+.cli-slides img.on { opacity: 1; }
+.cli-slide-bar { height: 3px; margin-top: 8px; border-radius: 3px; background: rgba(120, 170, 255, .14); overflow: hidden; }
+.cli-slide-bar i { display: block; height: 100%; width: 100%; background: var(--c-sense); transform-origin: left; animation: cli-slide-progress linear forwards; }
+.cli-slide-bar i.paused { animation-play-state: paused; }
+@keyframes cli-slide-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@media (prefers-reduced-motion: reduce) { .cli-slides img { transition: none; } .cli-slide-bar { display: none; } }
