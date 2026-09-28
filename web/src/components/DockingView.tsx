@@ -51,7 +51,7 @@ export default function DockingView({ scene, height = 600, playKey = 0, onSettle
     const alts = (scene.alt_poses ?? []).map((p) => { const g = ballStick(p, 'faint'); s3.add(g); return g })
     const pose = ballStick(scene.pose, 'solid'); const pivot = new THREE.Group(); pivot.add(pose); s3.add(pivot)
     const tone = scene.success === null ? 0xffb547 : scene.success ? 0x3ddc97 : 0xff5d6c
-    const glow = glowSprite(tone); glow.scale.setScalar(12); s3.add(glow)
+    const glow = glowSprite(tone); glow.scale.setScalar(6); s3.add(glow)
     const path = new THREE.CatmullRomCurve3([new THREE.Vector3(26, 18, -14), new THREE.Vector3(15, 3, 11), new THREE.Vector3(6, 7, 4), new THREE.Vector3(0, 0, 0)])
     const N = 50, trail = new THREE.Line(new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(new Array(N * 3).fill(0), 3)),
       new THREE.LineBasicMaterial({ color: 0xffb547, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending }))
@@ -80,8 +80,8 @@ export default function DockingView({ scene, height = 600, playKey = 0, onSettle
       if (k >= 1 && !settled) { settled = true; settledRef.current?.() }
       const f = settled ? Math.max(0, 1 - (t - FLY_START - FLY_MS) / 1600) : 0
       pocketMat.color.copy(base).lerp(flash, f); pocketMat.size = 0.62 + 0.5 * f
-      glow.material.opacity = 0.9 * f
-      bloom.strength = 0.45 + 0.4 * f
+      glow.material.opacity = 0.45 * f
+      bloom.strength = 0.3 + 0.2 * f
       if (!dragging) camera.position.lerp(near, 0.012)
       // 포켓 컷어웨이: 카메라와 결합 자리 사이 사슬을 잘라 리간드가 늘 보이게 합니다
       rb.uniforms.uEye.value.copy(camera.position); rb.uniforms.uCut.value = 6.5
