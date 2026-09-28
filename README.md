@@ -234,7 +234,7 @@ FV_CACHE_DIR=data/cache/api .venv/bin/python pipeline/bench/ablation.py
 - **참조 세트**: OMOP(Ryan et al. 2013), EU-ADR(Coloma et al. 2013) — OHDSI MethodEvaluation, Apache-2.0 · Time-indexed reference standard(Harpaz et al. 2014) — CC0
 - **EMA Designated Medical Events** 목록(EMA/326038/2020)
 - **MaleCNS v1.0 커넥텀**: Janelia FlyEM · Cambridge Drosophila Connectomics Group, CC-BY 4.0 (https://male-cns.janelia.org)
-- **팀 선행 저장소**: [kakyungkim/korea-agentic-hackathon-2026](https://github.com/kakyungkim/korea-agentic-hackathon-2026)
+- **팀 선행 저장소**: [Team-FlyGate/korea-agentic-hackathon-2026](https://github.com/Team-FlyGate/korea-agentic-hackathon-2026) (과잉해석 규칙 원본, 측정 스크립트, NAT 워크플로, OpenShell 정책, 1-6과 7절의 참조 세트 검증 코드)
 
 코드는 Apache-2.0입니다.
 
