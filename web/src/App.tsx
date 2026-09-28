@@ -3,7 +3,11 @@ import { BrainProvider } from './lib/brain'
 import { api, type Health } from './lib/data'
 import Overview from './pages/Overview'
 import Discovery from './pages/Discovery'
-import DiscoveryStep from './pages/DiscoveryStep'
+import DiscoveryMsa from './pages/DiscoveryMsa'
+import DiscoveryOpenfold3 from './pages/DiscoveryOpenfold3'
+import DiscoveryDiffdock from './pages/DiscoveryDiffdock'
+import DiscoveryBoltz2 from './pages/DiscoveryBoltz2'
+import DiscoveryCritic from './pages/DiscoveryCritic'
 import Agent from './pages/Agent'
 import CliTutorial from './pages/CliTutorial'
 import MissionControl from './pages/MissionControl'
@@ -31,12 +35,12 @@ const GROUPS: { step?: string; name?: string; color?: string; pages: Page[] }[] 
     { id: 'problem', label: '문제 정의', en: 'Why it matters', icon: I('M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z'), el: () => <Problem /> },
   ] },
   { step: 'STEP 1 · 시판 전', name: 'FlyDiscovery', color: 'var(--c-sense)', pages: [
-    { id: 'discovery', label: '후보 탐색 개요', en: 'Discovery · 약물 패널', icon: I('M12 3l7.8 4.5v9L12 21l-7.8-4.5v-9ZM12 8.5l3 1.75v3.5L12 15.5l-3-1.75v-3.5Z'), el: () => <Discovery /> },
-    { id: 'd-msa', label: 'MSA-Search', en: '01 · 상동 서열 정렬', icon: I('M4 6h16M4 10h10M4 14h16M4 18h7'), el: () => <DiscoveryStep key="msa" step="msa" /> },
-    { id: 'd-of3', label: 'OpenFold3', en: '02 · 복합체 구조 예측', icon: I('M6 4c6 0 6 4 12 4M6 10c6 0 6 4 12 4M6 16c6 0 6 4 12 4'), el: () => <DiscoveryStep key="of3" step="of3" /> },
-    { id: 'd-diffdock', label: 'DiffDock', en: '03 · 도킹 · 재도킹 14건', icon: I('M12 3a9 9 0 1 0 9 9M12 8a4 4 0 1 0 4 4M3 3l6 6'), el: () => <DiscoveryStep key="dd" step="dd" /> },
-    { id: 'd-boltz', label: 'Boltz-2', en: '04 · 친화도 예측 · 실측 대조', icon: I('M4 20 20 4M6 14l2 2M10 10l2 2M14 6l2 2'), el: () => <DiscoveryStep key="bz" step="bz" /> },
-    { id: 'd-critic', label: '크리틱', en: '05 · 근거를 넘는 주장 반려', icon: I('M9 12l2 2 4-4M12 3 4 7v6c0 4 3.5 7 8 8 4.5-1 8-4 8-8V7l-8-4Z'), el: () => <DiscoveryStep key="critic" step="critic" /> },
+    { id: 'msa', label: 'MSA 탐색', en: 'MSA-Search NIM · 상동 서열', icon: I('M4 6h16M4 10h10M4 14h16M4 18h7'), el: () => <DiscoveryMsa /> },
+    { id: 'openfold3', label: '구조 예측', en: 'OpenFold3 NIM · pLDDT · RMSD', icon: I('M12 3c3 3 3 6 0 9s-3 6 0 9M7 6c2.5 2 2.5 4 0 6s-2.5 4 0 6M17 6c-2.5 2-2.5 4 0 6s2.5 4 0 6'), el: () => <DiscoveryOpenfold3 /> },
+    { id: 'diffdock', label: '결합 포즈', en: 'DiffDock NIM · 재도킹 RMSD', icon: I('M12 3v6M12 15v6M4.5 7.5l5 3M14.5 13.5l5 3M19.5 7.5l-5 3M9.5 13.5l-5 3'), el: () => <DiscoveryDiffdock /> },
+    { id: 'boltz2', label: '친화도 예측', en: 'Boltz-2 NIM · ChEMBL 대조', icon: I('M3 17l5-6 4 3 5-8 4 5M3 21h18'), el: () => <DiscoveryBoltz2 /> },
+    { id: 'critic', label: '크리틱 · Nemotron', en: '근거 ID · 숫자 오라클 · 과잉해석', icon: I('M12 2 3 7v6c0 5 4 8 9 9 5-1 9-4 9-9V7l-9-5ZM9.5 12.5 12 15l3.5-4.5'), el: () => <DiscoveryCritic /> },
+    { id: 'discovery', label: '워크벤치 (전체 보기)', en: 'BioNeMo NIM · 약물 패널 · 크리틱', icon: I('M12 3l7.8 4.5v9L12 21l-7.8-4.5v-9ZM12 8.5l3 1.75v3.5L12 15.5l-3-1.75v-3.5Z'), el: () => <Discovery /> },
   ] },
   { step: 'STEP 2 · 시판 후', name: 'FlyVigilance', color: 'var(--nvidia)', pages: [
     { id: 'mission', label: '관제 센터', en: 'Mission Control', icon: I('M12 3a9 9 0 1 0 9 9M12 7a5 5 0 1 0 5 5M12 11a1 1 0 1 0 1 1M21 3l-7.5 7.5'), el: () => <MissionControl /> },
