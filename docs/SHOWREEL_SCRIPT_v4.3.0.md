@@ -3,7 +3,7 @@
 - 영상: `web/public/showreel/FlyGate_showreel_v4.3.0.html` (1920×1080, 30fps) · 음원 `scripts/reel/FlyGate_showreel_v4.3.0_audio.m4a`
 - **총 길이 4분 10초 (250.0초)** · 장면 28개 · 내레이션 1394음절(추정) · v4.3.0-pre 와 같은 시간표에 화면 자막 · 장면별 용어 풀이를 더하고 강조 틀을 중요한 순간으로 줄인 최종본입니다 · CLI 구간 10장면(46.7초)
 - 이 대본은 `scripts/build_reel_v4_3_final.py` 가 영상과 같은 장면 시간표(`scripts/reel/flygate_v4_3_final.timeline.json`)로 생성합니다. 손으로 고치지 말고 빌더의 `narration()` 을 고친 뒤 다시 빌드합니다.
-- 수치는 빌드 시점(2026-09-28 11:09)의 저장소 JSON · 측정 파일 값입니다. CLI 구간의 터미널 화면은 `web/public/cli/captures/` 의 실제 캡처(촬영 2026-09-28 09:35:14 UTC)이고, 화면 설명과 내레이션의 수치도 그 캡처의 원본 터미널 바이트(`web/public/cli/captures/ansi/*.ans`)에 찍힌 JSON 에서 읽습니다. triage 걸린 시간은 캡처 기록(`captures.json` 의 seconds, 명령 실행 전체)입니다.
+- 수치는 빌드 시점(2026-09-28 11:33)의 저장소 JSON · 측정 파일 값입니다. CLI 구간의 터미널 화면은 `web/public/cli/captures/` 의 실제 캡처(촬영 2026-09-28 09:35:14 UTC)이고, 화면 설명과 내레이션의 수치도 그 캡처의 원본 터미널 바이트(`web/public/cli/captures/ansi/*.ans`)에 찍힌 JSON 에서 읽습니다. triage 걸린 시간은 캡처 기록(`captures.json` 의 seconds, 명령 실행 전체)입니다.
 - CLI 구간은 CC-statusline 모션 릴의 문법을 따릅니다: 명령마다 거대한 낱말 하나, 3D로 기울인 터미널 창의 실제 캡처, 핵심 줄로 확대, 글리치 · 타자 전환.
 - 마무리 구호는 빌더의 `SLOGAN_PARTS` 한 줄에서 옵니다. 화면 색 조각과 마무리 내레이션이 모두 이 값을 씁니다.
 - 약물감시 전문가가 아닌 시청자를 위해 약어는 처음 나올 때 우리말 뜻을 함께 씁니다(v4.2 빌더의 `gloss_narration()`).

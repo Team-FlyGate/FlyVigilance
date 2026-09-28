@@ -137,6 +137,17 @@ def sub_lines(s: str) -> list[str]:
     return [s[:best].strip(), s[best:].strip()]
 
 
+def mainui_part() -> list[str]:
+    """CLI 메인 화면 실제 캡처(web/public/media/cli/v2.0.0/01-start.png)를 WebP base64 로 넣습니다(파일 하나로 완결)"""
+    out = []
+    for name in ("01-start.png",):
+        with tempfile.TemporaryDirectory() as td:
+            f = pathlib.Path(td) / "m.webp"
+            subprocess.run(["cwebp", "-quiet", "-q", "90", "-m", "6", str(PUB / "media/cli/v2.0.0" / name), "-o", str(f)], check=True)
+            out.append(base64.b64encode(f.read_bytes()).decode())
+    return out
+
+
 def subtitles(tl: list[dict]) -> list[list]:
     beats = [(sc["t0"] + bt["a"], sc["t0"] + bt["b"], sub_text(bt["vo"])) for sc in tl for bt in sc["beats"]]
     dur = tl[-1]["t1"]
@@ -584,6 +595,7 @@ def main():
     data["caps"] = caps_part()
     data["cap_of"] = pick_caps(data["caps"])
     data["cli3"] = cli3_part(data, data["caps"], data["cap_of"])
+    data["mainui"] = mainui_part()
     for pr in data["triage"]["probs"]:
         pr[0] = pr[0].replace("WHO-UMC", "WHO-UMC(세계보건기구 기준)")
     tl = timeline(data)
