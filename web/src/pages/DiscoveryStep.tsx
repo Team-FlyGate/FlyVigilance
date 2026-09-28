@@ -3,6 +3,7 @@ import HeroDocking, { DRUG_LABEL, useHeroDrug, type StepId } from '../components
 import DockPlayground from '../components/DockPlayground'
 import SelectivityMap from '../components/SelectivityMap'
 import ValidationGate from '../components/ValidationGate'
+import EvidenceCard from '../components/EvidenceCard'
 import Step2Handoff from '../components/Step2Handoff'
 import { Card, Loading, PageHead } from '../components/ui'
 import { CriticStream, MissingCard, RedockBench, STEP_PAGES, Tile, title, useDiscoveryData } from './Discovery'
@@ -132,6 +133,7 @@ export default function DiscoveryStep({ step }: { step: StepId }) {
             </div>
           )}
 
+          {step === 'critic' && <EvidenceCard />}
           {step === 'critic' && critic && (
             <div className="grid" style={{ gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 16, marginBottom: 16 }}>
               <Card title="Critic Stream" sub={extras.critic ? `${extras.critic.model} · 과잉해석 ${extras.critic.caught}/${extras.critic.n_over} 반려 · 정상 ${extras.critic.passed}/${extras.critic.n_valid} 통과 · ${extras.critic.sec}초` : ''}
