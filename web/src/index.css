@@ -330,3 +330,15 @@ button.chip:nth-child(3n+2)::after, a.chip:nth-child(3n+2)::after { animation-de
 .btn:disabled::after { display: none; }
 @keyframes shine-sweep { 0% { left: -75%; } 55%, 100% { left: 135%; } }
 @media (prefers-reduced-motion: reduce) { .btn::after, button.chip::after, a.chip::after, .nav-reel::after { animation: none; display: none; } }
+
+/* STEP 1 3D 장면 HUD (FDDD 모션 쇼릴의 모서리 괄호 · 커서 · 타자 효과) */
+.hud-corners { background:
+  linear-gradient(var(--c-sense), var(--c-sense)) left top / 18px 1.5px no-repeat, linear-gradient(var(--c-sense), var(--c-sense)) left top / 1.5px 18px no-repeat,
+  linear-gradient(var(--c-sense), var(--c-sense)) right top / 18px 1.5px no-repeat, linear-gradient(var(--c-sense), var(--c-sense)) right top / 1.5px 18px no-repeat,
+  linear-gradient(var(--c-sense), var(--c-sense)) left bottom / 18px 1.5px no-repeat, linear-gradient(var(--c-sense), var(--c-sense)) left bottom / 1.5px 18px no-repeat,
+  linear-gradient(var(--c-sense), var(--c-sense)) right bottom / 18px 1.5px no-repeat, linear-gradient(var(--c-sense), var(--c-sense)) right bottom / 1.5px 18px no-repeat;
+  opacity: .55; }
+.hud-caret { display: inline-block; width: 7px; height: 12px; margin-left: 4px; vertical-align: -1px; background: var(--c-sense); animation: hudblink 1s steps(1) infinite; }
+@keyframes hudblink { 50% { opacity: 0; } }
+.hud-type { white-space: nowrap; overflow: hidden; clip-path: inset(0 100% 0 0); animation: hudtype .9s steps(var(--n, 12)) .15s forwards; }
+@keyframes hudtype { to { clip-path: inset(0 0 0 0); } }

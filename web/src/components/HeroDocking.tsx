@@ -3,7 +3,7 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import ConnectomePanel from './ConnectomePanel'
 import { useBrain } from '../lib/brain'
-import { ballStick, disposeAll, drawRibbon, dust, glowSprite, makeRenderer, plddtColor, ribbon, setOpacity, type Ligand } from '../lib/molScene'
+import { ballStick, disposeAll, dust, glowSprite, makeRenderer, plddtColor, ribbon, setOpacity, type Ligand } from '../lib/molScene'
 
 // STEP 1 대표 장면(쇼릴 03 장면의 3D 판): OpenFold3 NIM 이 예측한 PARP1 + 니라파립 복합체를 가운데 두고,
 // 위 단계 표시(MSA-Search → OpenFold3 → DiffDock → Boltz-2 → 크리틱)를 따라 장면과 오른쪽 수치가 바뀝니다.
@@ -28,6 +28,14 @@ const STEPS = [
   { id: 'critic', label: '크리틱', tech: 'NEMOTRON', t0: 24500, t1: 31000 },
 ] as const
 const LOOP = 31000
+// 3D 장면 HUD (FDDD 쇼릴처럼 한 줄 태그 + 타자처럼 찍히는 제목)
+const HUD: Record<string, [string, string]> = {
+  msa: ['MSA-SEARCH · UNIREF30_2302 · PARP1', '상동 서열 정렬'],
+  of3: ['OPENFOLD3 · PDB 4R6E 대조 · CHAIN A', 'PARP1 촉매 도메인 + 니라파립'],
+  dd: ['DIFFDOCK · POSE 1 / 5 · 4R6E', '니라파립 → PARP1 결합 자리'],
+  bz: ['BOLTZ-2 · AFFINITY · CHEMBL', '예측 pIC50 vs 실측'],
+  critic: ['CRITIC · 3 TIERS · NEMOTRON', '결정 구조로 주장 검증'],
+}
 // 메뉴가 바뀔 때 커넥텀에서 반짝일 층 (STEP 2 관제 센터와 같은 시뮬레이터를 씁니다)
 const STEP_LAYERS: Record<string, string[]> = { msa: ['sense'], of3: ['encode'], dd: ['reflex', 'memory'], bz: ['memory', 'deliberate'], critic: ['critic', 'action'] }
 const FOCUS: Record<string, string> = { msa: '감각 입력 · 서열 정렬', of3: '특징 부호화 · 구조 예측', dd: '반사 · 기억 · 포즈 판단', bz: '기억 · 숙고 · 친화도', critic: '억제성 크리틱 · 행동' }
@@ -111,7 +119,7 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
     const el = host.current
     if (!el) return
     let disposed = false, raf = 0
-    const { renderer, scene, camera, composer, bloom, resize } = makeRenderer(el)
+    const { renderer, scene, camera, composer, bloom, film, resize } = makeRenderer(el)
     const controls = new OrbitControls(camera, renderer.domElement)
     controls.enableDamping = true; controls.autoRotate = true; controls.autoRotateSpeed = 0.45
     controls.minDistance = 14; controls.maxDistance = 140
@@ -167,16 +175,17 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
       const camT = h ? (h.id === 'msa' || h.id === 'of3' ? 0 : 20000) : t
       if (st.id !== lastStep) { lastStep = st.id; setStep(st.id) }
       // OpenFold3: 리본을 N 말단부터 그리고, 끝에 함께 예측한 리간드가 나타납니다
+      const U = rb.uniforms
+      U.uEye.value.copy(camera.position)
       if (t < 3000) {
         // MSA-Search: 흐린 뼈대 위로 상동 서열 정렬이 N 말단부터 훑고 지나갑니다
-        rb.meshes.forEach((mm, i) => { mm.geometry.setDrawRange(0, Infinity); setOpacity(mm, i % 2 ? 0.9 * Math.sin(clamp(t / 3000) * Math.PI) : 0.12) })
-        const k = clamp(t / 2600), band = 0.08
-        rb.meshes.forEach((mm, i) => { if (i % 2) { const tot = mm.userData.total as number; mm.geometry.setDrawRange(Math.floor(tot * Math.max(0, k - band) / 6) * 6, Math.floor(tot * band / 6) * 6 * 2) } })
+        U.uReveal.value = 1; U.uAlpha.value = 0.55; U.uScan.value = clamp(t / 2800); U.uCut.value = 0
       } else {
+        // OpenFold3: 끝이 빛나며 N 말단부터 그려지고, 가까이 갈 때는 카메라와 결합 자리 사이 사슬을 잘라 냅니다(포켓 컷어웨이)
         const closeK = ease((camT - 12200) / 3200) * (1 - ease((camT - 26000) / 4000))
-        rb.meshes.forEach((mm, i) => setOpacity(mm, (i % 2 ? 0.7 : 1) * (1 - 0.72 * closeK)))
-        drawRibbon(rb.meshes, ease((t - 3000) / 4800))
+        U.uReveal.value = t < 7800 ? ease((t - 3000) / 4800) : 1; U.uAlpha.value = 1; U.uScan.value = -1; U.uCut.value = 7 * closeK
       }
+      film.uniforms.uTime.value = (now % 1000) / 1000
       setOpacity(of3Lig, t < 7600 ? 0 : t < 11000 ? clamp((t - 7600) / 700) : clamp(1 - (t - 11000) / 600))
       // DiffDock: 나머지 포즈가 스쳐 가고, 1순위가 궤적을 그리며 날아와 박힙니다
       alts.forEach((g, i) => { const a = 11400 + i * 700; setOpacity(g, t < a ? 0 : t < a + 1400 ? Math.sin(((t - a) / 1400) * Math.PI) : 0) })
@@ -197,7 +206,7 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
       const inK = ease((camT - 12200) / 3200), outK = ease((camT - 26000) / 4000)
       const want = farPos.clone().lerp(nearPos, inK * (1 - outK)), tgt = protCenter.clone().lerp(new THREE.Vector3(), inK * (1 - outK))
       if (!dragging) { camera.position.lerp(want, 0.04); controls.target.lerp(tgt, 0.06) }
-      bloom.strength = 0.55 + 0.45 * flash
+      bloom.strength = 0.45 + 0.4 * flash
       controls.update(); composer.render()
       // 리간드 말풍선: 원점을 화면 좌표로 옮깁니다
       if (label.current) {
@@ -251,6 +260,12 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
         <div style={{ position: 'relative', height }}>
           <div ref={host} style={{ position: 'absolute', inset: 0, cursor: 'grab', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--line)' }}
             aria-label="OpenFold3 가 예측한 PARP1 과 니라파립, DiffDock 포즈, 결정 구조 4R6E. 드래그로 회전합니다." />
+          <div className="hud-corners" style={{ position: 'absolute', inset: 10, pointerEvents: 'none', zIndex: 1 }} />
+          <div key={step} style={{ position: 'absolute', left: 22, top: 18, zIndex: 2, pointerEvents: 'none' }}>
+            <div className="mono" style={{ fontSize: 10.5, letterSpacing: 2, color: 'var(--c-sense)' }}>{HUD[step][0]}<span className="hud-caret" /></div>
+            <div className="hud-type" style={{ fontFamily: 'var(--font)', fontSize: 26, fontWeight: 700, marginTop: 6, letterSpacing: -0.3,
+              textShadow: '1px 0 rgba(255,93,108,0.35), -1px 0 rgba(55,230,255,0.35)', ['--n' as string]: HUD[step][1].length }}>{HUD[step][1]}</div>
+          </div>
           <div ref={label} style={{ position: 'absolute', left: 0, top: 0, pointerEvents: 'none', transition: 'opacity .4s', opacity: 0,
             padding: '7px 11px', borderRadius: 8, background: 'rgba(5,9,18,0.82)', border: '1px solid rgba(255,181,71,0.45)', whiteSpace: 'nowrap' }}>
             <div className="mono" style={{ fontSize: 10, letterSpacing: 1.3, color: 'var(--jev)' }}>LIGAND · 니라파립</div>
