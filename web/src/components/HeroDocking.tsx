@@ -163,7 +163,8 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
       const h = hold.current ? STEPS.find((s) => s.id === hold.current)! : null
       const raw = now - clock.current.t0 + clock.current.offset
       // 머무는 메뉴: 앞 단계의 결과(리본, 도킹)는 끝난 상태로 두고 그 구간만 반복합니다
-      const t = h ? h.t0 + ((raw - h.t0) % (h.t1 - h.t0)) : raw % LOOP
+      // 머무는 단계는 한 번 재생하고 마지막 장면을 유지합니다(약물이 박힌 뒤 사라지지 않게). 약물이 없는 MSA 만 반복합니다
+      const t = h ? (h.id === 'msa' ? h.t0 + ((raw - h.t0) % (h.t1 - h.t0)) : Math.min(raw, h.t1 - 1)) : raw % LOOP
       const st = STEPS.find((s) => t >= s.t0 && t < s.t1) ?? STEPS[0]
       // 한 단계에 머물 때는 구간이 다시 시작돼도 카메라가 튀지 않게, 그 단계의 카메라 자리에 둡니다
       // 사건 시각을 지나면 커넥텀 층을 자극합니다 (구간이 다시 시작되면 lastT 도 되감깁니다)
@@ -184,11 +185,12 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
         U.uReveal.value = t < 7800 ? ease((t - 3000) / 4800) : 1; U.uAlpha.value = 1; U.uScan.value = -1; U.uCut.value = 7 * closeK
       }
       film.uniforms.uTime.value = (now % 1000) / 1000
-      setOpacity(of3Lig, t < 7600 ? 0 : t < 11000 ? clamp((t - 7600) / 700) : clamp(1 - (t - 11000) / 600))
+      setOpacity(of3Lig, t < 7600 ? 0 : t < 11000 ? clamp((t - 7600) / 700) : t < 16200 ? 1 - 0.65 * clamp((t - 11000) / 800) : 0.35 * clamp(1 - (t - 16200) / 500))
       // DiffDock: 나머지 포즈가 스쳐 가고, 1순위가 궤적을 그리며 날아와 박힙니다
       alts.forEach((g, i) => { const a = 11400 + i * 700; setOpacity(g, t < a ? 0 : t < a + 1400 ? Math.sin(((t - a) / 1400) * Math.PI) : 0) })
       const fk = ease((t - 13600) / 2600)
-      setOpacity(ddPivot, t < 13600 ? 0 : 1)
+      const endFade = h ? 1 : clamp((LOOP - t) / 1200)
+      setOpacity(ddPivot, t < 13600 ? 0 : endFade)
       ddPivot.position.copy(path.getPointAt(1 - fk).multiplyScalar(1)).sub(path.getPointAt(1))
       ddPivot.rotation.set(2.6 * (1 - fk), -1.8 * (1 - fk), 1.2 * (1 - fk))
       const pos = trail.geometry.getAttribute('position') as THREE.BufferAttribute
@@ -196,7 +198,7 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
       pos.needsUpdate = true
       setOpacity(trail, t > 13600 && t < 17200 ? clamp(1 - (t - 16200) / 1000) : 0)
       // 검증: 결정 구조(뼈대 + 리간드 정답)가 겹쳐집니다
-      setOpacity(xtalLig, t < 16400 ? 0 : clamp((t - 16400) / 800))
+      setOpacity(xtalLig, t < 16400 ? 0 : clamp((t - 16400) / 800) * endFade)
       setOpacity(xtalTrace, t < 16400 || t > 19500 ? 0 : 0.9 * Math.sin(clamp((t - 16400) / 3100) * Math.PI))
       const flash = t > 16200 && t < 18400 ? Math.sin(((t - 16200) / 2200) * Math.PI) : 0
       glow.material.opacity = 0.08 + 0.35 * flash + (t > 19000 ? 0.04 * (1 + Math.sin(now / 900)) : 0)
