@@ -147,3 +147,13 @@ def test_eval_set_shape():
     for pid in assess.PV_CATEGORIES:
         rows = [e for e in ev if e["category"] == pid]
         assert len(rows) == 10 and sum(e["expected_label"] == "unsafe" for e in rows) == 6
+
+
+def test_summarize_issues_merges_judge_and_guard():
+    from _fv import assess
+    issues = [{"claim": "c3", "tier": 3, "source": "judge", "rule": "R1"},
+              {"claim": "c3", "tier": 3, "source": "guard", "rule": "R1"},
+              {"claim": "c5", "tier": 1, "rule": "unknown_evidence"}]
+    s = {r["claim"]: r for r in assess.summarize_issues(issues)}
+    assert s["c3"]["rules"] == ["R1"] and s["c3"]["caught_by"] == ["judge", "guard"]
+    assert s["c5"]["caught_by"] == ["T1"]

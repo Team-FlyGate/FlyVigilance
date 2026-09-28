@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Card, PageHead } from '../components/ui'
 import './CliTutorial.css'
 import Term from '../components/Term'
+import CliShowcase from '../components/CliShowcase'
 
 const REPO = 'https://github.com/Team-FlyGate/Project-FlyGate'
 const steps = ['준비하기', '첫 명령 실행', '결과 읽기', '새 도킹 실행']
@@ -41,7 +42,8 @@ export default function CliTutorial() {
   const command = commands.find(c => c.name === selected)!
   const visible = commands.filter(c => `${c.name} ${c.title} ${c.what}`.toLowerCase().includes(filter.toLowerCase()))
   return <div className="page cli-tutorial">
-    <PageHead eyebrow="AGENT TOOLKIT / FLYGATE CLI / GUIDE v1.1.0" title={<>한 줄로 시작하는 <span className="cli-accent">근거 탐색</span></>} lede="터미널이 처음이어도 괜찮습니다. 명령을 복사하고, 결과에서 무엇을 읽어야 하는지 차례로 살펴보세요. 저장된 결과 조회부터 NVIDIA API를 통한 새 도킹까지 안내합니다." right={<a className="btn ghost" href="#/agent">에이전트 구성 보기 ↗</a>} />
+    <PageHead eyebrow="AGENT TOOLKIT / FLYGATE AGENT CLI / GUIDE v1.1.0" title={<>FlyGate Agent CLI · <span className="cli-accent">한 줄 설치</span>, 모든 출력에 근거 ID</>} lede="터미널에서 flygate 한 단어로 후보물질 탐색과 약물감시 도구를 부릅니다. 아래 화면은 새로 클론한 저장소에서 실제로 실행한 출력입니다. 터미널이 처음이어도 괜찮습니다. 명령을 복사하고, 결과에서 무엇을 읽어야 하는지 차례로 살펴보세요. 저장된 결과 조회부터 NVIDIA API를 통한 새 도킹까지 안내합니다." right={<a className="btn ghost" href="#/agent">에이전트 구성 보기 ↗</a>} />
+    <CliShowcase />
     <Card title="터미널에서 대화로 시작하기" sub="설치를 마쳤다면 flygate만 입력하세요. 블록 로고와 대화 화면이 열립니다." className="cli-guide">
       <Code text="flygate" label="대화형 FlyGate 시작" />
       <p>첫 실행에서는 NVIDIA 공식 키 발급 페이지를 열고 터미널의 숨김 입력으로 연결합니다. Jev 키는 선택 사항이며 Enter로 건너뛸 수 있습니다. OS 보안 저장소에 저장하면 다음 실행부터 자동으로 불러옵니다.</p>

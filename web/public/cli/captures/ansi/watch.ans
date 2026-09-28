@@ -1,0 +1,22 @@
+[38;5;114m❯[0m [1;38;5;75mProject-FlyGate[0m [38;5;244mgit:([38;5;211mmain[38;5;244m)[0m flygate watch | jq '{date, quarter: .quarter.quarter, new_quarter, watchlist: [.watchlist[] | "\(.drug) · \(.pt) · SDR \(.sdr)"], review_queue: (.review_queue | length), submitted, note}'
+[1;37m{[0m
+  [1;36m"date"[0m[1;37m:[0m [0;32m"2026-09-28"[0m[1;37m,[0m
+  [1;36m"quarter"[0m[1;37m:[0m [0;32m"2026Q2"[0m[1;37m,[0m
+  [1;36m"new_quarter"[0m[1;37m:[0m [0;35mfalse[0m[1;37m,[0m
+  [1;36m"watchlist"[0m[1;37m:[0m [1;37m[[0m
+    [0;32m"NIRAPARIB · thrombocytopenia · SDR strong"[0m[1;37m,[0m
+    [0;32m"NIRAPARIB · platelet count decreased · SDR strong"[0m[1;37m,[0m
+    [0;32m"NIRAPARIB · anaemia · SDR strong"[0m[1;37m,[0m
+    [0;32m"NIRAPARIB · neutropenia · SDR weak"[0m[1;37m,[0m
+    [0;32m"NIRAPARIB · myelodysplastic syndrome · SDR strong"[0m[1;37m,[0m
+    [0;32m"NIRAPARIB · acute myeloid leukaemia · SDR strong"[0m[1;37m,[0m
+    [0;32m"NIRAPARIB · hypertension · SDR strong"[0m[1;37m,[0m
+    [0;32m"TALAZOPARIB · thrombocytopenia · SDR strong"[0m[1;37m,[0m
+    [0;32m"TALAZOPARIB · myelodysplastic syndrome · SDR strong"[0m[1;37m,[0m
+    [0;32m"ISOTRETINOIN · inflammatory bowel disease · SDR strong"[0m
+  [1;37m][0m[1;37m,[0m
+  [1;36m"review_queue"[0m[1;37m:[0m [0;33m1[0m[1;37m,[0m
+  [1;36m"submitted"[0m[1;37m:[0m [1;37m[][0m[1;37m,[0m
+  [1;36m"note"[0m[1;37m:[0m [0;32m"이 작업은 아무것도 제출하거나 보내지 않습니다. 대기열은 사람이 검토하고, 보고는 사람이 제출합니다."[0m
+[1;37m}[0m
+[38;5;114m❯[0m [1;38;5;75mProject-FlyGate[0m [38;5;244mgit:([38;5;211mmain[38;5;244m)[0m 

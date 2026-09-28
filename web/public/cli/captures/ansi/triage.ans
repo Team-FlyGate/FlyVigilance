@@ -1,0 +1,24 @@
+[38;5;114m❯[0m [1;38;5;75mProject-FlyGate[0m [38;5;244mgit:([38;5;211mmain[38;5;244m)[0m flygate triage agent/examples/case_niraparib.json | jq '{suspect, reactions, decision: .decision | {action, tier, deadline}, grounding: .grounding | {brand, listed}, evidence_ids}'
+[1;37m{[0m
+  [1;36m"suspect"[0m[1;37m:[0m [0;32m"NIRAPARIB"[0m[1;37m,[0m
+  [1;36m"reactions"[0m[1;37m:[0m [1;37m[[0m
+    [0;32m"thrombocytopenia"[0m
+  [1;37m][0m[1;37m,[0m
+  [1;36m"decision"[0m[1;37m:[0m [1;37m{[0m
+    [1;36m"action"[0m[1;37m:[0m [0;32m"expedite"[0m[1;37m,[0m
+    [1;36m"tier"[0m[1;37m:[0m [0;32m"human"[0m[1;37m,[0m
+    [1;36m"deadline"[0m[1;37m:[0m [0;32m"Urgent human review (does not meet the 15-day expedited criteria)"[0m
+  [1;37m}[0m[1;37m,[0m
+  [1;36m"grounding"[0m[1;37m:[0m [1;37m{[0m
+    [1;36m"brand"[0m[1;37m:[0m [0;32m"ZEJULA"[0m[1;37m,[0m
+    [1;36m"listed"[0m[1;37m:[0m [1;37m{[0m
+      [1;36m"thrombocytopenia"[0m[1;37m:[0m [0;35mtrue[0m
+    [1;37m}[0m
+  [1;37m}[0m[1;37m,[0m
+  [1;36m"evidence_ids"[0m[1;37m:[0m [1;37m[[0m
+    [0;32m"faers:case:267975941"[0m[1;37m,[0m
+    [0;32m"label:b7f675e2-159c-490c-b6f4-3f16d9492b7d"[0m[1;37m,[0m
+    [0;32m"label:b7f675e2-159c-490c-b6f4-3f16d9492b7d#warnings_and_cautions"[0m
+  [1;37m][0m
+[1;37m}[0m
+[38;5;114m❯[0m [1;38;5;75mProject-FlyGate[0m [38;5;244mgit:([38;5;211mmain[38;5;244m)[0m 
