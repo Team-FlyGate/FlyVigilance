@@ -1,0 +1,3 @@
+# 실행 중에 생기는 파일입니다. 저장소에 넣지 않습니다.
+workspace/memory/
+__pycache__/

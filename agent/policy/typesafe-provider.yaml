@@ -1,0 +1,31 @@
+# OpenShell provider profile: TypeSafe AI 판단 API (FlyVigilance 안의 비자기회귀 판단 모델)
+#
+# 샌드박스 환경변수 TYPESAFE_API_KEY 에는 자리표시자만 들어가고, 프록시가 api.typesafe.ai:443 POST /v1/systemone 요청의
+# Authorization 헤더에만 진짜 키를 넣습니다. 다른 호스트로는 키가 치환되지 않습니다.
+#
+#   openshell provider profile lint   -f agent/policy/typesafe-provider.yaml
+#   openshell provider profile import -f agent/policy/typesafe-provider.yaml
+#   TYPESAFE_API_KEY=... openshell provider create --name typesafe --type typesafe-judgment --from-existing
+#   openshell sandbox create ... --provider typesafe --provider <nvidia provider>
+id: typesafe-judgment
+display_name: TypeSafe AI judgment API
+description: Typed probability judgments (systemone) for the FlyGate python tools
+category: agent
+credentials:
+  - name: api_key
+    description: TypeSafe API key
+    env_vars: [TYPESAFE_API_KEY]
+    required: true
+    auth_style: bearer
+    header_name: authorization
+endpoints:
+  - host: api.typesafe.ai
+    port: 443
+    protocol: rest
+    enforcement: enforce
+    rules:
+      - allow: { method: POST, path: /v1/systemone }
+binaries:
+  - /usr/bin/python3
+  - /usr/bin/python3.13
+inference_capable: false

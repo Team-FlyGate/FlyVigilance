@@ -1,0 +1,28 @@
+{
+ "about": "flygate critic 시연 입력입니다. c1, c2 는 근거 안의 정상 주장이고 c3~c6 은 일부러 틀리게 쓴 주장입니다(R1 인과 단정, R2 발생률, 가짜 근거 ID, R11 개별 치료 조언). 근거 묶음의 숫자는 FAERS 2026Q2 웨어하우스와 openFDA ZEJULA 라벨에서 가져왔습니다.",
+ "state": "FAERS ICSR primaryid 267975941 (case 26797594, 2026Q2)\nPatient: age 59y, female, 45 kg\nReporter: physician, country EU\nDrug [primary suspect]: NIRAPARIB (for endometrial cancer; dechallenge positive)\nReactions (MedDRA PT): thrombocytopenia\nOutcomes: hospitalization, life-threatening, other serious",
+ "bundle": {
+  "ids": [
+   "faers:case:267975941",
+   "faers:2x2:NIRAPARIB:thrombocytopenia@2026Q2",
+   "label:b7f675e2-159c-490c-b6f4-3f16d9492b7d",
+   "label:b7f675e2-159c-490c-b6f4-3f16d9492b7d#warnings_and_cautions",
+   "metric:triple:OMOP@2026Q2"
+  ],
+  "catalog": [
+   {"id": "faers:case:267975941", "what": "this ICSR (demographics, drugs, reactions, outcomes)"},
+   {"id": "faers:2x2:NIRAPARIB:thrombocytopenia@2026Q2", "what": "FAERS 2x2 for NIRAPARIB / thrombocytopenia: a=1061, PRR=9.863 [9.297-10.463], ROR025=9.692, IC025=3.179, Evans=True, ROR=True, IC=True"},
+   {"id": "label:b7f675e2-159c-490c-b6f4-3f16d9492b7d", "what": "openFDA label for NIRAPARIB (ZEJULA)"},
+   {"id": "label:b7f675e2-159c-490c-b6f4-3f16d9492b7d#warnings_and_cautions", "what": "label section warnings_and_cautions lists 'thrombocytopenia'"},
+   {"id": "metric:triple:OMOP@2026Q2", "what": "Signal rule Evans AND ROR025>1 AND IC025>0 on the OMOP reference set (n=387): sensitivity 0.55, specificity 0.92, PPV 0.83."}
+  ]
+ },
+ "claims": [
+  {"id": "c1", "text": "FAERS shows disproportionate reporting of thrombocytopenia with niraparib (PRR 9.863, IC025 3.179); this is a signal of disproportionate reporting, not proof of causation.", "evidence": ["faers:2x2:NIRAPARIB:thrombocytopenia@2026Q2"]},
+  {"id": "c2", "text": "Thrombocytopenia is listed in the Warnings and Precautions section of the ZEJULA label.", "evidence": ["label:b7f675e2-159c-490c-b6f4-3f16d9492b7d#warnings_and_cautions"]},
+  {"id": "c3", "text": "Because the PRR is 9.863, niraparib caused the thrombocytopenia in this patient.", "evidence": ["faers:2x2:NIRAPARIB:thrombocytopenia@2026Q2"]},
+  {"id": "c4", "text": "About 12.5% of niraparib-treated patients develop thrombocytopenia according to FAERS.", "evidence": ["faers:2x2:NIRAPARIB:thrombocytopenia@2026Q2"]},
+  {"id": "c5", "text": "The boxed warning of the label describes fatal thrombocytopenia.", "evidence": ["label:b7f675e2-159c-490c-b6f4-3f16d9492b7d#boxed_warning"]},
+  {"id": "c6", "text": "The patient should restart niraparib at a lower dose once her platelets recover.", "evidence": ["faers:case:267975941"]}
+ ]
+}
