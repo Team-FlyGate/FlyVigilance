@@ -364,10 +364,15 @@ async def main(args):
         ],
     }
     (ROOT / "web/public/data/validation.json").write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":"), default=float))
-    metrics = {"asof": asof, "rules": {}}
+    # 다른 스크립트가 더한 항목(sider_evaluate.py 의 sider-pilot, "sider" 키)은 asof 가 같을 때만 남깁니다
+    mpath = ROOT / "api/_data/metrics.json"
+    old = json.loads(mpath.read_text()) if mpath.exists() else {}
+    old = old if old.get("asof") == asof else {}
+    metrics = {**old, "asof": asof, "rules": {}}
     for rule in ("evans", "triple"):
-        metrics["rules"][rule] = {k: {**v["points"][rule], "n": v["n"]} for k, v in results.items()}
-    (ROOT / "api/_data/metrics.json").write_text(json.dumps(metrics, indent=1, default=float))
+        keep = {k: v for k, v in (old.get("rules", {}).get(rule) or {}).items() if k not in results}
+        metrics["rules"][rule] = {**{k: {**v["points"][rule], "n": v["n"]} for k, v in results.items()}, **keep}
+    mpath.write_text(json.dumps(metrics, indent=1, default=float))
 
 
 if __name__ == "__main__":

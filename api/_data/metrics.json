@@ -41,6 +41,16 @@
     "tn": 69,
     "fn": 36,
     "n": 127
+   },
+   "sider-pilot": {
+    "sens": 0.3036001285760206,
+    "spec": 0.7542937139345102,
+    "ppv": 0.11602481420060193,
+    "tp": 1889,
+    "fp": 14392,
+    "tn": 44182,
+    "fn": 4333,
+    "n": 64796
    }
   },
   "triple": {
@@ -83,7 +93,126 @@
     "tn": 69,
     "fn": 36,
     "n": 127
+   },
+   "sider-pilot": {
+    "sens": 0.3018322082931533,
+    "spec": 0.7655444395124117,
+    "ppv": 0.1202997886105951,
+    "tp": 1878,
+    "fp": 13733,
+    "tn": 44841,
+    "fn": 4344,
+    "n": 64796
    }
   }
+ },
+ "sider": {
+  "refset": "sider-pilot",
+  "asof": "2026Q2",
+  "n": 64796,
+  "pos": 6222,
+  "neg": 58574,
+  "prevalence": 0.096,
+  "n_drugs": 31,
+  "auc": {
+   "prr": 0.562,
+   "ror": 0.5622,
+   "chi2_yates": 0.6792,
+   "ic": 0.5635,
+   "prr_lo": 0.6187,
+   "ror_lo": 0.6187,
+   "ic025": 0.6341
+  },
+  "null_auc": {
+   "prr": {
+    "mean": 0.4647,
+    "p2_5": 0.4598,
+    "p97_5": 0.4704
+   },
+   "ror": {
+    "mean": 0.4648,
+    "p2_5": 0.4599,
+    "p97_5": 0.4705
+   },
+   "chi2_yates": {
+    "mean": 0.6437,
+    "p2_5": 0.6368,
+    "p97_5": 0.649
+   },
+   "ic": {
+    "mean": 0.4653,
+    "p2_5": 0.4604,
+    "p97_5": 0.4711
+   },
+   "prr_lo": {
+    "mean": 0.5199,
+    "p2_5": 0.5146,
+    "p97_5": 0.5252
+   },
+   "ror_lo": {
+    "mean": 0.5198,
+    "p2_5": 0.5146,
+    "p97_5": 0.5251
+   },
+   "ic025": {
+    "mean": 0.5352,
+    "p2_5": 0.5298,
+    "p97_5": 0.5404
+   }
+  },
+  "per_drug_auc_median": {
+   "prr": 0.5757,
+   "ror": 0.5763,
+   "chi2_yates": 0.7111,
+   "ic": 0.5816,
+   "prr_lo": 0.6442,
+   "ror_lo": 0.6445,
+   "ic025": 0.6668
+  },
+  "rules": {
+   "evans_signal": {
+    "sens": 0.3036001285760206,
+    "spec": 0.7542937139345102,
+    "ppv": 0.11602481420060193,
+    "tp": 1889,
+    "fp": 14392,
+    "tn": 44182,
+    "fn": 4333,
+    "rule": "prr>=2 AND chi2_yates>=4 AND a>=3"
+   },
+   "ror_signal": {
+    "sens": 0.47396335583413696,
+    "spec": 0.6758800833134155,
+    "ppv": 0.13444880094829945,
+    "tp": 2949,
+    "fp": 18985,
+    "tn": 39589,
+    "fn": 3273,
+    "rule": "ror_lo>1 AND a>=3"
+   },
+   "ic_signal": {
+    "sens": 0.4612664738026358,
+    "spec": 0.7060470515928569,
+    "ppv": 0.14287136598964556,
+    "tp": 2870,
+    "fp": 17218,
+    "tn": 41356,
+    "fn": 3352,
+    "rule": "ic025>0"
+   },
+   "triple": {
+    "sens": 0.3018322082931533,
+    "spec": 0.7655444395124117,
+    "ppv": 0.1202997886105951,
+    "tp": 1878,
+    "fp": 13733,
+    "tn": 44841,
+    "fn": 4344,
+    "rule": "evans_signal AND ror_signal AND ic_signal (FlyVigilance SDR, pvstats.two_by_two \uc758 triple)"
+   }
+  },
+  "caveat": "\uc591\uc131\uc740 SIDER \ub77c\ubca8 \uae30\uc7ac, \uc74c\uc131\uc740 \ub77c\ubca8 \ubd80\uc7ac\uc785\ub2c8\ub2e4. \uc218\uce58\ub294 \ub77c\ubca8 \uae30\uc7ac \uc608\uce21 \uc131\ub2a5\uc774\uba70 \uc778\uacfc\uc131\uc774 \uc544\ub2d9\ub2c8\ub2e4.",
+  "results": "data/derived/refsets/sider_metric_validation.json",
+  "figure": "docs/images/sider_metric_roc_2026-09-28.png"
  }
 }
