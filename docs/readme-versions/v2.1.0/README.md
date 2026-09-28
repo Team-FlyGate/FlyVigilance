@@ -6,7 +6,7 @@
 <p align="center">NVIDIA Korea Agentic AI Hackathon 2026 · Team FlyGate</p>
 <p align="center">
   <a href="https://project-flygate.vercel.app"><strong>라이브 대시보드 ↗</strong></a> &nbsp; · &nbsp;
-  <a href="https://project-flygate.vercel.app/showreel/FlyGate_showreel_v4.0.0.html">쇼릴 ↗</a> &nbsp; · &nbsp;
+  <a href="https://project-flygate.vercel.app/showreel/FlyGate_showreel_v3.0.0.html">쇼릴 ↗</a> &nbsp; · &nbsp;
   <a href="docs/EVALUATION.md">평가 보고서</a> &nbsp; · &nbsp;
   <a href="#06--meet-the-team">Team</a> &nbsp; · &nbsp;
   <a href="#07--build--run">Quickstart</a>
@@ -23,9 +23,8 @@
 | | |
 | --- | --- |
 | 라이브 대시보드 | https://project-flygate.vercel.app |
-| 쇼릴 v4 (전체판, 4분 15초 · 19장면) | [웹](https://project-flygate.vercel.app/showreel/FlyGate_showreel_v4.0.0.html) · [MP4](https://github.com/Team-FlyGate/Project-FlyGate/releases/download/v4.0/FlyGate_showreel_v4.0.0.mp4) · [내레이션 대본](docs/SHOWREEL_SCRIPT_v4.0.0.md) |
-| 쇼릴 v3 (요약판, 2분 9초) | [웹](https://project-flygate.vercel.app/showreel/FlyGate_showreel_v3.0.0.html) · [MP4](https://github.com/Team-FlyGate/Project-FlyGate/releases/download/v3.0/FlyGate_showreel_v3.0.0.mp4) |
-| 티저 (15초) | [웹](https://project-flygate.vercel.app/showreel/FlyGate_teaser_15s_v1.0.0.html) · [MP4 가로 · 세로](https://github.com/Team-FlyGate/Project-FlyGate/releases/tag/teaser-v1.0) |
+| 쇼릴 v3 (웹, 약 2분) | https://project-flygate.vercel.app/showreel/FlyGate_showreel_v3.0.0.html |
+| 쇼릴 v3 (MP4, 1080p, 소리 포함) | [FlyGate_showreel_v3.0.0.mp4](https://github.com/Team-FlyGate/Project-FlyGate/releases/download/v3.0/FlyGate_showreel_v3.0.0.mp4) |
 | 에이전트 구성 (NemoClaw · OpenShell · OpenClaw) | [docs/AGENT.md](docs/AGENT.md) · [agent/](agent/) |
 | 평가 보고서 | [docs/EVALUATION.md](docs/EVALUATION.md) |
 | 약사 검토 반영 내역 | [docs/PHARMACIST_REVIEW.md](docs/PHARMACIST_REVIEW.md) |
@@ -73,9 +72,9 @@ Project-FlyGate는 **NVIDIA 스킬 위에 구성한 에이전트 워크플로**�
 
 ### 두 단계, 하나의 에이전트
 
-단계는 둘, 에이전트는 하나입니다. 에이전트는 OpenShell 샌드박스 안의 OpenClaw이고, 도구는 `flygate` CLI 하나입니다.
+단계는 둘, 에이전트는 하나입니다. **NVIDIA NemoClaw** 기반 배포 구성에서 **OpenClaw**가 에이전트로 실행되고, **NVIDIA OpenShell**이 파일·네트워크 접근 정책과 샌드박스 격리를 담당합니다. 에이전트는 `flygate` CLI를 통해 두 모듈을 실행합니다.
 
-<a href="docs/images/flygate-architecture_v2.0.0.png"><img src="docs/images/flygate-architecture_v2.0.0.png" width="100%" alt="OpenShell 안의 OpenClaw 에이전트가 flygate CLI를 통해 FlyDiscovery와 FlyVigilance를 실행합니다. 근거 ID, 수치, 해석·안전성 검증을 거쳐 사람이 검토합니다."></a>
+<a href="docs/images/flygate-architecture_v2.1.0.png"><img src="docs/images/flygate-architecture_v2.1.0.png" width="100%" alt="NVIDIA NemoClaw 기반 구성에서 OpenShell 안의 OpenClaw 에이전트가 flygate CLI를 통해 FlyDiscovery와 FlyVigilance를 실행합니다. 근거 ID, 수치, 해석·안전성 검증을 거쳐 사람이 검토합니다."></a>
 
 <sub>핵심 처리 경로를 요약한 구조도입니다. 모든 사례에 모델을 호출하지 않으며, 규칙과 결정 정책이 사람 우선·System-2·추가정보 요청·모니터링으로 경로를 나눕니다.</sub>
 
