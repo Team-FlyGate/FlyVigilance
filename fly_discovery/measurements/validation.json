@@ -2311,6 +2311,170 @@
      }
     ]
    ]
+  },
+  "parp1-6vkk--rucaparib": {
+   "key": "parp1-6vkk--rucaparib",
+   "drug": "rucaparib",
+   "target": "PARP1 catalytic domain",
+   "gene": "PARP1",
+   "pdb": "6VKK",
+   "ligand": "RPB",
+   "chain": "A",
+   "structure": {
+    "method": "X-ray",
+    "resolution": 2.1,
+    "organism": "Homo sapiens",
+    "pocket_residues": 50,
+    "pocket_gaps": [],
+    "verdict": "도킹 가능",
+    "reasons": []
+   },
+   "runs": 5,
+   "seconds": 10.3,
+   "top1_rmsd": [
+    0.867,
+    0.358,
+    0.635,
+    0.659,
+    0.778
+   ],
+   "top1_confidence": [
+    0.876,
+    1.034,
+    0.864,
+    0.923,
+    1.078
+   ],
+   "confidence_mean": 0.955,
+   "confidence_sd": 0.086,
+   "pairwise_top1_rmsd": [
+    0.928,
+    0.763,
+    0.627,
+    0.562,
+    0.663,
+    0.698,
+    0.791,
+    0.505,
+    0.621,
+    0.685
+   ],
+   "pairwise_median": 0.67,
+   "converged": true,
+   "crystal_hits": 5,
+   "grade": "HIGH",
+   "runs_detail": [
+    [
+     {
+      "confidence": 0.876,
+      "rmsd": 0.867
+     },
+     {
+      "confidence": 0.823,
+      "rmsd": 0.699
+     },
+     {
+      "confidence": 0.754,
+      "rmsd": 0.737
+     },
+     {
+      "confidence": 0.725,
+      "rmsd": 0.785
+     },
+     {
+      "confidence": 0.644,
+      "rmsd": 1.169
+     }
+    ],
+    [
+     {
+      "confidence": 1.034,
+      "rmsd": 0.358
+     },
+     {
+      "confidence": 0.963,
+      "rmsd": 0.7
+     },
+     {
+      "confidence": 0.863,
+      "rmsd": 0.603
+     },
+     {
+      "confidence": 0.748,
+      "rmsd": 0.783
+     },
+     {
+      "confidence": 0.732,
+      "rmsd": 0.897
+     }
+    ],
+    [
+     {
+      "confidence": 0.864,
+      "rmsd": 0.635
+     },
+     {
+      "confidence": 0.849,
+      "rmsd": 0.977
+     },
+     {
+      "confidence": 0.738,
+      "rmsd": 0.984
+     },
+     {
+      "confidence": 0.692,
+      "rmsd": 0.641
+     },
+     {
+      "confidence": 0.486,
+      "rmsd": 0.909
+     }
+    ],
+    [
+     {
+      "confidence": 0.923,
+      "rmsd": 0.659
+     },
+     {
+      "confidence": 0.784,
+      "rmsd": 0.83
+     },
+     {
+      "confidence": 0.782,
+      "rmsd": 0.746
+     },
+     {
+      "confidence": 0.666,
+      "rmsd": 0.82
+     },
+     {
+      "confidence": 0.665,
+      "rmsd": 0.89
+     }
+    ],
+    [
+     {
+      "confidence": 1.078,
+      "rmsd": 0.778
+     },
+     {
+      "confidence": 0.951,
+      "rmsd": 0.799
+     },
+     {
+      "confidence": 0.905,
+      "rmsd": 0.573
+     },
+     {
+      "confidence": 0.732,
+      "rmsd": 0.964
+     },
+     {
+      "confidence": 0.654,
+      "rmsd": 0.797
+     }
+    ]
+   ]
   }
  },
  "endpoint": "https://health.api.nvidia.com/v1/biology/mit/diffdock",
@@ -2343,5 +2507,5 @@
    "결정 대조 1/5 이하. 수렴했더라도 틀린 자리로 모인 것"
   ]
  ],
- "updated": "2026-09-28 17:32 KST"
+ "updated": "2026-09-28 18:23 KST"
 }

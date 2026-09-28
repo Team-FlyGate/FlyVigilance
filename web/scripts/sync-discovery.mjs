@@ -24,6 +24,7 @@ const DATA = {
   'redock.json': 'measurements/redock.json',
   'validation.json': 'measurements/validation.json',
   'selectivity_evidence.json': 'measurements/selectivity_evidence.json',
+  'evidence_cards.json': 'measurements/evidence_cards.json',
   'drug_panel.json': 'measurements/drug_panel.json',
   'critic_v2.json': 'measurements/nim/critic_v2.json',
 }

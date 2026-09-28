@@ -1,0 +1,434 @@
+{
+ "strong_pchembl": 6.0,
+ "cards": {
+  "niraparib": {
+   "name": "niraparib",
+   "label": "니라파립",
+   "target": "PARP1",
+   "chembl": "CHEMBL1094636",
+   "crystal_pdb": "4R6E",
+   "receptor_pdb": "4R6E",
+   "structure": {
+    "method": "X-ray",
+    "resolution": 2.2,
+    "organism": "Homo sapiens",
+    "pocket_residues": 53,
+    "pocket_gaps": [],
+    "verdict": "도킹 가능",
+    "reasons": []
+   },
+   "validation": {
+    "grade": "HIGH",
+    "crystal_hits": 5,
+    "runs": 5,
+    "pairwise_median": 0.74,
+    "confidence_mean": 0.673,
+    "confidence_sd": 0.111
+   },
+   "computational": {
+    "vina": -10.178,
+    "dd_conf": 0.696,
+    "dd_rmsd": 0.707,
+    "boltz_pic50": 8.909,
+    "xa_dd_conf": -0.044,
+    "xa_vina": -7.967
+   },
+   "experimental": {
+    "PARP2": {
+     "n": 14,
+     "median": 7.89,
+     "max": 8.68,
+     "types": [
+      "IC50",
+      "Kd",
+      "Ki"
+     ],
+     "docs": 11
+    },
+    "PARP1": {
+     "n": 27,
+     "median": 7.79,
+     "max": 9.0,
+     "types": [
+      "EC50",
+      "IC50",
+      "Kd",
+      "Ki"
+     ],
+     "docs": 20
+    }
+   },
+   "selectivity": [
+    {
+     "gene": "PARP1",
+     "docking": 0.696,
+     "chembl": {
+      "n": 27,
+      "median": 7.79,
+      "max": 9.0,
+      "types": [
+       "EC50",
+       "IC50",
+       "Kd",
+       "Ki"
+      ],
+      "docs": 20
+     },
+     "status": "supported"
+    },
+    {
+     "gene": "PARP2",
+     "docking": null,
+     "chembl": {
+      "n": 14,
+      "median": 7.89,
+      "max": 8.68,
+      "types": [
+       "IC50",
+       "Kd",
+       "Ki"
+      ],
+      "docs": 11
+     },
+     "status": "supported"
+    },
+    {
+     "gene": "F10",
+     "docking": -0.044,
+     "chembl": null,
+     "status": "exploratory"
+    }
+   ],
+   "confidence": {
+    "level": "HIGH",
+    "score": 3,
+    "checks": [
+     {
+      "name": "구조 품질",
+      "ok": true,
+      "detail": "4R6E X-ray 2.2 Å · Homo sapiens"
+     },
+     {
+      "name": "도킹 검증",
+      "ok": true,
+      "detail": "DiffDock 5회 중 결정 자리 정답 5회 · 반복 간 0.74 Å · 등급 HIGH"
+     },
+     {
+      "name": "실측 결합",
+      "ok": true,
+      "detail": "ChEMBL PARP1 pChEMBL 중앙값 7.79 · 27건 · 문헌 20편"
+     }
+    ]
+   },
+   "allowed": [
+    "니라파립–PARP1 상호작용은 계산 근거(재도킹 5/5회 정답)와 실험 근거(ChEMBL pChEMBL 중앙값 7.79, 27건)가 함께 뒷받침한다.",
+    "Boltz-2 는 PARP1 pIC50 을 8.91 로 예측했고, ChEMBL 실측 중앙값은 7.79 이다(예측값과 실측값을 나란히 적은 것).",
+    "PARP1 과 PARP2 모두 실측 결합 근거가 있다(PARP2 중앙값 7.89, 14건).",
+    "Factor Xa 결합은 도킹만 있고 실측 기록이 없어 탐색적 결과로만 적는다."
+   ],
+   "not_allowed": [
+    {
+     "rule": "cross-target",
+     "claim": "니라파립은 DiffDock 신뢰도 PARP1 0.696, Factor Xa -0.044 이므로 PARP1 에 선택적이다."
+    },
+    {
+     "rule": "cross-target",
+     "claim": "니라파립은 PARP1 에 Factor Xa 보다 2.2 kcal/mol 더 선택적이다."
+    },
+    {
+     "rule": "predicted≠measured",
+     "claim": "니라파립의 PARP1 친화도는 pIC50 8.91 로 측정되었다."
+    },
+    {
+     "rule": "selectivity",
+     "claim": "니라파립은 PARP1 선택적 억제제다. (PARP2 실측 결합도 있어 같은 조건의 비교 실험 없이는 말할 수 없다)"
+    }
+   ]
+  },
+  "talazoparib": {
+   "name": "talazoparib",
+   "label": "탈라조파립",
+   "target": "PARP1",
+   "chembl": "CHEMBL3137320",
+   "crystal_pdb": "7KK3",
+   "receptor_pdb": "4R6E",
+   "structure": {
+    "method": "X-ray",
+    "resolution": 2.06,
+    "organism": "Homo sapiens",
+    "pocket_residues": 50,
+    "pocket_gaps": [],
+    "verdict": "도킹 가능",
+    "reasons": []
+   },
+   "validation": {
+    "grade": "HIGH",
+    "crystal_hits": 5,
+    "runs": 5,
+    "pairwise_median": 0.9,
+    "confidence_mean": 0.283,
+    "confidence_sd": 0.497
+   },
+   "computational": {
+    "vina": null,
+    "dd_conf": -0.308,
+    "dd_rmsd": 1.507,
+    "boltz_pic50": 8.898,
+    "xa_dd_conf": 0.266,
+    "xa_vina": null
+   },
+   "experimental": {
+    "PARP1": {
+     "n": 25,
+     "median": 9.15,
+     "max": 9.24,
+     "types": [
+      "EC50",
+      "IC50",
+      "Kd",
+      "Ki"
+     ],
+     "docs": 20
+    },
+    "PARP2": {
+     "n": 12,
+     "median": 9.06,
+     "max": 9.7,
+     "types": [
+      "IC50",
+      "Kd",
+      "Ki"
+     ],
+     "docs": 11
+    }
+   },
+   "selectivity": [
+    {
+     "gene": "PARP1",
+     "docking": -0.308,
+     "chembl": {
+      "n": 25,
+      "median": 9.15,
+      "max": 9.24,
+      "types": [
+       "EC50",
+       "IC50",
+       "Kd",
+       "Ki"
+      ],
+      "docs": 20
+     },
+     "status": "supported"
+    },
+    {
+     "gene": "PARP2",
+     "docking": null,
+     "chembl": {
+      "n": 12,
+      "median": 9.06,
+      "max": 9.7,
+      "types": [
+       "IC50",
+       "Kd",
+       "Ki"
+      ],
+      "docs": 11
+     },
+     "status": "supported"
+    },
+    {
+     "gene": "F10",
+     "docking": 0.266,
+     "chembl": null,
+     "status": "exploratory"
+    }
+   ],
+   "confidence": {
+    "level": "HIGH",
+    "score": 3,
+    "checks": [
+     {
+      "name": "구조 품질",
+      "ok": true,
+      "detail": "7KK3 X-ray 2.06 Å · Homo sapiens"
+     },
+     {
+      "name": "도킹 검증",
+      "ok": true,
+      "detail": "DiffDock 5회 중 결정 자리 정답 5회 · 반복 간 0.9 Å · 등급 HIGH"
+     },
+     {
+      "name": "실측 결합",
+      "ok": true,
+      "detail": "ChEMBL PARP1 pChEMBL 중앙값 9.15 · 25건 · 문헌 20편"
+     }
+    ]
+   },
+   "allowed": [
+    "탈라조파립–PARP1 상호작용은 계산 근거(재도킹 5/5회 정답)와 실험 근거(ChEMBL pChEMBL 중앙값 9.15, 25건)가 함께 뒷받침한다.",
+    "Boltz-2 는 PARP1 pIC50 을 8.90 로 예측했고, ChEMBL 실측 중앙값은 9.15 이다(예측값과 실측값을 나란히 적은 것).",
+    "PARP1 과 PARP2 모두 실측 결합 근거가 있다(PARP2 중앙값 9.06, 12건).",
+    "Factor Xa 결합은 도킹만 있고 실측 기록이 없어 탐색적 결과로만 적는다."
+   ],
+   "not_allowed": [
+    {
+     "rule": "cross-target",
+     "claim": "탈라조파립은 DiffDock 신뢰도 PARP1 -0.308, Factor Xa 0.266 이므로 Factor Xa 에 선택적이다."
+    },
+    {
+     "rule": "predicted≠measured",
+     "claim": "탈라조파립의 PARP1 친화도는 pIC50 8.90 로 측정되었다."
+    },
+    {
+     "rule": "selectivity",
+     "claim": "탈라조파립은 PARP1 선택적 억제제다. (PARP2 실측 결합도 있어 같은 조건의 비교 실험 없이는 말할 수 없다)"
+    },
+    {
+     "rule": "confidence≠affinity",
+     "claim": "DiffDock 신뢰도가 -0.308 로 음수이므로 탈라조파립은 PARP1 에 잘 붙지 않는다. (포즈는 결정 자리와 1.507 Å)"
+    }
+   ]
+  },
+  "rucaparib": {
+   "name": "rucaparib",
+   "label": "루카파립",
+   "target": "PARP1",
+   "chembl": "CHEMBL1173055",
+   "crystal_pdb": "6VKK",
+   "receptor_pdb": "4R6E",
+   "structure": {
+    "method": "X-ray",
+    "resolution": 2.1,
+    "organism": "Homo sapiens",
+    "pocket_residues": 50,
+    "pocket_gaps": [],
+    "verdict": "도킹 가능",
+    "reasons": []
+   },
+   "validation": {
+    "grade": "HIGH",
+    "crystal_hits": 5,
+    "runs": 5,
+    "pairwise_median": 0.67,
+    "confidence_mean": 0.955,
+    "confidence_sd": 0.086
+   },
+   "computational": {
+    "vina": -9.769,
+    "dd_conf": 0.653,
+    "dd_rmsd": 0.589,
+    "boltz_pic50": 8.2,
+    "xa_dd_conf": 0.582,
+    "xa_vina": null
+   },
+   "experimental": {
+    "PARP1": {
+     "n": 40,
+     "median": 8.73,
+     "max": 9.15,
+     "types": [
+      "EC50",
+      "IC50",
+      "Kd",
+      "Ki"
+     ],
+     "docs": 30
+    },
+    "PARP2": {
+     "n": 19,
+     "median": 8.82,
+     "max": 9.4,
+     "types": [
+      "IC50",
+      "Kd",
+      "Ki"
+     ],
+     "docs": 14
+    }
+   },
+   "selectivity": [
+    {
+     "gene": "PARP1",
+     "docking": 0.653,
+     "chembl": {
+      "n": 40,
+      "median": 8.73,
+      "max": 9.15,
+      "types": [
+       "EC50",
+       "IC50",
+       "Kd",
+       "Ki"
+      ],
+      "docs": 30
+     },
+     "status": "supported"
+    },
+    {
+     "gene": "PARP2",
+     "docking": null,
+     "chembl": {
+      "n": 19,
+      "median": 8.82,
+      "max": 9.4,
+      "types": [
+       "IC50",
+       "Kd",
+       "Ki"
+      ],
+      "docs": 14
+     },
+     "status": "supported"
+    },
+    {
+     "gene": "F10",
+     "docking": 0.582,
+     "chembl": null,
+     "status": "exploratory"
+    }
+   ],
+   "confidence": {
+    "level": "HIGH",
+    "score": 3,
+    "checks": [
+     {
+      "name": "구조 품질",
+      "ok": true,
+      "detail": "6VKK X-ray 2.1 Å · Homo sapiens"
+     },
+     {
+      "name": "도킹 검증",
+      "ok": true,
+      "detail": "DiffDock 5회 중 결정 자리 정답 5회 · 반복 간 0.67 Å · 등급 HIGH"
+     },
+     {
+      "name": "실측 결합",
+      "ok": true,
+      "detail": "ChEMBL PARP1 pChEMBL 중앙값 8.73 · 40건 · 문헌 30편"
+     }
+    ]
+   },
+   "allowed": [
+    "루카파립–PARP1 상호작용은 계산 근거(재도킹 5/5회 정답)와 실험 근거(ChEMBL pChEMBL 중앙값 8.73, 40건)가 함께 뒷받침한다.",
+    "Boltz-2 는 PARP1 pIC50 을 8.20 로 예측했고, ChEMBL 실측 중앙값은 8.73 이다(예측값과 실측값을 나란히 적은 것).",
+    "PARP1 과 PARP2 모두 실측 결합 근거가 있다(PARP2 중앙값 8.82, 19건).",
+    "Factor Xa 결합은 도킹만 있고 실측 기록이 없어 탐색적 결과로만 적는다."
+   ],
+   "not_allowed": [
+    {
+     "rule": "cross-target",
+     "claim": "루카파립은 DiffDock 신뢰도 PARP1 0.653, Factor Xa 0.582 이므로 PARP1 에 선택적이다."
+    },
+    {
+     "rule": "predicted≠measured",
+     "claim": "루카파립의 PARP1 친화도는 pIC50 8.20 로 측정되었다."
+    },
+    {
+     "rule": "selectivity",
+     "claim": "루카파립은 PARP1 선택적 억제제다. (PARP2 실측 결합도 있어 같은 조건의 비교 실험 없이는 말할 수 없다)"
+    }
+   ]
+  }
+ },
+ "updated": "2026-09-28 18:24 KST"
+}
