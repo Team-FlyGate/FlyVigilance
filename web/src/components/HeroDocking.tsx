@@ -41,12 +41,10 @@ const STEP_LAYERS: Record<string, string[]> = { msa: ['sense'], of3: ['encode'],
 const FOCUS: Record<string, string> = { msa: '감각 입력 · 서열 정렬', of3: '특징 부호화 · 구조 예측', dd: '반사 · 기억 · 포즈 판단', bz: '기억 · 숙고 · 친화도', critic: '억제성 크리틱 · 행동' }
 // 장면 속 사건이 일어나는 시각(ms)과 자극할 층. 반복 재생 때마다 다시 울립니다
 const EVENTS: [number, string, number][] = [
-  [300, 'sense', 0.8], [1100, 'sense', 0.8], [1900, 'sense', 0.8], [2700, 'sense', 0.8],
-  [3600, 'encode', 0.9], [4800, 'encode', 0.9], [6000, 'encode', 0.9], [7600, 'encode', 1.1], [8200, 'assoc', 0.8],
-  [11400, 'sense', 0.9], [12100, 'sense', 0.9], [12800, 'sense', 0.9], [13500, 'sense', 0.9], [14200, 'reflex', 1],
-  [16200, 'reflex', 1.4], [16300, 'memory', 1.2], [16500, 'action', 1], [16800, 'critic', 1],
-  [19500, 'memory', 1.1], [20500, 'deliberate', 1.2], [21700, 'deliberate', 1], [23000, 'memory', 0.9],
-  [25000, 'critic', 1.3], [26500, 'critic', 1.1], [28000, 'action', 1.2], [29500, 'feedback', 1],
+  [600, 'sense', 0.45], [2200, 'sense', 0.45],
+  [4200, 'encode', 0.45], [7600, 'encode', 0.5],
+  [12000, 'sense', 0.4], [16200, 'reflex', 0.6], [16600, 'memory', 0.5],
+  [20500, 'deliberate', 0.5], [25500, 'critic', 0.6], [28500, 'action', 0.5],
 ]
 type StepId = typeof STEPS[number]['id']
 const clamp = (v: number) => Math.max(0, Math.min(1, v))
@@ -113,7 +111,7 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
   const { sim } = useBrain()
   const simRef = useRef(sim)
   simRef.current = sim
-  useEffect(() => { if (sim) (STEP_LAYERS[step] ?? []).forEach((l, i) => setTimeout(() => sim.stimulate('layer', l, 1, 10), i * 300)) }, [step, sim])
+  useEffect(() => { if (sim) (STEP_LAYERS[step] ?? []).forEach((l, i) => setTimeout(() => sim.stimulate('layer', l, 0.5, 8), i * 300)) }, [step, sim])
 
   useEffect(() => {
     const el = host.current
@@ -145,7 +143,7 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
     const ddPivot = new THREE.Group(); ddPivot.add(dd1); root.add(ddPivot)
     const alts = hero.diffdock_poses.slice(1).map((p) => { const g = ballStick(p, 'faint'); root.add(g); return g })
     const xtalLig = ballStick(hero.xtal_ligand, 'ghost'); root.add(xtalLig)
-    const glow = glowSprite(0xffb547); glow.scale.setScalar(14); root.add(glow)
+    const glow = glowSprite(0xffb547); glow.scale.setScalar(6); root.add(glow)
     // 날아오는 궤적
     const trailPts = 60, trail = new THREE.Line(new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(new Array(trailPts * 3).fill(0), 3)),
       new THREE.LineBasicMaterial({ color: 0xffb547, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending }))
@@ -201,12 +199,12 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
       setOpacity(xtalLig, t < 16400 ? 0 : clamp((t - 16400) / 800))
       setOpacity(xtalTrace, t < 16400 || t > 19500 ? 0 : 0.9 * Math.sin(clamp((t - 16400) / 3100) * Math.PI))
       const flash = t > 16200 && t < 18400 ? Math.sin(((t - 16200) / 2200) * Math.PI) : 0
-      glow.material.opacity = 0.18 + 0.7 * flash + (t > 19000 ? 0.12 * (1 + Math.sin(now / 500)) : 0)
+      glow.material.opacity = 0.08 + 0.35 * flash + (t > 19000 ? 0.04 * (1 + Math.sin(now / 900)) : 0)
       // 카메라: 전체 → 결합 자리로 다가갔다가 다시 물러납니다
       const inK = ease((camT - 12200) / 3200), outK = ease((camT - 26000) / 4000)
       const want = farPos.clone().lerp(nearPos, inK * (1 - outK)), tgt = protCenter.clone().lerp(new THREE.Vector3(), inK * (1 - outK))
       if (!dragging) { camera.position.lerp(want, 0.04); controls.target.lerp(tgt, 0.06) }
-      bloom.strength = 0.45 + 0.4 * flash
+      bloom.strength = 0.3 + 0.2 * flash
       controls.update(); composer.render()
       // 리간드 말풍선: 원점을 화면 좌표로 옮깁니다
       if (label.current) {
