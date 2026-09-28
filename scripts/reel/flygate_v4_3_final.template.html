@@ -2041,18 +2041,13 @@
     return { d, zt, keysT: cf.path.map((_, i) => 1.45 + span * i / n), dwell: span / n }
   }
   const CLI_EMPH = { cli_grade: 1, cli_critic: 1, cli_dock: 1 }
+  const CLI_CMD = { cli_install: './scripts/install_flygate.sh', cli_triage: 'flygate triage', cli_grade: 'flygate grade', cli_critic: 'flygate critic',
+    cli_dock: 'flygate discover --live', cli_kr: 'flygate kr-causality', cli_watch: 'flygate watch' }
   function sCmd(sid, lt, T) {
     dotGrid(lt, 0.8)
     const cf = CMD[sid], pl = cmdPlan(sid), k = CMD_IDS.indexOf(sid) + 1
     const win = winFor(sid, cf.title, cf.ink)
-    // 1) 홍수: 처음 0.62초는 화면 전체, 그 뒤 원이 안으로 닫힙니다
-    const shut = E.in3(inv(0.6, 1.02, lt)), fr = lerp(1250, 0, shut)
-    // 2) 낱말: 가운데 크게 → 왼쪽 열
-    const mv = E.inOut3(inv(0.62, 1.12, lt))
-    const bigS = Math.min(330, 1500 / Math.max(1, measure(cf.word, 1, 900, SANS, -0.04)))
-    const smS = Math.min(168, 700 / Math.max(1, measure(cf.word, 1, 900, SANS, -0.04)))
-    const size = lerp(bigS, smS, mv), wx = lerp(960, 128, mv), wy = lerp(540 + bigS * 0.36, 520, mv)
-    const align = mv < 0.5 ? 'center' : 'left'
+    // 최종본: 화면 가득 번지던 색 원(홍수)과 거대한 낱말은 없앴습니다. 왼쪽에는 명령 줄과 설명만 조용히 둡니다
     // 3) 창: 오른쪽 밖에서 날아와 기울어진 채 흐르고, 확대 때 핵심 줄로 다가갑니다
     let P = null
     if (win) {
@@ -2087,29 +2082,25 @@
     // 왼쪽 가림막: 창이 낱말 뒤로 지나갈 때 글자가 읽히도록
     const scrim = seg(lt, 0.9, 1.4)
     if (scrim > 0) { X.save(); alpha(scrim); const gr = X.createLinearGradient(0, 0, 980, 0); gr.addColorStop(0, 'rgba(4,6,12,0.94)'); gr.addColorStop(0.6, 'rgba(4,6,12,0.72)'); gr.addColorStop(1, 'rgba(4,6,12,0)'); X.fillStyle = gr; X.fillRect(0, 0, 980, H); X.restore() }
-    // 홍수(창 위에 덮였다가 닫힘)
-    flood(cf.col, fr, lt)
-    // 낱말: 홍수 안은 짙은 색, 밖은 흰색(원 경계에서 색이 갈립니다)
-    const gp = inv(0.0, 0.32, lt), rgb = (1 - seg(lt, 0.3, 0.55)) + 0.8 * (1 - seg(lt, 0.62, 0.8)) * seg(lt, 0.58, 0.62)
-    const drawWord = (col) => glitchWord(cf.word, wx, wy, gp, { size, color: col, align, track: -size * 0.04, T, rgb })
-    if (fr > 0) {
-      X.save(); X.beginPath(); X.arc(960, 540, fr, 0, Math.PI * 2); X.clip(); drawWord(INK); X.restore()
-      X.save(); X.beginPath(); X.rect(0, 0, W, H); X.arc(960, 540, fr, 0, Math.PI * 2); X.clip('evenodd'); drawWord(C.white); X.restore()
-    } else drawWord(C.white)
     // 머리글: 번호 / 7 ─── FLYGATE AGENT CLI
-    const ey = lerp(540 - bigS * 0.62, 520 - smS * 0.98, mv), ex0 = mv < 0.5 ? 960 - 250 : 132
-    const inkE = fr > 900 ? INK : C.t2
+    const ex0 = 132, ey = 400
     withA(seg(lt, 0.1, 0.4), () => {
-      text(`0${k} / 07`, ex0, ey, { size: 20, weight: 700, fam: MONO, color: fr > 900 ? INK : cf.ink, track: 3 })
-      line(ex0 + 110, ey - 7, ex0 + 190, ey - 7, inkE, 0.7, 2)
-      text('FLYGATE AGENT CLI', ex0 + 206, ey, { size: 20, weight: 700, fam: MONO, color: inkE, track: 4 })
+      text(`0${k} / 07`, ex0, ey, { size: 20, weight: 700, fam: MONO, color: cf.ink, track: 3 })
+      line(ex0 + 110, ey - 7, ex0 + 190, ey - 7, C.t2, 0.7, 2)
+      text('FLYGATE AGENT CLI', ex0 + 206, ey, { size: 20, weight: 700, fam: MONO, color: C.t2, track: 4 })
+    })
+    // 명령 줄: 프롬프트 뒤로 명령이 한 글자씩 입력됩니다
+    withA(seg(lt, 0.15, 0.4), () => {
+      const cmd = CLI_CMD[sid] || '', n = Math.floor(inv(0.25, 0.9, lt) * cmd.length + 1e-6)
+      const pw = text('› ', ex0, 480, { size: 44, weight: 700, fam: MONO, color: C.nvl }) || 0
+      text(cmd.slice(0, n), ex0 + pw, 480, { size: 44, weight: 600, fam: MONO, color: C.white, maxW: 800 - pw })
     })
     // 우리말 부제 · 실제 값
-    withA(seg(lt, 1.0, 1.3), () => {
-      riseParts([[cf.sub, C.white]], 132, 520 + 84, (lt - 1.0) * 2.2, { size: 50, weight: 800, stagger: 0.025 })
-      typeText(cf.call, 134, 520 + 150, inv(1.3, 2.3, lt), { size: 19, weight: 600, color: cf.ink, track: 0.5, maxW: 760 })
-      bar(134, 520 + 182, 300, 6, seg(lt, 1.2, pl.d - 0.3, E.lin), cf.ink, { a: 0.9 })
-      text(CAP_OF[sid] ? `실제 터미널 캡처 · ${(CAPS[CAP_OF[sid]] || {}).file || ''}` : '실제 실행 기록 · scripts/reel/cli_runs.json', 134, 520 + 226, { size: 14, weight: 500, fam: MONO, color: C.t3, maxW: 720 })
+    withA(seg(lt, 0.8, 1.1), () => {
+      riseParts([[cf.sub, C.white]], 132, 566, (lt - 0.8) * 2.2, { size: 50, weight: 800, stagger: 0.025 })
+      typeText(cf.call, 134, 628, inv(1.1, 2.1, lt), { size: 19, weight: 600, color: cf.ink, track: 0.5, maxW: 760 })
+      bar(134, 658, 300, 6, seg(lt, 1.0, pl.d - 0.3, E.lin), cf.ink, { a: 0.9 })
+      text(CAP_OF[sid] ? `실제 터미널 캡처 · ${(CAPS[CAP_OF[sid]] || {}).file || ''}` : '실제 실행 기록 · scripts/reel/cli_runs.json', 134, 700, { size: 14, weight: 500, fam: MONO, color: C.t3, maxW: 720 })
     })
   }
 
@@ -2127,23 +2118,21 @@
       if (tp < 1 || Math.floor(lt * 3) % 2 === 0) { X.save(); alpha(0.9); X.fillStyle = C.amber; X.fillRect(x0 + pw + w + 6 + jit, y - 52, 30, 62); X.restore() }
       text('~/Project-FlyGate  ·  zsh', 960, 612, { size: 18, weight: 500, fam: MONO, color: C.t3, align: 'center', a: seg(lt, 0.3, 0.6) * (1 - seg(lt, g0, g1)) })
     }
-    if (lt >= g0) {
-      const p = inv(g0, g0 + 0.5, lt), sc = 1 + 0.045 * Math.max(0, lt - g1)
-      const rgb = 1 - seg(lt, g1, g1 + 0.35)
-      X.save(); X.translate(960, 470); X.scale(sc, sc); X.translate(-960, -470)
-      glitchWord('FlyGate', 960, 430, p, { size: 230, color: C.white, align: 'center', track: -9, T, rgb })
-      glitchWord('Agent CLI', 960, 640, inv(g0 + 0.08, g0 + 0.6, lt), { size: 230, color: C.nvl, align: 'center', track: -9, T, rgb })
-      X.restore()
-      withA(seg(lt, 1.6, 1.9), () => typeText('명령줄 도구 · 모든 출력은 근거 ID가 붙은 JSON', 960, 760, inv(1.6, 2.4, lt), { size: 26, weight: 600, color: C.t2, track: 1, align: 'center', fam: SANS }))
-      // 명령 이름이 차례로 불 켜지는 띠
-      const cmds = C3.cmds && C3.cmds.length ? C3.cmds : ['triage', 'grade', 'signals', 'kr-causality', 'critic', 'discover', 'watch']
-      withA(seg(lt, 2.2, 2.5), () => {
-        const ws = cmds.map((c) => chipW(c, 20, MONO, 42)), tot = ws.reduce((a, b) => a + b + 14, -14)
-        let x = 960 - tot / 2
-        const cur = Math.floor(Math.max(0, lt - 2.4) / 0.22) % cmds.length
-        cmds.forEach((c, i) => { chip(x, 830, c, { kind: i === cur ? 'nv' : 'dim', size: 20, h: 42, a: seg(lt, 2.2 + i * 0.06, 2.45 + i * 0.06) }); x += ws[i] + 14 })
-      })
-    }
+    if (lt >= g0) mainUi(lt - g0, 0)
+  }
+  // FlyGate CLI 메인 화면(실제 터미널 캡처, web/public/media/cli/v2.0.0/01-start.png)을 무대 가운데에 크게 띄웁니다
+  const MAINUI = (D.mainui || []).map((b64) => { const im = new Image(); im.src = 'data:image/webp;base64,' + b64; return im })
+  function mainUi(u, idx) {
+    const im = MAINUI[idx]
+    if (!im || !im.complete || !im.naturalWidth) return
+    const hh = 850, ww = hh * im.naturalWidth / im.naturalHeight
+    const a = seg(u, 0, 0.35), sc = lerp(0.94, 1, E.out3(inv(0, 0.6, u))) * (1 + 0.012 * u)
+    const cx = 960, cy = 540
+    X.save(); alpha(a); X.translate(cx, cy); X.scale(sc, sc)
+    X.shadowColor = 'rgba(118,185,0,0.35)'; X.shadowBlur = 60; rr(-ww / 2, -hh / 2, ww, hh, 18); X.fillStyle = '#000'; X.fill(); X.shadowBlur = 0
+    X.save(); rr(-ww / 2, -hh / 2, ww, hh, 18); X.clip(); X.drawImage(im, -ww / 2, -hh / 2, ww, hh); X.restore()
+    X.strokeStyle = 'rgba(200,243,107,0.45)'; X.lineWidth = 2; rr(-ww / 2, -hh / 2, ww, hh, 18); X.stroke()
+    X.restore()
   }
 
   // ---- 사람도 에이전트도 같은 명령 ----
@@ -2282,7 +2271,7 @@
   }
   cliCues()
   // CLI 장면 사이의 글리치 컷: 경계 ±0.14초에 가로 조각이 밀리고 색이 갈라집니다
-  const CLI_CUTS = SCENES.filter((s, i) => i > 0 && s.id.startsWith('cli_') && SCENES[i - 1].id.startsWith('cli_')).map((s) => s.t0)
+  const CLI_CUTS = []   // 최종본: CLI 장면 사이의 색 글리치는 쓰지 않습니다(바로 자릅니다)
   let GLC = null
   function glitchCut(T) {
     let dd = 9, b0 = 0
