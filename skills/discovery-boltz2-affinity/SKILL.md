@@ -52,6 +52,10 @@ metadata:
 
 Benchmark (PARP1, n=39, ChEMBL IC50): Spearman 0.767, Pearson 0.746, MAE 0.71 log, EF(top 25%) 2.41 (5/9), sensitivity/specificity at pIC50 ≥ 7 = 0.80 / 0.86.
 
+## A target chosen on screen
+
+`custom_target` carries the sequence (sliced to the chosen range) and `custom_ligand` carries a PubChem SMILES or a pasted one. There is no ChEMBL median for most such pairs, so the screen shows the prediction alone and says `대조값 없음` rather than inventing a comparison.
+
 ## Limits
 
 The benchmark is one target and 39 compounds. Run-to-run variation is real: the same input gave 7.98 and 7.686 on the same day.

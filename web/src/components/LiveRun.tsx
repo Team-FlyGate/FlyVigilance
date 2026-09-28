@@ -2,10 +2,11 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Card } from './ui'
 import { useBrain } from '../lib/brain'
 import {
-  SOURCE_LABEL, fmtS, getCatalog, getMeasured, runCritic, runStep, saveRun, useDiscovery,
+  SOURCE_LABEL, fmtS, getCatalog, getMeasured, runCritic, runParams, runStep, saveRun, useDiscovery,
   type BoltzResult, type Catalog, type Claim, type CriticResult, type DockResult, type Envelope, type MsaResult, type Of3Result, type StepKind,
 } from '../lib/discovery'
 import type { StepId } from './HeroDocking'
+import TargetPicker from './TargetPicker'
 
 // STEP 1 단계 페이지의 "라이브 실행" 카드. 3D 장면과 아래 분석은 그대로 두고, 그 단계의 NIM 을 지금 다시 불러
 // 이번 실행과 지난 측정을 나란히 보여 줍니다. 서버는 /api/discovery/* (NVIDIA 키는 서버에만 있고 호출 횟수 제한이 걸려 있습니다).
@@ -34,7 +35,9 @@ const ROWS: Record<StepKind, Row[]> = {
 export default function LiveRun({ step, drug }: { step: StepId; drug: string }) {
   const kind = KIND[step]
   const { sim } = useBrain()
-  const { runs, envs } = useDiscovery()
+  const { runs, envs, customTarget, customLigand } = useDiscovery()
+  // 화면에서 단백질이나 약물을 찾아 골랐으면(검색) 그 값으로 부르고, 지난 측정 비교는 두지 않습니다
+  const custom = !!(customTarget || customLigand)
   const [cat, setCat] = useState<Catalog | null>(null)
   const [pair, setPair] = useState('')
   const [fresh, setFresh] = useState(false)
@@ -64,11 +67,12 @@ export default function LiveRun({ step, drug }: { step: StepId; drug: string }) 
     if (kind === 'critic' || !cat) return
     let live = true
     setPast(null)
+    if (custom) return
     getMeasured(kind, target, lig).then((r) => { if (live) setPast(r.measured) }).catch(() => {})
     return () => { live = false }
-  }, [kind, cat, target, lig])
+  }, [kind, cat, target, lig, custom])
   // 이번 실행 결과는 지금 고른 쌍과 같을 때만 보여 줍니다(다른 쌍을 고르면 비웁니다)
-  const sameParams = env && (env.params?.target ?? 'parp1') === target && (kind === 'msa' || env.params?.ligand === lig)
+  const sameParams = env && (custom ? !!(env.params?.custom_target || env.params?.custom_ligand) : (env.params?.target ?? 'parp1') === target && (kind === 'msa' || env.params?.ligand === lig))
   const liveRes = sameParams ? env?.result : undefined
   const pastRes = (sameParams ? env?.measured : null) ?? past
   const pairs = useMemo(() => Object.entries(cat?.pairs ?? {}), [cat])
@@ -84,7 +88,7 @@ export default function LiveRun({ step, drug }: { step: StepId; drug: string }) 
         sim?.stimulate('layer', 'critic', r.issues.length ? 1.4 : 0.6, 16)
         return
       }
-      const params: Record<string, unknown> = kind === 'msa' ? { target } : { target, ligand: lig }
+      const params: Record<string, unknown> = custom ? runParams() : kind === 'msa' ? { target } : { target, ligand: lig }
       params.no_cache = fresh
       // 앞 단계 MSA 를 이번 세션에서 돌렸으면 그 정렬을 넘기고, 아니면 지난 측정 정렬을 씁니다(OpenFold3 · Boltz-2)
       if (kind === 'openfold3' || kind === 'boltz2') {
@@ -113,6 +117,7 @@ export default function LiveRun({ step, drug }: { step: StepId; drug: string }) 
 
   return (
     <Card title="라이브 실행" sub={<span className="mono" style={{ fontSize: 11 }}>{HOST[kind]}</span>} right={status} style={{ marginBottom: 16 }}>
+      {kind !== 'critic' && <div style={{ marginBottom: 12 }}><TargetPicker cat={cat} /></div>}
       <div className="grid" style={{ gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.4fr)', gap: 18, alignItems: 'start' }}>
         <div className="stack" style={{ gap: 10 }}>
           {PICK.has(kind) && (
