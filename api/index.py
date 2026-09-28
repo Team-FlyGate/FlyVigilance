@@ -10,6 +10,7 @@ POST /api/kr/intake       국내 보고서식·자유 서술 -> 구조화 (Nemot
 POST /api/kr/causality    한국형 인과성 평가 알고리즘 ver 2.0 (Jev) + WHO-UMC
 GET  /api/grade           근거 등급 (FAERS 통계 + 라벨 절 + 문헌 읽기)
 GET  /api/signals/{drug}  웨어하우스 불균형 지표 상위 반응
+POST /api/dock            STEP 1 직접 도킹: 결정 구조 수용체 × SMILES 를 DiffDock NIM 으로 실시간 도킹
 """
 import gzip
 import json
@@ -24,6 +25,7 @@ from fastapi import FastAPI, HTTPException, Request  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 
 from _fv import assess as assess_mod  # noqa: E402
+from _fv import dock as dock_mod  # noqa: E402
 from _fv import clients, config, evidence, grade as grade_mod, knowledge, kr as kr_mod, literature, triage as triage_mod  # noqa: E402
 
 app = FastAPI(title="FlyVigilance API", version="1.0")
@@ -31,7 +33,7 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 
 # 공개 배포에서 유료 API 남용을 막는 간단한 IP 별 속도 제한
 _hits: dict[str, deque] = {}
-LIMIT = {"triage": (30, 60), "assess": (6, 60), "critic": (10, 60), "kr": (10, 60), "grade": (20, 60)}
+LIMIT = {"triage": (30, 60), "assess": (6, 60), "critic": (10, 60), "kr": (10, 60), "grade": (20, 60), "dock": (8, 60)}
 
 
 def _rate(req: Request, key: str):
@@ -161,3 +163,14 @@ def signals(drug: str, limit: int = 40):
     if not rows:
         raise HTTPException(404, f"no signals for {drug}")
     return {"drug": drug.upper(), "asof": evidence._signals()["asof"], "rows": rows}
+
+
+@app.post("/api/dock")
+async def dock(req: Request):
+    """STEP 1 직접 도킹. 이미 받아 둔 재도킹 조합은 화면이 저장된 결과를 쓰므로 새 조합만 온다."""
+    _rate(req, "dock")
+    body = await req.json()
+    try:
+        return await dock_mod.dock(str(body.get("target", "")), str(body.get("smiles", "")))
+    except dock_mod.DockError as e:
+        raise HTTPException(400, str(e))
