@@ -233,7 +233,8 @@ def cli2_part() -> dict | None:
             cmds[-1][1] += " " + ln.strip()
     desc = next((ln for ln in hp["stdout"] if ln.startswith("FlyGate agent tools")), "")
     tsx = (ROOT / "web/src/pages/CliTutorial.tsx").read_text()
-    steps = re.findall(r"'([^']+)'", re.search(r"const steps = \[(.*?)\]", tsx).group(1))
+    # 대시보드 영어판 이후 단계 이름은 getSteps = () => t([한국어], [영어]) 에 있습니다. 한국어 목록(앞 배열)을 읽습니다
+    steps = re.findall(r"'([^']+)'", re.search(r"(?:const steps = |getSteps = \(\) => t\()\[(.*?)\]", tsx).group(1))
     # 1) 에이전트 루프 다섯 명령
     tr, gr, cr, dd, kr = (R[k] for k in ("triage", "grade", "critic", "discover", "kr"))
     to, go, co, do, ko = tr["out"], gr["out"], cr["out"], dd["out"], kr["out"]
