@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 
 export interface AffinityItem { name: string; boltz_pic50: number | null; boltz_p: number | null; chembl: number | null; chembl_n: number | null }
 import { PARP_COLOR } from './HeroDocking'
+import { t as tr } from '../lib/i18n'
 const NAME = (n: string) => (n === '15r' ? '15R' : n.charAt(0).toUpperCase() + n.slice(1))
 const LO = 5, HI = 11
 
@@ -25,8 +26,8 @@ export default function AffinityMeter({ items, hero = 'niraparib', delayMs = 400
     <div style={{ position: 'absolute', left: 16, right: 16, bottom: 14, zIndex: 2, padding: '12px 16px 10px', borderRadius: 12,
       background: 'rgba(5,9,18,0.78)', border: '1px solid var(--line)', backdropFilter: 'blur(8px)', pointerEvents: 'none' }}>
       <div className="row between" style={{ marginBottom: 8 }}>
-        <span className="mono" style={{ fontSize: 10.5, letterSpacing: 1.3, color: 'var(--jev)' }}>BOLTZ-2 · 친화도 예측 (pIC50)</span>
-        <span className="mono dim" style={{ fontSize: 10 }}>● 예측 · │ ChEMBL 실측 중앙값</span>
+        <span className="mono" style={{ fontSize: 10.5, letterSpacing: 1.3, color: 'var(--jev)' }}>{tr('BOLTZ-2 · 친화도 예측 (pIC50)', 'BOLTZ-2 · predicted affinity (pIC50)')}</span>
+        <span className="mono dim" style={{ fontSize: 10 }}>{tr('● 예측 · │ ChEMBL 실측 중앙값', '● predicted · │ ChEMBL measured median')}</span>
       </div>
       {order.map((it, i) => {
         const k = Math.max(0, Math.min(1, (t - delayMs - i * stepMs) / 900)), e = 1 - Math.pow(1 - k, 3)
@@ -40,7 +41,7 @@ export default function AffinityMeter({ items, hero = 'niraparib', delayMs = 400
               {it.chembl !== null && k >= 1 && <div className="fade-in" style={{ position: 'absolute', top: -7, left: X(it.chembl), width: 2, height: 18, background: '#f4f7ff' }} />}
             </div>
             <span className="num" style={{ fontSize: 11.5, textAlign: 'right', color: k >= 1 ? 'var(--text)' : 'var(--text-3)' }}>
-              {k > 0 ? (LO + (pred - LO) * e).toFixed(2) : '계산 중…'}{k >= 1 ? (it.chembl !== null ? ` · 실측 ${it.chembl}` : ' · 실측 없음') : ''}
+              {k > 0 ? (LO + (pred - LO) * e).toFixed(2) : tr('계산 중…', 'computing…')}{k >= 1 ? (it.chembl !== null ? tr(` · 실측 ${it.chembl}`, ` · meas. ${it.chembl}`) : tr(' · 실측 없음', ' · no meas.')) : ''}
             </span>
           </div>
         )

@@ -242,7 +242,7 @@ svg text { font-family: var(--mono); }
 .nav .brand { padding-bottom: 10px; }
 .nav .nav-item { padding: 6px 10px; }
 .nav-grp {
-  display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 12px 10px 4px;
+  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 8px; padding: 12px 10px 4px;
   font-family: var(--mono); font-size: 10px; letter-spacing: 1.2px; color: var(--text-3); text-transform: uppercase;
 }
 .nav-grp span, .nav-grp b { white-space: nowrap; }
@@ -393,3 +393,11 @@ button.chip:nth-child(3n+2)::after, a.chip:nth-child(3n+2)::after { animation-de
 
 /* 사이드바가 길어도 메뉴 항목이 눌려 찌그러지지 않게 합니다(샤인 스윕의 overflow: hidden 과 함께 필요) */
 .nav > *, .nav .nav-item, .nav .nav-reel { flex-shrink: 0; }
+
+/* 언어 전환(KO | EN) 토글: 브랜드 바로 아래에 둡니다 */
+.lang-toggle { display: inline-flex; align-self: flex-start; margin: 0 8px 8px; border: 1px solid var(--line-2); border-radius: 9px; overflow: hidden; background: rgba(10, 16, 30, 0.6); }
+.lang-toggle button { border: 0; background: transparent; color: var(--text-3); font-family: var(--mono); font-size: 11px; letter-spacing: .8px; padding: 4px 10px; cursor: pointer; }
+.lang-toggle button + button { border-left: 1px solid var(--line-2); }
+.lang-toggle button.on { color: var(--text); background: rgba(55, 230, 255, 0.12); }
+.lang-toggle button:focus-visible { outline: 2px solid var(--c-sense); outline-offset: -2px; }
+@media (max-width: 760px) { .lang-toggle { align-self: center; margin: 0 8px 0 0; } }
