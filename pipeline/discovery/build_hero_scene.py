@@ -11,6 +11,9 @@
     OpenFold3 리간드 5 Å 안의 포켓 잔기
   - Boltz-2: 같은 4R6E 포켓에 DiffDock 으로 넣은 PARP1 억제제 4종(15R · 파미파립 · 니라파립 · 루카파립)과 Boltz-2 예측 pIC50
   - 크리틱: 니라파립을 Factor Xa(2P16)에 넣은 DiffDock 포즈와 그 수용체 (PARP1 과 나란히 보여 줄 분할 장면)
+- 장면에서 고를 수 있는 약물(drugs): 니라파립 · 탈라조파립 · 루카파립. 모두 같은 4R6E 수용체에 DiffDock 으로 넣고,
+  정답 자리는 각 약물의 PARP1 결정 구조(4R6E · 7KK3 · 4RV6)를 Cα 로 4R6E 에 겹쳐 가져온다. Factor Xa 포즈도 약물마다 둔다.
+  빠진 DiffDock 응답만 NVIDIA_API_KEY 가 있을 때 새로 부른다(nim/dd_<키>.json)
 
 사용: .venv/bin/python pipeline/discovery/build_hero_scene.py
 """
@@ -57,6 +60,35 @@ def mol_atoms(mol):
 
 def pack(xyz, el, bonds, c):
     return {"atoms": [[*map(lambda v: round(float(v), 2), p - c), e] for p, e in zip(xyz, el)], "bonds": bonds}
+
+
+# 장면에서 고를 수 있는 약물: 결정 구조(PDB, 리간드 코드). 니라파립 결정 구조는 수용체와 같은 4R6E
+HERO_DRUGS = {"niraparib": ("4R6E", "3JD"), "talazoparib": ("7KK3", "2YQ"), "rucaparib": ("4RV6", "RPB")}
+
+
+def dd_cached(key, protein, smiles):
+    f = MEAS / f"nim/dd_{key}.json"
+    if not f.exists():
+        print("DiffDock NIM →", key)
+        f.write_text(json.dumps(redock.diffdock(protein, smiles)))
+    return json.loads(f.read_text())
+
+
+def crystal_in_4r6e(pdb_id, comp, x4):
+    """다른 PARP1 결정 구조의 리간드를 Cα Kabsch 로 4R6E 좌표계에 옮긴 PDB 블록과 겹친 Cα RMSD."""
+    text = redock.fetch_structure(pdb_id)
+    chain, _, lig = redock.split_structure(text, comp)
+    other = ca_table(text, chain)
+    pairs = [k for k in other if k in x4 and other[k][0] == x4[k][0]]
+    R2, t2 = kabsch(np.array([other[k][1] for k in pairs]), np.array([x4[k][1] for k in pairs]))
+    rm = float(np.sqrt(((np.array([other[k][1] for k in pairs]) @ R2.T + t2 - np.array([x4[k][1] for k in pairs])) ** 2).sum(1).mean()))
+    out = []
+    for ln in lig.splitlines():
+        if ln.startswith("HETATM"):
+            q = np.array([float(ln[30:38]), float(ln[38:46]), float(ln[46:54])]) @ R2.T + t2
+            ln = f"{ln[:30]}{q[0]:8.3f}{q[1]:8.3f}{q[2]:8.3f}{ln[54:]}"
+        out.append(ln)
+    return "\n".join(out) + "\n", len(pairs), rm
 
 
 def main():
@@ -138,6 +170,44 @@ def main():
                            "dd_conf": ev_all["factor-xa-2p16--niraparib"]["top_conf"], "vina": ev_all["factor-xa-2p16--niraparib"]["vina"]},
                     "parp1": {"dd_conf": ev_all["parp1-4r6e-chain-a--niraparib"]["top_conf"], "vina": ev_all["parp1-4r6e-chain-a--niraparib"]["vina"]}}
 
+    # 고를 수 있는 약물 3종 (4R6E 수용체 · 4R6E 좌표계 → 예측 좌표계)
+    _, x_prot, _ = redock.split_structure(x_text, "3JD")
+    bench = json.loads((MEAS / "nim/parp1_boltz2_set.json").read_text())
+    drugs = {}
+    for name, (pdb_id, comp) in HERO_DRUGS.items():
+        smiles = redock.ligand_smiles(comp)
+        # 니라파립은 페이지 다른 곳의 수치와 맞도록 처음 받은 포즈 5개(niraparib_diffdock_pose*.sdf)를 그대로 쓴다
+        resp = ({"ligand_positions": [(MEAS / f"nim/niraparib_diffdock_pose{i}.sdf").read_text() for i in range(1, 6)],
+                 "position_confidence": [r[1] for r in evals]} if name == "niraparib"
+                else dd_cached(f"parp1-4r6e-chain-a--{name}", x_prot, smiles))
+        lig_pdb, n_ca, ca_rm = crystal_in_4r6e(pdb_id, comp, xtal) if pdb_id != "4R6E" else (redock.split_structure(x_text, "3JD")[2], len(xtal), 0.0)
+        ref = redock.crystal_ligand(lig_pdb, smiles)
+        sdfs = resp["ligand_positions"][:5]
+        conf = resp["position_confidence"][:5]
+        rms = [redock.pose_rmsd(p, ref) for p in sdfs]
+        d_poses = [pack(mol_atoms(Chem.MolFromMolBlock(p, removeHs=False, sanitize=False))[0] @ R.T + t,
+                        *mol_atoms(Chem.MolFromMolBlock(p, removeHs=False, sanitize=False))[1:], c) for p in sdfs]
+        cx_xyz, cx_el, cx_b = mol_atoms(Chem.MolFromPDBBlock(lig_pdb, removeHs=False, sanitize=False, proximityBonding=True))
+        xa_resp = dd_cached(f"factor-xa-2p16--{name}", xa_prot, smiles)
+        xa_xyz, xa_el, xa_b = mol_atoms(Chem.MolFromMolBlock(xa_resp["ligand_positions"][0], removeHs=False, sanitize=False))
+        combo = combos.get(f"{name}@parp1")
+        chembl_id = {"talazoparib": "CHEMBL3137320", "rucaparib": "CHEMBL1173055"}.get(name)
+        bz = combo[3] if combo else bench.get(chembl_id, {}).get("pic50")
+        exp = combo[5] if combo else bench.get(chembl_id, {}).get("exp")
+        drugs[name] = {"name": name, "crystal_pdb": pdb_id, "crystal_ca_matched": n_ca, "crystal_ca_rmsd": round(ca_rm, 2),
+                       "poses": d_poses, "pose_eval": [{"rank": i + 1, "confidence": round(cf, 3), "rmsd": r} for i, (cf, r) in enumerate(zip(conf, rms))],
+                       "xtal": pack(cx_xyz @ R.T + t, cx_el, cx_b, c), "dd_rmsd": rms[0], "dd_conf": round(conf[0], 3),
+                       "vina": combo[1] if combo else None, "boltz_pic50": round(bz, 3) if bz else None,
+                       "chembl": exp, "chembl_n": combo[6] if combo else None,
+                       "xa": {"ligand": pack(xa_xyz, xa_el, xa_b, xa_c), "dd_conf": round(xa_resp["position_confidence"][0], 3),
+                              "vina": ev_all["factor-xa-2p16--niraparib"]["vina"] if name == "niraparib" else None}}
+        print(f"{name}: crystal {pdb_id} Cα {n_ca} RMSD {ca_rm:.2f} · pose RMSD {rms} · conf {[round(x, 2) for x in conf]} · Xa {drugs[name]['xa']['dd_conf']}")
+    # Boltz-2 장면에 탈라조파립도 같은 포켓 포즈로 넣는다
+    if not any(x["name"] == "talazoparib" for x in parp_set):
+        d = drugs["talazoparib"]
+        parp_set.append({"name": "talazoparib", "pose": d["poses"][0], "vina": None, "dd_conf": d["dd_conf"], "boltz_pic50": d["boltz_pic50"],
+                         "boltz_p": bench["CHEMBL3137320"].get("p"), "chembl": d["chembl"], "chembl_n": None})
+
     ribbon = [[*map(lambda v: round(float(v), 2), of3[k][1] - c), k, round(of3[k][2], 1)] for k in sorted(of3)]
     crystal = [[*map(lambda v: round(float(v), 2), xtal[b][1] @ R.T + t - c), b] for b in sorted(xtal)]
     OUT.write_text(json.dumps({
@@ -153,7 +223,7 @@ def main():
         "of3_ligand": pack(p_xyz, p_el, p_b, c), "xtal_ligand": pack(x_xyz, x_el, x_b, c), "diffdock_poses": poses,
         "msa": {"labels": heads[1:], "query": query, "n_homologs": len(homologs), "query_len": len(query), "conservation": cons, "strip": strip,
                 "pocket_residues": pocket_res, "pocket_mean": round(float(np.mean(pocket_cons)), 3), "overall_mean": round(float(np.mean(cons)), 3)},
-        "parp_set": parp_set, "critic_split": critic_split,
+        "parp_set": parp_set, "critic_split": critic_split, "drugs": drugs,
     }, ensure_ascii=False, separators=(",", ":")) + "\n")
     print(OUT, OUT.stat().st_size // 1024, "KB", "· poses", len(poses), "· OF3 ligand vs crystal centroid", round(lig_rmsd_centroid, 2), "Å")
 
