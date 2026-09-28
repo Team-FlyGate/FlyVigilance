@@ -142,20 +142,20 @@ def run(*, model=None, plain=False, reader=input, writer=print, responder=ask_mo
     except ImportError: readline = None
     color = not plain and sys.stdout.isatty() and 'NO_COLOR' not in os.environ
     cyan, lime, reset = ('\033[96m', '\033[92m', '\033[0m') if color else ('', '', '')
-    from banner import render, dashboard
+    from banner import render, dashboard, welcome, input_header
     writer(render(shutil.get_terminal_size((100,24)).columns, color))
     writer('  FlyDiscovery + FlyVigilance  |  Evidence before inference.\n')
     writer(dashboard(ROOT, model, bool(config.NVIDIA_API_KEY), bool(config.TYPESAFE_API_KEY),
                      shutil.get_terminal_size((100,24)).columns, color, uuid.uuid4().hex[:8]))
-    writer('\n  FlyGate에 오신 것을 환영합니다. 질문을 입력하거나 /help로 시작하세요.')
-    writer('  /login NVIDIA · Jev 연결  /run 도구 실행  /exit 종료\n')
+    writer(welcome(color))
     messages = [{'role':'system','content':SYSTEM}]
     last = None
     if not config.NVIDIA_API_KEY and sys.stdin.isatty():
         import auth
         auth.login(reader=reader, writer=writer)
     while True:
-        try: text = reader(cyan + '  you > ' + reset).strip()
+        writer(input_header(shutil.get_terminal_size((100,24)).columns, color))
+        try: text = reader(cyan + '  ❯ ' + reset).strip()
         except EOFError: writer('\n  FlyGate를 종료합니다.'); break
         except KeyboardInterrupt: writer('\n  입력을 취소했습니다. /exit로 종료합니다.'); continue
         if not text: continue
