@@ -84,3 +84,55 @@ async def dock(target: str, smiles: str, num_poses: int = 5) -> dict:
            "seconds": round(time.perf_counter() - t0, 2), "endpoint": DIFFDOCK_URL}
     _cache[key] = out
     return {**out, "cached": False}
+
+
+# ── 도킹 크리틱 ────────────────────────────────────────────────────────────────
+# 약물감시 크리틱(assess.py)과 같은 3단 구조를 도킹 주장에 씁니다. 1·2단은 같은 규칙 함수를 쓰고,
+# 3단만 도킹 해석 규칙(D1–D5)으로 Jev 가 판정합니다. Jev 를 쓸 수 없으면 같은 규칙을 키워드로 판정합니다.
+DOCK_RULES = [
+    ("D1", "A docking or pose confidence score is the likelihood that a pose is correct, not binding affinity or potency."),
+    ("D2", "Scores from different protein targets are not comparable; they cannot establish selectivity between targets."),
+    ("D3", "Reproducing a co-crystal ligand (redocking) validates the setup only, not the binding of a new molecule."),
+    ("D4", "A predicted pose or predicted structure is not an experimentally determined complex."),
+    ("D5", "Docking alone says nothing about efficacy, safety or dosing in patients."),
+]
+_KEYWORDS = {
+    "D1": ["강하게 결합", "결합력", "친화도가 높", "잘 붙", "potent", "affinity", "억제력"],
+    "D2": ["선택적", "선택성", "보다 더 잘", "selective"],
+    "D3": ["새 후보", "새 분자도", "모든 분자"],
+    "D4": ["실험적으로", "결정 구조로 확인", "증명", "확인되었"],
+    "D5": ["효과가 있", "안전", "환자", "처방", "용량", "치료"],
+}
+
+
+async def critic(claims: list[dict], state: str, ids: list[str]) -> dict:
+    from .assess import tier1_rules, tier2_oracle, _numbers  # 약물감시 크리틱과 같은 1·2단
+    from . import clients
+    t0 = time.perf_counter()
+    t1 = tier1_rules(claims, set(ids))
+    t2 = tier2_oracle(claims, _numbers(state))
+    t3, judge, mode = [], {}, "jev"
+    try:
+        text = ("Docking interpretation rules:\n" + "\n".join(f"{k}: {v}" for k, v in DOCK_RULES) +
+                "\n\nClaims written by an AI agent about one docking result:\n" + "\n".join(f"{c['id']}: {c['text']}" for c in claims))
+        qs = {}
+        for c in claims:
+            qs[f"{c['id']}_violates"] = {"type": "noul", "instructions": f"Does claim {c['id']} violate any of the docking interpretation rules above?"}
+            qs[f"{c['id']}_rule"] = {"type": "choice", "instructions": f"Which rule does claim {c['id']} most likely violate?",
+                                     "criteria": {k: v for k, v in DOCK_RULES} | {"none": "no rule is violated"}}
+        judge = await clients.jev(text, qs)
+        for c in claims:
+            p = judge["answers"][f"{c['id']}_violates"]["noul"]
+            rule = judge["answers"][f"{c['id']}_rule"]["choice"]
+            c["overclaim_p"] = p
+            if p >= 0.5 and rule != "none":
+                t3.append({"claim": c["id"], "tier": 3, "rule": rule, "p": p, "detail": dict(DOCK_RULES).get(rule, "")})
+    except Exception:  # noqa: BLE001  Jev 키가 없거나 응답이 없으면 같은 규칙을 키워드로
+        mode = "rules"
+        for c in claims:
+            for rule, words in _KEYWORDS.items():
+                if any(w in c.get("text", "") for w in words):
+                    t3.append({"claim": c["id"], "tier": 3, "rule": rule, "p": None, "detail": dict(DOCK_RULES)[rule]})
+                    break
+    return {"claims": claims, "issues": t1 + t2 + t3, "mode": mode, "judge_latency_ms": judge.get("latency_ms"),
+            "total_ms": round((time.perf_counter() - t0) * 1000, 1), "rules": DOCK_RULES}
