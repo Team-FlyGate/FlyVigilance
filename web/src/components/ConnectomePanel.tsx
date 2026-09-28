@@ -31,7 +31,7 @@ export default function ConnectomePanel({ height = 240, focus }: { height?: numb
         </div>
         <svg width={W} height={Hs} style={{ display: 'block', marginTop: 2 }}><path d={line} fill="none" stroke="var(--c-sense)" strokeWidth={1.4} style={{ filter: 'drop-shadow(0 0 4px rgba(55,230,255,0.6))' }} /></svg>
       </div>
-      <BrainView height={height} bloom={0.55} />
+      <div style={{ filter: 'brightness(0.72) saturate(0.9)' }}><BrainView height={height} bloom={0.2} /></div>
       {meter && sim && conn && (
         <div style={{ position: 'absolute', right: 10, bottom: 10, zIndex: 2, width: 190, padding: '8px 10px', borderRadius: 10,
           background: 'rgba(5,9,18,0.72)', border: '1px solid var(--line)', backdropFilter: 'blur(8px)' }}>
