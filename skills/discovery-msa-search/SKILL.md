@@ -25,7 +25,7 @@ metadata:
 
 ## When to Use
 
-- A pre-market target (PARP1 4R6E chain A by default; Factor Xa 2P16, COX-2 3LN1 also available) needs evolutionary context before structure prediction.
+- A pre-market target needs evolutionary context before structure prediction. The default demo is PARP1 4R6E chain A; any protein found through `GET /api/discovery/search/protein` (UniProt) and `GET /api/discovery/protein/{accession}` can be used instead, with the sequence range picked from the best experimental structure or an annotated domain.
 - The next step (`discovery-openfold3`, `discovery-boltz2`) asks for an A3M alignment.
 
 ## Do Not Use
@@ -52,6 +52,11 @@ metadata:
 | --- | --- |
 | 2026-09-28 (recorded) | 101 alignment rows (query + 100 homologs), 63.6 s |
 | 2026-09-28 (live, this skill) | 101 rows, 10.8 s, byte-identical alignment (42,523 chars) |
+
+## Choosing a target
+
+`GET /api/discovery/search/protein?q=` takes a gene name, a protein name, a UniProt accession or a PDB id and returns reviewed human entries first (gene, name, organism, length, number of PDB entries).
+`GET /api/discovery/protein/{accession}` adds the sequence, the experimental structures sorted by resolution, the annotated domains, the candidate ranges and a check against the NIM input limits. The run request then carries `custom_target` (id, gene, organism, sequence, pdb, chain, start, end) instead of a catalog key.
 
 ## Limits
 

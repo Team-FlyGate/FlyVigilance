@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Card } from '../components/ui'
 import { KV, pathOf, Progress, RunButton, SkillBox, SourceChip, StepPage, pulseReward } from '../components/DiscoveryShell'
 import { useBrain } from '../lib/brain'
-import { fmtS, getCatalog, rewardFromDepth, runStep, saveRun, useDiscovery, type Catalog, type Envelope, type MsaResult } from '../lib/discovery'
+import { fmtS, getCatalog, runParams, rewardFromDepth, runStep, saveRun, useDiscovery, type Catalog, type Envelope, type MsaResult } from '../lib/discovery'
 
 // 잔기를 성질별로 묶어 색을 줍니다(정렬 그림의 관례). 질의와 같은 잔기만 진하게 칠합니다.
 const AA_GROUP: Record<string, string> = {
@@ -115,7 +115,7 @@ export default function DiscoveryMsa() {
     sim?.stimulate('layer', 'sense', 1.1, 12)
     const beat = setInterval(() => sim?.stimulate('layer', 'sense', 0.8, 6), 1100)
     try {
-      const out = await runStep<MsaResult>('msa', { target, no_cache: fresh }, (e) => saveRun('msa', e as Envelope))
+      const out = await runStep<MsaResult>('msa', runParams({ no_cache: fresh }), (e) => saveRun('msa', e as Envelope))
       saveRun('msa', out as Envelope)
       if (out.result) {
         pulseReward(sim, rewardFromDepth(out.result.mean_depth) * 0.5, `정렬 깊이 ${out.result.homologs}줄`, 'MSA-Search')
@@ -140,8 +140,9 @@ export default function DiscoveryMsa() {
       title={<>상동 서열을 찾아 <span style={{ color: 'var(--c-sense)' }}>진화 정보</span>를 모읍니다</>}
       lede={<>NVIDIA BioNeMo <b>MSA-Search</b>(ColabFold, GPU MMSeqs2) NIM 을 계정 키로 실제로 부릅니다. 공식 스킬
         <span className="mono"> bionemo-msa-structure-prediction-pipeline</span> 의 1단계로, 여기서 받은 A3M 정렬을 다음 단계 OpenFold3 에 그대로 넘깁니다.
-        데모 후보는 니라파립이고 표적은 PARP1(4R6E 체인 A)입니다.</>}
+        기본 데모는 니라파립·PARP1(4R6E 체인 A)이고, 위에서 UniProt·PubChem 으로 다른 단백질과 리간드를 찾아 그대로 돌릴 수 있습니다.</>}
       right={<span className="chip nv">health.api.nvidia.com · MSA-Search</span>}
+      cat={cat}
       current="msa"
       center={
         <Card title="정렬 결과" sub={res ? `${res.database} · ${res.sequences}줄(질의 1 + 상동 ${res.homologs}) · 질의 ${res.query_len}잔기` : '실행하면 라이브 정렬이 그려집니다'}

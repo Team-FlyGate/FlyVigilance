@@ -91,6 +91,7 @@ export default function DiscoveryCritic() {
       lede={<>앞 네 단계의 라이브 결과로 쓴 주장을 크리틱 3단에 통과시킵니다. 1단과 2단은 모델을 쓰지 않는 규칙 검사이고,
         3단은 NVIDIA <b>Nemotron 3 Super</b> 가 추론이 근거를 넘었는지 판정합니다. 숫자가 다 맞아도 3단에서 반려될 수 있습니다.</>}
       right={<span className="chip nv">integrate.api.nvidia.com · Nemotron</span>}
+      cat={cat}
       current="critic"
       center={
         <>

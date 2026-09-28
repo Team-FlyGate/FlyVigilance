@@ -4,7 +4,7 @@ import { Card, Loading } from '../components/ui'
 import { KV, pathOf, Progress, RunButton, SkillBox, SourceChip, StepPage, pulseReward, stimulateLayer } from '../components/DiscoveryShell'
 import { useBrain } from '../lib/brain'
 import {
-  fmtS, getCatalog, plddtColor, rewardFromPlddt, rewardFromRmsd, runStep, saveRun, useDiscovery,
+  fmtS, getCatalog, runParams, plddtColor, rewardFromPlddt, rewardFromRmsd, runStep, saveRun, useDiscovery,
   type Catalog, type Envelope, type Of3Result,
 } from '../lib/discovery'
 
@@ -31,7 +31,7 @@ function PlddtStrip({ values }: { values: number[] }) {
 
 export default function DiscoveryOpenfold3() {
   const { sim } = useBrain()
-  const { target, ligand, runs, envs } = useDiscovery()
+  const { target, ligand, runs, envs, customTarget } = useDiscovery()
   const [cat, setCat] = useState<Catalog | null>(null)
   const [busy, setBusy] = useState(false)
   const [elapsed, setElapsed] = useState(0)
@@ -56,7 +56,7 @@ export default function DiscoveryOpenfold3() {
     stimulateLayer(sim, 'encode', 1.2, 14)
     const beat = setInterval(() => stimulateLayer(sim, 'encode', 0.85, 6), 1000)
     try {
-      const params: Record<string, unknown> = { target, ligand, no_cache: fresh }
+      const params: Record<string, unknown> = runParams({ no_cache: fresh })
       if (msa?.a3m) params.a3m = msa.a3m
       else if (msa?.a3m_key) params.a3m_key = msa.a3m_key
       else params.a3m_measured = true
@@ -101,6 +101,7 @@ export default function DiscoveryOpenfold3() {
       lede={<>1단계에서 받은 A3M 정렬을 그대로 <b>OpenFold3</b> NIM 의 <span className="mono">msa.uniref30</span> 에 넣고, 단백질과 니라파립을 함께 예측합니다.
         예측 구조는 공개 결정 구조 4R6E 와 겹쳐 CA RMSD 로 채점합니다. 4R6E 는 공개 구조이므로 학습 데이터에 있었을 수 있고, 이 값은 맹검 예측 성능이 아닙니다.</>}
       right={<span className="chip nv">health.api.nvidia.com · OpenFold3</span>}
+      cat={cat}
       current="openfold3"
       center={
         <Card title="예측 구조 · pLDDT 색" sub={res ? `잔기 ${res.n_residues}개 · 결정 구조 대비 CA RMSD ${res.ca_rmsd ?? '–'} Å (대응 CA ${res.n_ca}개)` : '실행하면 라이브 구조가 그려집니다'}
@@ -142,12 +143,14 @@ export default function DiscoveryOpenfold3() {
               ['diffusion_samples', '1'],
             ]} />
           </Card>
+          {res?.reference_note && <div className="note" style={{ color: 'var(--warn)' }}>{res.reference_note}</div>}
           <Card title="측정값" sub="이번 실행">
             <KV rows={[
               ['pLDDT', res?.scores.plddt ?? '–'],
               ['pTM / ipTM', res ? `${res.scores.ptm ?? '–'} / ${res.scores.iptm ?? '–'}` : '–'],
-              ['CA RMSD (4R6E)', res?.ca_rmsd != null ? `${res.ca_rmsd} Å` : '–'],
+              ['CA RMSD', res?.ca_rmsd != null ? `${res.ca_rmsd} Å (${cat?.targets[target]?.pdb ?? '결정 구조'})` : '기준 결정 구조 없음'],
               ['리간드 RMSD', res?.ligand_rmsd != null ? `${res.ligand_rmsd} Å` : '–'],
+              ['표적', res?.target_label ?? (customTarget?.label ?? cat?.targets[target]?.label ?? '–')],
               ['소요', busy ? `${elapsed.toFixed(1)}초` : env?.source === 'cache' ? '캐시(같은 입력)' : fmtS(env?.elapsed_s)],
             ]} />
             <div className="divider" />

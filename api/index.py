@@ -26,6 +26,7 @@ from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 
 from _fv import assess as assess_mod  # noqa: E402
 from _fv import dock as dock_mod  # noqa: E402
+from _fv import bio_search  # noqa: E402
 from _fv import discovery as disc_mod  # noqa: E402
 from _fv import clients, config, evidence, grade as grade_mod, knowledge, kr as kr_mod, literature, triage as triage_mod  # noqa: E402
 
@@ -35,7 +36,7 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 # 공개 배포에서 유료 API 남용을 막는 간단한 IP 별 속도 제한
 _hits: dict[str, deque] = {}
 LIMIT = {"triage": (30, 60), "assess": (6, 60), "critic": (10, 60), "kr": (10, 60), "grade": (20, 60), "dock": (8, 60),
-         "discovery": (12, 60), "discovery_status": (60, 60)}
+         "discovery": (12, 60), "discovery_status": (60, 60), "discovery_search": (60, 60)}
 
 
 def _rate(req: Request, key: str):
@@ -174,6 +175,69 @@ def discovery_scene(target: str):
         raise HTTPException(404, str(e))
 
 
+@app.post("/api/discovery/scene")
+async def discovery_scene_custom(req: Request):
+    """화면에서 찾아 고른 단백질의 3D 배경입니다(RCSB 실험 구조를 받아 씁니다)."""
+    _rate(req, "discovery_search")
+    body = await req.json() if await req.body() else {}
+    try:
+        return await disc_mod.scene_for(body)
+    except KeyError as e:
+        raise HTTPException(404, str(e))
+    except (RuntimeError, ValueError) as e:
+        raise HTTPException(502, str(e))
+
+
+@app.get("/api/discovery/search/protein")
+async def discovery_search_protein(req: Request, q: str, limit: int = 8):
+    """UniProt 에서 단백질을 찾습니다(이름·유전자·UniProt 번호·PDB ID). 사람 검토 항목을 앞에 둡니다."""
+    _rate(req, "discovery_search")
+    key = disc_mod.cache_key("uniprot-search", {"q": q.lower().strip(), "limit": limit})
+    hit = disc_mod.cache_get(key)
+    if hit is not None:
+        return hit
+    try:
+        out = await bio_search.search_protein(q, min(max(limit, 1), 20))
+    except RuntimeError as e:
+        raise HTTPException(502, str(e))
+    disc_mod.cache_put(key, out)
+    return out
+
+
+@app.get("/api/discovery/protein/{accession}")
+async def discovery_protein(accession: str, req: Request):
+    """서열, 실험 구조 후보(해상도 순), 도메인 구간, NIM 입력 한계 판정을 함께 돌려줍니다."""
+    _rate(req, "discovery_search")
+    key = disc_mod.cache_key("uniprot-entry", {"id": accession.upper()})
+    hit = disc_mod.cache_get(key)
+    if hit is not None:
+        return hit
+    try:
+        out = await bio_search.get_protein(accession)
+    except KeyError as e:
+        raise HTTPException(404, str(e))
+    except RuntimeError as e:
+        raise HTTPException(502, str(e))
+    disc_mod.cache_put(key, out)
+    return out
+
+
+@app.get("/api/discovery/search/ligand")
+async def discovery_search_ligand(req: Request, q: str, limit: int = 6):
+    """PubChem 에서 리간드를 찾습니다. 붙여 넣은 SMILES 는 그대로 받아 검사만 합니다."""
+    _rate(req, "discovery_search")
+    key = disc_mod.cache_key("pubchem", {"q": q.lower().strip(), "limit": limit})
+    hit = disc_mod.cache_get(key)
+    if hit is not None:
+        return hit
+    try:
+        out = await bio_search.search_ligand(q, min(max(limit, 1), 12))
+    except RuntimeError as e:
+        raise HTTPException(502, str(e))
+    disc_mod.cache_put(key, out)
+    return out
+
+
 @app.post("/api/discovery/{kind}")
 async def discovery_run(kind: str, req: Request):
     """NVIDIA BioNeMo NIM 을 실제로 부릅니다(kind: msa | openfold3 | diffdock | boltz2), 또는 크리틱을 돌립니다."""
@@ -193,6 +257,8 @@ async def discovery_run(kind: str, req: Request):
         raise HTTPException(503, f"{e} not configured")
     except KeyError as e:
         raise HTTPException(400, str(e))
+    except ValueError as e:
+        raise HTTPException(422, str(e))
     except RuntimeError as e:
         raise HTTPException(502, str(e))
 
