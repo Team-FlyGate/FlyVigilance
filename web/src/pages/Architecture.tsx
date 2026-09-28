@@ -54,7 +54,8 @@ const EDGES: [string, string][] = [
 ]
 const W = 172, H = 104
 
-export default function Architecture() {
+// embedded: 개요 화면 맨 위에 넣을 때는 머리말과 아래 설명 카드 없이 층 애니메이션과 커넥텀만 보여 줍니다
+export default function Architecture({ embedded = false }: { embedded?: boolean } = {}) {
   const [sel, setSel] = useState('reflex')
   const [bench, setBench] = useState<Bench | null>(null)
   const [val, setVal] = useState<Validation | null>(null)
@@ -119,12 +120,7 @@ export default function Architecture() {
     return `M${x1},${p.cy} C${(x1 + x2) / 2},${p.cy} ${(x1 + x2) / 2},${q.cy} ${x2},${q.cy}`
   }
 
-  return (
-    <div className="page">
-      <PageHead eyebrow="Architecture · connectome-routed agent"
-        title={<>뇌의 층이 곧 에이전트의 층: <span style={{ color: 'var(--c-sense)' }}>감각 → 반사 → 기억 → 숙고 → 억제 → 행동</span></>}
-        lede={<><Term k="MaleCNS" ko /> 중앙뇌 49,244개 뉴런을 해부학 분류로 9개 기능 층에 배정하고, 같은 9개 층으로 에이전트를 짰습니다. 각 층은 실제로 구현한 스킬, 모델, 계산으로 채웠습니다. 노드를 누르면 해당 뉴런 집단이 오른쪽 <Term k="connectome">커넥텀</Term>(뉴런 연결 배선도)에서 켜집니다.</>} />
-
+  const live = (
       <div className="grid" style={{ gridTemplateColumns: 'minmax(0, 1.65fr) minmax(340px, 1fr)', alignItems: 'start' }}>
         <Card className="flush">
           <svg viewBox="0 0 1180 560" style={{ width: '100%', display: 'block' }}>
@@ -177,6 +173,16 @@ export default function Architecture() {
           </Card>
         </div>
       </div>
+  )
+  if (embedded) return live
+
+  return (
+    <div className="page">
+      <PageHead eyebrow="Architecture · connectome-routed agent"
+        title={<>뇌의 층이 곧 에이전트의 층: <span style={{ color: 'var(--c-sense)' }}>감각 → 반사 → 기억 → 숙고 → 억제 → 행동</span></>}
+        lede={<><Term k="MaleCNS" ko /> 중앙뇌 49,244개 뉴런을 해부학 분류로 9개 기능 층에 배정하고, 같은 9개 층으로 에이전트를 짰습니다. 각 층은 실제로 구현한 스킬, 모델, 계산으로 채웠습니다. 노드를 누르면 해당 뉴런 집단이 오른쪽 <Term k="connectome">커넥텀</Term>(뉴런 연결 배선도)에서 켜집니다.</>} />
+
+      {live}
 
       <Card title={<>NVIDIA 스킬 기반 워크플로의 여덟 층 · 비자기회귀 판단 모델 병용 <span className="chip nv" style={{ marginLeft: 8 }}>build.nvidia.com NIM · Agent Skills · NemoClaw/OpenShell/OpenClaw</span></>}
         sub="FlyVigilance는 NVIDIA 스킬 위에 짠 약물감시 워크플로입니다. 글을 써야 하는 일은 NVIDIA Nemotron이, 타입 있는 확률 판단은 비자기회귀 판단 모델(Jev, TypeSafe AI)이 맡습니다. 무엇을, 어떤 근거로, 어떤 형식으로 묻고 답을 어디에 쓸지는 아래 여덟 층이 정합니다. 각 층의 효과는 실측했습니다"
