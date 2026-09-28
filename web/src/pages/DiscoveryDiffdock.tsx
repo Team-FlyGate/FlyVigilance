@@ -1,7 +1,7 @@
 // STEP 1-3 결합 포즈: NVIDIA BioNeMo DiffDock NIM 으로 포즈를 계산하고 공결정 포즈와 RMSD 로 채점합니다.
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
 import { Card, Loading } from '../components/ui'
-import { KV, Progress, RunButton, SkillBox, SourceChip, StepPage, pulseReward } from '../components/DiscoveryShell'
+import { KV, pathOf, Progress, RunButton, SkillBox, SourceChip, StepPage, pulseReward } from '../components/DiscoveryShell'
 import { useBrain } from '../lib/brain'
 import {
   fmtS, getCatalog, getScene, rewardFromConfidence, rewardFromRmsd, runStep, saveRun, setStore, useDiscovery,
@@ -20,6 +20,7 @@ export default function DiscoveryDiffdock() {
   const [active, setActive] = useState(0)
   const [cycle, setCycle] = useState(true)
   const [err, setErr] = useState<string | null>(null)
+  const [fresh, setFresh] = useState(false)
   const env = (envs.diffdock ?? null) as Envelope<DockResult> | null
   const res = (runs.diffdock ?? env?.measured ?? null) as DockResult | null
   const isLive = Boolean(runs.diffdock)
@@ -52,7 +53,7 @@ export default function DiscoveryDiffdock() {
     sim?.stimulate('channel', 'trials', 1.1, 12)
     const beat = setInterval(() => sim?.stimulate('layer', 'reflex', 0.8, 6), 900)
     try {
-      const out = await runStep<DockResult>('diffdock', { target, ligand }, (e) => saveRun('diffdock', e as Envelope))
+      const out = await runStep<DockResult>('diffdock', { target, ligand, no_cache: fresh }, (e) => saveRun('diffdock', e as Envelope))
       saveRun('diffdock', out as Envelope)
       const p = out.result?.poses?.[0]
       if (p) {
@@ -131,14 +132,14 @@ export default function DiscoveryDiffdock() {
                 ))}
               </select>
             </div>
-            <RunButton busy={busy} onClick={run} label="DiffDock 실행"
+            <RunButton busy={busy} onClick={run} label="DiffDock 실행" fresh={fresh} setFresh={setFresh}
               sub={<>{t?.pdb} {t?.chain ? `체인 ${t.chain}` : ''} · 포즈 5개 · steps 18</>} />
             <div className="divider" />
             <Progress env={env} busy={busy} elapsed={elapsed} />
             {err && <div className="note" style={{ color: 'var(--warn)', marginTop: 8 }}>{err}</div>}
             {env?.note && <div className="note" style={{ color: 'var(--warn)', marginTop: 8 }}>{env.note}</div>}
           </Card>
-          <Card title="요청" sub={env?.endpoint ?? '/v1/biology/mit/diffdock'}>
+          <Card title="요청" sub={<span className="mono" style={{ fontSize: 10.5 }} title={env?.endpoint ?? undefined}>{pathOf(env?.endpoint) || '/v1/biology/mit/diffdock'}</span>}>
             <KV rows={[
               ['protein', `${env?.request?.protein_atoms ?? '–'} ATOM 줄`],
               ['ligand_file_type', String(env?.request?.ligand_file_type ?? 'txt')],
@@ -153,7 +154,7 @@ export default function DiscoveryDiffdock() {
               ['1순위 RMSD', res?.top1_rmsd != null ? `${res.top1_rmsd} Å` : res?.redock ? '–' : '해당 없음(교차 도킹)'],
               ['최소 RMSD', res?.best_rmsd != null ? `${res.best_rmsd} Å` : '–'],
               ['2 Å 기준', res ? (res.top1_success ? '통과' : res.redock ? '미달' : '–') : '–'],
-              ['소요', busy ? `${elapsed.toFixed(1)}초` : fmtS(env?.elapsed_s)],
+              ['소요', busy ? `${elapsed.toFixed(1)}초` : env?.source === 'cache' ? '캐시(같은 입력)' : fmtS(env?.elapsed_s)],
             ]} />
             <div className="divider" />
             <div className="row between">

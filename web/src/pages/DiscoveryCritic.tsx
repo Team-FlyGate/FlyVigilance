@@ -1,9 +1,9 @@
 // STEP 1-5 크리틱: 앞 단계의 라이브 결과로 쓴 주장을 3단(근거 ID · 숫자 오라클 · Nemotron 판정)에 통과시킵니다.
 import { useEffect, useMemo, useState } from 'react'
 import { Card } from '../components/ui'
-import { KV, Progress, RunButton, SkillBox, StepPage, pulseReward } from '../components/DiscoveryShell'
+import { KV, Progress, RunButton, SkillBox, StepPage, pathOf, pulseReward } from '../components/DiscoveryShell'
 import { useBrain } from '../lib/brain'
-import { getCatalog, runCritic, setReward, useDiscovery, type Catalog, type Claim, type CriticResult } from '../lib/discovery'
+import { getCatalog, runCritic, setReward, useDiscovery, type Catalog, type Claim, type CriticResult, type Envelope } from '../lib/discovery'
 
 const TIERS = [
   { n: 1, name: '근거 ID 검사', en: 'Evidence IDs', model: '모델 미사용', color: '#37e6ff',
@@ -155,11 +155,12 @@ export default function DiscoveryCritic() {
             <RunButton busy={busy} onClick={() => { setExtra(''); run() }} label="크리틱 3단 실행"
               sub={hasRuns ? <>이번 세션 실행 {Object.keys(runs).join(' · ')}</> : <>앞 단계 결과가 없으면 지난 측정값으로 주장을 만듭니다</>} />
             <div className="divider" />
-            <Progress env={null} busy={busy} elapsed={elapsed} />
+            <Progress busy={busy} elapsed={elapsed}
+              env={out ? ({ state: 'done', source: out.judge.model ? 'live' : 'measured', elapsed_s: out.total_ms / 1000 } as unknown as Envelope) : null} />
             {err && <div className="note" style={{ color: 'var(--warn)', marginTop: 8 }}>{err}</div>}
             {out?.judge.error && <div className="note" style={{ color: 'var(--warn)', marginTop: 8 }}>3단 판정 오류: {out.judge.error}</div>}
           </Card>
-          <Card title="요청" sub={out?.endpoint ?? 'integrate.api.nvidia.com/v1/chat/completions'}>
+          <Card title="요청" sub={<span className="mono" style={{ fontSize: 10.5 }} title={out?.endpoint ?? undefined}>{pathOf(out?.endpoint) || '/v1/chat/completions'}</span>}>
             <KV rows={[
               ['model', <span key="m" className="mono" style={{ fontSize: 10 }}>{out?.judge.model ?? 'nvidia/nemotron-3-super-120b-a12b'}</span>],
               ['mode', 'json_object · temperature 0'],

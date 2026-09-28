@@ -1,10 +1,16 @@
 // STEP 1-1 MSA 탐색: NVIDIA BioNeMo MSA-Search NIM 을 실제로 부르고 정렬을 그립니다.
 import { useEffect, useRef, useState } from 'react'
 import { Card } from '../components/ui'
-import { KV, Progress, RunButton, SkillBox, SourceChip, StepPage, pulseReward } from '../components/DiscoveryShell'
+import { KV, pathOf, Progress, RunButton, SkillBox, SourceChip, StepPage, pulseReward } from '../components/DiscoveryShell'
 import { useBrain } from '../lib/brain'
 import { fmtS, getCatalog, rewardFromDepth, runStep, saveRun, useDiscovery, type Catalog, type Envelope, type MsaResult } from '../lib/discovery'
 
+// 잔기를 성질별로 묶어 색을 줍니다(정렬 그림의 관례). 질의와 같은 잔기만 진하게 칠합니다.
+const AA_GROUP: Record<string, string> = {
+  A: 'hydro', V: 'hydro', L: 'hydro', I: 'hydro', M: 'hydro', F: 'arom', W: 'arom', Y: 'arom',
+  K: 'pos', R: 'pos', H: 'pos', D: 'neg', E: 'neg', S: 'polar', T: 'polar', N: 'polar', Q: 'polar',
+  C: 'special', G: 'special', P: 'special',
+}
 const GROUP_COLOR: Record<string, string> = {
   hydro: '#76b900', arom: '#a58bff', pos: '#37e6ff', neg: '#ff5d6c', polar: '#ffb547', special: '#ff4fd8',
 }
@@ -25,9 +31,10 @@ function Alignment({ res, reveal }: { res: MsaResult; reveal: number }) {
     const rows = res.rows
     const L = res.query_len
     const rowH = 7
+    const consLabel = 12
     const consH = 26
     const histH = 46
-    const h = consH + 8 + rows.length * rowH + 10 + histH
+    const h = consLabel + consH + 8 + rows.length * rowH + 14 + histH
     const dpr = Math.min(window.devicePixelRatio, 2)
     cv.width = w * dpr
     cv.height = h * dpr
@@ -42,33 +49,33 @@ function Alignment({ res, reveal }: { res: MsaResult; reveal: number }) {
       const c = res.conservation[i] ?? 0
       g.fillStyle = `rgba(55,230,255,${0.18 + 0.72 * c})`
       const bh = 3 + c * (consH - 3)
-      g.fillRect(i * cw, consH - bh, Math.max(cw, 0.7), bh)
+      g.fillRect(i * cw, consLabel + consH - bh, Math.max(cw, 0.7), bh)
     }
     g.fillStyle = 'rgba(232,238,252,0.55)'
     g.font = '9px ui-monospace, monospace'
     g.fillText('열별 보존도 (질의 잔기와 같은 서열의 비율)', 2, 9)
+    const top = consLabel + consH + 8
     // 정렬 행
     const shown = Math.round(rows.length * reveal)
     for (let r = 0; r < shown; r++) {
       const s = rows[r].seq
-      const y = consH + 8 + r * rowH
+      const y = top + r * rowH
       for (let i = 0; i < L; i++) {
         const ch = s[i]
         if (!ch || ch === '-' || ch === '.') continue
         const same = ch === res.query[i]
-        const col = GROUP_COLOR[ch] ?? '#6c7aa8'
-        g.fillStyle = same ? col : 'rgba(120,170,255,0.22)'
-        g.globalAlpha = same ? 0.35 + 0.5 * (res.conservation[i] ?? 0) : 0.5
+        const col = GROUP_COLOR[AA_GROUP[ch]] ?? '#6c7aa8'
+        g.fillStyle = same ? col : 'rgba(120,170,255,0.18)'
+        g.globalAlpha = same ? 0.45 + 0.5 * (res.conservation[i] ?? 0) : 0.35
         g.fillRect(i * cw, y, Math.max(cw, 0.7), rowH - 1)
       }
     }
     g.globalAlpha = 1
     // 질의 행 강조
-    const qy = consH + 2
     g.fillStyle = 'rgba(118,185,0,0.75)'
-    g.fillRect(0, qy, w, 2)
+    g.fillRect(0, top - 4, w, 2)
     // 깊이 히스토그램
-    const hy = consH + 8 + rows.length * rowH + 10
+    const hy = top + rows.length * rowH + 14
     const maxD = Math.max(1, ...res.depth)
     g.fillStyle = 'rgba(232,238,252,0.55)'
     g.fillText(`열별 정렬 깊이 (최대 ${maxD}줄)`, 2, hy - 2)
@@ -89,6 +96,7 @@ export default function DiscoveryMsa() {
   const [elapsed, setElapsed] = useState(0)
   const [reveal, setReveal] = useState(1)
   const [err, setErr] = useState<string | null>(null)
+  const [fresh, setFresh] = useState(false)
   const env = (envs.msa ?? null) as Envelope<MsaResult> | null
   const res = (runs.msa ?? env?.measured ?? null) as MsaResult | null
   const isLive = Boolean(runs.msa)
@@ -107,7 +115,7 @@ export default function DiscoveryMsa() {
     sim?.stimulate('layer', 'sense', 1.1, 12)
     const beat = setInterval(() => sim?.stimulate('layer', 'sense', 0.8, 6), 1100)
     try {
-      const out = await runStep<MsaResult>('msa', { target }, (e) => saveRun('msa', e as Envelope))
+      const out = await runStep<MsaResult>('msa', { target, no_cache: fresh }, (e) => saveRun('msa', e as Envelope))
       saveRun('msa', out as Envelope)
       if (out.result) {
         pulseReward(sim, rewardFromDepth(out.result.mean_depth) * 0.5, `정렬 깊이 ${out.result.homologs}줄`, 'MSA-Search')
@@ -152,14 +160,14 @@ export default function DiscoveryMsa() {
       side={
         <>
           <Card title="라이브 실행" sub="NVIDIA BioNeMo NIM 호출">
-            <RunButton busy={busy} onClick={run} label="MSA-Search 실행"
+            <RunButton busy={busy} onClick={run} label="MSA-Search 실행" fresh={fresh} setFresh={setFresh}
               sub={<>표적 {t?.label ?? 'PARP1'} · {t?.sequence_len ?? 352}잔기 · Uniref30_2302</>} />
             <div className="divider" />
             <Progress env={env} busy={busy} elapsed={elapsed} />
             {err && <div className="note" style={{ color: 'var(--warn)', marginTop: 8 }}>{err}</div>}
             {env?.note && <div className="note" style={{ color: 'var(--warn)', marginTop: 8 }}>{env.note}</div>}
           </Card>
-          <Card title="요청" sub={env?.endpoint ?? '/v1/biology/colabfold/msa-search/predict'}>
+          <Card title="요청" sub={<span className="mono" style={{ fontSize: 10.5 }} title={env?.endpoint ?? undefined}>{pathOf(env?.endpoint) || '/v1/biology/colabfold/msa-search/predict'}</span>}>
             <KV rows={[
               ['databases', String((env?.request?.databases as string[]) ?? ['Uniref30_2302'])],
               ['e_value', String(env?.request?.e_value ?? 1e-4)],
@@ -173,7 +181,7 @@ export default function DiscoveryMsa() {
               ['상동 서열', res ? `${res.homologs}개` : '–'],
               ['평균 깊이', res ? `${res.mean_depth}줄` : '–'],
               ['열 커버리지', res ? `${(res.coverage * 100).toFixed(1)}%` : '–'],
-              ['소요', busy ? `${elapsed.toFixed(1)}초` : fmtS(env?.elapsed_s)],
+              ['소요', busy ? `${elapsed.toFixed(1)}초` : env?.source === 'cache' ? '캐시(같은 입력)' : fmtS(env?.elapsed_s)],
             ]} />
             <div className="divider" />
             <div className="row between">

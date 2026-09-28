@@ -202,6 +202,20 @@ def test_status_finishes_a_pending_request(monkeypatch):
     assert seen and seen[0].endswith("/v1/status/job-7")
 
 
+def test_gateway_timeout_is_retried_once_for_predictions():
+    """게이트웨이 504 는 예측 계열에서 한 번 더 보냅니다. DiffDock 은 약속대로 다시 보내지 않습니다."""
+    calls = []
+
+    def flaky(req):
+        calls.append(req.url.path)
+        return httpx.Response(200, json=raw("openfold3_parp1_niraparib.json")) if len(calls) > 1 else httpx.Response(504, text="gateway timeout")
+    out = run(disc.run("openfold3", {"target": "parp1", "ligand": "niraparib"}, _client(flaky)))
+    assert len(calls) == 2 and out["source"] == "live"
+    calls.clear()
+    out = run(disc.run("diffdock", {"target": "parp1", "ligand": "niraparib"}, _client(flaky)))
+    assert len(calls) == 1 and out["source"] == "measured"
+
+
 def test_failure_falls_back_to_the_measured_response_with_a_reason():
     def handle(req):
         return httpx.Response(500, text="upstream is down")

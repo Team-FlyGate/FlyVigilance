@@ -1,7 +1,7 @@
 // STEP 1-2 구조 예측: NVIDIA BioNeMo OpenFold3 NIM 에 MSA 정렬을 넣어 복합체 구조를 예측합니다.
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
 import { Card, Loading } from '../components/ui'
-import { KV, Progress, RunButton, SkillBox, SourceChip, StepPage, pulseReward, stimulateLayer } from '../components/DiscoveryShell'
+import { KV, pathOf, Progress, RunButton, SkillBox, SourceChip, StepPage, pulseReward, stimulateLayer } from '../components/DiscoveryShell'
 import { useBrain } from '../lib/brain'
 import {
   fmtS, getCatalog, plddtColor, rewardFromPlddt, rewardFromRmsd, runStep, saveRun, useDiscovery,
@@ -37,6 +37,7 @@ export default function DiscoveryOpenfold3() {
   const [elapsed, setElapsed] = useState(0)
   const [overlay, setOverlay] = useState(true)
   const [err, setErr] = useState<string | null>(null)
+  const [fresh, setFresh] = useState(false)
   const env = (envs.openfold3 ?? null) as Envelope<Of3Result> | null
   const res = (runs.openfold3 ?? env?.measured ?? null) as Of3Result | null
   const isLive = Boolean(runs.openfold3)
@@ -55,7 +56,7 @@ export default function DiscoveryOpenfold3() {
     stimulateLayer(sim, 'encode', 1.2, 14)
     const beat = setInterval(() => stimulateLayer(sim, 'encode', 0.85, 6), 1000)
     try {
-      const params: Record<string, unknown> = { target, ligand }
+      const params: Record<string, unknown> = { target, ligand, no_cache: fresh }
       if (msa?.a3m) params.a3m = msa.a3m
       else if (msa?.a3m_key) params.a3m_key = msa.a3m_key
       else params.a3m_measured = true
@@ -125,14 +126,14 @@ export default function DiscoveryOpenfold3() {
       side={
         <>
           <Card title="라이브 실행" sub="NVIDIA BioNeMo NIM 호출">
-            <RunButton busy={busy} onClick={run} label="OpenFold3 실행"
+            <RunButton busy={busy} onClick={run} label="OpenFold3 실행" fresh={fresh} setFresh={setFresh}
               sub={msa ? <>1단계 정렬 {msa.sequences}줄을 넣습니다</> : <>1단계를 먼저 돌리면 라이브 정렬을 넘깁니다(지금은 지난 측정 정렬 사용)</>} />
             <div className="divider" />
             <Progress env={env} busy={busy} elapsed={elapsed} />
             {err && <div className="note" style={{ color: 'var(--warn)', marginTop: 8 }}>{err}</div>}
             {env?.note && <div className="note" style={{ color: 'var(--warn)', marginTop: 8 }}>{env.note}</div>}
           </Card>
-          <Card title="요청" sub={env?.endpoint ?? '/v1/biology/openfold/openfold3/predict'}>
+          <Card title="요청" sub={<span className="mono" style={{ fontSize: 10.5 }} title={env?.endpoint ?? undefined}>{pathOf(env?.endpoint) || '/v1/biology/openfold/openfold3/predict'}</span>}>
             <KV rows={[
               ['input_id', String(env?.request?.input_id ?? `${target}_${ligand}`)],
               ['output', String(env?.request?.output_format ?? 'pdb')],
@@ -147,7 +148,7 @@ export default function DiscoveryOpenfold3() {
               ['pTM / ipTM', res ? `${res.scores.ptm ?? '–'} / ${res.scores.iptm ?? '–'}` : '–'],
               ['CA RMSD (4R6E)', res?.ca_rmsd != null ? `${res.ca_rmsd} Å` : '–'],
               ['리간드 RMSD', res?.ligand_rmsd != null ? `${res.ligand_rmsd} Å` : '–'],
-              ['소요', busy ? `${elapsed.toFixed(1)}초` : fmtS(env?.elapsed_s)],
+              ['소요', busy ? `${elapsed.toFixed(1)}초` : env?.source === 'cache' ? '캐시(같은 입력)' : fmtS(env?.elapsed_s)],
             ]} />
             <div className="divider" />
             <div className="row between">
