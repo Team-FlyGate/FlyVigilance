@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import HeroDocking, { type StepId } from '../components/HeroDocking'
+import HeroDocking, { DRUG_LABEL, useHeroDrug, type StepId } from '../components/HeroDocking'
 import DockPlayground from '../components/DockPlayground'
 import SelectivityMap from '../components/SelectivityMap'
 import ValidationGate from '../components/ValidationGate'
@@ -16,7 +16,7 @@ const HEAD: Record<StepId, { no: string; name: string; title: ReactNode; lede: R
   of3: { no: '02', name: 'OpenFold3', title: <>서열에서 <span style={{ color: 'var(--c-sense)' }}>단백질 구조</span>를 예측합니다</>,
     lede: <>MSA-Search 정렬을 입력으로 OpenFold3 NIM 이 PARP1 구조를 예측했습니다(니라파립도 함께 넣어 예측했고, 약물 자리는 다음 단계에서 봅니다). 리본 색은 잔기별 예측 신뢰도(pLDDT)이고, 드래그로 돌리고 휠로 확대, 오른쪽 드래그로 이동할 수 있습니다. 공개 결정 구조 4R6E 와 Kabsch 로 겹쳐 Cα RMSD 를 쟀습니다. OpenFold2 엔드포인트는 측정 당시 서버 오류로 실패해 OpenFold3 로 갔습니다.</> },
   dd: { no: '03', name: 'DiffDock', title: <>약물이 <span style={{ color: 'var(--jev)' }}>어느 자세로</span> 붙는지 도킹합니다</>,
-    lede: <>DiffDock NIM 은 포즈 5개와 신뢰도를 돌려줍니다. 결정 구조에 원래 리간드를 다시 넣는 재도킹으로 1순위 포즈가 정답 자리에서 몇 Å 떨어졌는지 잽니다(기준 ≤ 2 Å). 위는 니라파립, 아래는 STEP 2 가 감시하는 FAERS 데모 케이스 약물들입니다.</> },
+    lede: <>DiffDock NIM 은 포즈 5개와 신뢰도를 돌려줍니다. 결정 구조에 원래 리간드를 다시 넣는 재도킹으로 1순위 포즈가 정답 자리에서 몇 Å 떨어졌는지 잽니다(기준 ≤ 2 Å). 위는 고른 PARP1 억제제(니라파립 · 탈라조파립 · 루카파립), 아래는 STEP 2 가 감시하는 FAERS 데모 케이스 약물들입니다.</> },
   bz: { no: '04', name: 'Boltz-2', title: <>붙는 세기를 예측하고 <span style={{ color: 'var(--jev)' }}>실측과 대조</span>합니다</>,
     lede: <>Boltz-2 NIM 이 예측한 pIC50 를 ChEMBL 실측 중앙값과 비교합니다. 활성 범위가 고루 퍼지도록 고른 PARP1 억제제 39종으로 벤치마크했습니다. 예측값은 측정된 친화도가 아니며, 이 둘을 섞는 주장은 크리틱이 반려합니다.</> },
   critic: { no: '05', name: '크리틱', title: <>숫자가 다 맞아도 <span style={{ color: 'var(--bad)' }}>결론이 근거를 넘으면</span> 반려합니다</>,
@@ -46,6 +46,7 @@ function Scatter({ pairs }: { pairs: [number, number][] }) {
 export default function DiscoveryStep({ step }: { step: StepId }) {
   const { m, hero, missing, extras, redockList, scenes, critic } = useDiscoveryData()
   const h = HEAD[step]
+  const [drug] = useHeroDrug()
   const of3 = m?.openfold3_msa, bm = m?.parp1_affinity_benchmark, hm = hero?.metrics
   const combos = m?.diffdock_boltz2_chembl ?? []
   const combo = (k: string) => { const [l, t] = k.split('@'); return `${title(l)} @ ${({ parp1: 'PARP1', cox2: 'COX-2', xa: 'Factor Xa' } as Record<string, string>)[t] ?? t}` }
@@ -54,7 +55,7 @@ export default function DiscoveryStep({ step }: { step: StepId }) {
     <div className="page">
       <PageHead eyebrow={`Project-FlyGate · STEP 1 FlyDiscovery · ${h.no} ${h.name}`} title={h.title} lede={h.lede}
         right={<div className="row wrap" style={{ justifyContent: 'flex-end', maxWidth: 360 }}>
-          <span className="chip jev">데모 후보 · 니라파립 × PARP1</span>
+          <span className="chip jev">데모 후보 · {DRUG_LABEL[drug]} × PARP1</span>
           <span className={`chip ${step === 'critic' ? 'bad' : 'nv'}`}>{step === 'critic' ? 'Nemotron 3 Super · 규칙' : `NVIDIA BioNeMo NIM · ${h.name}`}</span>
         </div>} />
 
@@ -135,7 +136,7 @@ export default function DiscoveryStep({ step }: { step: StepId }) {
               <Card title="Critic Stream" sub={extras.critic ? `${extras.critic.model} · 과잉해석 ${extras.critic.caught}/${extras.critic.n_over} 반려 · 정상 ${extras.critic.passed}/${extras.critic.n_valid} 통과 · ${extras.critic.sec}초` : ''}
                 right={<span className="chip bad">크리틱 3단</span>}>
                 {extras.critic && <CriticStream rows={extras.critic.rows} />}
-                <div style={{ marginTop: 12 }}><Step2Handoff drug="niraparib" /></div>
+                <div style={{ marginTop: 12 }}><Step2Handoff drug={drug} /></div>
               </Card>
               <Card title="모델별 평가 · 주장 8건" sub="정답(과잉해석 4 · 정상 4)과 모델 판정을 나란히 봅니다">
                 {Object.entries(critic).map(([k, v]) => (
