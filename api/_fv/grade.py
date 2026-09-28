@@ -20,7 +20,7 @@ import functools
 import gzip
 import json
 
-from . import config, evidence
+from . import config, evidence, literature
 
 GRADE_NAMES = {
     "A": "박스 경고 기재 + SDR",
@@ -154,7 +154,7 @@ def grade_pair(drug: str, pt: str, f: dict | None, label: dict, lit: dict | None
         gaps.append(f"분석 연구 {lit_s.get('analytic_read')}편 중 {lit_s.get('analytic_supportive')}편만 연관을 지지합니다 "
                     "(문헌 결과 혼재 또는 반론)")
     if lit_s.get("anecdotal_supportive") and sig == "strong":
-        gaps.append("문헌 증례는 제약사가 FAERS 에도 보고하는 경우가 많아, 문헌 편수와 FAERS 건수를 독립 근거로 더하지 않습니다")
+        gaps.append(literature.DOUBLE_COUNT_NOTE)
     if sig in ("none", "weak") and reg == 0:
         gaps.append("SDR 부재는 안전성의 증거가 아닙니다 (R4)")
     summary = (f"label={LABEL_STATUS_NAMES.get(status, status)}, FAERS={SIG_NAMES[sig]}"

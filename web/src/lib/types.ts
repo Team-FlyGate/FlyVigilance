@@ -124,4 +124,4 @@ export interface EvidenceGrade {
   basis: string[]; gaps: string[]; summary: string; caution: string
   literature?: { count: number | null; articles: LitArticle[]; summary: Record<string, unknown> }
 }
-export interface LitArticle { pmid: string; year: string | null; title: string; design: string; design_source: string; addresses?: string | null; supports: number | null; strength: number | null; dechallenge: number | null; id: string }
+export interface LitArticle { pmid: string; year: string | null; title: string; design: string; design_source: string; addresses?: string | null; supports: number | null; strength: number | null; dechallenge: string | number | null; id: string }

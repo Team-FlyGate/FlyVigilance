@@ -55,7 +55,8 @@ export interface TriageResult {
   validity?: { valid: boolean; checks: Record<string, boolean> }
   grounding?: { label: { found: boolean; brand?: string; effective?: string; by_pt?: Record<string, { sections: string[] }> }; expected: number | null; expected_source: string; latency_ms: number; clinical_reactions: string[] } | null
   jev: { answers: Record<string, Answer>; usage: { input_tokens: number; output_tokens: number }; model: string; latency_ms: number }
-  decision: { action: string; tier: string; system2?: boolean; reasons: string[]; regime?: string; deadline?: string }
+  // report15: 규정상 15일 신속보고 대상인지(라우팅 규칙이 정합니다). dme: EMA 지정 의학적 사건(DME)에 해당하는 반응이 있는지
+  decision: { action: string; tier: string; system2?: boolean; reasons: string[]; regime?: string; deadline?: string; report15?: boolean; dme?: boolean }
 }
 
 export interface Claim { id: string; text: string; evidence: string[]; overclaim_p?: number }

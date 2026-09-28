@@ -19,11 +19,16 @@ interface Intake {
 interface KrItem {
   id: string; name: string; choice: string; label: string; score: number; confidence: number; source: string
   evidence: string[]; needs_review: boolean; options: { key: string; label: string; score: number }[]
+  // 규칙 항목('약물에 대해 알려진 정보')에만 있습니다
+  method?: 'rule' | 'jev'; scope?: string; reaction?: string | null; mfds_checked?: boolean; lookup_failed?: boolean
 }
 interface KrCausality {
   items: KrItem[]; total: number; max: number; min: number; grade: string; band: string; approx: string
   who_umc: { choice: string; confidence: number; probabilities: Record<string, number> }
   label: { found: boolean; setid?: string; brand?: string; listed?: Record<string, boolean> } | null
+  literature?: { query?: string; count?: number | null; case_reports_rule?: string[] } | null
+  mfds_label?: { checked: boolean; reason: string; search_url: string }
+  assessed_reaction?: string | null
   note: string; latency_ms: number; model: string
 }
 
@@ -99,7 +104,8 @@ export default function KoreanPV() {
       <PageHead eyebrow="Korean PV · 국내 보고서식 · 한국형 인과성 평가 · 국내 규정 모드"
         title={<>국내 보고 한 장이 <span style={{ color: 'var(--c-sense)' }}>구조화</span>되고 <span style={{ color: 'var(--jev)' }}>평가</span>되기까지</>}
         lede={<>의약전문가용·일반인 보고서나 병원·약사의 사례 기사를 넣으면 Nemotron이 식약처 공고 제2023-057호 서식(가~바)과 트리아지용 케이스로 구조화합니다.
-          지역의약품안전센터가 쓰는 한국형 인과성 평가 알고리즘 ver 2.0의 8개 항목은 FlyVigilance가 Jev 엔진으로 판단하고(라벨·문헌으로 정할 수 있는 항목은 조회 결과를 먼저 씁니다) 점수는 규칙으로 합산하며, 국내 신속보고 기준(중대 → 15일)으로 라우팅합니다.</>} />
+          지역의약품안전센터가 쓰는 한국형 인과성 평가 알고리즘 ver 2.0의 8개 항목 중 7개는 FlyVigilance가 Jev 엔진으로 판단하고, '약물에 대해 알려진 정보' 항목은 모델이 고르지 않고 허가 라벨·문헌 조회 규칙으로만 정합니다. 점수는 규칙으로 합산하며,
+          국내 신속보고 기준(중대한 약물이상반응, 즉 인과관계를 배제할 수 없는 반응 → 15일)으로 라우팅합니다.</>} />
 
       <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1.35fr) minmax(340px,1fr)', alignItems: 'start' }}>
         <div className="stack" style={{ gap: 16 }}>
@@ -142,17 +148,23 @@ export default function KoreanPV() {
           )}
 
           {caus && (
-            <Card title={<>3. 한국형 인과성 평가 알고리즘 ver 2.0 <span className="chip jev" style={{ marginLeft: 8 }}>Jev {fmt.ms(caus.latency_ms)} · 8문항 1회 호출</span></>}
-              sub="항목 선택은 Jev, 점수 합산과 등급 구간은 규칙입니다. 신뢰도 0.55 미만 항목은 평가자 검토 대상으로 표시합니다">
+            <Card title={<>3. 한국형 인과성 평가 알고리즘 ver 2.0 <span className="chip jev" style={{ marginLeft: 8 }}>Jev {fmt.ms(caus.latency_ms)} · 7문항 + WHO-UMC 1회 호출</span></>}
+              sub="7개 항목 선택은 Jev, '약물에 대해 알려진 정보'는 조회 규칙, 점수 합산과 등급 구간은 규칙입니다. 신뢰도 0.55 미만 항목과 '알려진 정보' 항목은 평가자 검토 대상으로 표시합니다">
               <table className="tbl">
                 <thead><tr><th>항목</th><th>판단</th><th className="r">점수</th><th>근거</th><th className="r">신뢰도</th></tr></thead>
                 <tbody>{caus.items.map((it) => (
                   <tr key={it.id}>
                     <td style={{ whiteSpace: 'nowrap' }}>{it.name}</td>
-                    <td>{it.label}{it.needs_review && <span className="chip warn" style={{ marginLeft: 6, fontSize: 9.5 }}>검토 필요</span>}</td>
+                    <td>
+                      {it.label}{it.needs_review && <span className="chip warn" style={{ marginLeft: 6, fontSize: 9.5 }}>검토 필요</span>}
+                      {it.method === 'rule' && it.mfds_checked === false && <span className="chip warn" style={{ marginLeft: 6, fontSize: 9.5 }}>식약처 허가사항 미확인</span>}
+                      {it.scope && <div className="dim" style={{ fontSize: 10.5, marginTop: 3 }}>평가 반응 {it.reaction ?? '—'} · {it.scope}</div>}
+                    </td>
                     <td className="r num" style={{ color: it.score > 0 ? 'var(--ok)' : it.score < 0 ? 'var(--bad)' : 'var(--text-3)' }}>{it.score > 0 ? `+${it.score}` : it.score}</td>
-                    <td>{it.source === 'jev' ? <span className="chip jev" style={{ fontSize: 9.5 }}>Jev</span> : <span className="chip ev" title={it.evidence.join('\n')}>{it.source}</span>}</td>
-                    <td className="r" style={{ width: 120 }}><ProbBar p={it.confidence} color={it.needs_review ? 'var(--warn)' : 'var(--jev)'} /></td>
+                    <td>{it.source === 'jev' ? <span className="chip jev" style={{ fontSize: 9.5 }}>Jev</span> : <span className={`chip ${it.lookup_failed ? 'warn' : 'ev'}`} title={it.evidence.join('\n')}>{it.source}</span>}</td>
+                    <td className="r" style={{ width: 120 }}>{it.method === 'rule'
+                      ? <span className="dim mono" style={{ fontSize: 10.5 }}>{it.lookup_failed ? '조회 실패' : '규칙'}</span>
+                      : <ProbBar p={it.confidence} color={it.needs_review ? 'var(--warn)' : 'var(--jev)'} />}</td>
                   </tr>
                 ))}</tbody>
               </table>
@@ -171,12 +183,22 @@ export default function KoreanPV() {
                   <div className="note" style={{ marginTop: 8 }}>{caus.note}</div>
                 </div>
               </div>
-              {!caus.label?.found && <div className="note" style={{ marginTop: 10 }}><b>허가사항 확인:</b> openFDA 라벨에서 이 성분을 찾지 못했습니다(국내 신약 등). '알려진 정보' 항목은 PubMed 증례보고가 있으면 +2(문헌 읽기), 없으면 Jev 판단입니다. 국내 허가사항은 의약품안전나라에서 평가자가 확인해야 합니다.</div>}
+              <div className="note" style={{ marginTop: 10 }}>
+                <b>허가사항 확인:</b> {!caus.label?.found && <>FDA 허가 라벨(openFDA drug/label)에서 이 성분을 찾지 못했습니다(국내 개발 신약 등). </>}
+                '약물에 대해 알려진 정보' 점수는 FDA 허가 라벨(openFDA drug/label)과 PubMed 증례보고 검색 결과로만 정했습니다(라벨 기재 +3, 라벨에 없고 증례보고 있음 +2, 둘 다 없음 0).
+                국내 평가 기준인 식약처 허가사항(의약품안전나라 사용상의 주의사항)은 자동으로 확인하지 않았습니다. 평가자가 확인하신 뒤 점수를 확정해 주세요. 식약처 허가사항에 기재되어 있으면 +3입니다.
+                {caus.mfds_label?.search_url && <> <a href={caus.mfds_label.search_url} target="_blank" rel="noreferrer">의약품안전나라에서 검색</a></>}
+                {caus.literature?.case_reports_rule?.length ? (
+                  <div style={{ marginTop: 6 }}>PubMed 증례보고: {caus.literature.case_reports_rule.map((id, i) => (
+                    <span key={id}>{i ? ', ' : ''}<a href={`https://pubmed.ncbi.nlm.nih.gov/${id}/`} target="_blank" rel="noreferrer">PMID {id}</a></span>
+                  ))}</div>
+                ) : null}
+              </div>
             </Card>
           )}
 
           {tri.KR && tri.US && (
-            <Card title="4. 규정 모드 비교 · 같은 Jev 판단, 다른 신속보고 규칙" sub="미국은 '중대하고 예상하지 못한' 사례, 한국은 '중대한 약물이상반응'이 15일 신속보고 대상입니다 (「국내 PV 흐름 설명」 참고)">
+            <Card title="4. 규정 모드 비교 · 같은 Jev 판단, 다른 신속보고 규칙" sub="미국은 '중대하고 예상하지 못한' 사례, 한국은 중대한 약물이상반응(인과관계를 배제할 수 없는 반응)이 15일 신속보고 대상입니다 (별표 4의3 제7호 나목)">
               <div className="grid g2" style={{ gap: 12 }}>
                 {(['KR', 'US'] as const).map((r) => {
                   const d = tri[r].decision, m = ACTION_META[d.action] ?? ACTION_META.monitor
@@ -184,13 +206,17 @@ export default function KoreanPV() {
                     <div key={r} style={{ padding: 14, borderRadius: 14, border: `1px solid ${m.color}66`, background: `color-mix(in srgb, ${m.color} 8%, transparent)` }}>
                       <div className="row between"><span className="eyebrow" style={{ color: m.color }}>{r === 'KR' ? '한국 식약처' : '미국 FDA'}</span><span className="chip">Jev {fmt.ms(tri[r].jev.latency_ms)}</span></div>
                       <b style={{ fontFamily: 'var(--font-kr)', fontSize: 17, display: 'block', marginTop: 6 }}>{m.label}</b>
-                      {d.deadline && <div className={`chip ${/15일 이내|15 calendar/.test(d.deadline) ? 'bad' : 'warn'}`} style={{ marginTop: 8, whiteSpace: 'normal' }}>{d.deadline}</div>}
+                      {d.deadline && <div className={`chip ${d.report15 ? 'bad' : 'warn'}`} style={{ marginTop: 8, whiteSpace: 'normal' }}>{d.deadline}</div>}
                       <ul style={{ margin: '8px 0 0', paddingLeft: 16 }}>{d.reasons.map((x) => <li key={x} className="mono" style={{ fontSize: 11 }}>{x}</li>)}</ul>
                     </div>
                   )
                 })}
               </div>
-              <div className="note" style={{ marginTop: 10 }}>약국·의료기관 개설자의 보고 의무는 중대한 사례에 한정되고(약사법 제68조의8 제2항), 비중대 사례는 자율 보고입니다. 15일 신속보고는 제약사(제조·수입자)의 의무입니다.</div>
+              <div className="note" style={{ marginTop: 10 }}>
+                중대한 약물이상반응은 품목허가를 받은 자, 의약품도매상, 약국개설자, 의료기관개설자가 알게 된 날부터 15일 이내에 보고해야 합니다(별표 4의3 제7호 나목).
+                약국·의료기관 개설자의 보고 의무는 중대한 사례에 한정되고(약사법 제68조의8 제2항), 비중대 사례는 자율 보고입니다.
+                Jev가 WHO-UMC '가능성 적음(unlikely)'으로 본 중대 사례는 모델이 15일 대상에서 빼지 않고 사람 확인(즉시 검토)으로 보냅니다. 보고자와 품목허가권자가 모두 관련 없다고 판단한 경우에만 약물이상반응에서 제외되기 때문입니다(별표 4의3 제1호 차목).
+              </div>
             </Card>
           )}
         </div>
@@ -205,7 +231,7 @@ export default function KoreanPV() {
           </Card>
           <Card title="국내 약물감시 흐름" sub="팀 문서 「국내 PV 흐름 설명」 요약">
             <ol style={{ margin: 0, paddingLeft: 18, fontSize: 12.5, lineHeight: 1.8, color: 'var(--text-2)' }}>
-              <li><b>보고</b>: 제약사 의무, 약국·의료기관은 중대 사례 의무, 의사·약사·환자는 자율 (KAERS · 1644-6223)</li>
+              <li><b>보고</b>: 품목허가를 받은 자(제약사) 의무, 중대한 약물이상반응은 의약품도매상·약국개설자·의료기관개설자도 15일 이내 보고 의무, 의사·약사·환자는 자율 (KAERS · 1644-6223)</li>
               <li><b>지역의약품안전센터 28곳</b>: 개별 사례 인과성 평가 (WHO-UMC, 한국형 알고리즘 ver 2.0)</li>
               <li><b>KIDS · KAERS</b>: 통계적 탐지(PRR·ROR·IC) + 사례 분석 + 허가정보·문헌 검토 → 실마리정보</li>
               <li><b>식약처</b>: 성분 단위 허가사항 변경 명령(3개월 내 반영), 안전성 서한, 회수</li>
