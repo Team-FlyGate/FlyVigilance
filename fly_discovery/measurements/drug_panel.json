@@ -1,0 +1,492 @@
+{
+ "source": "api/_data/cases.json.gz (FAERS 2026Q2, 440 cases)",
+ "n_cases": 440,
+ "n_primary_suspect_drugs": 224,
+ "chembl": "https://www.ebi.ac.uk/chembl/api/data",
+ "rows": [
+  {
+   "drug": "DUPILUMAB",
+   "cases": 50,
+   "serious": 4,
+   "chembl_id": "CHEMBL2108675",
+   "pref_name": "DUPILUMAB",
+   "molecule_type": "Antibody",
+   "max_phase": "4.0",
+   "mechanism": "Interleukin-4 receptor subunit alpha antagonist",
+   "targets": [
+    {
+     "id": "CHEMBL3580490",
+     "name": "Interleukin-4 receptor subunit alpha",
+     "action": "ANTAGONIST"
+    }
+   ],
+   "docking": {
+    "status": "not_applicable"
+   }
+  },
+  {
+   "drug": "TIRZEPATIDE",
+   "cases": 23,
+   "serious": 5,
+   "chembl_id": "CHEMBL4297839",
+   "pref_name": "TIRZEPATIDE",
+   "molecule_type": "Protein",
+   "max_phase": "4.0",
+   "mechanism": "Gastric inhibitory polypeptide receptor agonist",
+   "targets": [
+    {
+     "id": "CHEMBL4383",
+     "name": "Gastric inhibitory polypeptide receptor",
+     "action": "AGONIST"
+    },
+    {
+     "id": "CHEMBL1784",
+     "name": "Glucagon-like peptide 1 receptor",
+     "action": "AGONIST"
+    }
+   ],
+   "docking": {
+    "status": "not_applicable"
+   }
+  },
+  {
+   "drug": "SEMAGLUTIDE",
+   "cases": 10,
+   "serious": 6,
+   "chembl_id": "CHEMBL2108724",
+   "pref_name": "SEMAGLUTIDE",
+   "molecule_type": "Protein",
+   "max_phase": "4.0",
+   "mechanism": "Glucagon-like peptide 1 receptor agonist",
+   "targets": [
+    {
+     "id": "CHEMBL1784",
+     "name": "Glucagon-like peptide 1 receptor",
+     "action": "AGONIST"
+    }
+   ],
+   "docking": {
+    "status": "not_applicable"
+   }
+  },
+  {
+   "drug": "LENALIDOMIDE",
+   "cases": 9,
+   "serious": 4,
+   "chembl_id": "CHEMBL848",
+   "pref_name": "LENALIDOMIDE",
+   "molecule_type": "Small molecule",
+   "max_phase": "4.0",
+   "mechanism": "CRL4(CRBN) E3 ubiquitin ligase inhibitor",
+   "targets": [
+    {
+     "id": "CHEMBL3833061",
+     "name": "CRL4(CRBN) E3 ubiquitin ligase",
+     "action": "INHIBITOR"
+    }
+   ],
+   "docking": {
+    "status": "measured",
+    "pdb": "4CI2",
+    "gene": "CRBN",
+    "top1_rmsd": 0.519,
+    "success": true
+   }
+  },
+  {
+   "drug": "MEDROXYPROGESTERONE",
+   "cases": 9,
+   "serious": 9,
+   "chembl_id": "CHEMBL1390",
+   "pref_name": null,
+   "molecule_type": "Small molecule",
+   "max_phase": null,
+   "mechanism": null,
+   "targets": [],
+   "docking": {
+    "status": "not_run"
+   }
+  },
+  {
+   "drug": "ACETAMINOPHEN",
+   "cases": 5,
+   "serious": 4,
+   "chembl_id": "CHEMBL112",
+   "pref_name": "ACETAMINOPHEN",
+   "molecule_type": "Small molecule",
+   "max_phase": "4.0",
+   "mechanism": "Cyclooxygenase inhibitor",
+   "targets": [
+    {
+     "id": "CHEMBL2094253",
+     "name": "Cyclooxygenase",
+     "action": "INHIBITOR"
+    },
+    {
+     "id": "CHEMBL2243",
+     "name": "Fatty-acid amide hydrolase 1",
+     "action": "INHIBITOR"
+    }
+   ],
+   "docking": {
+    "status": "not_run"
+   }
+  },
+  {
+   "drug": "TENAPANOR",
+   "cases": 5,
+   "serious": 3,
+   "chembl_id": "CHEMBL3304485",
+   "pref_name": "TENAPANOR",
+   "molecule_type": "Small molecule",
+   "max_phase": "4.0",
+   "mechanism": "Sodium/hydrogen exchanger 3 inhibitor",
+   "targets": [
+    {
+     "id": "CHEMBL3273",
+     "name": "Sodium/hydrogen exchanger 3",
+     "action": "INHIBITOR"
+    }
+   ],
+   "docking": {
+    "status": "not_run"
+   }
+  },
+  {
+   "drug": "BIMEKIZUMAB",
+   "cases": 5,
+   "serious": 2,
+   "chembl_id": "CHEMBL4297700",
+   "pref_name": "BIMEKIZUMAB",
+   "molecule_type": "Antibody",
+   "max_phase": "4.0",
+   "mechanism": "Interleukin 17A inhibitor",
+   "targets": [
+    {
+     "id": "CHEMBL3390822",
+     "name": "Interleukin-17A",
+     "action": "INHIBITOR"
+    },
+    {
+     "id": "CHEMBL4630880",
+     "name": "Interleukin-17F",
+     "action": "INHIBITOR"
+    }
+   ],
+   "docking": {
+    "status": "not_applicable"
+   }
+  },
+  {
+   "drug": "RUXOLITINIB",
+   "cases": 5,
+   "serious": 1,
+   "chembl_id": "CHEMBL1789941",
+   "pref_name": "RUXOLITINIB",
+   "molecule_type": "Small molecule",
+   "max_phase": "4.0",
+   "mechanism": "Tyrosine-protein kinase JAK1 inhibitor",
+   "targets": [
+    {
+     "id": "CHEMBL2835",
+     "name": "Tyrosine-protein kinase JAK1",
+     "action": "INHIBITOR"
+    },
+    {
+     "id": "CHEMBL2971",
+     "name": "Tyrosine-protein kinase JAK2",
+     "action": "INHIBITOR"
+    }
+   ],
+   "docking": {
+    "status": "measured",
+    "pdb": "6VGL",
+    "gene": "JAK2",
+    "top1_rmsd": 0.55,
+    "success": true
+   }
+  },
+  {
+   "drug": "PIMAVANSERIN",
+   "cases": 4,
+   "serious": 3,
+   "chembl_id": "CHEMBL2111101",
+   "pref_name": "PIMAVANSERIN",
+   "molecule_type": "Small molecule",
+   "max_phase": "4.0",
+   "mechanism": "Serotonin 2a (5-HT2a) receptor inverse agonist",
+   "targets": [
+    {
+     "id": "CHEMBL224",
+     "name": "5-hydroxytryptamine receptor 2A",
+     "action": "INVERSE AGONIST"
+    }
+   ],
+   "docking": {
+    "status": "not_run"
+   }
+  },
+  {
+   "drug": "HUMAN IMMUNOGLOBULIN G",
+   "cases": 4,
+   "serious": 4,
+   "chembl_id": "CHEMBL1201599",
+   "pref_name": "HUMAN IMMUNOGLOBULIN G",
+   "molecule_type": "Unknown",
+   "max_phase": "4.0",
+   "mechanism": "Replacement therapy, immunomodulatory effects",
+   "targets": [],
+   "docking": {
+    "status": "not_applicable"
+   }
+  },
+  {
+   "drug": "ADALIMUMAB",
+   "cases": 4,
+   "serious": 3,
+   "chembl_id": "CHEMBL1201580",
+   "pref_name": "ADALIMUMAB",
+   "molecule_type": "Antibody",
+   "max_phase": "4.0",
+   "mechanism": "TNF-alpha inhibitor",
+   "targets": [
+    {
+     "id": "CHEMBL1825",
+     "name": "Tumor necrosis factor",
+     "action": "INHIBITOR"
+    }
+   ],
+   "docking": {
+    "status": "not_applicable"
+   }
+  },
+  {
+   "drug": "FOSCARBIDOPA\\FOSLEVODOPA",
+   "cases": 4,
+   "serious": 4,
+   "chembl_id": "CHEMBL4802240",
+   "pref_name": "FOSCARBIDOPA",
+   "molecule_type": "Small molecule",
+   "max_phase": "4.0",
+   "mechanism": "DOPA decarboxylase inhibitor",
+   "targets": [
+    {
+     "id": "CHEMBL1843",
+     "name": "Aromatic-L-amino-acid decarboxylase",
+     "action": "INHIBITOR"
+    }
+   ],
+   "docking": {
+    "status": "not_run"
+   }
+  },
+  {
+   "drug": "NIRMATRELVIR\\RITONAVIR",
+   "cases": 4,
+   "serious": 0,
+   "chembl_id": "CHEMBL4802135",
+   "pref_name": "NIRMATRELVIR",
+   "molecule_type": "Small molecule",
+   "max_phase": "4.0",
+   "mechanism": "SARS coronavirus 3C-like proteinase inhibitor",
+   "targets": [
+    {
+     "id": "CHEMBL3927",
+     "name": "Replicase polyprotein 1a",
+     "action": "INHIBITOR"
+    }
+   ],
+   "docking": {
+    "status": "measured",
+    "pdb": "7SI9",
+    "gene": "Mpro (nsp5)",
+    "top1_rmsd": 0.813,
+    "success": true
+   }
+  },
+  {
+   "drug": "RISANKIZUMAB",
+   "cases": 4,
+   "serious": 3,
+   "chembl_id": "CHEMBL3990029",
+   "pref_name": "RISANKIZUMAB",
+   "molecule_type": "Antibody",
+   "max_phase": "4.0",
+   "mechanism": "Interleukin-23 inhibitor",
+   "targets": [
+    {
+     "id": "CHEMBL2364154",
+     "name": "Interleukin-23",
+     "action": "INHIBITOR"
+    }
+   ],
+   "docking": {
+    "status": "not_applicable"
+   }
+  },
+  {
+   "drug": "EVOLOCUMAB",
+   "cases": 4,
+   "serious": 2,
+   "chembl_id": "CHEMBL2364655",
+   "pref_name": "EVOLOCUMAB",
+   "molecule_type": "Antibody",
+   "max_phase": "4.0",
+   "mechanism": "Subtilisin/kexin type 9 inhibitor",
+   "targets": [
+    {
+     "id": "CHEMBL2929",
+     "name": "Proprotein convertase subtilisin/kexin type 9",
+     "action": "INHIBITOR"
+    }
+   ],
+   "docking": {
+    "status": "not_applicable"
+   }
+  },
+  {
+   "drug": "OMALIZUMAB",
+   "cases": 4,
+   "serious": 3,
+   "chembl_id": "CHEMBL1201589",
+   "pref_name": "OMALIZUMAB",
+   "molecule_type": "Antibody",
+   "max_phase": "4.0",
+   "mechanism": "Ig epsilon chain C region inhibitor",
+   "targets": [
+    {
+     "id": "CHEMBL1834",
+     "name": "Immunoglobulin heavy constant epsilon",
+     "action": "INHIBITOR"
+    }
+   ],
+   "docking": {
+    "status": "not_applicable"
+   }
+  },
+  {
+   "drug": "PALIPERIDONE PALMITATE",
+   "cases": 4,
+   "serious": 3,
+   "chembl_id": "CHEMBL2107360",
+   "pref_name": "PALIPERIDONE PALMITATE",
+   "molecule_type": "Small molecule",
+   "max_phase": "4.0",
+   "mechanism": "Dopamine D2 receptor antagonist",
+   "targets": [
+    {
+     "id": "CHEMBL217",
+     "name": "D(2) dopamine receptor",
+     "action": "ANTAGONIST"
+    },
+    {
+     "id": "CHEMBL224",
+     "name": "5-hydroxytryptamine receptor 2A",
+     "action": "ANTAGONIST"
+    }
+   ],
+   "docking": {
+    "status": "not_run"
+   }
+  },
+  {
+   "drug": "UPADACITINIB",
+   "cases": 4,
+   "serious": 4,
+   "chembl_id": "CHEMBL3622821",
+   "pref_name": "UPADACITINIB",
+   "molecule_type": "Small molecule",
+   "max_phase": "4.0",
+   "mechanism": "Tyrosine-protein kinase TYK2 inhibitor",
+   "targets": [
+    {
+     "id": "CHEMBL3553",
+     "name": "Non-receptor tyrosine-protein kinase TYK2",
+     "action": "INHIBITOR"
+    },
+    {
+     "id": "CHEMBL2148",
+     "name": "Tyrosine-protein kinase JAK3",
+     "action": "INHIBITOR"
+    }
+   ],
+   "docking": {
+    "status": "not_run"
+   }
+  },
+  {
+   "drug": "CYCLOSPORINE",
+   "cases": 3,
+   "serious": 1,
+   "chembl_id": "CHEMBL160",
+   "pref_name": "CYCLOSPORINE",
+   "molecule_type": "Protein",
+   "max_phase": "4.0",
+   "mechanism": "Cyclophilin A modulator",
+   "targets": [
+    {
+     "id": "CHEMBL1949",
+     "name": "Peptidyl-prolyl cis-trans isomerase A",
+     "action": "MODULATOR"
+    }
+   ],
+   "docking": {
+    "status": "not_applicable"
+   }
+  },
+  {
+   "drug": "DEXAMETHASONE",
+   "cases": 3,
+   "serious": 3,
+   "chembl_id": "CHEMBL384467",
+   "pref_name": "DEXAMETHASONE",
+   "molecule_type": "Small molecule",
+   "max_phase": "4.0",
+   "mechanism": "Glucocorticoid receptor agonist",
+   "targets": [
+    {
+     "id": "CHEMBL2034",
+     "name": "Glucocorticoid receptor",
+     "action": "AGONIST"
+    }
+   ],
+   "docking": {
+    "status": "measured",
+    "pdb": "1M2Z",
+    "gene": "NR3C1",
+    "top1_rmsd": 0.869,
+    "success": true
+   }
+  },
+  {
+   "drug": "RISPERIDONE",
+   "cases": 3,
+   "serious": 3,
+   "chembl_id": "CHEMBL85",
+   "pref_name": "RISPERIDONE",
+   "molecule_type": "Small molecule",
+   "max_phase": "4.0",
+   "mechanism": "Serotonin 2a (5-HT2a) receptor antagonist",
+   "targets": [
+    {
+     "id": "CHEMBL224",
+     "name": "5-hydroxytryptamine receptor 2A",
+     "action": "ANTAGONIST"
+    },
+    {
+     "id": "CHEMBL225",
+     "name": "5-hydroxytryptamine receptor 2C",
+     "action": "ANTAGONIST"
+    }
+   ],
+   "docking": {
+    "status": "measured",
+    "pdb": "6CM4",
+    "gene": "DRD2",
+    "top1_rmsd": 2.122,
+    "success": false
+   }
+  }
+ ],
+ "updated": "2026-09-28 14:03 KST"
+}
