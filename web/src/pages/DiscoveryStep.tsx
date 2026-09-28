@@ -12,8 +12,8 @@ import { CriticStream, MissingCard, RedockBench, STEP_PAGES, Tile, title, useDis
 const HEAD: Record<StepId, { no: string; name: string; title: ReactNode; lede: ReactNode }> = {
   msa: { no: '01', name: 'MSA-Search', title: <>표적 서열의 <span style={{ color: 'var(--c-sense)' }}>진화적 이웃</span>을 모읍니다</>,
     lede: <>PARP1 촉매 도메인 서열로 상동 서열을 찾아 정렬합니다. 이 정렬이 다음 단계 OpenFold3 의 입력이 되며, NVIDIA 공식 스킬 <span className="mono">bionemo-msa-structure-prediction-pipeline</span> 이 제시하는 MSA-Search → OpenFold3 규격을 그대로 따랐습니다.</> },
-  of3: { no: '02', name: 'OpenFold3', title: <>단백질과 약물을 <span style={{ color: 'var(--c-sense)' }}>함께 접어</span> 복합체를 예측합니다</>,
-    lede: <>OpenFold3 NIM 이 PARP1 과 니라파립을 한 번에 예측했습니다. 리본 색은 잔기별 예측 신뢰도(pLDDT)이고, 공개 결정 구조 4R6E 와 Kabsch 로 겹쳐 Cα RMSD 를 쟀습니다. OpenFold2 엔드포인트는 측정 당시 서버 오류로 실패해 OpenFold3 로 갔습니다.</> },
+  of3: { no: '02', name: 'OpenFold3', title: <>서열에서 <span style={{ color: 'var(--c-sense)' }}>단백질 구조</span>를 예측합니다</>,
+    lede: <>MSA-Search 정렬을 입력으로 OpenFold3 NIM 이 PARP1 구조를 예측했습니다(니라파립도 함께 넣어 예측했고, 약물 자리는 다음 단계에서 봅니다). 리본 색은 잔기별 예측 신뢰도(pLDDT)이고, 드래그로 돌리고 휠로 확대, 오른쪽 드래그로 이동할 수 있습니다. 공개 결정 구조 4R6E 와 Kabsch 로 겹쳐 Cα RMSD 를 쟀습니다. OpenFold2 엔드포인트는 측정 당시 서버 오류로 실패해 OpenFold3 로 갔습니다.</> },
   dd: { no: '03', name: 'DiffDock', title: <>약물이 <span style={{ color: 'var(--jev)' }}>어느 자세로</span> 붙는지 도킹합니다</>,
     lede: <>DiffDock NIM 은 포즈 5개와 신뢰도를 돌려줍니다. 결정 구조에 원래 리간드를 다시 넣는 재도킹으로 1순위 포즈가 정답 자리에서 몇 Å 떨어졌는지 잽니다(기준 ≤ 2 Å). 위는 니라파립, 아래는 STEP 2 가 감시하는 FAERS 데모 케이스 약물들입니다.</> },
   bz: { no: '04', name: 'Boltz-2', title: <>붙는 세기를 예측하고 <span style={{ color: 'var(--jev)' }}>실측과 대조</span>합니다</>,
