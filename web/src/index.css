@@ -84,9 +84,9 @@ a { color: var(--c-sense); }
   display: flex; flex-direction: column; padding: 18px 12px; gap: 4px;
 }
 .brand { display: flex; align-items: center; gap: 10px; padding: 4px 8px 18px; }
-.brand-mark { width: 44px; height: 44px; border-radius: 10px; background: #fff; object-fit: contain; }
-.brand-name { font-family: var(--font); font-weight: 800; font-size: 23px; letter-spacing: 0.1px; line-height: 1.1; }
-.brand-sub { font-family: var(--mono); font-size: 9.5px; color: var(--text-3); letter-spacing: 1.4px; text-transform: uppercase; }
+.brand-mark { width: 52px; height: 52px; border-radius: 10px; background: #fff; object-fit: contain; }
+.brand-name { font-family: var(--font); font-weight: 800; font-size: 36px; letter-spacing: -0.3px; line-height: 1; }
+.brand-sub { white-space: nowrap; font-family: var(--mono); font-size: 9.5px; color: var(--text-3); letter-spacing: 1.4px; text-transform: uppercase; }
 .nav-sec { font-family: var(--mono); font-size: 10px; letter-spacing: 1.6px; color: var(--text-3); text-transform: uppercase; padding: 14px 10px 6px; }
 .nav-item {
   display: flex; align-items: center; gap: 11px; padding: 9px 10px; border-radius: 10px;
@@ -231,6 +231,8 @@ svg text { font-family: var(--mono); }
   .nav { flex-direction: row; overflow-x: auto; padding: 10px; position: sticky; top: 0; z-index: 5; }
   .nav-sec, .nav-foot, .brand-sub, .nav-item .lbl small { display: none; }
   .brand { padding: 0 8px 0 0; }
+  .brand-name { font-size: 22px; }
+  .brand-mark { width: 36px; height: 36px; }
   .main { height: auto; overflow: visible; }
   .page { padding: 18px 16px 40px; }
   .g4, .g5 { grid-template-columns: 1fr; }
