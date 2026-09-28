@@ -1,10 +1,28 @@
 import { useEffect, useState } from 'react'
 import { Card, LineChart, Loading, PageHead } from '../components/ui'
 import { fmt, getJSON } from '../lib/data'
-import type { Backtest } from '../lib/types'
+import type { Backtest, ReporterMix } from '../lib/types'
 
 const qIndex = (qs: string[], q: string) => qs.indexOf(q)
 const dateToQ = (d: string) => { const [y, m] = d.split('-').map(Number); return `${y}Q${Math.ceil(m / 3)}` }
+// 첫 SDR 까지 사례가 대부분 소비자·변호사 보고이거나 한 분기에 몰렸다면 선행 일수를 조심해 읽습니다
+type Item = Backtest['items'][number]
+const shaky = (x: Item) => { const r = x.reporters; if (!r?.to_first_sdr) return null
+  if (r.to_first_sdr.cn + r.to_first_sdr.lw >= 0.7) return `첫 SDR 까지 사례의 ${fmt.pct(r.to_first_sdr.cn + r.to_first_sdr.lw, 0)}가 소비자·변호사 보고`
+  if ((r.peak_share ?? 0) >= 0.4) return `전체 사례의 ${fmt.pct(r.peak_share ?? 0, 0)}가 ${r.peak_quarter} 한 분기에 접수됨`
+  return null }
+function MixBar({ label, m }: { label: string; m: ReporterMix | null }) {
+  if (!m) return <div className="dim" style={{ fontSize: 11.5 }}>{label}: 해당 사례 없음</div>
+  return (
+    <div>
+      <div className="row between" style={{ fontSize: 11.5 }}><span>{label} <span className="dim">· {fmt.int(m.n)}건</span></span>
+        <span className="num dim">의료인 {fmt.pct(m.hcp, 0)} · 소비자 {fmt.pct(m.cn, 0)} · 변호사 {fmt.pct(m.lw, 0)}</span></div>
+      <div className="row" style={{ height: 8, borderRadius: 4, overflow: 'hidden', marginTop: 4, background: 'rgba(120,170,255,0.1)' }}>
+        <span style={{ width: `${m.hcp * 100}%`, background: '#37e6ff' }} /><span style={{ width: `${m.cn * 100}%`, background: '#ffb547' }} /><span style={{ width: `${m.lw * 100}%`, background: '#ff5d6c' }} />
+      </div>
+    </div>
+  )
+}
 
 export default function TimeMachine() {
   const [bt, setBt] = useState<Backtest | null>(null)
@@ -17,7 +35,7 @@ export default function TimeMachine() {
   const firstX = it.first_signal_quarter ? qIndex(qs, it.first_signal_quarter) : null
   const actX = it.action ? qIndex(qs, dateToQ(it.action)) : null
   const markers = [
-    ...(firstX !== null ? [{ x: firstX, label: `첫 신호 ${it.first_signal_quarter}`, color: '#ff4fd8' }] : []),
+    ...(firstX !== null ? [{ x: firstX, label: `첫 SDR ${it.first_signal_quarter}`, color: '#ff4fd8' }] : []),
     ...(actX !== null && actX >= 0 ? [{ x: actX, label: `FDA 조치 ${it.action}`, color: '#ffcc4d' }] : []),
   ]
   const withLead = bt.items.filter((x) => x.lead_days !== null)
@@ -27,8 +45,9 @@ export default function TimeMachine() {
     <div className="page">
       <PageHead eyebrow="Signal Time Machine · retrospective backtest"
         title={<>분기 누적 감시였다면 <span style={{ color: 'var(--c-memory)' }}>언제</span> 알 수 있었나</>}
-        lede={<>FDA가 안전성 조치를 낸 약물-반응 쌍을 골라, 우리 웨어하우스로 {qs[0]}부터 분기마다 누적 불균형 지표를 다시 계산했다.
-          기준은 <span className="mono" style={{ fontSize: 12.5 }}>{bt.criteria}</span>. 연속 감시 에이전트가 이 기준을 매 분기 자동으로 돌렸다면 첫 신호가 언제 섰는지를 본다.</>} />
+        lede={<>FDA가 안전성 조치를 낸 약물-반응 쌍을 골라, 우리 웨어하우스로 {qs[0]}부터 분기마다 누적 불균형 지표를 다시 계산했습니다.
+          기준은 <span className="mono" style={{ fontSize: 12.5 }}>{bt.criteria}</span>입니다. 연속 감시 에이전트가 이 기준을 매 분기 자동으로 돌렸다면 첫 SDR(불균형 보고 신호)이 언제 섰는지를 봅니다.
+          SDR은 검토를 시작하게 하는 통계 기준 통과이며, 검증된 신호가 아닙니다.</>} />
 
       <div className="grid" style={{ gridTemplateColumns: '340px minmax(0,1fr)', alignItems: 'start' }}>
         <Card title="규제 조치 사례" sub="FDA Drug Safety Communication 기준일">
@@ -39,9 +58,9 @@ export default function TimeMachine() {
                 background: k === i ? 'rgba(255,79,216,0.08)' : 'rgba(10,16,30,0.45)',
               }}>
                 <div className="row between"><b style={{ fontFamily: 'var(--font)', fontSize: 12.5 }}>{x.drug}</b>
-                  {x.lead_days !== null ? <span className={`chip ${x.lead_days > 0 ? 'ok' : 'warn'}`}>{x.lead_days > 0 ? `${fmt.int(x.lead_days)}일 먼저` : `${fmt.int(-x.lead_days)}일 늦음`}</span>
-                    : <span className="chip">{x.first_signal_quarter ? 'control' : 'no signal'}</span>}</div>
-                <div className="dim" style={{ fontSize: 11.5 }}>{x.pt}</div>
+                  {x.lead_days !== null ? <span className={`chip ${x.lead_days > 0 ? (shaky(x) ? 'warn' : 'ok') : 'warn'}`}>{x.lead_days > 0 ? `${fmt.int(x.lead_days)}일 먼저` : `${fmt.int(-x.lead_days)}일 늦음`}</span>
+                    : <span className="chip">{x.first_signal_quarter ? 'control' : 'no SDR'}</span>}</div>
+                <div className="dim" style={{ fontSize: 11.5 }}>{x.pt}{shaky(x) ? ' · 보고자 구성 주의' : ''}</div>
               </button>
             ))}
           </div>
@@ -50,7 +69,7 @@ export default function TimeMachine() {
         <div className="stack" style={{ gap: 16 }}>
           <Card title={<>{it.drug} × {it.pt}</>} sub={it.what}>
             <div className="grid g4" style={{ marginBottom: 12 }}>
-              <div><div className="dim mono" style={{ fontSize: 10.5 }}>FIRST SIGNAL</div><div className="num" style={{ fontSize: 20, color: '#ff4fd8' }}>{it.first_signal_quarter ?? '—'}</div></div>
+              <div><div className="dim mono" style={{ fontSize: 10.5 }}>FIRST SDR</div><div className="num" style={{ fontSize: 20, color: '#ff4fd8' }}>{it.first_signal_quarter ?? '—'}</div></div>
               <div><div className="dim mono" style={{ fontSize: 10.5 }}>FDA ACTION</div><div className="num" style={{ fontSize: 20, color: '#ffcc4d' }}>{it.action ?? '—'}</div></div>
               <div><div className="dim mono" style={{ fontSize: 10.5 }}>LEAD TIME</div><div className="num" style={{ fontSize: 20 }}>{it.lead_days !== null ? `${it.lead_days > 0 ? '+' : ''}${fmt.int(it.lead_days)} d` : '—'}</div></div>
               <div><div className="dim mono" style={{ fontSize: 10.5 }}>CASES AT ACTION</div><div className="num" style={{ fontSize: 20 }}>{actX !== null && actX >= 0 ? fmt.int(it.series[actX]?.a ?? 0) : fmt.int(it.series[it.series.length - 1].a)}</div></div>
@@ -70,10 +89,18 @@ export default function TimeMachine() {
                   series={[{ key: 'a', color: '#76b900', area: true, values: it.series.map((s, k) => ({ x: k, y: s.a })) }]} />
               </div>
             </div>
+            {it.reporters && (
+              <div className="stack" style={{ gap: 8, marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid var(--line)' }}>
+                <div className="dim mono" style={{ fontSize: 10.5 }}>REPORTERS · 누가 보고했나 (파랑 의료인 · 주황 소비자 · 빨강 변호사)</div>
+                <MixBar label="첫 SDR 까지" m={it.reporters.to_first_sdr} />
+                <MixBar label="FDA 조치 전" m={it.reporters.pre_action} />
+                {shaky(it) && <div style={{ fontSize: 12, color: 'var(--warn)' }}>주의: {shaky(it)}. 이 선행 일수는 의료인 보고로 선 SDR 보다 조심해서 읽어야 합니다.</div>}
+              </div>
+            )}
             {it.note && <div style={{ marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid rgba(255,204,77,0.4)', background: 'rgba(255,204,77,0.06)', fontSize: 12.5 }}><b style={{ color: 'var(--warn)' }}>불균형 분석이 놓친 사례 · </b>{it.note}</div>}
-            {it.left_censored && <div className="note" style={{ marginTop: 10 }}><b>왼쪽 절단:</b> 웨어하우스 첫 분기({qs[0]})에 이미 기준을 넘었다. 실제 첫 신호는 그 이전일 수 있어 선행 시간은 하한이다.</div>}
+            {it.left_censored && <div className="note" style={{ marginTop: 10 }}><b>왼쪽 절단:</b> 웨어하우스 첫 분기({qs[0]})에 이미 기준을 넘었습니다. 실제 첫 SDR은 그 이전일 수 있어 선행 시간은 하한입니다.</div>}
           </Card>
-          <Card title="선행 시간 요약" sub="양수 = 규제 조치보다 먼저 통계 기준을 넘음. 음수 = 조치가 먼저였음 (기준이 늦게 서는 경우도 그대로 보여 준다)">
+          <Card title="선행 시간 요약" sub="양수 = 규제 조치보다 먼저 통계 기준을 넘음. 음수 = 조치가 먼저였음 (기준이 늦게 서는 경우도 그대로 보여 줍니다)">
             <div className="stack" style={{ gap: 8 }}>
               {withLead.map((x) => {
                 const v = x.lead_days as number
@@ -90,9 +117,10 @@ export default function TimeMachine() {
               })}
             </div>
             <div className="note" style={{ marginTop: 12 }}>
-              <b>해석 한계.</b> 사후 재계산이다. 분기 파일은 보고 접수 후 수개월 뒤 공개되고, 신호 기준 통과는 평가의 시작이지 인과 확인이 아니다.
-              규제 조치는 FAERS 외 임상시험·문헌 근거로 내려지므로 이 선행 시간을 “FDA가 늦었다”로 읽으면 안 된다 (R1, R6).
-              이 화면이 보여 주는 것은 연속 자동 감시가 사람의 평가를 <b>언제 시작시킬 수 있었는가</b>다.
+              <b>해석 한계.</b> 사후 재계산입니다. 분기 파일은 보고 접수 후 수개월 뒤 공개되고, SDR은 평가의 시작이지 인과 확인이 아닙니다.
+              FDA 내부 검토는 공개 조치보다 앞설 수 있습니다(Harpaz 등은 라벨 개정보다 최대 2년 앞설 수 있다고 적었습니다).
+              그래서 이 선행 시간을 “FDA보다 빨랐다”로 읽으면 과장입니다 (R1, R6). 레보플록사신처럼 소비자 보고가 한꺼번에 접수되어 선 SDR은 더 조심해서 읽어야 합니다.
+              이 화면이 보여 주는 것은 연속 자동 감시가 사람의 평가를 <b>언제 시작시킬 수 있었는가</b>입니다.
             </div>
           </Card>
         </div>

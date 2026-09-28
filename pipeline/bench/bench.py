@@ -24,6 +24,8 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "api"))
 from _fv import clients, config, triage  # noqa: E402
 
+import ablation  # noqa: E402  (같은 폴더)
+
 OUT = ROOT / "web/public/data/bench.json"
 
 
@@ -138,58 +140,9 @@ async def main(args):
         s = serious_by_action.setdefault(a, [0, 0])
         s[0] += 1 if c["outcomes"] else 0
         s[1] += 1
-    # ---------------- 비교 실험: 그대로 쓴 Jev vs FlyVigilance (근거 주입 전후)
-    def escalation(flags):
-        tp = sum(1 for f, yy in zip(flags, y) if f and yy)
-        fn = sum(1 for f, yy in zip(flags, y) if not f and yy)
-        fp = sum(1 for f, yy in zip(flags, y) if f and not yy)
-        tn = sum(1 for f, yy in zip(flags, y) if not f and not yy)
-        return {"sens": tp / (tp + fn) if tp + fn else None, "spec": tn / (tn + fp) if tn + fp else None,
-                "missed_serious": fn, "over_escalated": fp, "escalated": tp + fp, "n": len(flags)}
-
-    def no_review(flags_no_review):
-        """중대 사례가 사람도 System-2 도 거치지 않는 경로(종결·모니터링 / raw 의 no)로 간 건수입니다."""
-        return sum(1 for f, yy in zip(flags_no_review, y) if f and yy)
-    ok_idx = [i for i in range(len(cases)) if "error" not in full[i] and "error" not in ungrounded[i] and "error" not in raw[i]]
-    yy_ok = [y[i] for i in ok_idx]
-    fv_flags = [full[i]["decision"]["action"] == "expedite" for i in ok_idx]
-    fv0_flags = [ungrounded[i]["decision"]["action"] == "expedite" for i in ok_idx]
-    raw_flags = [raw[i]["escalate"] for i in ok_idx]
-    y_backup, y = y, yy_ok
-    nr_fv = no_review([full[i]["decision"]["action"] in ("close", "monitor") for i in ok_idx])
-    nr_fv0 = no_review([ungrounded[i]["decision"]["action"] in ("close", "monitor") for i in ok_idx])
-    nr_raw = no_review([not raw[i]["escalate"] for i in ok_idx])
-    abl = {"n": len(ok_idx), "definition": "human-first = FlyVigilance action 'expedite' / raw Jev review_first p>=0.5; truth = FAERS outcome code present (serious)",
-           "flyvigilance": {**escalation(fv_flags), "serious_without_review": nr_fv},
-           "flyvigilance_ungrounded": {**escalation(fv0_flags), "serious_without_review": nr_fv0},
-           "raw_jev": {**escalation(raw_flags), "serious_without_review": nr_raw},
-           "routes": {k: {a: sum(1 for i in ok_idx if r[i]["decision"]["action"] == a) for a in ("expedite", "signal_review", "follow_up", "monitor", "close")}
-                      for k, r in (("flyvigilance", full), ("flyvigilance_ungrounded", ungrounded))},
-           "raw_auroc": auroc(yy_ok, [raw[i]["p"] for i in ok_idx]),
-           "raw_latency_ms": lat_stats([raw[i]["jev"]["latency_ms"] for i in ok_idx]), "raw_wall_s": round(wall_r, 2)}
-    y = y_backup
-    # 라벨 근거: Jev 기억 속 예측성 vs 라벨 조회
-    both = [(full[i], ungrounded[i], cases[i]) for i in ok_idx if full[i].get("grounding") and full[i]["grounding"]["expected"] is not None]
-    mem = [(u["jev"]["answers"]["expected"]["noul"] >= 0.5, g["grounding"]["expected"] >= 0.5, c) for g, u, c in both]
-    changed = [(g, u, c) for g, u, c in ((full[i], ungrounded[i], cases[i]) for i in ok_idx)
-               if g["decision"]["action"] != u["decision"]["action"]]
-    abl["grounding"] = {
-        "label_found": len(both), "cases": len(ok_idx),
-        "memory_vs_label": {"both_expected": sum(1 for m, l, _ in mem if m and l), "both_unexpected": sum(1 for m, l, _ in mem if not m and not l),
-                            "memory_expected_label_not": sum(1 for m, l, _ in mem if m and not l),
-                            "memory_unexpected_label_listed": sum(1 for m, l, _ in mem if not m and l)},
-        "actions_changed": len(changed),
-        "changed_to_expedite": sum(1 for g, u, _ in changed if g["decision"]["action"] == "expedite"),
-        "changed_from_expedite": sum(1 for g, u, _ in changed if u["decision"]["action"] == "expedite"),
-        "changed_serious_to_expedite": sum(1 for g, u, c in changed if g["decision"]["action"] == "expedite" and c["outcomes"]),
-        "label_latency_ms": lat_stats([g["grounding"]["latency_ms"] for g, _, _ in ((full[i], 0, 0) for i in ok_idx) if g.get("grounding")]),
-        "examples": [{"primaryid": c["primaryid"], "suspect": g["suspect"], "reactions": c["reactions"][:3],
-                      "serious": bool(c["outcomes"]), "memory_expected": round(u["jev"]["answers"]["expected"]["noul"], 2),
-                      "label": {pt: v["sections"] for pt, v in g["grounding"]["label"].get("by_pt", {}).items()},
-                      "before": u["decision"]["action"], "after": g["decision"]["action"]}
-                     for g, u, c in changed[:12]],
-    }
-    abl["ungrounded_wall_s"] = round(wall_a0, 2)
+    # ---------------- 비교 실험: 그대로 쓴 Jev vs FlyVigilance (근거 주입 전후). 결과 코드를 가린 조건은 ablation.py 가 잽니다
+    abl = ablation.summarize(cases, full, ungrounded, raw, include_outcome=True)
+    abl["wall_s"] = {"flyvigilance": round(wall_a, 2), "flyvigilance_ungrounded": round(wall_a0, 2), "raw_jev": round(wall_r, 2)}
 
     res = {
         "generated": time.strftime("%Y-%m-%d %H:%M"),
@@ -271,6 +224,11 @@ async def main(args):
                        "causality_agreement": agree_caus / n_cmp if n_cmp else None, "compared": n_cmp},
             "concurrency": args.nim_conc,
         }
+    if OUT.exists():  # 결과 코드를 가린 비교(ablation.py)는 이 스크립트가 다시 재지 않으므로 보존합니다
+        prev = json.loads(OUT.read_text())
+        for k in ("ablation_blind", "ablation_generated"):
+            if k in prev:
+                res[k] = prev[k]
     OUT.write_text(json.dumps(res, indent=1, default=float))
     hist = OUT.parent / "bench"
     hist.mkdir(exist_ok=True)

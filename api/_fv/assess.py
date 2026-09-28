@@ -17,7 +17,7 @@ OVERCLAIM_RULES = [
     ("R1", "Disproportionality (PRR, ROR, IC) shows a reporting association, never causation."),
     ("R2", "FAERS counts have no exposure denominator: no incidence, rate or risk estimates."),
     ("R3", "Do not rank or compare the safety of different drugs by disproportionality magnitude."),
-    ("R4", "Absence of a disproportionality signal is not evidence of safety."),
+    ("R4", "Absence of an SDR (signal of disproportionate reporting) is not evidence of safety."),
     ("R5", "A reaction listed in the label does not confirm causality in this individual case."),
     ("R6", "A single case report cannot establish or confirm a signal on its own."),
     ("R7", "Number of PubMed hits is not a measure of evidence strength."),
@@ -31,7 +31,9 @@ OVERCLAIM_RULES = [
 
 SYSTEM = """You are the System-2 pharmacovigilance assessor inside FlyVigilance.
 Write a concise case-level safety assessment using ONLY the evidence bundle. Every claim must cite evidence IDs that
-exist in the bundle. Copy numbers exactly as given. Obey these interpretation limits:
+exist in the bundle. Copy numbers exactly as given. A disproportionality threshold crossing is an SDR (signal of
+disproportionate reporting), not a validated signal; if statistics are unavailable say so, do not say 'no signal'.
+Obey these interpretation limits:
 """ + "\n".join(f"{k}: {v}" for k, v in OVERCLAIM_RULES) + """
 Return ONLY JSON:
 {"claims":[{"id":"c1","text":"...","evidence":["faers:2x2:..."]}],

@@ -23,6 +23,8 @@ export interface BenchExample {
 export interface Bench {
   generated: string
   ablation?: Ablation
+  ablation_blind?: Ablation
+  ablation_generated?: string
   dataset: { source: string; cases: number; buckets: Record<string, number>; serious_rate: number }
   jev_triage: {
     ok: number; errors: number; questions_per_call: number; latency_ms: LatStats; wall_s: number; concurrency: number
@@ -43,12 +45,14 @@ export interface Bench {
   }
 }
 
+export interface ReporterMix { n: number; hcp: number; cn: number; lw: number }
 export interface Backtest {
-  quarters: string[]; criteria: string
+  quarters: string[]; criteria: string; reporter_note?: string
   items: {
     drug: string; pt: string; action: string | null; what: string; note?: string; first_signal_quarter: string | null
     first_signal_date: string | null; lead_days: number | null; left_censored: boolean
     series: { q: string; a: number; prr?: number; ror_lo?: number; ic025?: number; chi2?: number; signal?: boolean }[]
+    reporters?: { all: ReporterMix | null; to_first_sdr: ReporterMix | null; pre_action: ReporterMix | null; peak_quarter: string | null; peak_share: number | null }
   }[]
 }
 
@@ -84,11 +88,17 @@ export interface LiteratureEval {
   per_class: Record<string, { n: number; recall: number }>; confusion: Record<string, Record<string, number>>; labels: string[]
   calls: number; articles_per_call: number; latency_ms_p50: number; truth_source: string
 }
-export interface Escalation { sens: number; spec: number; missed_serious: number; over_escalated: number; escalated: number; n: number; serious_without_review: number }
+export interface Escalation {
+  sens: number; spec: number; missed_serious: number; over_escalated: number; escalated: number; n: number; serious_without_review: number
+  routes?: Record<string, number>; routes_serious?: Record<string, number>
+}
+export interface McNemar { a_only: number; b_only: number; p: number }
 export interface Ablation {
-  n: number; definition: string
-  flyvigilance: Escalation; flyvigilance_ungrounded: Escalation; raw_jev: Escalation
+  n: number; definition: string; serious?: number; include_outcome?: boolean
+  flyvigilance: Escalation; flyvigilance_ungrounded: Escalation; raw_jev: Escalation; flyvigilance_no_dme?: Escalation
   routes: Record<string, Record<string, number>>; raw_auroc: number; raw_latency_ms: LatStats
+  tests?: Record<string, McNemar>
+  dme?: { cases_with_dme: number; serious_among_dme: number; changed_by_dme: number; serious_changed_by_dme: number }
   grounding: {
     label_found: number; cases: number
     memory_vs_label: { both_expected: number; both_unexpected: number; memory_expected_label_not: number; memory_unexpected_label_listed: number }
@@ -97,12 +107,21 @@ export interface Ablation {
     examples: { primaryid: number; suspect: string; reactions: string[]; serious: boolean; memory_expected: number; label: Record<string, string[]>; before: string; after: string }[]
   }
 }
+export interface ReportingBias {
+  lawyer_share: number; consumer_share: number; hcp_share: number; background: { lw: number; cn: number; hcp: number } | null
+  flag_lawyer: boolean; flag_consumer: boolean
+  no_lawyer: { a: number; prr: number | null; ic025: number | null; sdr: boolean }; hcp_only: { a: number; prr: number | null; ic025: number | null; sdr: boolean }
+}
 export interface EvidenceGrade {
   id: string; drug: string; pt: string; grade: 'A' | 'B' | 'C' | 'L' | 'D' | 'U'; grade_name: string
-  axes: { regulatory: number; regulatory_name: string; signal: string; literature: { read: number; supportive: number; analytic_read: number; analytic_supportive: number; anecdotal_supportive: number; analytic_status: string } }
+  pv_class: 'review_sdr' | 'potential_candidate' | 'undetermined' | 'identified_candidate' | 'known_no_sdr' | 'none'
+  pv_class_name: string; pv_hint: string; review_priority: number
+  axes: { regulatory: number; regulatory_name: string; label_status: string; label_status_name: string; signal: string; signal_name: string
+    literature: { read: number; supportive: number; analytic_read: number; analytic_supportive: number; anecdotal_supportive: number; analytic_status: string } }
+  flags: { severity_boxed: boolean; dme: boolean; reporting_bias: ReportingBias | null; contraindication: string | null; indication_term: boolean }
   label_sections: string[]; disclaimer: { section: string; quote: string } | null
   stats: { a: number; prr: number; prr_lo: number; prr_hi: number; ror_lo: number; ic025: number; chi2: number } | null
   basis: string[]; gaps: string[]; summary: string; caution: string
   literature?: { count: number | null; articles: LitArticle[]; summary: Record<string, unknown> }
 }
-export interface LitArticle { pmid: string; year: string | null; title: string; design: string; design_source: string; supports: number; strength: number | null; dechallenge: number; id: string }
+export interface LitArticle { pmid: string; year: string | null; title: string; design: string; design_source: string; addresses?: string | null; supports: number | null; strength: number | null; dechallenge: number | null; id: string }

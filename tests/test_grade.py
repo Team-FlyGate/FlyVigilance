@@ -38,3 +38,21 @@ def test_grade_pair_keeps_basis_and_gaps():
     g = grade.grade_pair("X", "rash", f, label, {"summary": {"read": 0}})
     assert g["grade"] == "B" and f["id"] in g["basis"] and any("문헌" in x for x in g["gaps"])
     assert "인과를 뜻하지 않" in g["caution"]
+
+
+def test_pv_class_follows_label_status_times_sdr():
+    # 라벨에 없는데 SDR 이 선 쌍이 검토 우선입니다(약사 검토: PV 검토 우선순위)
+    assert grade.pv_class(0, "strong", False) == "review_sdr"
+    assert grade.pv_class(-1, "strong", False) == "review_sdr"
+    assert grade.pv_class(2, "strong", False) == "identified_candidate"
+    assert grade.pv_class(3, "strong", True) == "potential_candidate"
+    assert grade.pv_class(1, "none", False) == "known_no_sdr"
+    assert grade.pv_class(0, "none", False) == "none" and grade.pv_class(0, "unavailable", False) == "undetermined"
+    assert grade.PV_CLASSES["review_sdr"][2] < grade.PV_CLASSES["identified_candidate"][2]
+
+
+def test_reporting_bias_flag_for_isotretinoin_ibd():
+    b = grade.reporting_bias("isotretinoin", "inflammatory bowel disease")
+    assert b and b["flag_lawyer"] and b["lawyer_share"] > 0.9
+    uc = grade.reporting_bias("isotretinoin", "colitis ulcerative")
+    assert uc and not uc["no_lawyer"]["sdr"]   # 변호사 보고를 빼면 SDR 이 사라집니다
