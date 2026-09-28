@@ -4,7 +4,7 @@ import { Card, Loading } from '../components/ui'
 import { KV, pathOf, Progress, RunButton, SkillBox, SourceChip, StepPage, pulseReward } from '../components/DiscoveryShell'
 import { useBrain } from '../lib/brain'
 import {
-  fmtS, getCatalog, getScene, rewardFromConfidence, rewardFromRmsd, runStep, saveRun, setStore, useDiscovery,
+  fmtS, getCatalog, runParams, getSceneForSelection, rewardFromConfidence, rewardFromRmsd, runStep, saveRun, setStore, useDiscovery,
   type Catalog, type DockResult, type Envelope, type Scene,
 } from '../lib/discovery'
 
@@ -12,7 +12,7 @@ const Mol3D = lazy(() => import('../components/Mol3D'))
 
 export default function DiscoveryDiffdock() {
   const { sim } = useBrain()
-  const { target, ligand, runs, envs } = useDiscovery()
+  const { target, ligand, runs, envs, customTarget, customLigand } = useDiscovery()
   const [cat, setCat] = useState<Catalog | null>(null)
   const [scene, setScene] = useState<Scene | null>(null)
   const [busy, setBusy] = useState(false)
@@ -20,13 +20,19 @@ export default function DiscoveryDiffdock() {
   const [active, setActive] = useState(0)
   const [cycle, setCycle] = useState(true)
   const [err, setErr] = useState<string | null>(null)
+  const [sceneErr, setSceneErr] = useState<string | null>(null)
   const [fresh, setFresh] = useState(false)
   const env = (envs.diffdock ?? null) as Envelope<DockResult> | null
   const res = (runs.diffdock ?? env?.measured ?? null) as DockResult | null
   const isLive = Boolean(runs.diffdock)
 
   useEffect(() => { getCatalog().then(setCat).catch(() => setErr('목록을 불러오지 못했습니다')) }, [])
-  useEffect(() => { setScene(null); getScene(target).then(setScene).catch(() => null) }, [target])
+  useEffect(() => {
+    setScene(null); setSceneErr(null)
+    getSceneForSelection()
+      .then(setScene)
+      .catch((e) => setSceneErr(e instanceof Error ? e.message : String(e)))
+  }, [target, customTarget])
   useEffect(() => {
     if (!busy) return
     const t0 = Date.now()
@@ -53,7 +59,7 @@ export default function DiscoveryDiffdock() {
     sim?.stimulate('channel', 'trials', 1.1, 12)
     const beat = setInterval(() => sim?.stimulate('layer', 'reflex', 0.8, 6), 900)
     try {
-      const out = await runStep<DockResult>('diffdock', { target, ligand, no_cache: fresh }, (e) => saveRun('diffdock', e as Envelope))
+      const out = await runStep<DockResult>('diffdock', runParams({ no_cache: fresh, receptor_structure_key: runs.openfold3?.structure_key }), (e) => saveRun('diffdock', e as Envelope))
       saveRun('diffdock', out as Envelope)
       const p = out.result?.poses?.[0]
       if (p) {
@@ -86,6 +92,7 @@ export default function DiscoveryDiffdock() {
         공결정 리간드를 다시 넣은 재도킹은 <b>도킹 설정이 작동하는지</b> 확인하는 대조 실험이며 전향적 예측이 아닙니다.
         채점 기준은 대칭을 고려한 중원자 RMSD ≤ 2.0 Å(정렬 없음)입니다.</>}
       right={<span className="chip nv">health.api.nvidia.com · DiffDock</span>}
+      cat={cat}
       current="diffdock"
       center={
         <Card title="결합 주머니와 포즈" sub={res ? `${res.n_poses}개 포즈 · ${res.redock ? '공결정 재도킹(대조)' : '탐색적 교차 도킹'} · ${res.criterion}` : '실행하면 라이브 포즈가 들어옵니다'}
@@ -99,6 +106,10 @@ export default function DiscoveryDiffdock() {
               <Mol3D traces={traces} mols={mols} cloud={scene.pocket} focus={scene.pocket_center} radius={20} height={430}
                 dockIn={res ? `${res.ligand}-${active}` : null} spin />
             </Suspense>
+          ) : sceneErr ? (
+            <div className="note" style={{ color: 'var(--warn)', padding: 20 }}>
+              이 표적의 실험 구조를 받지 못했습니다: {sceneErr}. 2단계에서 OpenFold3 예측 구조를 먼저 만들면 그 구조로 도킹합니다.
+            </div>
           ) : <div className="shimmer" style={{ height: 430 }} />}
           <div className="row wrap" style={{ gap: 6, marginTop: 10 }}>
             {res?.poses.map((p, i) => (
@@ -121,6 +132,11 @@ export default function DiscoveryDiffdock() {
       side={
         <>
           <Card title="라이브 실행" sub="NVIDIA BioNeMo NIM 호출">
+            {(customTarget || customLigand) ? (
+              <div className="note" style={{ marginBottom: 10 }}>
+                위에서 고른 표적·리간드로 실행합니다{customTarget?.pdb ? ` · 수용체 ${customTarget.pdb} 체인 ${customTarget.chain}` : ''}
+              </div>
+            ) : (
             <div className="stack" style={{ gap: 8, marginBottom: 10 }}>
               <span className="mono dim" style={{ fontSize: 10.5, letterSpacing: 0.4, textTransform: 'uppercase' }}>표적 · 리간드</span>
               <select className="input" value={`${target}--${ligand}`} onChange={(e) => {
@@ -132,6 +148,7 @@ export default function DiscoveryDiffdock() {
                 ))}
               </select>
             </div>
+            )}
             <RunButton busy={busy} onClick={run} label="DiffDock 실행" fresh={fresh} setFresh={setFresh}
               sub={<>{t?.pdb} {t?.chain ? `체인 ${t.chain}` : ''} · 포즈 5개 · steps 18</>} />
             <div className="divider" />
@@ -148,12 +165,14 @@ export default function DiscoveryDiffdock() {
               ['SMILES', <span key="s" className="mono" style={{ fontSize: 9.5 }}>{String(env?.request?.ligand ?? cat?.ligands[ligand]?.smiles ?? '').slice(0, 44)}…</span>],
             ]} />
           </Card>
+          {res?.reference_note && <div className="note" style={{ color: 'var(--warn)' }}>{res.reference_note}</div>}
           <Card title="측정값" sub="이번 실행">
             <KV rows={[
               ['1순위 신뢰도', res?.top1_confidence ?? '–'],
               ['1순위 RMSD', res?.top1_rmsd != null ? `${res.top1_rmsd} Å` : res?.redock ? '–' : '해당 없음(교차 도킹)'],
               ['최소 RMSD', res?.best_rmsd != null ? `${res.best_rmsd} Å` : '–'],
-              ['2 Å 기준', res ? (res.top1_success ? '통과' : res.redock ? '미달' : '–') : '–'],
+              ['2 Å 기준', res ? (res.top1_success ? '통과' : res.redock ? '미달' : '기준 결정 구조 없음') : '–'],
+              ['수용체', res?.receptor_source ?? (customTarget?.pdb ? `RCSB ${customTarget.pdb}` : '목록 결정 구조')],
               ['소요', busy ? `${elapsed.toFixed(1)}초` : env?.source === 'cache' ? '캐시(같은 입력)' : fmtS(env?.elapsed_s)],
             ]} />
             <div className="divider" />

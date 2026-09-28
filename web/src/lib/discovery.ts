@@ -10,6 +10,7 @@ export interface MsaResult {
   depth: number[]; conservation: number[]; mean_depth: number; coverage: number
   rows: { name: string; seq: string; identity: number }[]
   databases_returned: string[]; a3m_chars: number; a3m_key?: string; a3m?: string | null; seconds?: number
+  target_label?: string
 }
 export interface Of3Result {
   target: string; ligand: string | null; msa_source?: string
@@ -18,6 +19,7 @@ export interface Of3Result {
   plddt_per_residue: number[]; mean_plddt: number; ca: number[][]; xtal_ca: number[][]
   ligand_atoms: [string, number, number, number][]; ligand_bonds: number[][]
   xtal_ligand: { atoms: [string, number, number, number][]; bonds: number[][] } | null; seconds?: number
+  target_label?: string; reference?: 'crystal' | 'none'; reference_note?: string | null; structure_key?: string
 }
 export interface Pose {
   rank: number; confidence: number | null; rmsd: number | null; pocket_dist: number | null
@@ -28,6 +30,7 @@ export interface DockResult {
   top1_confidence: number | null; top1_rmsd: number | null; best_rmsd: number | null; top1_success: boolean
   criterion: string; status?: string; xtal_ligand: { atoms: [string, number, number, number][]; bonds: number[][] } | null
   seconds?: number | null
+  target_label?: string; reference?: 'crystal' | 'none'; reference_note?: string | null; receptor_source?: string | null
 }
 export interface BoltzResult {
   target: string; ligand: string
@@ -36,6 +39,7 @@ export interface BoltzResult {
   n_residues: number; ca: number[][]; plddt_per_residue: number[]
   ligand_atoms: [string, number, number, number][]; ligand_bonds: number[][]
   metrics: Record<string, number>; chembl: { median_pchembl: number; n: number; source: string } | null; seconds?: number
+  target_label?: string
 }
 export type StepResult = MsaResult | Of3Result | DockResult | BoltzResult
 
@@ -43,6 +47,8 @@ export interface Envelope<T = StepResult> {
   kind: StepKind; endpoint: string; skills: Skill[]; params: Record<string, unknown>
   request: Record<string, unknown>; measured: T | null
   state: 'done' | 'pending'; source?: 'live' | 'cache' | 'measured'; elapsed_s?: number
+  target?: { label?: string; gene?: string; pdb?: string; chain?: string; organism?: string; desc?: string
+    kind?: string; reference?: string; length?: number | null; custom?: boolean }
   result?: T; error?: string; note?: string; req_id?: string; poll_url?: string; waited_s?: number | null
 }
 
@@ -71,6 +77,7 @@ export interface Scene {
   target: string; label: string; pdb: string; chain: string; organism: string; desc: string
   xtal_drug: string | null; xtal_ligand: { atoms: [string, number, number, number][]; bonds: number[][] }
   ca: number[][]; pocket: [string, number, number, number][]; pocket_center: number[] | null; sequence_len: number | null
+  kind?: string; reference?: string; pocket_ligand_code?: string | null; receptor_source?: string | null
 }
 
 export interface Claim {
@@ -102,6 +109,30 @@ async function fresh<T>(url: string, body?: unknown): Promise<T> {
   return r.json() as Promise<T>
 }
 
+// ---------------------------------------------------------------- 단백질·리간드 찾기
+export interface ProteinHit {
+  id: string; uniprot_id: string; name: string; gene: string; organism: string
+  reviewed: boolean; length: number | null; n_pdb: number; pdb: string | null
+}
+export interface StructureRef {
+  pdb: string; method: string; resolution: number | null; chain: string | null
+  start: number | null; end: number | null; chains_raw: string
+}
+export interface RangeRef { kind: 'structure' | 'domain' | 'full'; label: string; start: number; end: number }
+export interface ProteinRecord {
+  id: string; uniprot_id: string; name: string; gene: string; organism: string; reviewed: boolean
+  length: number; sequence: string; structures: StructureRef[]; best_structure: StructureRef | null
+  domains: { label: string; start: number; end: number }[]; ranges: RangeRef[]; recommended_range: RangeRef
+  check: { ok: boolean; length: number; openfold3_ok: boolean; reason: string }
+}
+export interface LigandHit { cid: number | null; name: string; smiles: string; mw: number | null; source: string }
+
+export const searchProtein = (q: string) =>
+  fresh<{ query: string; hits: ProteinHit[]; ms?: number }>(`/api/discovery/search/protein?q=${encodeURIComponent(q)}`)
+export const getProtein = (id: string) => fresh<ProteinRecord>(`/api/discovery/protein/${encodeURIComponent(id)}`)
+export const searchLigand = (q: string) =>
+  fresh<{ query: string; hits: LigandHit[]; ms?: number; smiles_note?: string }>(`/api/discovery/search/ligand?q=${encodeURIComponent(q)}`)
+
 export const getCatalog = (() => {
   let p: Promise<Catalog> | null = null
   return () => (p ??= fresh<Catalog>('/api/discovery/catalog'))
@@ -111,6 +142,15 @@ const scenes = new Map<string, Promise<Scene>>()
 export function getScene(target: string): Promise<Scene> {
   if (!scenes.has(target)) scenes.set(target, fresh<Scene>(`/api/discovery/scene/${target}`))
   return scenes.get(target)!
+}
+
+/** 고른 표적의 3D 배경입니다. 화면에서 찾은 단백질은 RCSB 실험 구조를 받아 그립니다. */
+export function getSceneForSelection(): Promise<Scene> {
+  const s = getStore()
+  if (!s.customTarget) return getScene(s.target)
+  const key = `custom:${s.customTarget.id}:${s.customTarget.pdb}:${s.customTarget.chain}`
+  if (!scenes.has(key)) scenes.set(key, fresh<Scene>('/api/discovery/scene', { custom_target: customTargetPayload(s.customTarget) }))
+  return scenes.get(key)!
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
@@ -133,14 +173,56 @@ export const runCritic = (body: { claims?: Claim[]; runs: Record<string, unknown
   fresh<CriticResult>('/api/discovery/critic', body)
 
 // ---------------------------------------------------------------- 공용 저장소 (단계 사이 전달)
+export interface CustomTarget {
+  id: string; gene: string; name: string; organism: string; sequence: string; length: number
+  pdb: string | null; chain: string | null; start: number | null; end: number | null
+  label: string; resolution?: number | null; range_label?: string
+  openfold3_ok?: boolean; note?: string
+}
+export interface CustomLigand { name: string; smiles: string; cid: number | null; mw: number | null }
+
+export const customTargetPayload = (t: CustomTarget) => ({
+  id: t.id, gene: t.gene, name: t.name, organism: t.organism, sequence: t.sequence, label: t.label,
+  pdb: t.pdb, chain: t.chain, start: t.start, end: t.end,
+})
+
+/** 실행에 보낼 입력입니다. 화면에서 고른 표적·리간드가 있으면 그것을, 없으면 목록의 것을 씁니다. */
+export function runParams(extra: Record<string, unknown> = {}): Record<string, unknown> {
+  const s = getStore()
+  const p: Record<string, unknown> = { ...extra }
+  if (s.customTarget) p.custom_target = customTargetPayload(s.customTarget)
+  else p.target = s.target
+  if (s.customLigand) p.custom_ligand = s.customLigand
+  else p.ligand = s.ligand
+  return p
+}
+
 export interface Store {
   target: string
   ligand: string
+  customTarget: CustomTarget | null
+  customLigand: CustomLigand | null
   runs: { msa?: MsaResult; openfold3?: Of3Result; diffdock?: DockResult; boltz2?: BoltzResult }
   envs: Partial<Record<StepKind, Envelope>>
   reward: { value: number; label: string; source: string; at: number }
 }
-let store: Store = { target: 'parp1', ligand: 'niraparib', runs: {}, envs: {}, reward: { value: 0, label: '대기', source: '', at: 0 } }
+let store: Store = { target: 'parp1', ligand: 'niraparib', customTarget: null, customLigand: null,
+  runs: {}, envs: {}, reward: { value: 0, label: '대기', source: '', at: 0 } }
+
+/** 표적이나 리간드를 바꾸면 앞 단계 결과는 더 이상 맞지 않으므로 비웁니다. */
+export function selectTarget(t: CustomTarget | null, presetKey?: string) {
+  store = { ...store, customTarget: t, target: presetKey ?? store.target, runs: {}, envs: {},
+    reward: { value: 0, label: '대기', source: '', at: 0 } }
+  emit()
+}
+export function selectLigand(l: CustomLigand | null, presetKey?: string) {
+  store = { ...store, customLigand: l, ligand: presetKey ?? store.ligand,
+    runs: { ...store.runs, openfold3: undefined, diffdock: undefined, boltz2: undefined },
+    envs: { ...store.envs, openfold3: undefined, diffdock: undefined, boltz2: undefined } }
+  emit()
+}
+export const targetLabel = () => (store.customTarget ? store.customTarget.label : store.target.toUpperCase())
+export const ligandLabel = () => (store.customLigand ? store.customLigand.name : store.ligand)
 const subs = new Set<() => void>()
 const emit = () => subs.forEach((f) => f())
 

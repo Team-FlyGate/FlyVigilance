@@ -3,12 +3,13 @@
 // 가운데: 단계별 분자 시각화, 오른쪽: NIM 엔드포인트·따라간 NVIDIA 공식 스킬·요청 요약·진행·지표·지난 측정
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import BrainView from './BrainView'
+import TargetPicker from './TargetPicker'
 import { Card, PageHead } from './ui'
 import { LayerMeter } from '../pages/MissionControl'
 import { useBrain } from '../lib/brain'
 import { CHANNEL_COLOR, fmt } from '../lib/data'
 import type { Sim } from '../lib/connectome'
-import { REWARD_NOTE, SOURCE_LABEL, fmtS, setReward, useDiscovery, type Envelope, type Skill } from '../lib/discovery'
+import { REWARD_NOTE, SOURCE_LABEL, fmtS, setReward, useDiscovery, type Catalog, type Envelope, type Skill } from '../lib/discovery'
 
 export const STEP_ORDER: { id: string; label: string; en: string }[] = [
   { id: 'msa', label: 'MSA 탐색', en: 'MSA-Search' },
@@ -198,15 +199,16 @@ export function StepNav({ current }: { current: string }) {
   )
 }
 
-export function StepPage({ eyebrow, title, lede, right, current, center, side, footer }: {
+export function StepPage({ eyebrow, title, lede, right, current, center, side, footer, cat }: {
   eyebrow: string; title: ReactNode; lede: ReactNode; right?: ReactNode; current: string
-  center: ReactNode; side: ReactNode; footer?: ReactNode
+  center: ReactNode; side: ReactNode; footer?: ReactNode; cat?: Catalog | null
 }) {
   const ref = useRef<HTMLDivElement>(null)
   return (
     <div className="page" ref={ref}>
       <PageHead eyebrow={eyebrow} title={title} lede={lede} right={right} />
       <div style={{ marginBottom: 14 }}><StepNav current={current} /></div>
+      <TargetPicker cat={cat ?? null} />
       <div className="disc-grid">
         <div className="stack" style={{ gap: 14 }}>
           <ConnectomePanel />

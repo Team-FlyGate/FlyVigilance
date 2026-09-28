@@ -5,7 +5,7 @@ import { Card, Loading } from '../components/ui'
 import { KV, pathOf, Progress, RunButton, SkillBox, SourceChip, StepPage, pulseReward } from '../components/DiscoveryShell'
 import { useBrain } from '../lib/brain'
 import {
-  fmtS, getCatalog, rewardFromPic50, runStep, saveRun, setStore, useDiscovery,
+  fmtS, getCatalog, runParams, rewardFromPic50, runStep, saveRun, setStore, useDiscovery,
   type BoltzResult, type Catalog, type Envelope,
 } from '../lib/discovery'
 
@@ -72,7 +72,7 @@ function Scatter({ points, live, onPick }: {
 
 export default function DiscoveryBoltz2() {
   const { sim } = useBrain()
-  const { target, ligand, runs, envs } = useDiscovery()
+  const { target, ligand, runs, envs, customTarget, customLigand } = useDiscovery()
   const [cat, setCat] = useState<Catalog | null>(null)
   const [busy, setBusy] = useState(false)
   const [elapsed, setElapsed] = useState(0)
@@ -95,7 +95,7 @@ export default function DiscoveryBoltz2() {
     sim?.stimulate('layer', 'memory', 0.7, 8)
     const beat = setInterval(() => sim?.stimulate('layer', 'deliberate', 0.75, 6), 1000)
     try {
-      const params: Record<string, unknown> = { target, ligand, no_cache: fresh }
+      const params: Record<string, unknown> = runParams({ no_cache: fresh })
       if (runs.msa?.a3m) params.a3m = runs.msa.a3m
       else if (runs.msa?.a3m_key) params.a3m_key = runs.msa.a3m_key
       const out = await runStep<BoltzResult>('boltz2', params, (e) => saveRun('boltz2', e as Envelope))
@@ -131,6 +131,7 @@ export default function DiscoveryBoltz2() {
       lede={<>NVIDIA BioNeMo <b>Boltz-2</b> NIM 으로 복합체 구조와 예측 pIC50 을 함께 받습니다. 예측값은 ChEMBL 실측 pChEMBL 중앙값과 나란히 놓고 봅니다.
         예측 pIC50 은 예측이며 측정값이 아닙니다. 벤치마크는 PARP1 한 표적, 화합물 {bench?.n ?? 39}종 기준입니다.</>}
       right={<span className="chip nv">health.api.nvidia.com · Boltz-2</span>}
+      cat={cat}
       current="boltz2"
       center={
         <>
@@ -160,6 +161,9 @@ export default function DiscoveryBoltz2() {
       side={
         <>
           <Card title="라이브 실행" sub="NVIDIA BioNeMo NIM 호출">
+            {(customTarget || customLigand) ? (
+              <div className="note" style={{ marginBottom: 10 }}>위에서 고른 표적·리간드로 실행합니다 · ChEMBL 실측값이 없으면 대조 없이 예측값만 보여 드립니다</div>
+            ) : (
             <div className="stack" style={{ gap: 8, marginBottom: 10 }}>
               <span className="mono dim" style={{ fontSize: 10.5, letterSpacing: 0.4, textTransform: 'uppercase' }}>표적 · 리간드</span>
               <select className="input" value={`${target}--${ligand}`} onChange={(e) => {
@@ -171,6 +175,7 @@ export default function DiscoveryBoltz2() {
                 ))}
               </select>
             </div>
+            )}
             <RunButton busy={busy} onClick={run} label="Boltz-2 실행" fresh={fresh} setFresh={setFresh}
               sub={<>친화도 예측은 리간드 하나에만 겁니다(predict_affinity)</>} />
             <div className="divider" />
@@ -192,7 +197,8 @@ export default function DiscoveryBoltz2() {
               ['예측 pIC50', res?.affinity.pic50 ?? '–'],
               ['결합 확률', res?.affinity.probability_binary ?? '–'],
               ['ipTM / pLDDT', res ? `${res.scores.iptm ?? '–'} / ${res.scores.plddt ?? '–'}` : '–'],
-              ['ChEMBL 실측 중앙값', res?.chembl ? `${res.chembl.median_pchembl} (n=${res.chembl.n})` : '없음'],
+              ['ChEMBL 실측 중앙값', res?.chembl ? `${res.chembl.median_pchembl} (n=${res.chembl.n})` : '대조값 없음'],
+              ['표적', res?.target_label ?? (customTarget?.label ?? cat?.targets[target]?.label ?? '–')],
               ['소요', busy ? `${elapsed.toFixed(1)}초` : env?.source === 'cache' ? '캐시(같은 입력)' : fmtS(env?.elapsed_s)],
             ]} />
             <div className="divider" />
