@@ -313,3 +313,20 @@ button.chip:hover, a.chip:hover { transform: translateY(-1px); background: rgba(
 .pick:hover { transform: translateX(3px); border-color: rgba(55, 230, 255, 0.55) !important; background: rgba(55, 230, 255, 0.08) !important; }
 .nav-more-toggle { display: flex; align-items: center; gap: 8px; width: 100%; background: none; border: 0; cursor: pointer; padding: 8px 10px 4px; color: var(--text-3); font-family: var(--mono); font-size: 10.5px; letter-spacing: .6px; text-transform: uppercase; }
 .nav-more-toggle:hover { color: var(--text-2); }
+
+/* 샤인 스윕: 누를 수 있는 버튼 위로 사선 빛줄기가 주기적으로 지나갑니다. 움직임 줄이기 설정이면 멈춥니다 */
+.btn, button.chip, a.chip, .nav-reel { position: relative; overflow: hidden; isolation: isolate; }
+.btn::after, button.chip::after, a.chip::after, .nav-reel::after {
+  content: ''; position: absolute; top: -60%; left: -75%; width: 45%; height: 220%; pointer-events: none; z-index: 1;
+  background: linear-gradient(100deg, transparent 0%, rgba(255, 255, 255, 0.08) 30%, rgba(255, 255, 255, 0.55) 50%, rgba(255, 255, 255, 0.08) 70%, transparent 100%);
+  transform: rotate(18deg); animation: shine-sweep 3.4s cubic-bezier(.4, 0, .2, 1) infinite;
+}
+button.chip::after, a.chip::after { opacity: .55; animation-duration: 5.2s; }
+button.chip:nth-child(3n+1)::after, a.chip:nth-child(3n+1)::after { animation-delay: .9s; }
+button.chip:nth-child(3n+2)::after, a.chip:nth-child(3n+2)::after { animation-delay: 1.8s; }
+.btn:nth-of-type(2)::after { animation-delay: .6s; }
+.nav-reel::after { animation-duration: 4.4s; animation-delay: 1.2s; }
+.btn:hover::after, button.chip:hover::after, a.chip:hover::after { animation-duration: 1.1s; }
+.btn:disabled::after { display: none; }
+@keyframes shine-sweep { 0% { left: -75%; } 55%, 100% { left: 135%; } }
+@media (prefers-reduced-motion: reduce) { .btn::after, button.chip::after, a.chip::after, .nav-reel::after { animation: none; display: none; } }
