@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
-import BrainView from './BrainView'
+import ConnectomePanel from './ConnectomePanel'
 import { useBrain } from '../lib/brain'
 import { ballStick, disposeAll, drawRibbon, dust, glowSprite, makeRenderer, plddtColor, ribbon, setOpacity, type Ligand } from '../lib/molScene'
 
@@ -30,6 +30,16 @@ const STEPS = [
 const LOOP = 31000
 // 메뉴가 바뀔 때 커넥텀에서 반짝일 층 (STEP 2 관제 센터와 같은 시뮬레이터를 씁니다)
 const STEP_LAYERS: Record<string, string[]> = { msa: ['sense'], of3: ['encode'], dd: ['reflex', 'memory'], bz: ['memory', 'deliberate'], critic: ['critic', 'action'] }
+const FOCUS: Record<string, string> = { msa: '감각 입력 · 서열 정렬', of3: '특징 부호화 · 구조 예측', dd: '반사 · 기억 · 포즈 판단', bz: '기억 · 숙고 · 친화도', critic: '억제성 크리틱 · 행동' }
+// 장면 속 사건이 일어나는 시각(ms)과 자극할 층. 반복 재생 때마다 다시 울립니다
+const EVENTS: [number, string, number][] = [
+  [300, 'sense', 0.8], [1100, 'sense', 0.8], [1900, 'sense', 0.8], [2700, 'sense', 0.8],
+  [3600, 'encode', 0.9], [4800, 'encode', 0.9], [6000, 'encode', 0.9], [7600, 'encode', 1.1], [8200, 'assoc', 0.8],
+  [11400, 'sense', 0.9], [12100, 'sense', 0.9], [12800, 'sense', 0.9], [13500, 'sense', 0.9], [14200, 'reflex', 1],
+  [16200, 'reflex', 1.4], [16300, 'memory', 1.2], [16500, 'action', 1], [16800, 'critic', 1],
+  [19500, 'memory', 1.1], [20500, 'deliberate', 1.2], [21700, 'deliberate', 1], [23000, 'memory', 0.9],
+  [25000, 'critic', 1.3], [26500, 'critic', 1.1], [28000, 'action', 1.2], [29500, 'feedback', 1],
+]
 type StepId = typeof STEPS[number]['id']
 const clamp = (v: number) => Math.max(0, Math.min(1, v))
 const ease = (k: number) => 1 - Math.pow(1 - clamp(k), 3)
@@ -93,6 +103,8 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
     const s = STEPS.find((x) => x.id === id)!; clock.current = { t0: performance.now(), offset: s.t0 }; hold.current = id; setHeld(id) }
   const resume = () => { hold.current = null; setHeld(null) }
   const { sim } = useBrain()
+  const simRef = useRef(sim)
+  simRef.current = sim
   useEffect(() => { if (sim) (STEP_LAYERS[step] ?? []).forEach((l, i) => setTimeout(() => sim.stimulate('layer', l, 1, 10), i * 300)) }, [step, sim])
 
   useEffect(() => {
@@ -138,7 +150,7 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
     camera.position.copy(farPos); controls.target.copy(protCenter)
     const ro = new ResizeObserver(resize); ro.observe(el); resize()
     const v = new THREE.Vector3()
-    let lastStep = '', dragging = false
+    let lastStep = '', dragging = false, lastT = -1
 
     const loop = (now: number) => {
       if (disposed) return
@@ -148,6 +160,10 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
       const t = h ? h.t0 + ((raw - h.t0) % (h.t1 - h.t0)) : raw % LOOP
       const st = STEPS.find((s) => t >= s.t0 && t < s.t1) ?? STEPS[0]
       // 한 단계에 머물 때는 구간이 다시 시작돼도 카메라가 튀지 않게, 그 단계의 카메라 자리에 둡니다
+      // 사건 시각을 지나면 커넥텀 층을 자극합니다 (구간이 다시 시작되면 lastT 도 되감깁니다)
+      if (t < lastT) lastT = t - 1
+      for (const [et, layer, amp] of EVENTS) if (lastT < et && et <= t) simRef.current?.stimulate('layer', layer, amp, 8)
+      lastT = t
       const camT = h ? (h.id === 'msa' || h.id === 'of3' ? 0 : 20000) : t
       if (st.id !== lastStep) { lastStep = st.id; setStep(st.id) }
       // OpenFold3: 리본을 N 말단부터 그리고, 끝에 함께 예측한 리간드가 나타납니다
@@ -231,25 +247,20 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
         {held && <button className="chip" style={{ cursor: 'pointer' }} onClick={resume}>▶ 전체 자동 재생</button>}
       </div>}
       <Stepper step={step} done={done} onPick={jump} m={m} x={extras} />
-      <div className="grid" style={{ gridTemplateColumns: 'minmax(0, 1.35fr) minmax(300px, 1fr)', gap: 16, alignItems: 'center' }}>
+      <div className="grid" style={{ gridTemplateColumns: 'minmax(0, 1.35fr) minmax(320px, 1fr)', gap: 16, alignItems: 'start' }}>
         <div style={{ position: 'relative', height }}>
           <div ref={host} style={{ position: 'absolute', inset: 0, cursor: 'grab', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--line)' }}
             aria-label="OpenFold3 가 예측한 PARP1 과 니라파립, DiffDock 포즈, 결정 구조 4R6E. 드래그로 회전합니다." />
-          <div style={{ position: 'absolute', left: 12, top: 12, width: 230, zIndex: 2, borderRadius: 12, overflow: 'hidden',
-            background: 'rgba(5,9,18,0.6)', border: '1px solid var(--line)', backdropFilter: 'blur(8px)' }}>
-            <div className="row between" style={{ padding: '7px 10px 0' }}>
-              <span className="mono" style={{ fontSize: 9.5, letterSpacing: 1.3, color: 'var(--text-3)' }}>MALECNS 초파리 커넥텀</span>
-              <span className="mono" style={{ fontSize: 9.5, color: 'var(--c-sense)' }}>{({ msa: 'sensory', of3: 'encoding', dd: 'reflex · memory', bz: 'memory · deliberate', critic: 'critic · action' } as Record<string, string>)[step]}</span>
-            </div>
-            <BrainView height={150} showRois={false} showSkeletons={false} bloom={0.8} />
-          </div>
           <div ref={label} style={{ position: 'absolute', left: 0, top: 0, pointerEvents: 'none', transition: 'opacity .4s', opacity: 0,
             padding: '7px 11px', borderRadius: 8, background: 'rgba(5,9,18,0.82)', border: '1px solid rgba(255,181,71,0.45)', whiteSpace: 'nowrap' }}>
             <div className="mono" style={{ fontSize: 10, letterSpacing: 1.3, color: 'var(--jev)' }}>LIGAND · 니라파립</div>
             <div style={{ fontSize: 13.5, fontWeight: 600 }}>{tNow < 11000 ? '단백질과 함께 예측 (OpenFold3)' : tNow < 16400 ? 'DiffDock 1순위 포즈' : `결정 구조와 ${m.diffdock_rmsd} Å`}</div>
           </div>
         </div>
-        <div style={{ minHeight: 320 }}>{stat[step]}</div>
+        <div className="stack" style={{ gap: 14, alignSelf: 'stretch' }}>
+          <ConnectomePanel height={Math.round(height * 0.42)} focus={FOCUS[step]} />
+          <div style={{ minHeight: 280 }}>{stat[step]}</div>
+        </div>
       </div>
     </div>
   )

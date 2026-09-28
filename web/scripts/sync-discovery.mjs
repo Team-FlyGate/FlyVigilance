@@ -19,6 +19,7 @@ const DATA = {
   // 도킹 애니메이션 · 재도킹 스트림 · 약물 패널 · 크리틱 스트림 (Discovery.tsx)
   'redock_scenes.json': 'measurements/redock_scenes.json',
   'hero_scene.json': 'measurements/hero_scene.json',
+  'dock_library.json': 'measurements/dock_library.json',
   'redock.json': 'measurements/redock.json',
   'drug_panel.json': 'measurements/drug_panel.json',
   'critic_v2.json': 'measurements/nim/critic_v2.json',

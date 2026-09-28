@@ -103,6 +103,7 @@ function AutoFrame({ src }: { src: string }) {
 }
 
 function verdictChip(s: RedockScene) {
+  if (s.success === null || s.top1_rmsd === null) return <span className="chip jev">도킹 완료</span>
   return s.success ? <span className="chip ok">✓ {s.top1_rmsd.toFixed(2)} Å</span> : <span className="chip bad">✗ {s.top1_rmsd.toFixed(2)} Å</span>
 }
 

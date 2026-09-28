@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import HeroDocking, { type StepId } from '../components/HeroDocking'
+import DockPlayground from '../components/DockPlayground'
 import { Card, Loading, PageHead } from '../components/ui'
 import { CriticStream, MissingCard, RedockBench, STEP_PAGES, Tile, title, useDiscoveryData } from './Discovery'
 
@@ -85,6 +86,7 @@ export default function DiscoveryStep({ step }: { step: StepId }) {
                 <h2 style={{ margin: 0 }}>다른 약물로도 재도킹 · <span className="dim" style={{ fontWeight: 400 }}>FAERS 데모 케이스 약물 {Math.max(0, redockList.length - 1)}종 + 니라파립</span></h2>
                 <span className="mono dim" style={{ fontSize: 11 }}>결정 구조: RCSB PDB · 포즈: DiffDock NIM</span>
               </div>
+              {scenes && <DockPlayground scenes={scenes.scenes} />}
               <RedockBench list={redockList} pocketR={scenes?.pocket_radius_A} />
               <Card title="니라파립 케이스 스터디 · 도킹 조합 8개" sub="같은 표적 안에서만 순위를 매길 수 있습니다. 다른 표적끼리 Vina 점수를 비교하는 주장은 크리틱이 반려합니다" style={{ marginBottom: 16 }}>
                 <div className="mono dim" style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr 1fr 1fr', gap: 12, fontSize: 10.5, padding: '6px 4px', textTransform: 'uppercase' }}>
