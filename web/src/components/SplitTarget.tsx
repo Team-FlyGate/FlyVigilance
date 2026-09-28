@@ -35,7 +35,7 @@ export default function SplitTarget({ xa }: { xa: XaSplit }) {
       raf = requestAnimationFrame(loop)
     }
     raf = requestAnimationFrame(loop)
-    return () => { disposed = true; cancelAnimationFrame(raf); ro.disconnect(); disposeAll(scene); composer.dispose(); renderer.dispose(); renderer.domElement.remove() }
+    return () => { disposed = true; cancelAnimationFrame(raf); ro.disconnect(); disposeAll(scene); composer.dispose(); renderer.dispose(); renderer.forceContextLoss(); renderer.domElement.remove() }
   }, [xa])
   return <div ref={host} style={{ position: 'absolute', inset: 0 }} aria-label="니라파립을 Factor Xa(2P16)에 넣은 DiffDock 포즈" />
 }

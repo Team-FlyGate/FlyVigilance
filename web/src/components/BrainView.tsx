@@ -232,6 +232,7 @@ export default function BrainView({ height = 520, highlight = null, autoRotate =
       ro.disconnect()
       controls.dispose()
       renderer.dispose()
+      renderer.forceContextLoss()
       geo.dispose()
       el.removeChild(renderer.domElement)
     }
