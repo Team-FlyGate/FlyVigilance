@@ -130,6 +130,48 @@ def preview(result):
     return safe_text('\n'.join(lines))
 
 
+def message_input():
+    """A bordered, multiline terminal composer with normal editing shortcuts."""
+    from prompt_toolkit import Application
+    from prompt_toolkit.key_binding import KeyBindings
+    from prompt_toolkit.layout import Layout, HSplit
+    from prompt_toolkit.styles import Style
+    from prompt_toolkit.widgets import Frame, TextArea, Label
+    bindings = KeyBindings()
+    editor = TextArea(multiline=True, wrap_lines=True, height=4,
+                      prompt='  ', style='class:composer',
+                      focus_on_click=True)
+    from prompt_toolkit.layout.processors import ConditionalProcessor, BeforeInput
+    from prompt_toolkit.filters import Condition
+    editor.control.input_processors.append(ConditionalProcessor(
+        BeforeInput([('class:hint', 'FlyGate에게 질문하세요… 예: PARP1 후보 근거를 보여줘')]),
+        filter=Condition(lambda: not editor.text)))
+    @bindings.add('enter')
+    def send(event):
+        if editor.text.strip(): event.app.exit(result=editor.text)
+    @bindings.add('escape', 'enter')
+    def newline(event): event.current_buffer.insert_text('\n')
+    @bindings.add('c-j')
+    def newline_ctrl(event): event.current_buffer.insert_text('\n')
+    @bindings.add('c-c')
+    def cancel(event): event.app.exit(exception=KeyboardInterrupt())
+    @bindings.add('c-d')
+    def close(event):
+        if not editor.text: event.app.exit(exception=EOFError())
+        else: event.current_buffer.delete()
+    view = HSplit([
+        Frame(editor, title=' FlyGate에게 메시지 보내기 ', style='class:frame'),
+        Label('  Enter 전송  ·  Alt+Enter / Ctrl+J 줄바꿈  ·  Ctrl+C 취소', style='class:hint'),
+    ])
+    style = Style.from_dict({'frame':'#37e6ff', 'frame.label':'bold #37e6ff',
+                            'composer':'bg:#101b2b #e8eefc',
+                            'text-area':'bg:#101b2b #e8eefc',
+                            'hint':'#9bacc6'})
+    if 'NO_COLOR' in os.environ: style = Style.from_dict({})
+    return Application(layout=Layout(view, focused_element=editor), key_bindings=bindings,
+                       style=style, full_screen=False, mouse_support=True).run()
+
+
 def run(*, model=None, plain=False, reader=input, writer=print, responder=ask_model, runner=execute):
     sys.path.insert(0, str(ROOT/'api'))
     from _fv import config
@@ -154,8 +196,15 @@ def run(*, model=None, plain=False, reader=input, writer=print, responder=ask_mo
         import auth
         auth.login(reader=reader, writer=writer)
     while True:
-        writer(input_header(shutil.get_terminal_size((100,24)).columns, color))
-        try: text = reader(cyan + '  ❯ ' + reset).strip()
+        try:
+            if reader is input and sys.stdin.isatty() and sys.stdout.isatty() and not plain:
+                try: text = message_input().strip()
+                except ImportError:
+                    writer(input_header(shutil.get_terminal_size((100,24)).columns, color))
+                    text = reader(cyan + '  ❯ ' + reset).strip()
+            else:
+                writer(input_header(shutil.get_terminal_size((100,24)).columns, color))
+                text = reader(cyan + '  ❯ ' + reset).strip()
         except EOFError: writer('\n  FlyGate를 종료합니다.'); break
         except KeyboardInterrupt: writer('\n  입력을 취소했습니다. /exit로 종료합니다.'); continue
         if not text: continue
