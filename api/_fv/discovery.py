@@ -24,7 +24,7 @@ import zipfile
 
 import httpx
 
-from . import clients, config, docking, molgeom as mg
+from . import bio_search as bio, clients, config, docking, molgeom as mg
 
 HEALTH = "https://health.api.nvidia.com/v1"
 ENDPOINTS = {
@@ -173,18 +173,98 @@ async def nvcf_status(req_id: str, client: httpx.AsyncClient, poll: int = STATUS
 
 
 # ---------------------------------------------------------------- 요청 만들기 (NVIDIA 공식 스킬 규격)
-def target_of(key: str) -> dict:
+def target_of(key) -> dict:
+    """표적 하나를 돌려줍니다. 이미 풀린 표적(사용자가 고른 단백질)은 그대로 통과시킵니다."""
+    if isinstance(key, dict):
+        return key
     t = data()["targets"].get(key)
     if not t:
         raise KeyError(f"unknown target {key}")
     return t
 
 
-def ligand_of(key: str) -> dict:
+def ligand_of(key) -> dict:
+    if isinstance(key, dict):
+        return key
     lg = data()["ligands"].get(key)
     if not lg:
         raise KeyError(f"unknown ligand {key}")
     return lg
+
+
+# ---------------------------------------------------------------- 사용자가 고른 표적·리간드
+def custom_target(c: dict) -> dict:
+    """UniProt·RCSB 조회 결과(화면에서 고른 단백질)를 파이프라인 표적 형식으로 맞춥니다.
+
+    측정 기록이 없는 표적이므로 결정 구조 기준(xtal_ca·xtal_drug)은 비워 둡니다.
+    RMSD 대신 '기준 결정 구조 없음'을 보여 주고, 없는 비교를 만들어 내지 않습니다.
+    """
+    seq = bio.clean_sequence(c.get("sequence", ""))
+    start, end = c.get("start"), c.get("end")
+    if start and end and 1 <= start <= end <= len(seq) and (end - start + 1) != len(seq):
+        seq = seq[start - 1:end]
+    label = c.get("label") or c.get("gene") or c.get("name") or c.get("id") or "사용자 지정 표적"
+    org = c.get("organism") or ""
+    desc = " · ".join(x for x in [c.get("name"), org, f"{start}-{end}" if start and end else None] if x)
+    return {"label": label, "gene": c.get("gene") or "", "pdb": (c.get("pdb") or "").upper(), "chain": c.get("chain") or "A",
+            "organism": org, "desc": desc or label, "sequence": seq, "id": c.get("id"),
+            "uniprot": c.get("id"), "kind": "custom", "xtal_ca": [], "xtal_drug": None, "xtal_ligand": None,
+            "receptor_pdb": c.get("receptor_pdb"), "range": {"start": start, "end": end} if start and end else None,
+            "reference": "none"}
+
+
+def custom_ligand(c: dict) -> dict:
+    ok, why = bio.valid_smiles(c.get("smiles", ""))
+    if not ok:
+        raise KeyError(f"SMILES 를 쓸 수 없습니다: {why}")
+    name = c.get("name") or "사용자 지정 리간드"
+    return {"smiles": c["smiles"].strip(), "ko": name, "name": name, "cid": c.get("cid"), "mw": c.get("mw"),
+            "kind": "custom"}
+
+
+async def ensure_receptor(t: dict) -> dict:
+    """DiffDock 수용체와 주머니 위치를 채웁니다. 실험 구조가 있으면 RCSB 에서 받아 그 체인의 ATOM 만 씁니다."""
+    if t.get("receptor_pdb"):
+        return t
+    pdb, chain = t.get("pdb"), t.get("chain")
+    if not pdb:
+        raise KeyError("이 표적에는 실험 구조가 없습니다. 먼저 OpenFold3 예측 구조로 도킹하시기 바랍니다.")
+    key = cache_key("receptor", {"pdb": pdb, "chain": chain})
+    hit = cache_get(key)
+    if hit is None:
+        text = await bio.fetch_pdb(pdb)
+        lig = bio.cocrystal_ligand(text, chain)
+        hit = {"receptor_pdb": bio.chain_atoms(text, chain), "cocrystal": lig}
+        cache_put(key, hit)
+    t = {**t, "receptor_pdb": hit["receptor_pdb"]}
+    lig = hit.get("cocrystal")
+    if lig and not t.get("xtal_ligand"):
+        # 주머니 위치를 잡는 데만 씁니다. 사용자가 고른 리간드와 같은 분자가 아니므로 RMSD 기준이 아닙니다.
+        t["xtal_ligand"] = {"atoms": lig["atoms"], "bonds": lig["bonds"]}
+        t["pocket_ligand_code"] = lig["code"]
+    return t
+
+
+async def resolve_receptor(params: dict, t: dict) -> dict:
+    """도킹 수용체를 정합니다. 1) 요청에 실려 온 좌표 2) 앞 단계 OpenFold3 예측 구조 3) RCSB 실험 구조 순입니다."""
+    if params.get("receptor_pdb"):
+        return {**t, "receptor_pdb": params["receptor_pdb"], "receptor_source": "요청 본문"}
+    key = params.get("receptor_structure_key")
+    if key:
+        saved = cache_get(key)
+        if saved and saved.get("structure"):
+            return {**t, "receptor_pdb": receptor_from_structure({"structure_pdb": saved["structure"]}),
+                    "receptor_source": "OpenFold3 예측 구조"}
+    t = await ensure_receptor(t)
+    return {**t, "receptor_source": f"RCSB {t.get('pdb')} 체인 {t.get('chain')}"}
+
+
+def receptor_from_structure(result: dict) -> str:
+    """OpenFold3 예측 구조를 DiffDock 수용체로 씁니다(실험 구조가 없는 표적용). CA 만으로는 도킹할 수 없어 원자 전체를 다시 만듭니다."""
+    text = result.get("structure_pdb")
+    if not text:
+        raise KeyError("예측 구조 원본이 없습니다. OpenFold3 를 먼저 실행하시기 바랍니다.")
+    return "\n".join(ln for ln in text.splitlines() if ln.startswith("ATOM")) + "\nEND\n"
 
 
 # 공식 스킬의 예시는 Uniref30_2302 + colabfold_envdb_202108 이지만, 호스팅 게이트웨이가 envdb 를 얹으면
@@ -200,6 +280,17 @@ def build_msa(target: str, databases: list[str] | None = None) -> dict:
             "e_value": 0.0001, "output_alignment_formats": ["a3m"]}
 
 
+def _short_name(x, default: str) -> str:
+    """요청에 적을 짧은 이름입니다. 고른 표적·리간드는 이름만 씁니다(OpenFold3 input_id 는 128자 제한)."""
+    if isinstance(x, dict):
+        x = x.get("label") or x.get("name") or x.get("ko") or x.get("id") or default
+    return re.sub(r"[^A-Za-z0-9_-]+", "-", str(x or default)).strip("-")[:48] or default
+
+
+def input_id(target, ligand) -> str:
+    return f"{_short_name(target, 'target')}_{_short_name(ligand, 'apo')}"[:120]
+
+
 def build_openfold3(target: str, ligand: str | None, a3m: str | None) -> dict:
     seq = target_of(target)["sequence"]
     alignment = a3m or f">query\n{seq}"
@@ -208,7 +299,7 @@ def build_openfold3(target: str, ligand: str | None, a3m: str | None) -> dict:
     molecules = [protein]
     if ligand:
         molecules.append({"type": "ligand", "id": "L", "smiles": ligand_of(ligand)["smiles"]})
-    return {"inputs": [{"input_id": f"{target}_{ligand or 'apo'}", "output_format": "pdb", "molecules": molecules}]}
+    return {"inputs": [{"input_id": input_id(target, ligand), "output_format": "pdb", "molecules": molecules}]}
 
 
 def build_diffdock(target: str, ligand: str, num_poses: int = MAX_POSES, protein: str | None = None) -> dict:
@@ -310,6 +401,14 @@ def process_msa(resp: dict, req: dict) -> dict:
             "databases_returned": sorted(aligns), "a3m_chars": len(a3m), "target": req.get("target")}
 
 
+def _req_target(req: dict) -> dict:
+    """가공 함수가 쓸 표적입니다. 화면에서 고른 단백질이면 그 값을, 아니면 목록에서 찾습니다."""
+    t = req.get("target_obj")
+    if isinstance(t, dict):
+        return t
+    return target_of(req.get("target", "parp1"))
+
+
 def process_openfold3(resp: dict, req: dict) -> dict:
     """구조를 결정 구조에 겹쳐 CA RMSD 를 재고, pLDDT 와 좌표를 화면 크기로 줄입니다."""
     out = (resp.get("outputs") or [{}])[0]
@@ -320,13 +419,13 @@ def process_openfold3(resp: dict, req: dict) -> dict:
     atoms = mg.parse_pdb(s["structure"])
     pred = mg.ca_trace(atoms)
     lig = [a for a in atoms if a["het"]]
-    t = target_of(req["target"])
+    t = _req_target(req)
     ref = [{"resi": r[0], "aa": r[1], "xyz": (r[2], r[3], r[4]), "b": 0.0, "chain": t["chain"]} for r in t["xtal_ca"]]
     fit = mg.superpose_ca(pred, ref) if ref else None
     ca_rmsd = fit["rmsd"] if fit else None
     to_ref = fit["to_ref"] if fit else (lambda p: p)
     lig_rmsd = None
-    if lig and t.get("xtal_ligand") and t.get("xtal_drug") == req.get("ligand") and fit:
+    if lig and t.get("xtal_ligand") and bool(t.get("xtal_drug")) and t.get("xtal_drug") == req.get("ligand") and fit:
         moved = [{"el": a["el"], "xyz": to_ref(a["xyz"])} for a in lig]
         xl = t["xtal_ligand"]
         ref_lig = [{"el": a[0], "xyz": (a[1], a[2], a[3])} for a in xl["atoms"]]
@@ -337,6 +436,8 @@ def process_openfold3(resp: dict, req: dict) -> dict:
             "scores": {"confidence": _r(s.get("confidence_score"), 4), "plddt": _r(s.get("complex_plddt_score"), 2),
                        "ptm": _r(s.get("ptm_score"), 4), "iptm": _r(s.get("iptm_score"), 4),
                        "pde": _r(s.get("complex_pde_score"), 4)},
+            "target_label": t.get("label"), "reference": "crystal" if ref else "none",
+            "reference_note": None if ref else "기준 결정 구조 없음 · 비교할 실험 구조를 두지 않았습니다",
             "ca_rmsd": ca_rmsd, "n_ca": fit["n"] if fit else 0, "ligand_rmsd": lig_rmsd,
             "n_residues": len(pred), "plddt_per_residue": plddt,
             "mean_plddt": round(sum(plddt) / max(1, len(plddt)), 2),
@@ -354,12 +455,14 @@ def process_diffdock(resp: dict, req: dict) -> dict:
         poses_sdf, conf = docking.validate_result(resp)
     except (ValueError, TypeError) as e:
         raise RuntimeError(f"DiffDock 응답을 쓸 수 없습니다: {e}") from None
-    t = target_of(req["target"])
+    t = _req_target(req)
     xl = t.get("xtal_ligand")
     ref = [{"el": a[0], "xyz": (a[1], a[2], a[3])} for a in xl["atoms"]] if xl else []
     ref_bonds = [(i, j, 1) for i, j in xl["bonds"]] if xl else []
     ref_c = mg.centroid([a["xyz"] for a in ref]) if ref else None
-    is_redock = t.get("xtal_drug") == req.get("ligand")
+    # 공결정 대조는 표적의 공결정 약물과 지금 넣은 리간드가 같을 때만입니다.
+    # 사용자가 고른 표적(xtal_drug 없음)에서는 언제나 거짓이라 RMSD 를 내지 않습니다.
+    is_redock = bool(t.get("xtal_drug")) and t.get("xtal_drug") == req.get("ligand")
     poses = []
     for i, sdf in enumerate(poses_sdf[:MAX_POSES]):
         atoms, bonds = mg.parse_sdf(sdf)
@@ -372,6 +475,10 @@ def process_diffdock(resp: dict, req: dict) -> dict:
                       "bonds": [[i2, j2] for i2, j2, _ in hb], "centroid": _xyz(c)})
     rms = [p["rmsd"] for p in poses if p["rmsd"] is not None]
     return {"target": req.get("target"), "ligand": req.get("ligand"), "receptor_source": req.get("receptor_source"),
+            "target_label": t.get("label"), "reference": "crystal" if is_redock else "none",
+            "reference_note": None if is_redock else ("기준 결정 구조 없음 · 공결정 대조가 없어 RMSD 를 내지 않습니다"
+                                                      + (f" (주머니 위치는 {t['pocket_ligand_code']} 리간드 기준입니다)" if t.get("pocket_ligand_code") else "")),
+            "receptor_source": req.get("receptor_source_label") or t.get("receptor_source"),
             "redock": is_redock, "n_poses": len(poses_sdf), "poses": poses,
             "top1_confidence": poses[0]["confidence"], "top1_rmsd": poses[0]["rmsd"],
             "best_rmsd": min(rms) if rms else None,
@@ -406,6 +513,7 @@ def process_boltz2(resp: dict, req: dict) -> dict:
             "ligand_atoms": [[a["el"], *_xyz(a["xyz"])] for a in lig_heavy],
             "ligand_bonds": [[i, j] for i, j, _ in mg.proximity_bonds(lig_heavy)],
             "metrics": {k: _r(v, 2) for k, v in (resp.get("metrics") or {}).items()},
+            "target_label": _req_target(req).get("label"),
             "chembl": _chembl_for(req.get("target"), req.get("ligand")), "structure_format": st.get("format")}
 
 
@@ -420,9 +528,10 @@ def _chembl_for(target: str | None, ligand: str | None):
 PROCESS = {"msa": process_msa, "openfold3": process_openfold3, "diffdock": process_diffdock, "boltz2": process_boltz2}
 
 
-def scene(target: str) -> dict:
-    """3D 화면 배경(결정 구조 CA 골격과 결합 주머니 중원자)입니다. 실행마다 다시 보내지 않도록 따로 냅니다."""
+def scene(target) -> dict:
+    """3D 화면 배경(구조의 CA 골격과 결합 주머니 중원자)입니다. 실행마다 다시 보내지 않도록 따로 냅니다."""
     t = target_of(target)
+    key = t.get("label") if isinstance(target, dict) else target
     xl = t.get("xtal_ligand") or {"atoms": [], "bonds": []}
     ref_c = mg.centroid([(a[1], a[2], a[3]) for a in xl["atoms"]]) if xl["atoms"] else None
     rec = mg.parse_pdb(t["receptor_pdb"])
@@ -431,10 +540,21 @@ def scene(target: str) -> dict:
     if ref_c:
         near = [a for a in rec if a["el"] != "H" and mg.dist2(a["xyz"], ref_c) <= 13.0 ** 2]
         pocket = [[a["el"], *_xyz(a["xyz"])] for a in near[:1200]]
-    return {"target": target, "label": t["label"], "pdb": t["pdb"], "chain": t["chain"], "organism": t["organism"],
+    return {"target": key, "label": t["label"], "pdb": t["pdb"], "chain": t["chain"], "organism": t["organism"],
             "desc": t["desc"], "xtal_drug": t.get("xtal_drug"), "xtal_ligand": xl,
             "ca": [_xyz(a["xyz"]) for a in ca], "pocket": pocket, "pocket_center": _xyz(ref_c) if ref_c else None,
-            "sequence_len": len(t["sequence"]) if t.get("sequence") else None}
+            "sequence_len": len(t["sequence"]) if t.get("sequence") else None,
+            "kind": t.get("kind", "core"), "reference": t.get("reference", "crystal"),
+            "pocket_ligand_code": t.get("pocket_ligand_code"),
+            "receptor_source": t.get("receptor_source")}
+
+
+async def scene_for(params: dict) -> dict:
+    """화면에서 고른 단백질도 같은 배경을 만듭니다. 실험 구조가 있으면 RCSB 에서 받아 씁니다."""
+    t = resolve_target(params)
+    if isinstance(t, dict):
+        t = await resolve_receptor(params, t) if not t.get("receptor_pdb") else t
+    return scene(t)
 
 
 def catalog() -> dict:
@@ -479,36 +599,78 @@ def resolve_a3m(params: dict) -> str | None:
     return None
 
 
-def build_for(kind: str, params: dict) -> dict:
-    t = params.get("target", "parp1")
+def resolve_target(params: dict) -> dict:
+    """목록의 표적 또는 화면에서 찾아 고른 단백질을 돌려줍니다."""
+    c = params.get("custom_target")
+    return custom_target(c) if isinstance(c, dict) and c.get("sequence") else params.get("target", "parp1")
+
+
+def resolve_ligand(params: dict):
+    c = params.get("custom_ligand")
+    return custom_ligand(c) if isinstance(c, dict) and c.get("smiles") else params.get("ligand")
+
+
+def build_for(kind: str, params: dict, target=None, ligand=None) -> dict:
+    t = target if target is not None else resolve_target(params)
+    lg = ligand if ligand is not None else resolve_ligand(params)
     if kind == "msa":
         return build_msa(t, params.get("databases"))
     if kind == "openfold3":
-        return build_openfold3(t, params.get("ligand"), resolve_a3m(params))
+        return build_openfold3(t, lg, resolve_a3m(params))
     if kind == "diffdock":
-        return build_diffdock(t, params["ligand"], int(params.get("num_poses", MAX_POSES)))
-    return build_boltz2(t, params["ligand"], resolve_a3m(params))
+        return build_diffdock(t, lg, int(params.get("num_poses", MAX_POSES)),
+                              params.get("receptor_pdb") or (t.get("receptor_pdb") if isinstance(t, dict) else None))
+    return build_boltz2(t, lg, resolve_a3m(params))
 
 
-def _envelope(kind: str, params: dict, body: dict) -> dict:
-    return {"kind": kind, "endpoint": ENDPOINTS[kind], "skills": SKILLS[kind], "params": params,
-            "request": request_summary(kind, body), "measured": measured_for(kind, params)}
+def _envelope(kind: str, params: dict, body: dict, target=None) -> dict:
+    t = target if target is not None else resolve_target(params)
+    tobj = t if isinstance(t, dict) else target_of(t)
+    return {"kind": kind, "endpoint": ENDPOINTS[kind], "skills": SKILLS[kind], "params": _safe_params(params),
+            "request": request_summary(kind, body), "measured": measured_for(kind, params),
+            "target": {k: tobj.get(k) for k in ("label", "gene", "pdb", "chain", "organism", "desc", "kind", "reference")}
+            | {"length": len(tobj.get("sequence") or "") or None, "custom": tobj.get("kind") == "custom"}}
 
 
-def _finish(kind: str, params: dict, resp: dict, env: dict, t0: float, source: str) -> dict:
-    res = PROCESS[kind](resp, {**params, "msa_source": "a3m" if resolve_a3m(params) else "single-sequence",
+def _safe_params(params: dict) -> dict:
+    """화면에 되돌려 줄 요청 정보입니다. 서열·수용체 원문처럼 큰 값은 길이만 남깁니다."""
+    out = {}
+    for k, v in (params or {}).items():
+        if k in ("a3m", "receptor_pdb"):
+            out[k] = f"<{len(v)} chars>" if isinstance(v, str) else None
+        elif k == "custom_target" and isinstance(v, dict):
+            out[k] = {kk: vv for kk, vv in v.items() if kk != "sequence"} | {"sequence_len": len(v.get("sequence") or "")}
+        else:
+            out[k] = v
+    return out
+
+
+def _finish(kind: str, params: dict, resp: dict, env: dict, t0: float, source: str, target=None) -> dict:
+    t = target if target is not None else resolve_target(params)
+    tobj = t if isinstance(t, dict) else target_of(t)
+    res = PROCESS[kind](resp, {**params, "target_obj": tobj,
+                               "msa_source": "a3m" if resolve_a3m(params) else "single-sequence",
+                               "receptor_source_label": tobj.get("receptor_source"),
                                "receptor_source": "crystal"})
     if kind == "msa":
         a3m = (resp.get("alignments", {}).get(res["database"], {}).get("a3m", {}) or {}).get("alignment", "")
         res["a3m_key"] = _a3m_store(a3m)
         res["a3m"] = a3m if len(a3m) <= 900_000 else None
+    if kind == "openfold3":
+        # 예측 구조 원본은 응답에 싣지 않고 서버에 두었다가, 실험 구조가 없는 표적의 도킹 수용체로 씁니다
+        text = ((resp.get("outputs") or [{}])[0].get("structures_with_scores") or [{}])[0].get("structure", "")
+        if text:
+            key = "struct-" + hashlib.sha256(text.encode()).hexdigest()[:20]
+            cache_put(key, {"structure": text})
+            res["structure_key"] = key
     return {**env, "state": "done", "source": source, "elapsed_s": round(time.monotonic() - t0, 1), "result": res}
 
 
 def _fallback(kind: str, params: dict, env: dict, t0: float, err: str) -> dict:
     m = env.get("measured")
     if not m:
-        raise RuntimeError(err)
+        # 사용자가 고른 표적에는 지난 측정이 없습니다. 무엇이 실패했는지 그대로 알려 드립니다
+        raise RuntimeError(f"{kind} 라이브 호출이 실패했고 이 표적에는 비교할 지난 측정이 없습니다 · {err}")
     return {**env, "state": "done", "source": "measured", "elapsed_s": round(time.monotonic() - t0, 1),
             "result": m, "error": err[:300],
             "note": "라이브 호출이 끝나지 않아 지난 측정 응답을 보여 드립니다(fly_discovery/measurements 의 원본)."}
@@ -537,8 +699,18 @@ async def run(kind: str, params: dict, client: httpx.AsyncClient | None = None) 
     if kind not in NIM_KINDS:
         raise KeyError(kind)
     t0 = time.monotonic()
-    body = build_for(kind, params)
-    env = _envelope(kind, params, body)
+    target = resolve_target(params)
+    ligand = resolve_ligand(params)
+    if isinstance(target, dict):
+        chk = bio.check_sequence(target.get("sequence", ""))
+        if not chk["ok"]:
+            raise ValueError(chk["reason"])
+        if kind == "openfold3" and not chk["openfold3_ok"]:
+            raise ValueError(chk["reason"])
+        if kind == "diffdock" and not target.get("receptor_pdb"):
+            target = await resolve_receptor(params, target)
+    body = build_for(kind, params, target, ligand)
+    env = _envelope(kind, params, body, target)
     ckey = cache_key(kind, body)
     hit = cache_get(ckey)
     if hit is not None and not params.get("no_cache"):
@@ -558,7 +730,7 @@ async def run(kind: str, params: dict, client: httpx.AsyncClient | None = None) 
     finally:
         if own:
             await client.aclose()
-    out = _finish(kind, params, resp, env, t0, "live")
+    out = _finish(kind, params, resp, env, t0, "live", target)
     cache_put(ckey, out["result"])
     return out
 
@@ -571,7 +743,10 @@ async def poll(req_id: str, kind: str | None = None, params: dict | None = None)
     if not kind:
         raise KeyError("kind unknown for this request id")
     t0 = time.monotonic()
-    env = _envelope(kind, params, build_for(kind, params))
+    target = resolve_target(params)
+    if isinstance(target, dict) and kind == "diffdock" and not target.get("receptor_pdb"):
+        target = await resolve_receptor(params, target)   # 이어 받을 때도 같은 수용체를 씁니다
+    env = _envelope(kind, params, build_for(kind, params, target), target)
     async with httpx.AsyncClient() as client:
         try:
             resp = await nvcf_status(req_id, client)
@@ -581,7 +756,7 @@ async def poll(req_id: str, kind: str | None = None, params: dict | None = None)
                     "waited_s": round(time.time() - saved["started"], 1) if saved.get("started") else None}
         except Exception as e:  # noqa: BLE001
             return _fallback(kind, params, env, t0, f"{type(e).__name__}: {e}")
-    out = _finish(kind, params, resp, env, t0, "live")
+    out = _finish(kind, params, resp, env, t0, "live", target)
     if saved.get("cache_key"):
         cache_put(saved["cache_key"], out["result"])
     if saved.get("started"):
