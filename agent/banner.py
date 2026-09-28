@@ -83,3 +83,21 @@ def dashboard(root, model, nvidia=False, jev=False, width=100, color=True, sessi
         out.append(' '+cyan+'│'+reset+' '+lime+l.center(leftw)+reset+' '+cyan+'│'+reset+' '+r.ljust(rightw)+' '+cyan+'│'+reset)
     out.append(' '+cyan+'╰'+'─'*(maxw-2)+'╯'+reset)
     return '\n'.join(out)
+
+
+def welcome(color=True):
+    c='\033[38;2;55;230;255m' if color else ''
+    d='\033[38;2;160;175;197m' if color else ''
+    r='\033[0m' if color else ''
+    lines=['', '  FlyGate와 무엇을 살펴볼까요?', d+'  예: “PARP1 후보 근거를 보여줘” 또는 “이 결과를 설명해 줘”'+r, '']
+    for cmd,desc in [('/help','사용할 수 있는 명령과 예제 보기'),('/login','NVIDIA 연결 · Jev 키는 선택 사항'),('/run discover parp1','저장된 PARP1 근거 조회 · 실행 전에 확인'),('/last','마지막 분석 결과 전체 보기'),('/clear','현재 대화와 마지막 결과 지우기'),('/exit','대화 종료')]:
+        lines.append('  '+c+cmd.ljust(24)+r+d+desc+r)
+    return '\n'.join(lines)+'\n'
+
+
+def input_header(width=100,color=True):
+    c='\033[38;2;55;230;255m' if color else ''
+    d='\033[38;2;160;175;197m' if color else ''
+    r='\033[0m' if color else ''
+    line='─'*max(10,min(width-4,112))
+    return '\n  '+c+line+r+'\n  '+c+'메시지 입력'+r+d+'  ·  Enter 전송  ·  Ctrl+C 입력 취소  ·  Ctrl+D 종료'+r
