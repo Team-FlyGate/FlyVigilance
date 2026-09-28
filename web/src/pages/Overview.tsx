@@ -305,7 +305,6 @@ export default function Overview() {
           </div>
           <div className="row" style={{ gap: 8, marginTop: 12 }}>
             <a className="btn ghost" href={`${REPO}#readme`} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>README</a>
-            <a className="btn ghost" href="/showreel/FlyVigilance_showreel_v2.0.0.html" target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>이전 쇼릴 v2</a>
           </div>
         </Card>
       </div>

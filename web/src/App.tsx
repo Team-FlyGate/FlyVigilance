@@ -101,7 +101,6 @@ export default function App() {
             <svg className="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><circle cx="12" cy="12" r="9" /><path d="m10 8 6 4-6 4V8Z" fill="currentColor" /></svg>
             <span className="lbl">쇼릴 영상<small>Project-FlyGate · v3</small></span>
           </a>
-          <a className="nav-sublink" href="/showreel/FlyVigilance_showreel_v2.0.0.html" target="_blank" rel="noreferrer">이전 쇼릴 v2 · FlyVigilance</a>
           <div className="nav-foot">
             <div className="status-row" title="Jev · TypeSafe AI"><span className={`dot ${health?.jev ? 'on pulse' : healthErr ? 'off' : ''}`} />비자기회귀 판단 모델 {live(health?.jev)}</div>
             <div className="status-row"><span className={`dot ${health?.nim ? 'on pulse' : healthErr ? 'off' : ''}`} />NVIDIA NIM {live(health?.nim)}</div>

@@ -1,6 +1,6 @@
 # Project-FlyGate 아키텍처
 
-판: v3.0.0 · 작성일: 2026-09-28 · 이전 판: [archive/ARCHITECTURE_v1.0.0.md](archive/ARCHITECTURE_v1.0.0.md)
+판: v3.0.0 · 작성일: 2026-09-28 · 이전 판은 git 기록에 있습니다
 
 Project-FlyGate는 NVIDIA 스킬(build.nvidia.com NIM · NVIDIA Agent Skills · NemoClaw/OpenShell/OpenClaw) 위에 구성한 에이전트 워크플로입니다. 글을 써야 하는 일은 NVIDIA Nemotron이 맡고, 확률만 필요한 판단에는 비자기회귀 판단 모델을 함께 씁니다. 이 문서는 그 구조를 한 장으로 정리합니다. 설계를 뒷받침하는 측정은 [EVALUATION.md](EVALUATION.md)에 있습니다.
 
