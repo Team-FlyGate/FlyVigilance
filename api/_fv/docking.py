@@ -15,6 +15,11 @@ from datetime import datetime, timezone
 
 import httpx
 
+try:  # api/_fv 패키지 안에서 불릴 때만 호출 기록기를 씁니다(단독 실행에서는 건너뜁니다)
+    from . import calllog
+except ImportError:  # pragma: no cover
+    calllog = None
+
 ENDPOINT = 'https://health.api.nvidia.com/v1/biology/mit/diffdock'
 STATUS = 'https://health.api.nvidia.com/v1/status/'
 
@@ -116,6 +121,14 @@ def execute(*, api_key, protein_path=None, ligand_path=None, smiles=None, num_po
     client = client or httpx.Client(follow_redirects=False)
     headers = {'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json', 'NVCF-POLL-SECONDS': '5'}
     deadline = time.monotonic() + timeout
+    t0, polls, last = time.perf_counter(), 0, {'status': None, 'error': None, 'bytes_in': None, 'bytes_out': None}
+
+    def log_call():
+        if calllog is not None:
+            calllog.record(url=ENDPOINT, model='mit/diffdock', purpose='CLI discover: fresh DiffDock run', reqid=rid,
+                           http_status=last['status'], latency_ms=(time.perf_counter() - t0) * 1000,
+                           bytes_in=last['bytes_in'], bytes_out=last['bytes_out'], error=last['error'],
+                           extra={'polls': polls, 'run_id': manifest.get('run_id')}, code_path='api/_fv/docking.py:execute')
     try:
         while True:
             remaining = deadline - time.monotonic()
@@ -123,15 +136,28 @@ def execute(*, api_key, protein_path=None, ligand_path=None, smiles=None, num_po
                 manifest.update(status='pending', error='대기 시간이 끝났습니다. --resume으로 같은 요청을 조회하세요.')
                 break
             if rid:
+                polls += 1
                 response = client.get(STATUS + rid, headers=headers, timeout=min(30, remaining))
             else:
                 response = client.post(ENDPOINT, headers=headers, json=body, timeout=min(60, remaining))
+                try:
+                    last['bytes_out'] = len(response.request.content)
+                except Exception:  # noqa: BLE001
+                    pass
+            last['status'] = response.status_code
+            try:
+                last['bytes_in'] = len(response.content)
+            except Exception:  # noqa: BLE001
+                pass
             if response.headers.get('nvcf-reqid'):
                 rid = request_id(response.headers['nvcf-reqid'])
                 manifest['request_id'] = rid
                 save(folder / 'manifest.json', manifest)
             if response.status_code == 200:
-                return finish(response, folder, manifest)
+                out = finish(response, folder, manifest)
+                last['error'] = None if manifest.get('status') == 'completed' else 'InvalidResult'
+                log_call()
+                return out
             if response.status_code == 202:
                 rid = request_id(rid)
                 manifest['status'] = 'pending'
@@ -141,13 +167,18 @@ def execute(*, api_key, protein_path=None, ligand_path=None, smiles=None, num_po
             manifest.update(status='failed', http_status=response.status_code,
                             error='NIM 요청 실패. 인증·권한·입력·할당량을 확인하세요. 자동 재제출하지 않았습니다.')
             break
-    except httpx.TransportError:
+    except httpx.TransportError as e:
+        last['error'] = type(e).__name__
         manifest.update(status='pending' if rid else 'unknown',
                         error='통신이 중단되었습니다. 요청 ID가 있으면 --resume으로 조회하세요. 새 요청을 자동 제출하지 않았습니다.')
     except ValueError:
+        last['error'] = 'InvalidRequestId'
         manifest.update(status='unknown', error='응답의 요청 ID를 확인할 수 없습니다. 자동 재제출하지 않았습니다.')
     finally:
         if owned:
             client.close()
+    if last['error'] is None and manifest.get('status') != 'completed':
+        last['error'] = manifest.get('status') or 'failed'
+    log_call()
     save(folder / 'manifest.json', manifest)
     return summarize(folder, manifest)

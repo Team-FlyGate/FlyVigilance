@@ -73,6 +73,7 @@ export default function Skills() {
             <li>규제 보고와 인과성 최종 판정은 사람만 합니다. 에이전트는 초안과 우선순위를 냅니다</li>
             <li>공개 배포 <Term k="API" />는 IP별로 속도를 제한합니다 (트리아지 30회/분, 평가 6회/분)</li>
             <li>모든 라우팅 결정은 사유 문자열과 함께 반환되어 감사 로그로 남길 수 있습니다</li>
+            <li>NVIDIA 호출은 <span className="mono">FV_CALL_LOG</span> 를 켜면 한 건마다 모델 · 상태 · 지연 · <Term k="NVCF" /> 만 기록합니다. 키와 프롬프트는 남기지 않습니다 → <a href="#/calls">NVIDIA 호출 로그</a></li>
           </ul>
         </Card>
       </div>

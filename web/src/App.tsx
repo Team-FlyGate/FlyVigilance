@@ -16,6 +16,7 @@ import Warehouse from './pages/Warehouse'
 import Benchmarks from './pages/Benchmarks'
 import Problem from './pages/Problem'
 import Skills from './pages/Skills'
+import CallLog from './pages/CallLog'
 import KoreanPV from './pages/KoreanPV'
 import Validation from './pages/Validation'
 import Glossary from './pages/Glossary'
@@ -57,6 +58,7 @@ const GROUPS: { step?: string; name?: string; color?: string; pages: Page[] }[] 
     { id: 'cli', label: 'FlyGate Agent CLI', en: '한 줄 설치 · 실제 터미널 · 튜토리얼', icon: <span className="mono" aria-hidden="true">›_</span>, el: () => <CliTutorial />, hot: true },
     { id: 'agent', label: '에이전트 구성', en: 'NemoClaw · OpenShell', icon: I('M12 3 4 7v10l8 4 8-4V7l-8-4ZM4 7l8 4 8-4M12 11v10'), el: () => <Agent /> },
     { id: 'skills', label: 'NVIDIA 스킬 · 거버넌스', en: 'Skills & Guardrails', icon: I('M12 2 3 7v6c0 5 4 8 9 9 5-1 9-4 9-9V7l-9-5ZM9 12l2 2 4-4'), el: () => <Skills /> },
+    { id: 'calls', label: 'NVIDIA 호출 로그', en: 'API call log · 요청 ID · 증거 대응표', icon: I('M4 5h16M4 10h16M4 15h10M4 20h7M17 15l2 2 3-4'), el: () => <CallLog /> },
     { id: 'architecture', label: '아키텍처 · 층 구성', en: 'Connectome-routed Architecture', icon: I('M4 6h6v6H4zM14 12h6v6h-6zM10 9h2a2 2 0 0 1 2 2v4M17 12V6h-3'), el: () => <Architecture /> },
   ] },
 ]

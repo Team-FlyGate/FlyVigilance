@@ -11,7 +11,7 @@ import time
 
 import httpx
 
-from . import config
+from . import calllog, config
 
 DIFFDOCK_URL = "https://health.api.nvidia.com/v1/biology/mit/diffdock"
 SMILES_OK = re.compile(r"^[A-Za-z0-9@+\-\[\]\(\)=#$%/\\.:*]{1,300}$")
@@ -62,6 +62,7 @@ async def dock(target: str, smiles: str, num_poses: int = 5) -> dict:
         raise DockError(f"모르는 표적입니다: {target}")
     key = (target, smiles)
     if key in _cache:
+        calllog.record(url=DIFFDOCK_URL, model="mit/diffdock", purpose="STEP 1 live docking (dashboard)", cache_hit=True)
         return {**_cache[key], "cached": True}
     if not config.NVIDIA_API_KEY:
         raise DockError("NVIDIA_API_KEY 가 없어 실시간 도킹을 할 수 없습니다")
@@ -70,9 +71,22 @@ async def dock(target: str, smiles: str, num_poses: int = 5) -> dict:
     headers = {"Authorization": f"Bearer {config.NVIDIA_API_KEY}", "Content-Type": "application/json", "NVCF-POLL-SECONDS": "100"}
     t0 = time.perf_counter()
     async with httpx.AsyncClient(timeout=httpx.Timeout(100.0, connect=10.0)) as c:
-        r = await c.post(DIFFDOCK_URL, json=payload, headers=headers)
-        while r.status_code == 202 and r.headers.get("nvcf-reqid"):
-            r = await c.get(f"https://health.api.nvidia.com/v1/status/{r.headers['nvcf-reqid']}", headers=headers)
+        polls, rid, bytes_out = 0, None, None
+        try:
+            r = await c.post(DIFFDOCK_URL, json=payload, headers=headers)
+            rid = calllog.reqid_of(r.headers)
+            bytes_out = len(r.request.content)
+            while r.status_code == 202 and r.headers.get("nvcf-reqid"):
+                polls += 1
+                r = await c.get(f"https://health.api.nvidia.com/v1/status/{r.headers['nvcf-reqid']}", headers=headers)
+        except httpx.HTTPError as e:
+            calllog.record(url=DIFFDOCK_URL, model="mit/diffdock", purpose="STEP 1 live docking (dashboard)", reqid=rid,
+                           latency_ms=(time.perf_counter() - t0) * 1000, error=e, extra={"polls": polls})
+            raise
+        calllog.record(url=DIFFDOCK_URL, model="mit/diffdock", purpose="STEP 1 live docking (dashboard)", response=r,
+                       reqid=calllog.reqid_of(r.headers) or rid, bytes_out=bytes_out,
+                       latency_ms=(time.perf_counter() - t0) * 1000,
+                       error=None if r.status_code == 200 else f"HTTP{r.status_code}", extra={"polls": polls})
         if r.status_code != 200:
             raise DockError(f"DiffDock NIM HTTP {r.status_code}: {r.text[:200]}")
         body = r.json()

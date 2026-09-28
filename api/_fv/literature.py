@@ -23,7 +23,7 @@ import xml.etree.ElementTree as ET
 
 import httpx
 
-from . import clients, config, evidence, labeltext
+from . import calllog, clients, config, evidence, labeltext
 
 DESIGNS = {
     "meta_analysis": "meta-analysis or systematic review",
@@ -358,6 +358,9 @@ async def rerank(drug: str, pt: str, arts: list[dict], n: int, client: httpx.Asy
             scores = json.loads(cfile.read_text())["scores"]
         except (ValueError, KeyError, OSError):
             scores = None
+    if scores is not None:
+        calllog.record(url=config.RERANK_URL, model=config.MODEL_RERANK, purpose="literature rerank: PubMed top-20 -> read 6",
+                       cache_hit=True, extra={"n_inputs": len(arts)})
     if scores is None:
         try:
             r = await asyncio.wait_for(clients.nim_rerank(q, [rerank_passage(a) for a in arts], client, timeout=RERANK_TIMEOUT),
