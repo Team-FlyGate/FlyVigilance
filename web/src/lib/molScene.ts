@@ -182,9 +182,14 @@ export function dust(n = 700, r = 120) {
 
 export function makeRenderer(el: HTMLElement) {
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
+  // 블룸 후처리가 붙은 캔버스가 한 화면에 2~3개라 레티나(DPR 2)에서 픽셀 수가 4배가 되어 프레임이 끊깁니다. 1.5 로 묶습니다
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5))
   renderer.toneMapping = THREE.ACESFilmicToneMapping
   renderer.toneMappingExposure = 1.05
+  // setSize(..., false) 는 캔버스 CSS 크기를 건드리지 않으므로, 여기서 칸에 맞춥니다.
+  // 이게 없으면 devicePixelRatio 2(맥 레티나 · 브라우저 확대) 화면에서 캔버스가 칸의 2배로 그려져
+  // overflow:hidden 에 잘리고 왼쪽 위 1/4 만 보입니다(단백질이 오른쪽 아래로 치우쳐 잘림)
+  renderer.domElement.style.cssText = 'display:block;width:100%;height:100%'
   el.appendChild(renderer.domElement)
   const scene = new THREE.Scene()
   // 후처리(블룸)를 거치면 투명 배경이 사라지므로 카드 배경과 같은 색을 깝니다
@@ -214,7 +219,14 @@ export function makeRenderer(el: HTMLElement) {
     renderer.setSize(w, h, false); composer.setSize(w, h); bloom.resolution.set(w, h)
     camera.aspect = w / h; camera.updateProjectionMatrix()
   }
-  return { renderer, scene, camera, composer, bloom, film, resize }
+  // 화면 밖이거나 탭이 숨겨졌으면 그리지 않습니다(루프는 돌되 GPU 는 쉬게)
+  let onScreen = true
+  const io = new IntersectionObserver(([e]) => { onScreen = e.isIntersecting })
+  io.observe(el)
+  // 캔버스가 치워지면(컴포넌트 cleanup) 관찰도 끊습니다
+  new MutationObserver((_, mo) => { if (!renderer.domElement.isConnected) { io.disconnect(); mo.disconnect() } }).observe(el, { childList: true })
+  const shown = () => onScreen && !document.hidden
+  return { renderer, scene, camera, composer, bloom, film, resize, shown }
 }
 
 export function disposeAll(root: THREE.Object3D) {

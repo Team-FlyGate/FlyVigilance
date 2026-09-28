@@ -81,7 +81,9 @@ export default function ValidationGate() {
             <div className="fade-in mono" style={{ fontSize: 11, color: 'var(--text-2)', padding: '2px 4px 10px', display: 'grid', gap: 3 }}>
               <span>구조: {r.structure.method} {r.structure.resolution ?? '–'} Å · {r.structure.organism ?? '생물종 미상'}{r.structure.reasons.length ? ` · 주의: ${r.structure.reasons.join(', ')}` : ''}</span>
               <span>반복별 1순위 RMSD: {r.top1_rmsd.map((v) => (v === null ? '–' : v.toFixed(2))).join(' · ')} Å</span>
-              <span>반복별 1순위 신뢰도: {r.top1_confidence.map((v) => (v === null ? '–' : v.toFixed(2))).join(' · ')} (평균 {r.confidence_mean ?? '–'}, 표준편차 {r.confidence_sd ?? '–'}) — 같은 입력에서도 신뢰도가 흔들립니다</span>
+              <span>반복별 1순위 신뢰도: {r.top1_confidence.map((v) => (v === null ? '–' : v.toFixed(2))).join(' · ')} (평균 {r.confidence_mean ?? '–'}, 표준편차 {r.confidence_sd ?? '–'}) — {r.converged && r.crystal_hits * 2 > r.runs ? '포즈는 매번 같은 자리로 모였고, 신뢰도 점수만 실행마다 조금씩 다릅니다 · 한 번의 점수보다 평균을 봅니다'
+                : r.converged ? '같은 자리로 모였지만 결정 구조의 정답 자리는 아닙니다 · 수렴과 신뢰도만으로는 맞았다고 할 수 없습니다'
+                : '포즈가 실행마다 다른 자리로 흩어졌습니다 · 신뢰도 점수 하나로 판단하면 안 됩니다'}</span>
             </div>
           )}
         </div>

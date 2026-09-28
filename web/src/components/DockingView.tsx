@@ -30,7 +30,7 @@ export default function DockingView({ scene, height = 600, playKey = 0, onSettle
     const el = host.current
     if (!el || !scene) return
     let disposed = false, raf = 0, dragging = false
-    const { renderer, scene: s3, camera, composer, bloom, film, resize } = makeRenderer(el)
+    const { renderer, scene: s3, camera, composer, bloom, film, resize, shown } = makeRenderer(el)
     const controls = new OrbitControls(camera, renderer.domElement)
     controls.enableDamping = true; controls.autoRotate = true; controls.autoRotateSpeed = 0.6
     controls.minDistance = 10; controls.maxDistance = 120
@@ -87,7 +87,7 @@ export default function DockingView({ scene, height = 600, playKey = 0, onSettle
       // 포켓 컷어웨이: 카메라와 결합 자리 사이 사슬을 잘라 리간드가 늘 보이게 합니다
       rb.uniforms.uEye.value.copy(camera.position); rb.uniforms.uCut.value = 6.5
       film.uniforms.uTime.value = (now % 1000) / 1000
-      controls.update(); composer.render()
+      controls.update(); if (shown()) composer.render()
       raf = requestAnimationFrame(loop)
     }
     raf = requestAnimationFrame(loop)
