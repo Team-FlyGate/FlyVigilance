@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { TARGET_PALETTE, ballStick, chainGradient, disposeAll, dust, glowSprite, makeRenderer, ribbon, setOpacity, type Atom, type Ligand } from '../lib/molScene'
+import { t as tr } from '../lib/i18n'
 
 // 재도킹 장면(DiffDock 페이지): 결정 구조 수용체(리본 + 포켓 원자) 위로 DiffDock NIM 포즈 5개가 스쳐 가고,
 // 1순위 포즈가 궤적을 그리며 날아와 결정 구조 정답(흰 윤곽) 자리에 앉습니다. 성공이면 초록, 실패면 빨강으로 번쩍입니다.
@@ -97,5 +98,5 @@ export default function DockingView({ scene, height = 600, playKey = 0, onSettle
   }, [scene, playKey, epoch])
 
   return <div ref={host} style={{ width: '100%', height, cursor: 'grab', borderRadius: 16, overflow: 'hidden' }}
-    aria-label="결정 구조 수용체 리본과 포켓 원자, 결정 구조 리간드(흰 윤곽), DiffDock 포즈. 드래그로 회전합니다." />
+    aria-label={tr('결정 구조 수용체 리본과 포켓 원자, 결정 구조 리간드(흰 윤곽), DiffDock 포즈. 드래그로 회전합니다.', 'Crystal-structure receptor ribbon and pocket atoms, the crystal ligand (white outline), and the DiffDock pose. Drag to rotate.')} />
 }

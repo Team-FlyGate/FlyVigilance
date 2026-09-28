@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import * as d3 from 'd3'
+import { t } from '../lib/i18n'
 
 export function PageHead({ eyebrow, title, lede, right }: { eyebrow: string; title: ReactNode; lede?: ReactNode; right?: ReactNode }) {
   return (
@@ -188,6 +189,7 @@ export function Spark({ values, color = 'var(--c-sense)', height = 36 }: { value
   )
 }
 
-export function Loading({ label = '불러오는 중' }: { label?: string }) {
+export function Loading({ label }: { label?: string }) {
+  label ??= t('불러오는 중', 'Loading')
   return <div className="row dim mono" style={{ fontSize: 12, padding: 20 }}><span className="spin" />{label}</div>
 }
