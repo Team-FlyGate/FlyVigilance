@@ -1,0 +1,82 @@
+import { useEffect, useState } from 'react'
+import { api } from '../lib/data'
+
+// 직접 도킹 + 실시간 크리틱: 도킹이 끝나면 에이전트가 그 결과로 주장 5개를 쓰고(맞는 주장 1, 크리틱 1·2·3단에 걸릴 주장),
+// /api/dock/critic 이 1단(근거 ID) · 2단(숫자 대조) 규칙과 3단 도킹 해석 규칙(D1–D5, Jev)으로 판정합니다.
+// 사람이 주장을 직접 써서 넣어 볼 수도 있습니다. 판정은 모두 서버 응답 그대로이고, 서버가 없으면 판정을 지어내지 않습니다.
+
+export interface CriticInput {
+  drug: string; gene: string; pdb: string; target: string
+  confidence: (number | null)[]; pocketDist: number | null; source: 'redock' | 'matrix' | 'live'
+  other: { gene: string; conf: number } | null
+}
+interface Issue { claim: string; tier: number; rule: string; p: number | null; detail: string }
+interface Resp { claims: { id: string; text: string; overclaim_p?: number }[]; issues: Issue[]; mode: 'jev' | 'rules'; judge_latency_ms?: number; total_ms: number }
+
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
+const TIER = ['', '1단 근거 ID', '2단 숫자 대조', '3단 추론']
+
+export default function DockCritic({ input, targetKey }: { input: CriticInput; targetKey: string }) {
+  const [res, setRes] = useState<Resp | null>(null)
+  const [err, setErr] = useState<string | null>(null)
+  const [mine, setMine] = useState('')
+  const [busy, setBusy] = useState(false)
+  const ev = `diffdock:${input.source}:${targetKey}|${input.drug}:pose:1`
+  const c1 = input.confidence[0]
+  const f = (v: number) => v.toFixed(2)
+  const state = `${cap(input.drug)} docked to ${input.target} (${input.gene}, PDB ${input.pdb}) with DiffDock NIM. ` +
+    `Pose confidences ${input.confidence.map((c) => (c === null ? 'NA' : f(c))).join(', ')}. ` +
+    (input.pocketDist !== null ? `Pose 1 centroid ${f(input.pocketDist)} A from the crystal ligand site. ` : '') +
+    (input.other ? `Same drug on ${input.other.gene}: pose 1 confidence ${f(input.other.conf)}.` : '')
+
+  const agentClaims = () => {
+    const out: { id: string; text: string; evidence: string[] }[] = []
+    if (input.pocketDist !== null) out.push({ id: 'c1', text: `${cap(input.drug)} 의 1순위 포즈는 ${input.gene} 결합 자리 중심에서 ${f(input.pocketDist)} Å 떨어져 있다.`, evidence: [ev] })
+    if (c1 !== null) out.push({ id: 'c2', text: `DiffDock 신뢰도가 ${f(c1)} 이므로 ${cap(input.drug)} 은(는) ${input.gene} 에 강하게 결합한다.`, evidence: [ev] })
+    if (c1 !== null && input.other) out.push({ id: 'c3', text: `${cap(input.drug)} 은(는) ${input.gene} 에서 신뢰도 ${f(c1)}, ${input.other.gene} 에서 ${f(input.other.conf)} 이므로 ${c1 >= input.other.conf ? input.gene : input.other.gene} 에 선택적이다.`, evidence: [ev] })
+    if (c1 !== null) out.push({ id: 'c4', text: `1순위 포즈 신뢰도는 ${f(c1 + 0.37)} 이다.`, evidence: [ev] })
+    out.push({ id: 'c5', text: `${cap(input.drug)} 은(는) ${input.gene} 결합 자리에 들어간다.`, evidence: [`pdb:${input.pdb}:cocrystal-${input.drug}`] })
+    return out
+  }
+
+  const judge = async (extra?: string) => {
+    setBusy(true); setErr(null)
+    const claims = agentClaims()
+    if (extra?.trim()) claims.push({ id: 'me', text: extra.trim(), evidence: [ev] })
+    try { setRes(await api<Resp>('/api/dock/critic', { claims, state, ids: [ev] })) } catch (e) { setErr(String(e instanceof Error ? e.message : e)); setRes(null) }
+    setBusy(false)
+  }
+  useEffect(() => { void judge() }, [input.drug, targetKey]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const issuesOf = (id: string) => res?.issues.filter((i) => i.claim === id) ?? []
+  return (
+    <div className="stack" style={{ gap: 8, marginTop: 14 }}>
+      <div className="row between">
+        <span className="mono" style={{ fontSize: 10.5, letterSpacing: 1.3, color: 'var(--bad)' }}>LIVE CRITIC · 에이전트가 쓴 주장 → 크리틱 3단</span>
+        <span className="mono dim" style={{ fontSize: 10.5 }}>
+          {busy ? '판정 중…' : res ? `${res.mode === 'jev' ? `3단 Jev ${res.judge_latency_ms ?? '–'} ms` : '3단 규칙 판정(Jev 미사용)'} · 전체 ${res.total_ms} ms` : ''}
+        </span>
+      </div>
+      {err && <div className="note">크리틱 서버에 연결할 수 없어 판정을 보여 드리지 못합니다 ({err})</div>}
+      {res && res.claims.map((c) => {
+        const iss = issuesOf(c.id), ok = iss.length === 0
+        return (
+          <div key={c.id} className="fade-in" style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 10, alignItems: 'center', padding: '8px 12px', borderRadius: 10,
+            background: c.id === 'me' ? 'rgba(255,181,71,0.07)' : 'rgba(10,16,30,0.5)', border: `1px solid ${ok ? 'rgba(61,220,151,0.3)' : 'rgba(255,93,108,0.3)'}` }}>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 12.5 }}>{c.id === 'me' && <span className="chip jev" style={{ fontSize: 9.5, marginRight: 6 }}>직접 쓴 주장</span>}{c.text}</div>
+              {iss.map((i, k) => <div key={k} className="mono" style={{ fontSize: 10.5, color: 'var(--bad)', marginTop: 2 }}>
+                {TIER[i.tier]} · {i.rule}{i.p !== null && i.p !== undefined ? ` · p ${i.p.toFixed(2)}` : ''}{i.detail ? ` — ${i.detail.slice(0, 90)}` : ''}</div>)}
+            </div>
+            <span className={`chip ${ok ? 'ok' : 'bad'}`}>{ok ? 'PASS' : 'REJECT'}</span>
+          </div>
+        )
+      })}
+      <div className="row" style={{ gap: 8 }}>
+        <input className="input" placeholder="직접 주장을 써서 크리틱에 넣어 보세요 (예: 이 약은 PARP1 억제제로 효과가 있다)" value={mine}
+          onChange={(e) => setMine(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && mine.trim()) void judge(mine) }} />
+        <button className="btn" disabled={busy || !mine.trim()} onClick={() => void judge(mine)}>판정</button>
+      </div>
+    </div>
+  )
+}
