@@ -1,0 +1,372 @@
+{
+ "openfold3_msa": {
+  "endpoint": "/v1/biology/openfold/openfold3/predict",
+  "target": "PARP1 4R6E chain A + niraparib",
+  "msa_homologs": 101,
+  "plddt": 95.95,
+  "ptm": 0.828,
+  "iptm": 0.658,
+  "ca_rmsd_vs_4R6E": 1.0,
+  "n_ca": 350,
+  "ligand_rmsd": 1.16,
+  "seconds": 7.1
+ },
+ "openfold2": {
+  "status": "FAILED",
+  "http": 500,
+  "error": "CUDA error: an illegal memory access was encountered",
+  "attempts": 6
+ },
+ "nemoguard_topic_control": {
+  "status": "FAILED",
+  "http": 500,
+  "error": "TensorRT-LLM CUDA runtime error in cudaMemcpyAsync",
+  "attempts": 6,
+  "alternative_ok": "nvidia/nemotron-3.5-content-safety (HTTP 200)"
+ },
+ "diffdock_boltz2_chembl": [
+  [
+   "15r@parp1",
+   -13.093,
+   -1.96,
+   9.868,
+   0.443,
+   null,
+   0
+  ],
+  [
+   "pamiparib@parp1",
+   -11.085,
+   1.1,
+   7.822,
+   0.342,
+   8.89,
+   10
+  ],
+  [
+   "niraparib@parp1",
+   -10.178,
+   0.696,
+   8.909,
+   0.766,
+   7.79,
+   27
+  ],
+  [
+   "rucaparib@parp1",
+   -9.769,
+   0.653,
+   8.2,
+   0.299,
+   8.7,
+   38
+  ],
+  [
+   "celecoxib@cox2",
+   -11.88,
+   0.313,
+   7.092,
+   0.35,
+   7.22,
+   17
+  ],
+  [
+   "niraparib@cox2",
+   -6.605,
+   -0.699,
+   7.502,
+   0.305,
+   null,
+   0
+  ],
+  [
+   "apixaban@xa",
+   -10.248,
+   0.687,
+   11.743,
+   0.953,
+   10.1,
+   13
+  ],
+  [
+   "niraparib@xa",
+   -7.967,
+   -0.044,
+   7.433,
+   0.181,
+   null,
+   0
+  ]
+ ],
+ "parp1_affinity_benchmark": {
+  "n": 39,
+  "spearman": 0.767,
+  "pearson": 0.746,
+  "mae": 0.71,
+  "rmse": 0.85,
+  "bias": -0.03,
+  "ef_top25": 2.41,
+  "hit": 5,
+  "k": 9,
+  "sens": 0.8,
+  "spec": 0.86,
+  "pairs": [
+   [
+    5.93,
+    7.523
+   ],
+   [
+    6.46,
+    5.541
+   ],
+   [
+    6.0,
+    5.392
+   ],
+   [
+    6.11,
+    6.223
+   ],
+   [
+    4.88,
+    5.627
+   ],
+   [
+    6.46,
+    6.991
+   ],
+   [
+    6.07,
+    6.639
+   ],
+   [
+    6.12,
+    6.564
+   ],
+   [
+    5.02,
+    5.904
+   ],
+   [
+    5.33,
+    6.277
+   ],
+   [
+    6.36,
+    6.095
+   ],
+   [
+    5.92,
+    5.989
+   ],
+   [
+    7.79,
+    9.021
+   ],
+   [
+    7.21,
+    6.277
+   ],
+   [
+    7.45,
+    9.207
+   ],
+   [
+    7.89,
+    7.118
+   ],
+   [
+    6.73,
+    7.321
+   ],
+   [
+    7.44,
+    7.001
+   ],
+   [
+    7.34,
+    6.415
+   ],
+   [
+    7.89,
+    8.749
+   ],
+   [
+    7.35,
+    5.754
+   ],
+   [
+    7.01,
+    6.458
+   ],
+   [
+    6.82,
+    6.266
+   ],
+   [
+    7.19,
+    7.177
+   ],
+   [
+    7.8,
+    8.474
+   ],
+   [
+    7.64,
+    7.611
+   ],
+   [
+    8.3,
+    9.825
+   ],
+   [
+    8.5,
+    8.098
+   ],
+   [
+    9.22,
+    8.898
+   ],
+   [
+    8.84,
+    8.677
+   ],
+   [
+    8.76,
+    9.351
+   ],
+   [
+    8.89,
+    7.744
+   ],
+   [
+    8.85,
+    8.653
+   ],
+   [
+    8.52,
+    7.502
+   ],
+   [
+    8.25,
+    6.628
+   ],
+   [
+    8.62,
+    8.392
+   ],
+   [
+    8.52,
+    7.526
+   ],
+   [
+    8.25,
+    7.956
+   ],
+   [
+    9.0,
+    8.602
+   ]
+  ]
+ },
+ "critic_eval": {
+  "nvidia/nemotron-3.5-lightning-30b-a3b": {
+   "sec": 294.5,
+   "caught": 0,
+   "n_over": 4,
+   "passed": 1,
+   "n_valid": 4,
+   "rows": [
+    [
+     "PARP1 Vina 순위는 15R > pamiparib > niraparib > rucaparib이다.",
+     "PASS",
+     "NONE"
+    ],
+    [
+     "DiffDock이 니라파립을 4R6E 공결정 위치에 RMSD 0.71A로 재현했다.",
+     "PASS",
+     "NONE"
+    ],
+    [
+     "ChEMBL 실측 중앙값은 pamiparib 8.89 > rucaparib 8.70 > niraparib 7.79이다.",
+     "PASS",
+     "PASS"
+    ],
+    [
+     "Boltz-2는 니라파립@PARP1 pIC50 8.909를 예측했고 ChEMBL 실측 중앙값은 7.79이다.",
+     "PASS",
+     "NONE"
+    ],
+    [
+     "니라파립은 PARP1 -10.178, Xa -7.967이므로 PARP1에 선택적이다.",
+     "REJECT",
+     "NONE"
+    ],
+    [
+     "DiffDock 신뢰도 1.10인 pamiparib이 rucaparib보다 친화도가 높다.",
+     "REJECT",
+     "NONE"
+    ],
+    [
+     "Boltz-2 예측 pIC50 8.909는 니라파립의 측정된 PARP1 친화도이다.",
+     "REJECT",
+     "NONE"
+    ],
+    [
+     "PARP1 3종의 Boltz-2와 실측 Spearman이 -1.0이므로 Boltz-2는 실측과 역상관한다.",
+     "REJECT",
+     "NONE"
+    ]
+   ]
+  },
+  "nvidia/nemotron-3-super-120b-a12b": {
+   "sec": 41.8,
+   "caught": 4,
+   "n_over": 4,
+   "passed": 3,
+   "n_valid": 4,
+   "rows": [
+    [
+     "PARP1 Vina 순위는 15R > pamiparib > niraparib > rucaparib이다.",
+     "PASS",
+     "PASS"
+    ],
+    [
+     "DiffDock이 니라파립을 4R6E 공결정 위치에 RMSD 0.71A로 재현했다.",
+     "PASS",
+     "REJECT"
+    ],
+    [
+     "ChEMBL 실측 중앙값은 pamiparib 8.89 > rucaparib 8.70 > niraparib 7.79이다.",
+     "PASS",
+     "PASS"
+    ],
+    [
+     "Boltz-2는 니라파립@PARP1 pIC50 8.909를 예측했고 ChEMBL 실측 중앙값은 7.79이다.",
+     "PASS",
+     "PASS"
+    ],
+    [
+     "니라파립은 PARP1 -10.178, Xa -7.967이므로 PARP1에 선택적이다.",
+     "REJECT",
+     "REJECT"
+    ],
+    [
+     "DiffDock 신뢰도 1.10인 pamiparib이 rucaparib보다 친화도가 높다.",
+     "REJECT",
+     "REJECT"
+    ],
+    [
+     "Boltz-2 예측 pIC50 8.909는 니라파립의 측정된 PARP1 친화도이다.",
+     "REJECT",
+     "REJECT"
+    ],
+    [
+     "PARP1 3종의 Boltz-2와 실측 Spearman이 -1.0이므로 Boltz-2는 실측과 역상관한다.",
+     "REJECT",
+     "REJECT"
+    ]
+   ]
+  }
+ }
+}

@@ -1,0 +1,20 @@
+{
+ "model": "nvidia/nemotron-3.5-lightning-30b-a3b",
+ "n_cases": 15,
+ "correct": 11,
+ "overinterpretation": {
+  "n": 8,
+  "caught": 8
+ },
+ "valid": {
+  "n": 7,
+  "passed": 4,
+  "false_alarm": 3
+ },
+ "false_alarm_claims": [
+  "PARP1 Vina 점수 순위 나열",
+  "DiffDock 재도킹 0.71A로 설정 작동 확인",
+  "ChEMBL 실측 중앙값 순위 나열"
+ ],
+ "note": "과잉해석은 8/8 전부 적발. 정상 주장 7건 중 3건을 과하게 반려(오탐). 프롬프트 조정 필요."
+}

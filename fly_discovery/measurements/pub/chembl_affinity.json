@@ -1,0 +1,132 @@
+{
+ "niraparib@PARP1": {
+  "n_activities": 30,
+  "n_pchembl": 27,
+  "median_pchembl": 7.79,
+  "max_pchembl": 9.0,
+  "types": {
+   "IC50": 23,
+   "EC50": 2,
+   "Ki": 1,
+   "Kd": 1
+  },
+  "doc_ids": [
+   "CHEMBL1157008",
+   "CHEMBL2407000",
+   "CHEMBL3102753",
+   "CHEMBL3102760",
+   "CHEMBL3425485"
+  ]
+ },
+ "pamiparib@PARP1": {
+  "n_activities": 17,
+  "n_pchembl": 10,
+  "median_pchembl": 8.89,
+  "max_pchembl": 9.7,
+  "types": {
+   "IC50": 8,
+   "EC50": 2
+  },
+  "doc_ids": [
+   "CHEMBL3886532",
+   "CHEMBL4673340",
+   "CHEMBL5252527",
+   "CHEMBL5370623",
+   "CHEMBL5518224"
+  ]
+ },
+ "rucaparib@PARP1": {
+  "n_activities": 41,
+  "n_pchembl": 38,
+  "median_pchembl": 8.7,
+  "max_pchembl": 9.15,
+  "types": {
+   "Ki": 8,
+   "IC50": 28,
+   "EC50": 1,
+   "Kd": 1
+  },
+  "doc_ids": [
+   "CHEMBL3108736",
+   "CHEMBL3616447",
+   "CHEMBL3763037",
+   "CHEMBL3994596",
+   "CHEMBL4184289"
+  ]
+ },
+ "niraparib@FXa": {
+  "n_activities": 0,
+  "n_pchembl": 0,
+  "median_pchembl": null,
+  "max_pchembl": null,
+  "types": {},
+  "doc_ids": []
+ },
+ "niraparib@COX2_h": {
+  "n_activities": 0,
+  "n_pchembl": 0,
+  "median_pchembl": null,
+  "max_pchembl": null,
+  "types": {},
+  "doc_ids": []
+ },
+ "niraparib@COX2_m": {
+  "n_activities": 0,
+  "n_pchembl": 0,
+  "median_pchembl": null,
+  "max_pchembl": null,
+  "types": {},
+  "doc_ids": []
+ },
+ "apixaban@FXa": {
+  "n_activities": 18,
+  "n_pchembl": 13,
+  "median_pchembl": 10.1,
+  "max_pchembl": 10.1,
+  "types": {
+   "Ki": 9,
+   "IC50": 4
+  },
+  "doc_ids": [
+   "CHEMBL1137566",
+   "CHEMBL1138586",
+   "CHEMBL1145623",
+   "CHEMBL1149575",
+   "CHEMBL1154516"
+  ]
+ },
+ "celecoxib@COX2_h": {
+  "n_activities": 327,
+  "n_pchembl": 235,
+  "median_pchembl": 7.14,
+  "max_pchembl": 9.33,
+  "types": {
+   "IC50": 233,
+   "Ki": 1,
+   "AC50": 1
+  },
+  "doc_ids": [
+   "CHEMBL1130002",
+   "CHEMBL1131679",
+   "CHEMBL1131765",
+   "CHEMBL1131821",
+   "CHEMBL1131878"
+  ]
+ },
+ "celecoxib@COX2_m": {
+  "n_activities": 40,
+  "n_pchembl": 17,
+  "median_pchembl": 7.22,
+  "max_pchembl": 9.29,
+  "types": {
+   "IC50": 17
+  },
+  "doc_ids": [
+   "CHEMBL1133534",
+   "CHEMBL1135634",
+   "CHEMBL1137573",
+   "CHEMBL1140067",
+   "CHEMBL1144428"
+  ]
+ }
+}

@@ -1,0 +1,15 @@
+{
+ "mols": {
+  "niraparib": "CHEMBL1094636",
+  "pamiparib": "CHEMBL4112930",
+  "rucaparib": "CHEMBL1173055",
+  "apixaban": "CHEMBL231779",
+  "celecoxib": "CHEMBL118"
+ },
+ "targets": {
+  "PARP1|Homo sapiens": "CHEMBL3105",
+  "Coagulation factor X|Homo sapiens": "CHEMBL244",
+  "Cyclooxygenase-2|Homo sapiens": "CHEMBL1835",
+  "Cyclooxygenase-2|Mus musculus": "CHEMBL4321"
+ }
+}
