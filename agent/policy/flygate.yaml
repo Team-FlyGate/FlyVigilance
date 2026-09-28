@@ -1,0 +1,159 @@
+# Project-FlyGate OpenShell 샌드박스 정책입니다 (FlyDiscovery + FlyVigilance 에이전트).
+#
+# 스키마는 실제로 검증된 파일 세 가지에 맞췄습니다.
+#   - 살아 있는 NemoClaw 샌드박스의 정책 (`nemoclaw my-assistant status`, `openshell sandbox get my-assistant` 로 읽기만 함)
+#   - NemoClaw 청사진 기본 정책 nemoclaw-blueprint/policies/openclaw-sandbox.yaml (NemoClaw v0.0.124, OpenShell 0.0.116)
+#   - 팀 저장소 Team-FlyGate/korea-agentic-hackathon-2026 의 policies/flydock.yaml (2026-09-25 스모크 pass=18 fail=0)
+#
+# 원칙 (NemoClaw 강좌 04a, 04b 의 기준 구성과 같습니다)
+#   1. 나가는 연결은 기본 거부입니다. 아래 블록에 적힌 호스트·포트·메서드·경로·실행 파일 조합만 열립니다.
+#   2. 외부 API 는 파이썬 실행 파일에만 묶습니다. flygate CLI 가 파이썬이고, curl 같은 다른 실행 파일은 같은 호스트라도 막힙니다.
+#   3. 쓰기는 /tmp, /sandbox/.openclaw, /sandbox/.nemoclaw, 작업 디렉터리(/sandbox)만입니다. 시스템 경로는 읽기 전용입니다.
+#   4. 에이전트는 root 가 아닌 sandbox 사용자로 돕니다.
+#   5. 보고서를 밖으로 내보내는 경로(메일, 메신저, 규제기관 포털, GitHub, 붙여넣기 사이트)는 하나도 열지 않습니다. 제출은 사람이 합니다.
+#
+# 적용
+#   새 샌드박스:   openshell sandbox create --name flygate --from <openclaw-sandbox 이미지> --policy agent/policy/flygate.yaml --detach -- sleep infinity
+#   네트워크 교체: openshell policy set flygate --policy agent/policy/flygate.yaml --wait
+#   NemoClaw 비서: agent/deploy_nemoclaw.sh 가 network_policies 를 프리셋으로 바꿔 `nemoclaw <name> policy add --from-file` 로 더합니다.
+# filesystem_policy, landlock, process 는 생성할 때 고정됩니다(static). network_policies 만 실행 중에 바뀝니다.
+# API 키는 이 파일에 적지 않습니다. 자격 증명은 OpenShell provider 가 프록시 단계에서 넣고, 샌드박스 안에는 자리표시자만 보입니다.
+
+version: 1
+
+filesystem_policy:
+  # 작업 디렉터리(이미지 WORKDIR /sandbox)를 쓰기 가능으로 둡니다. flygate 코드와 날짜별 메모가 여기에 놓입니다.
+  include_workdir: true
+  read_only:
+    - /usr
+    - /lib
+    - /proc
+    - /dev/urandom
+    - /app
+    - /etc
+    - /var/log
+    - /var/lib/dpkg
+    - /run/nemoclaw/managed-startup-ca-bundle.pem
+    - /run/nemoclaw/managed-startup-runtime.env
+  read_write:
+    - /tmp
+    - /dev/null            # 런타임 기본 경로입니다
+    - /dev/pts             # OpenClaw exec 도구의 의사 터미널(PTY)입니다
+    - /sandbox/.openclaw   # OpenClaw 작업 공간(SOUL.md, memory/, skills/)입니다
+    - /sandbox/.nemoclaw   # NemoClaw 플러그인 상태입니다
+
+landlock:
+  compatibility: best_effort
+
+process:
+  run_as_user: sandbox
+  run_as_group: sandbox
+
+network_policies:
+  # STEP 2 FlyVigilance: 허가 라벨 근거와 openFDA 갱신일 확인입니다. 조회(GET) 두 경로만 엽니다.
+  openfda:
+    name: openfda
+    endpoints:
+      - host: api.fda.gov
+        port: 443
+        protocol: rest
+        enforcement: enforce
+        rules:
+          - allow: { method: GET, path: /drug/label.json }
+          - allow: { method: GET, path: /drug/event.json }
+    binaries:
+      - { path: /usr/bin/python3 }
+      - { path: /usr/bin/python3.13 }
+
+  # STEP 2 FlyVigilance: 문헌 읽기(PubMed 검색, 초록, 요약)입니다.
+  pubmed:
+    name: pubmed-eutils
+    endpoints:
+      - host: eutils.ncbi.nlm.nih.gov
+        port: 443
+        protocol: rest
+        enforcement: enforce
+        rules:
+          - allow: { method: GET, path: /entrez/eutils/esearch.fcgi }
+          - allow: { method: GET, path: /entrez/eutils/efetch.fcgi }
+          - allow: { method: GET, path: /entrez/eutils/esummary.fcgi }
+    binaries:
+      - { path: /usr/bin/python3 }
+      - { path: /usr/bin/python3.13 }
+
+  # 비자기회귀 판단 모델(TypeSafe AI systemone): 타입 있는 판단 확률(반사 트리아지, 크리틱 과잉해석, 문헌 설계 분류)입니다.
+  typesafe_judgment:
+    name: typesafe-judgment
+    endpoints:
+      - host: api.typesafe.ai
+        port: 443
+        protocol: rest
+        enforcement: enforce
+        rules:
+          - allow: { method: POST, path: /v1/systemone }
+    binaries:
+      - { path: /usr/bin/python3 }
+      - { path: /usr/bin/python3.13 }
+
+  # NVIDIA build.nvidia.com NIM: Nemotron 숙의 메모, 국내 보고 구조화, NVIDIA Safety Guard 입니다.
+  nvidia_inference:
+    name: nvidia-inference
+    endpoints:
+      - host: integrate.api.nvidia.com
+        port: 443
+        protocol: rest
+        enforcement: enforce
+        rules:
+          - allow: { method: POST, path: /v1/chat/completions }
+          - allow: { method: GET, path: /v1/models }
+    binaries:
+      - { path: /usr/bin/python3 }
+      - { path: /usr/bin/python3.13 }
+
+  # STEP 1 FlyDiscovery: NVIDIA BioNeMo NIM 네 가지(MSA-Search, OpenFold3, DiffDock, Boltz-2)와 비동기 결과 조회입니다.
+  bionemo_nim:
+    name: bionemo-nim
+    endpoints:
+      - host: health.api.nvidia.com
+        port: 443
+        protocol: rest
+        enforcement: enforce
+        rules:
+          - allow: { method: POST, path: /v1/biology/colabfold/msa-search/predict }
+          - allow: { method: POST, path: /v1/biology/openfold/openfold3/predict }
+          - allow: { method: POST, path: /v1/biology/mit/diffdock }
+          - allow: { method: POST, path: /v1/biology/mit/boltz2/predict }
+          - allow: { method: GET, path: /v1/status/** }
+    binaries:
+      - { path: /usr/bin/python3 }
+      - { path: /usr/bin/python3.13 }
+
+  # NemoClaw 하네스 내부 경로입니다(인터넷 호스트가 아닙니다). OpenClaw 가 자기 모델을 부르는 관리형 추론 경로로,
+  # 게이트웨이가 설정된 NVIDIA 엔드포인트로 대신 보냅니다. 청사진 기본 정책의 블록에서 실행 파일만 OpenClaw 둘로 줄였습니다.
+  managed_inference:
+    name: managed_inference
+    endpoints:
+      - host: inference.local
+        port: 443
+        protocol: rest
+        enforcement: enforce
+        rules:
+          - allow: { method: GET, path: "/**" }
+          - allow: { method: POST, path: "/**" }
+    binaries:
+      - { path: /usr/local/bin/openclaw }
+      - { path: /usr/local/bin/node }
+
+  # NemoClaw 하네스 내부 경로입니다. 하위 에이전트(sessions_spawn)가 같은 샌드박스의 OpenClaw 게이트웨이로 되돌아오는 연결입니다.
+  openclaw_gateway_dialback:
+    name: openclaw_gateway_dialback
+    endpoints:
+      - host: 10.200.0.2
+        port: 18789
+        access: full
+        tls: skip
+        allowed_ips:
+          - 10.200.0.2
+    binaries:
+      - { path: /usr/local/bin/openclaw }
+      - { path: /usr/local/bin/node }

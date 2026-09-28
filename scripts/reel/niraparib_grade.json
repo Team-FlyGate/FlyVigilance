@@ -1,0 +1,47 @@
+{
+ "drug": "NIRAPARIB",
+ "pt": "thrombocytopenia",
+ "pv_class": "identified_candidate",
+ "pv_class_name": "규명된 위해성 후보",
+ "pv_hint": "라벨에 있고 SDR 도 섰습니다. 알려진 위험이 보고와 일치합니다",
+ "review_priority": 3,
+ "grade": "B",
+ "label_status_name": "경고·주의사항",
+ "signal_name": "3중 기준 SDR",
+ "knowledge_p": 0.97,
+ "stats": {
+  "a": 1061,
+  "prr": 9.863,
+  "prr_lo": 9.297,
+  "prr_hi": 10.463,
+  "ror_lo": 9.692,
+  "ic025": 3.179,
+  "chi2": 8379.7
+ },
+ "caution": "집단 수준의 근거 분류이며 '후보'입니다. 이 한 사례의 인과를 뜻하지 않고, 실제 분류는 허가권자와 규제기관이 평가해서 정합니다. 근거와 공백 없이 분류만 인용하지 않습니다.",
+ "label": {
+  "brand": "ZEJULA",
+  "effective": "20260728",
+  "setid": "b7f675e2-159c-490c-b6f4-3f16d9492b7d",
+  "sections": [
+   "warnings_and_cautions",
+   "adverse_reactions_ct"
+  ]
+ },
+ "literature": {
+  "count": 89,
+  "read": 6,
+  "relevant": 5,
+  "supportive": 5,
+  "designs": {
+   "rct": 2,
+   "cohort": 1,
+   "pharmacovigilance": 1,
+   "case_report": 1,
+   "review": 1
+  },
+  "judge_questions": 44,
+  "judge_latency_ms": 308.6
+ },
+ "recorded": "2026-09-28 00:49"
+}

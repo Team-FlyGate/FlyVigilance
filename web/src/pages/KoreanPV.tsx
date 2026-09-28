@@ -120,7 +120,7 @@ export default function KoreanPV() {
               <div className="seg">{(Object.keys(FORM_LABEL) as Form[]).map((f) => <button key={f} className={form === f ? 'on' : ''} onClick={() => setForm(f)}>{FORM_LABEL[f]}</button>)}</div>
               <span className="dim" style={{ fontSize: 11.5 }}>출처: {sample.sourceUrl ? <a href={sample.sourceUrl} target="_blank" rel="noreferrer">{sample.source}</a> : sample.source}</span>
             </div>
-            <textarea className="input" value={text} onChange={(e) => setText(e.target.value)} rows={9} style={{ fontFamily: 'var(--font-kr)', fontSize: 13, lineHeight: 1.6, resize: 'vertical' }} />
+            <textarea className="input" value={text} onChange={(e) => setText(e.target.value)} rows={9} style={{ fontFamily: 'var(--font-kr)', fontSize: 13, lineHeight: 1.6, resize: 'vertical', color: 'var(--text)' }} />
           </Card>
 
           {err && <Card><div style={{ color: 'var(--bad)' }}>{err}</div></Card>}

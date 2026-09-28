@@ -284,10 +284,10 @@ export default function Agent() {
       )}
 
       {missing ? (
-        <Card title="에이전트 구성 데이터" sub="/data/agent.json">
+        <Card title="에이전트 구성 파일" sub="워크스페이스 · OpenShell 정책 · 트리거 · CLI">
           <div className="note">
-            <span className="mono">agent/export_agent_json.py</span>가 워크스페이스 파일, OpenShell 정책, 트리거, CLI, 라이브 점검 결과를 이 파일로 내보냅니다.
-            파일이 준비되면 이 자리에 모듈 체크리스트와 정책 뷰어가 나타납니다. 구성도와 정책 원문은 저장소의 <a href={`${REPO}/tree/main/agent`} target="_blank" rel="noreferrer">agent/</a>에 있습니다.
+            워크스페이스 파일(SOUL · AGENTS · TOOLS · HEARTBEAT · MEMORY), OpenShell 정책 원문, 배포 스크립트와 <span className="mono">flygate</span> CLI는
+            저장소의 <a href={`${REPO}/tree/main/agent`} target="_blank" rel="noreferrer">agent/</a> 폴더에 있습니다.
           </div>
         </Card>
       ) : !data ? <Loading /> : (

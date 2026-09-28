@@ -1,0 +1,20 @@
+#!/usr/bin/env sh
+# flygate 실행 래퍼입니다. OpenClaw 의 exec 도구와 사람이 같은 명령을 씁니다.
+# 파이썬은 FLYGATE_PYTHON > 저장소 .venv > python3 순서로 고릅니다.
+# 샌드박스 배포본(/sandbox/flygate)에는 순수 파이썬 의존성이 vendor/ 에 함께 올라가므로 그 경로를 PYTHONPATH 에 더합니다.
+set -eu
+HERE="$(cd "$(dirname "$0")" && pwd)"
+AGENT="$(dirname "$HERE")"
+ROOT="$(dirname "$AGENT")"
+if [ -n "${FLYGATE_PYTHON:-}" ]; then
+  PY="$FLYGATE_PYTHON"
+elif [ -x "$ROOT/.venv/bin/python" ]; then
+  PY="$ROOT/.venv/bin/python"
+else
+  PY="python3"
+fi
+if [ -d "$ROOT/vendor" ]; then
+  PYTHONPATH="$ROOT/vendor${PYTHONPATH:+:$PYTHONPATH}"
+  export PYTHONPATH
+fi
+exec "$PY" "$AGENT/flygate.py" "$@"

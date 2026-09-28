@@ -1,0 +1,31 @@
+{
+ "primaryid": 267975941,
+ "caseid": 26797594,
+ "quarter": "2026Q2",
+ "fda_dt": "2026-05-25",
+ "age": 59.0,
+ "sex": "F",
+ "weight": 45.0,
+ "occp_cod": "MD",
+ "country": "EU",
+ "rept_cod": "EXP",
+ "bucket": "serious",
+ "drugs": [
+  {
+   "drug": "NIRAPARIB",
+   "role": "PS",
+   "route": null,
+   "dechal": "Y",
+   "rechal": "U",
+   "indication": "endometrial cancer"
+  }
+ ],
+ "reactions": [
+  "thrombocytopenia"
+ ],
+ "outcomes": [
+  "HO",
+  "LT",
+  "OT"
+ ]
+}

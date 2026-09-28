@@ -1,0 +1,170 @@
+# FlyGate OpenShell 스모크 검사
+date_utc: 2026-09-28T04:52:38Z
+sandbox: flygate-smoke   policy: agent/policy/flygate.yaml   host: macOS + Docker Desktop (openshell compute driver: docker)
+openshell: openshell 0.0.116   nemoclaw: nemoclaw v0.0.124
+gateway:  Gateway: nemoclaw-8090  Server: https://127.0.0.1:8090  Status: Connected 
+image: ghcr.io/nvidia/nemoclaw/openclaw-sandbox (my-assistant 와 같은 이미지)
+
+# 1. 프로세스 신원
+
+## non-root user
+$ openshell sandbox exec -n flygate-smoke -- sh -c 'id; whoami'
+uid=998(sandbox) gid=998(sandbox) groups=998(sandbox)
+sandbox
+RESULT	PASS	non-root user	uid != 0 (sandbox)	uid=998(sandbox) gid=998(sandbox) groups=998(sandbox) sandbox
+
+## seccomp filter, no_new_privs, no capabilities
+$ openshell sandbox exec -n flygate-smoke -- sh -c 'grep -E '^(CapEff|NoNewPrivs|Seccomp):' /proc/self/status | tr '\n\t' '  ''
+CapEff: 0000000000000000 NoNewPrivs: 1 Seccomp: 2 
+RESULT	PASS	seccomp filter, no_new_privs, no capabilities	CapEff 0, NoNewPrivs 1, Seccomp 2 (filter)	CapEff: 0000000000000000 NoNewPrivs: 1 Seccomp: 2 
+
+# 2. 허용 목록 (파이썬)
+
+## allowed openFDA niraparib label
+$ openshell sandbox exec -n flygate-smoke -- python3 probe.py 'https://api.fda.gov/drug/label.json?search=openfda.generic_name:%22niraparib%22&limit=1' GET
+http=200 rc=0 brand=['AKEEGA'] set_id=8245a990-3268-4613-b5c5-9537858a1eb9
+RESULT	PASS	allowed openFDA niraparib label	HTTP 200 + label JSON	http=200 rc=0 brand=['AKEEGA'] set_id=8245a990-3268-4613-b5c5-9537858a1eb9
+
+## allowed PubMed esearch
+$ openshell sandbox exec -n flygate-smoke -- python3 probe.py 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=niraparib+thrombocytopenia&retmax=1&retmode=json' GET
+http=200 rc=0
+RESULT	PASS	allowed PubMed esearch	HTTP 200	http=200 rc=0
+
+## allowed NVIDIA NIM models
+$ openshell sandbox exec -n flygate-smoke -- python3 probe.py 'https://integrate.api.nvidia.com/v1/models' GET
+http=200 rc=0
+RESULT	PASS	allowed NVIDIA NIM models	HTTP 200	http=200 rc=0
+
+## allowed TypeSafe POST /v1/systemone (no key sent)
+$ openshell sandbox exec -n flygate-smoke -- python3 probe.py 'https://api.typesafe.ai/v1/systemone' POST
+http=403 rc=0 body={"detail":{"error_type":"authentication_error","message":"Must supply an API key! Check your request and try again."}}
+RESULT	PASS	allowed TypeSafe POST /v1/systemone (no key sent)	origin auth error (request reached api.typesafe.ai)	http=403 rc=0 body={"detail":{"error_type":"authentication_error","message":"Must supply an API key! Check your request and try again."}}
+
+# 3. 허용 목록 밖 호스트
+
+## denied example.com
+$ openshell sandbox exec -n flygate-smoke -- python3 probe.py 'https://example.com/' GET
+http=000 rc=7 err=URLError <urlopen error Tunnel connection failed: 403 Forbidden>
+RESULT	PASS	denied example.com	CONNECT 403	http=000 rc=7 err=URLError <urlopen error Tunnel connection failed: 403 Forbidden>
+
+## denied pastebin.com
+$ openshell sandbox exec -n flygate-smoke -- python3 probe.py 'https://pastebin.com/' GET
+http=000 rc=7 err=URLError <urlopen error Tunnel connection failed: 403 Forbidden>
+RESULT	PASS	denied pastebin.com	CONNECT 403	http=000 rc=7 err=URLError <urlopen error Tunnel connection failed: 403 Forbidden>
+
+# 4. 허용 호스트, 정책 밖 실행 파일·경로·메서드
+
+## denied curl to api.fda.gov (binary not bound)
+$ openshell sandbox exec -n flygate-smoke -- sh -c 'curl -sS -o /dev/null -w 'http=%{http_code}' 'https://api.fda.gov/drug/label.json?limit=1'; echo " rc=$?"'
+curl: (56) CONNECT tunnel failed, response 403
+http=000 rc=56
+RESULT	PASS	denied curl to api.fda.gov (binary not bound)	CONNECT 403 for /usr/bin/curl	curl: (56) CONNECT tunnel failed, response 403 http=000 rc=56
+
+## denied openFDA path not in rules (/drug/ndc.json)
+$ openshell sandbox exec -n flygate-smoke -- python3 probe.py 'https://api.fda.gov/drug/ndc.json?limit=1' GET
+http=403 rc=0 body={"binary":"/usr/bin/python3.13","detail":"GET /drug/ndc.json not permitted by policy","error":"policy_denied","host":"api.fda.gov","layer":"l7","method":"GET","
+RESULT	PASS	denied openFDA path not in rules (/drug/ndc.json)	L7 403	http=403 rc=0 body={"binary":"/usr/bin/python3.13","detail":"GET /drug/ndc.json not permitted by policy","error":"policy_denied","host":"api.fda.gov","layer":"l7","method":"GET","
+
+## denied TypeSafe GET (method not in rules)
+$ openshell sandbox exec -n flygate-smoke -- python3 probe.py 'https://api.typesafe.ai/v1/systemone' GET
+http=403 rc=0 body={"binary":"/usr/bin/python3.13","detail":"GET /v1/systemone not permitted by policy","error":"policy_denied","host":"api.typesafe.ai","layer":"l7","method":"GET
+RESULT	PASS	denied TypeSafe GET (method not in rules)	L7 403	http=403 rc=0 body={"binary":"/usr/bin/python3.13","detail":"GET /v1/systemone not permitted by policy","error":"policy_denied","host":"api.typesafe.ai","layer":"l7","method":"GET
+
+# 5. 파일시스템
+
+## denied write /etc
+$ openshell sandbox exec -n flygate-smoke -- sh -c 'echo x > /etc/flygate_probe; echo rc=$?'
+sh: 1: cannot create /etc/flygate_probe: Permission denied
+rc=2
+RESULT	PASS	denied write /etc	EACCES	sh: 1: cannot create /etc/flygate_probe: Permission denied rc=2
+
+## denied write /usr
+$ openshell sandbox exec -n flygate-smoke -- sh -c 'echo x > /usr/flygate_probe; echo rc=$?'
+sh: 1: cannot create /usr/flygate_probe: Permission denied
+rc=2
+RESULT	PASS	denied write /usr	EACCES	sh: 1: cannot create /usr/flygate_probe: Permission denied rc=2
+
+## allowed write /tmp
+$ openshell sandbox exec -n flygate-smoke -- sh -c 'echo x > /tmp/flygate_probe && echo write_ok; rm -f /tmp/flygate_probe'
+write_ok
+RESULT	PASS	allowed write /tmp	write ok	write_ok
+
+## allowed write /sandbox/.openclaw
+$ openshell sandbox exec -n flygate-smoke -- sh -c 'echo x > /sandbox/.openclaw/flygate_probe && echo write_ok; rm -f /sandbox/.openclaw/flygate_probe'
+write_ok
+RESULT	PASS	allowed write /sandbox/.openclaw	write ok	write_ok
+
+# 6. flygate 를 샌드박스 안에서 실행
+
+$ openshell sandbox upload flygate-smoke <stage>/flygate /sandbox   (결과: /sandbox/flygate)
+✓ Upload complete
+
+$ openshell sandbox upload flygate-smoke <stage>/workspace /sandbox/.openclaw   (결과: /sandbox/.openclaw/workspace)
+✓ Upload complete
+
+## OpenClaw workspace files and skills in place
+$ openshell sandbox exec -n flygate-smoke -- sh -c 'cd /sandbox/.openclaw/workspace && echo "$(ls *.md | tr '\n' ' ')skills=$(ls skills | wc -l | tr -d ' ')"'
+AGENTS.md HEARTBEAT.md IDENTITY.md MEMORY.md SOUL.md TOOLS.md USER.md skills=12
+RESULT	PASS	OpenClaw workspace files and skills in place	7 persona files + 12 skills	AGENTS.md HEARTBEAT.md IDENTITY.md MEMORY.md SOUL.md TOOLS.md USER.md skills=12
+
+## flygate discover parp1 in sandbox
+$ openshell sandbox exec -n flygate-smoke -- sh -c 'cd /sandbox/flygate && /sandbox/flygate/agent/bin/flygate discover parp1 | python3 -c 'import json,sys; d=json.load(sys.stdin); print("cmd=%s keys=%d evidence_ids=%d first=%s" % (d.get("cmd"), len(d), len(d.get("evidence_ids") or []), (d.get("evidence_ids") or ["-"])[0]))''
+cmd=discover keys=13 evidence_ids=19 first=msa:parp1/4R6E-A
+RESULT	PASS	flygate discover parp1 in sandbox	JSON with evidence IDs	cmd=discover keys=13 evidence_ids=19 first=msa:parp1/4R6E-A
+
+## flygate signals NIRAPARIB in sandbox
+$ openshell sandbox exec -n flygate-smoke -- sh -c 'cd /sandbox/flygate && /sandbox/flygate/agent/bin/flygate signals NIRAPARIB --pt thrombocytopenia | python3 -c 'import json,sys; d=json.load(sys.stdin); print("cmd=%s keys=%d evidence_ids=%d first=%s" % (d.get("cmd"), len(d), len(d.get("evidence_ids") or []), (d.get("evidence_ids") or ["-"])[0]))''
+cmd=signals keys=7 evidence_ids=1 first=faers:2x2:NIRAPARIB:thrombocytopenia@2026Q2
+RESULT	PASS	flygate signals NIRAPARIB in sandbox	JSON with evidence IDs	cmd=signals keys=7 evidence_ids=1 first=faers:2x2:NIRAPARIB:thrombocytopenia@2026Q2
+
+## flygate grade NIRAPARIB thrombocytopenia --no-judge in sandbox (live openFDA + PubMed through the policy)
+$ openshell sandbox exec -n flygate-smoke -- sh -c 'cd /sandbox/flygate && /sandbox/flygate/agent/bin/flygate grade NIRAPARIB thrombocytopenia --no-judge | python3 -c 'import json,sys; d=json.load(sys.stdin); print("cmd=%s keys=%d evidence_ids=%d first=%s" % (d.get("cmd"), len(d), len(d.get("evidence_ids") or []), (d.get("evidence_ids") or ["-"])[0]))''
+cmd=grade keys=20 evidence_ids=9 first=grade:NIRAPARIB:thrombocytopenia@2026Q2
+RESULT	PASS	flygate grade NIRAPARIB thrombocytopenia --no-judge in sandbox (live openFDA + PubMed through the policy)	JSON with label and PubMed evidence IDs	cmd=grade keys=20 evidence_ids=9 first=grade:NIRAPARIB:thrombocytopenia@2026Q2
+
+## flygate watch (heartbeat) in sandbox: memory note under /sandbox/.openclaw, nothing submitted
+$ openshell sandbox exec -n flygate-smoke -- sh -c 'cd /sandbox/flygate && /sandbox/flygate/agent/bin/flygate watch --online --memory-dir /sandbox/.openclaw/workspace/memory --workspace /sandbox/.openclaw/workspace | python3 -c 'import json,sys; d=json.load(sys.stdin); print("cmd=%s quarter=%s pairs=%d queue=%d submitted=%s persona_same=%s note=%s" % (d["cmd"], d["quarter"]["quarter"], len(d["watchlist"]), len(d["review_queue"]), d["submitted"], all(v["same"] for v in d["workspace"].values()), d["memory_note"]))''
+cmd=watch quarter=2026Q2 pairs=10 queue=1 submitted=[] persona_same=True note=/sandbox/.openclaw/workspace/memory/2026-09-28.md
+RESULT	PASS	flygate watch (heartbeat) in sandbox: memory note under /sandbox/.openclaw, nothing submitted	memory note written, submitted=[]	cmd=watch quarter=2026Q2 pairs=10 queue=1 submitted=[] persona_same=True note=/sandbox/.openclaw/workspace/memory/2026-09-28.md
+
+# 7. 감사 로그 원문 (openshell logs flygate-smoke --since 20m, DENIED 만)
+[1790570798.090] [sandbox] [OCSF ] [ocsf] HTTP:GET [MED] DENIED GET http://api.fda.gov:443/drug/ndc.json [policy:openfda engine:l7] [reason:L7_REQUEST deny GET api.fda.gov:443/drug/ndc.json reason=GET /drug/ndc.json not permitted by policy]
+[1790570798.231] [sandbox] [OCSF ] [ocsf] HTTP:GET [MED] DENIED GET http://api.typesafe.ai:443/v1/systemone [policy:typesafe_judgment engine:l7] [reason:L7_REQUEST deny GET api.typesafe.ai:443/v1/systemone reason=GET /v1/systemone not permitted by policy]
+[1790570838.738] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /usr/bin/python3.13(2002) -> example.com:443 [policy:- engine:opa] [reason:endpoint example.com:443 is not allowed by any policy]
+[1790570838.802] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /usr/bin/python3.13(2022) -> pastebin.com:443 [policy:- engine:opa] [reason:endpoint pastebin.com:443 is not allowed by any policy]
+[1790570838.849] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /usr/bin/curl(2040) -> api.fda.gov:443 [policy:- engine:opa] [reason:binary '/usr/bin/curl' not allowed in policy 'openfda' (ancestors: [/usr/bin/dash -> /usr/bin/dash -> /opt/openshell/bin/openshell-sandbox], cmdline: [/dev/null, /sandbox]). SYMLINK HINT: the binary path is the kernel-resolved target from /proc/<pid>/exe, ...]
+[1790570839.107] [sandbox] [OCSF ] [ocsf] HTTP:GET [MED] DENIED GET http://api.fda.gov:443/drug/ndc.json [policy:openfda engine:l7] [reason:L7_REQUEST deny GET api.fda.gov:443/drug/ndc.json reason=GET /drug/ndc.json not permitted by policy]
+[1790570839.408] [sandbox] [OCSF ] [ocsf] HTTP:GET [MED] DENIED GET http://api.typesafe.ai:443/v1/systemone [policy:typesafe_judgment engine:l7] [reason:L7_REQUEST deny GET api.typesafe.ai:443/v1/systemone reason=GET /v1/systemone not permitted by policy]
+[1790571163.557] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /usr/bin/python3.13(2531) -> example.com:443 [policy:- engine:opa] [reason:endpoint example.com:443 is not allowed by any policy]
+[1790571163.624] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /usr/bin/python3.13(2551) -> pastebin.com:443 [policy:- engine:opa] [reason:endpoint pastebin.com:443 is not allowed by any policy]
+[1790571163.675] [sandbox] [OCSF ] [ocsf] NET:OPEN [MED] DENIED /usr/bin/curl(2569) -> api.fda.gov:443 [policy:- engine:opa] [reason:binary '/usr/bin/curl' not allowed in policy 'openfda' (ancestors: [/usr/bin/dash -> /usr/bin/dash -> /opt/openshell/bin/openshell-sandbox], cmdline: [/dev/null, /sandbox]). SYMLINK HINT: the binary path is the kernel-resolved target from /proc/<pid>/exe, ...]
+[1790571164.470] [sandbox] [OCSF ] [ocsf] HTTP:GET [MED] DENIED GET http://api.fda.gov:443/drug/ndc.json [policy:openfda engine:l7] [reason:L7_REQUEST deny GET api.fda.gov:443/drug/ndc.json reason=GET /drug/ndc.json not permitted by policy]
+[1790571164.615] [sandbox] [OCSF ] [ocsf] HTTP:GET [MED] DENIED GET http://api.typesafe.ai:443/v1/systemone [policy:typesafe_judgment engine:l7] [reason:L7_REQUEST deny GET api.typesafe.ai:443/v1/systemone reason=GET /v1/systemone not permitted by policy]
+
+# 8. 유효 정책 (openshell policy get flygate-smoke --full, 앞부분)
+Version:      1
+Hash:         2333fecb99ff63accc9f1dd698f7dcdb437bf2464cadea93514380792e5199bd
+Status:       Effective
+Source:       sandbox
+Config rev:   11792578002860420300
+---
+version: 1
+filesystem_policy:
+  include_workdir: true
+  read_only:
+  - /usr
+  - /lib
+  - /proc
+  - /dev/urandom
+  - /app
+  - /etc
+  - /var/log
+  - /var/lib/dpkg
+  - /run/nemoclaw/managed-startup-ca-bundle.pem
+  - /run/nemoclaw/managed-startup-runtime.env
+  read_write:
+  - /tmp
+  - /dev/null
+  - /dev/pts
+
+summary: pass=20 fail=0
