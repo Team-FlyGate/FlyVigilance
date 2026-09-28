@@ -254,6 +254,19 @@ svg text { font-family: var(--mono); }
 a.status-link { color: var(--text-3); text-decoration: none; }
 a.status-link:hover { color: var(--text); }
 
+/* STEP 1 FlyDiscovery 단계 화면: 왼쪽 커넥텀 · 가운데 분자 시각화 · 오른쪽 실행 패널 */
+.disc-grid {
+  display: grid; gap: 14px; align-items: start;
+  grid-template-columns: minmax(250px, 300px) minmax(0, 1fr) minmax(280px, 330px);
+}
+@media (max-width: 1500px) {
+  .disc-grid { grid-template-columns: minmax(240px, 280px) minmax(0, 1fr); }
+  .disc-grid > :last-child { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+}
+@media (max-width: 1000px) {
+  .disc-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
 /* 단계 흐름: 상자와 화살표를 한 줄로 잇습니다 (개요, Discovery) */
 .flow { display: flex; align-items: stretch; gap: 0; }
 .flow-step {

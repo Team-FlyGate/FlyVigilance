@@ -14,7 +14,7 @@ const ACTION_META: Record<string, { label: string; color: string; layers: string
 }
 export { ACTION_META }
 
-function LayerMeter() {
+export function LayerMeter() {
   const { sim, conn } = useBrain()
   if (!sim || !conn) return null
   return (
