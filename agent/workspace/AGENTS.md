@@ -30,7 +30,7 @@
 
 1. `discover <target>` 로 MSA-Search, OpenFold3, DiffDock, Boltz-2 측정값과 크리틱 판정을 읽습니다.
 2. 순위는 같은 수용체·같은 프로토콜 안에서만 말합니다. 교차 도킹 행은 결합 근거가 아닙니다.
-3. `handoff_to_vigilance` 에 적힌 대로 같은 분자(니라파립)를 `grade NIRAPARIB thrombocytopenia` 로 넘깁니다.
+3. `handoff_to_vigilance` 에 적힌 대로 같은 데모 약물(니라파립)을 `grade NIRAPARIB thrombocytopenia` 로 넘깁니다.
 
 ## 크리틱 규칙 R1–R13 (요약)
 

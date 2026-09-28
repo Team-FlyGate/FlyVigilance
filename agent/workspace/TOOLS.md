@@ -57,7 +57,7 @@
 
 - FlyDiscovery 실측을 읽습니다: MSA-Search → OpenFold3 구조, DiffDock 포즈, Boltz-2 친화도 예측, ChEMBL 실측, PARP1 친화도 벤치마크.
 - `critic.measured` 는 시판 전 주장에 대한 크리틱 판정 기록입니다. `limits` 는 각 측정이 말하는 범위입니다.
-- `handoff_to_vigilance` 가 같은 분자를 STEP 2 로 넘기는 다음 명령을 알려 줍니다.
+- `handoff_to_vigilance` 가 같은 약물을 STEP 2 로 넘기는 다음 명령을 알려 줍니다.
 
 ## watch
 

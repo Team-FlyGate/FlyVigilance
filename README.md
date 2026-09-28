@@ -23,7 +23,7 @@ Project-FlyGate는 **NVIDIA 스킬 위에 구성한 에이전트 워크플로**�
 | STEP 1 · 시판 전 | **FlyDiscovery** | 후보 물질을 NVIDIA BioNeMo NIM으로 표적 구조 예측 → 도킹 → 친화도까지 평가하고, 근거를 넘는 주장을 반려합니다(데모: 니라파립 · PARP1, 대조 약물 2종, 친화도 벤치마크 39종) |
 | STEP 2 · 시판 후 | **FlyVigilance** | FAERS 이상사례(약물 2,563종의 SDR 표)를 트리아지하고, SDR·라벨·문헌으로 PV 분류를 매기고, 사람 검토 대기열과 신속보고 기한을 만듭니다 |
 
-![Project-FlyGate agentic workflow](docs/images/flygate_agent_diagram_v1.0.0.png)
+![Project-FlyGate agentic workflow](docs/images/flygate_agent_diagram_v1.1.0.png)
 
 ## 한눈에 보는 결과
 

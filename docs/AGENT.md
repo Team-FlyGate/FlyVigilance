@@ -4,7 +4,7 @@ Project-FlyGate 는 시판 전 후보 물질의 표적 결합(STEP 1 FlyDiscover
 근거로 다루는 에이전트 워크플로입니다. 데모에서는 이미 허가된 니라파립(PARP1 억제제)으로 시판 전 단계를 되짚어 재현하고 같은 약의 시판 후 보고로 이어 봅니다. 이 문서는 그 에이전트를 NVIDIA DLI 과정 *Securing Agents with NemoClaw and OpenShell*
 (모듈 01a–04c)이 가르치는 구조대로 포장한 방법과, 실제 OpenShell 샌드박스에서 확인한 결과를 정리합니다.
 
-![FlyGate 에이전트 구성도](images/flygate_agent_diagram_v1.0.0.png)
+![FlyGate 에이전트 구성도](images/flygate_agent_diagram_v1.1.0.png)
 
 모든 파일은 저장소의 `agent/` 에 있습니다. 웹 대시보드의 '에이전트 구성' 화면은 `agent/export_agent_json.py` 가 만든
 `web/public/data/agent.json` 을 읽어 같은 내용을 보여 줍니다.
