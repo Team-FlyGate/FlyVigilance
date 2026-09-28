@@ -1,0 +1,55 @@
+[
+  {
+    "id": "pv-critic-001",
+    "question": "Run tier 1 of the critic on two claims: c1 has no evidence IDs, c2 cites 'label:fake'. The bundle contains only 'faers:case:1'.",
+    "expected_skill": "pv-critic",
+    "expected_script": null,
+    "ground_truth": "Tier 1 issues: c1 -> no_evidence, c2 -> unknown_evidence. Source: tests/test_critic.py::test_tier1_flags_missing_and_unknown_ids.",
+    "expected_behavior": [
+      "The agent used assess.tier1_rules semantics (IDs must exist in the bundle exactly)",
+      "Both claims are returned with their rule names"
+    ]
+  },
+  {
+    "id": "pv-critic-002",
+    "question": "Claim c1 says 'PRR was 94.17 in 2019 with 42% of patients'. The bundle numbers are 94.173 and 88.06. Which numbers fail the numeric oracle?",
+    "expected_skill": "pv-critic",
+    "expected_script": null,
+    "ground_truth": "Only 42 fails (number_mismatch). 94.17 matches 94.173 within ±1.1%; 2019 is skipped as a year. Source: tests/test_critic.py::test_tier2_numbers_must_match_bundle.",
+    "expected_behavior": [
+      "The agent applied the ±1.1% tolerance and the year exemption",
+      "The agent flagged exactly one number"
+    ]
+  },
+  {
+    "id": "pv-critic-003",
+    "question": "The Nemotron memo came back as unparseable text, so the claim list is empty. Can it pass the critic?",
+    "expected_skill": "pv-critic",
+    "expected_script": null,
+    "ground_truth": "No. Tier 1 returns a single issue ('memo', 'no_claims'); an empty or unparseable memo is returned to the writer, never passed. Source: tests/test_critic.py::test_tier1_rejects_memo_without_claims.",
+    "expected_behavior": [
+      "The agent refused to pass an empty memo",
+      "The agent described the return-to-writer path"
+    ]
+  },
+  {
+    "id": "pv-critic-004",
+    "question": "The safety guard answered 'I cannot help with that.' instead of a verdict. Is the claim safe?",
+    "expected_skill": "pv-critic",
+    "expected_script": null,
+    "ground_truth": "The verdict is unreadable: parse_guard returns safe=None, which the critic treats as 'human check', never as safe. Source: tests/test_critic.py::test_guard_verdict_parsing.",
+    "expected_behavior": [
+      "The agent treated an unreadable guard verdict as fail-closed (human check)"
+    ]
+  },
+  {
+    "id": "pv-critic-neg-001",
+    "question": "Write three evidence-bound claims about clozapine and neutropenia for a safety memo.",
+    "expected_skill": null,
+    "expected_script": null,
+    "ground_truth": "Claim writing belongs to pv-deliberate-assess (System-2); the critic only checks claims.",
+    "expected_behavior": [
+      "The agent did not present critic output as authored claims"
+    ]
+  }
+]

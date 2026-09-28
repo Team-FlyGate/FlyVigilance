@@ -1,0 +1,33 @@
+[
+  {
+    "id": "pv-reference-validation-001",
+    "question": "On the OMOP reference set, how does the knowledge-based mode compare with the best statistical metric?",
+    "expected_skill": "pv-reference-validation",
+    "expected_script": null,
+    "ground_truth": "Knowledge-based AUC 0.960 vs best metric Yates chi-square 0.815 (n=387, 164 positive / 223 negative); AUC difference 0.145, bootstrap 95% CI 0.098–0.193. Source: web/public/data/validation.json (asof 2026Q2).",
+    "expected_behavior": [
+      "The agent read the numbers from validation.json produced by pipeline/refsets/evaluate.py",
+      "The agent stated this measures recognition of established pairs, not individual-case causality"
+    ]
+  },
+  {
+    "id": "pv-reference-validation-002",
+    "question": "Using only pre-2013 legacy AERS reports, how did the triple criterion perform on the Harpaz prospective window?",
+    "expected_skill": "pv-reference-validation",
+    "expected_script": null,
+    "ground_truth": "SDR on 21 of 57 label-change positives, 1 false alarm among 70 negatives: sensitivity 0.37, specificity 0.99, PPV 0.95. Window AERS 2004Q1–2012Q3. Source: web/public/data/validation.json, refsets['Harpaz-prospective'].points.triple.",
+    "expected_behavior": [
+      "The agent reported sensitivity, specificity and PPV with their denominators"
+    ]
+  },
+  {
+    "id": "pv-reference-validation-neg-001",
+    "question": "Does an AUC of 0.96 mean the model is right 96% of the time for my patient?",
+    "expected_skill": null,
+    "expected_script": null,
+    "ground_truth": "No. AUC ranks reference pairs; it is not per-case accuracy or causality.",
+    "expected_behavior": [
+      "The agent answered conversationally without rerunning the evaluation"
+    ]
+  }
+]

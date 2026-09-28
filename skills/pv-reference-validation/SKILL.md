@@ -1,14 +1,38 @@
 ---
-name: pv-reference-validation
-description: Use to measure how signal-detection methods perform on public reference sets (OMOP, EU-ADR, Harpaz time-indexed incl. a pre-2013 prospective window from legacy AERS) — ROC/AUC with bootstrap CIs for PRR/ROR/chi2/IC025, the FlyVigilance knowledge-based mode (drug and event names), the FlyVigilance statistics-based mode (names hidden) and a single-question baseline.
-license: Apache-2.0
+name: "pv-reference-validation"
+title: "PV Reference Validation"
+version: "1.0.0"
+description: "Use to measure how signal-detection methods perform on public reference sets (OMOP, EU-ADR, Harpaz time-indexed incl. a pre-2013 prospective window from legacy AERS): ROC/AUC with bootstrap CIs for report count, PRR, ROR025, chi-square and IC025, the FlyVigilance knowledge-based mode (drug and event names), the statistics-based mode (names hidden) and a single-question baseline. Do not use to judge causality in an individual case."
+license: "Apache-2.0"
+compatibility: "Python 3.11+ with DuckDB; OMOP, EU-ADR and Harpaz reference sets; legacy AERS 2004Q1–2012Q3 and the FAERS warehouse; non-autoregressive judgment model (TypeSafe AI Jev, api.typesafe.ai/v1/systemone) for the knowledge-based and statistics-based modes, with a response cache."
 metadata:
-  author: FlyVigilance
-  layer: control plane
-  tags: [pharmacovigilance, validation, reference-set, roc]
+  version: "1.0.0"
+  author: "Team FlyGate"
+  layer: "control plane"
+  domain: "pharmacovigilance"
+  tags:
+    - pharmacovigilance
+    - validation
+    - reference-set
+    - roc
 ---
 
 # 참조 세트 검증
+
+## When to Use
+
+- 신호 기준(Evans, ROR025, IC025, 3중 기준)이나 판단 모드의 성능을 공개 참조 세트에서 다시 재야 할 때 씁니다.
+- 대시보드와 근거 카탈로그의 `metric:triple:<refset>@<asof>` 값을 새로 만들 때 씁니다.
+
+## Do Not Use
+
+- 개별 사례의 인과를 재는 데 쓰지 않습니다. 이 측정은 "공인된 조합을 가려내는가"를 잽니다.
+
+## Requirements
+
+통계 지표에는 자격 증명이 필요 없습니다. 지식 기반·통계 기반 판별은 `TYPESAFE_API_KEY` 로 판단 모델을 부르고, 응답을 `data/cache/jev_refset.jsonl` 에 캐시하므로 캐시가 찬 상태에서는 새 호출 없이 다시 돌립니다.
+
+## Instructions
 
 ```bash
 .venv/bin/python pipeline/refsets/build_refsets.py   # 세트 통합, 반응 정의, 약물명 매칭
@@ -18,8 +42,9 @@ metadata:
 
 - 반응 정의는 Harpaz 정의를 먼저 쓰고, 없는 결과는 공개 정규식으로 PT 를 묶습니다(목록 공개).
 - 지식 기반 판별(이름 사용)은 공인된 연관을 가려내는 모드이고, 통계 기반 판별(이름 가림)은 새 조합을 보는 모드입니다. 2013년 이전 전향 조건은 통계 기반 판별로 비교합니다.
-- 이 측정은 "공인된 조합을 가려내는가"를 재며 개별 사례의 인과를 재지 않습니다.
+- 결과는 `web/public/data/validation.json` 에 씁니다. 통계 함수는 `api/_fv/pvstats.py` 이며 `tests/test_pvstats.py` 가 손 계산과 대조합니다.
 
 ## 결과 요약 (2026-09-28)
+
 - 지식 기반 판별 AUC는 OMOP 0.960, EU-ADR 0.983으로 최고 통계 지표(0.815, 0.919)보다 유의하게 높았습니다. 새 조합의 순위와 SDR 계산은 SQL 에 둡니다.
 - 2013년 이전 보고만으로 3중 기준은 그해 라벨 변경 57건 중 21건에 SDR을 세웠고 음성 70건 중 오경보는 1건이었습니다(PPV 95%).

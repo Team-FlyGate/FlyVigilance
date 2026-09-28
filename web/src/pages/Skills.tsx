@@ -2,7 +2,10 @@ import { useEffect, useState } from 'react'
 import { Card, Loading, PageHead } from '../components/ui'
 import { getJSON } from '../lib/data'
 
-interface Skill { name: string; description: string; license: string; layer: string; model: string; path: string; body: string }
+interface Skill {
+  name: string; description: string; license: string; layer: string; model: string; path: string; body: string
+  title?: string; version?: string; compatibility?: string; skill_card?: string; skill_card_url?: string; evals?: number
+}
 
 const RULES = [
   ['R1', 'Disproportionality는 보고 연관성이지 인과가 아닙니다'], ['R2', 'FAERS에는 분모가 없습니다: 발생률·위험도를 추정하지 않습니다'],
@@ -45,13 +48,13 @@ export default function Skills() {
           {sk.map((s) => (
             <button key={s.name} onClick={() => setOpen(s.name)} className="card" style={{ textAlign: 'left', cursor: 'pointer', padding: '12px 14px',
               border: open === s.name ? '1px solid rgba(118,185,0,0.6)' : undefined, boxShadow: open === s.name ? '0 0 24px -8px var(--nvidia)' : undefined }}>
-              <div className="row between"><b className="mono" style={{ fontSize: 12.5, color: open === s.name ? '#c8f36b' : 'var(--text)' }}>{s.name}</b><span className="chip" style={{ fontSize: 9.5 }}>{s.layer}</span></div>
+              <div className="row between"><b className="mono" style={{ fontSize: 12.5, color: open === s.name ? '#c8f36b' : 'var(--text)' }}>{s.name}</b>{s.layer && <span className="chip" style={{ fontSize: 9.5 }}>{s.layer}</span>}</div>
               <div className="dim" style={{ fontSize: 11.5, marginTop: 4, lineHeight: 1.45 }}>{s.description.slice(0, 130)}{s.description.length > 130 ? '…' : ''}</div>
             </button>
           ))}
         </div>
         <Card title={<span className="mono">{cur.path}</span>} sub={cur.description}
-          right={<div className="row" style={{ gap: 6 }}>{cur.model && <span className="chip nv">{cur.model.split(' ')[0]}</span>}<span className="chip">{cur.license.split(' ')[0]}</span></div>}>
+          right={<div className="row" style={{ gap: 6 }}>{cur.model && <span className="chip nv">{cur.model.split(' ')[0]}</span>}{cur.version && <span className="chip">v{cur.version}</span>}<span className="chip">{cur.license.split(' ')[0]}</span>{cur.skill_card_url && <a className="chip" href={cur.skill_card_url} target="_blank" rel="noreferrer" title={cur.skill_card}>skill card ↗</a>}</div>}>
           <Md text={cur.body} />
         </Card>
       </div>
