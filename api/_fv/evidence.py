@@ -1,7 +1,10 @@
 """Signal Memory 층의 근거 도구입니다. 모든 결과에 근거 ID 를 붙입니다.
 
 faers:2x2:<DRUG>:<pt>@<asof>   로컬 웨어하우스에서 계산한 불균형 지표 (SQL 계산, 모델 미개입)
-label:<setid>#<section>        openFDA 라벨 원문에서 반응명을 찾은 위치
+label:<setid>#<section>        openFDA 라벨에서 반응명이 기재된 절. section 은 boxed_warning, warnings_and_cautions,
+                               warnings, precautions(구형 일반 주의), adverse_reactions_ct(임상시험 6.1),
+                               adverse_reactions_pm(시판 후 6.2), adverse_reactions_mixed(둘을 합친 절),
+                               adverse_reactions(구형, 출처 구분 없음) 중 하나입니다. 금기·효능효과는 기재로 세지 않습니다
 pubmed:<pmid>#<design>         PubMed 초록을 읽고 연구 설계를 판정한 문헌 (literature.py)
 grade:<DRUG>:<pt>@<asof>       근거 등급 (grade.py)
 metric:<rule>:<refset>@<asof>  참조 세트에서 잰 신호 기준의 민감도·특이도 (pipeline/refsets)
@@ -188,28 +191,29 @@ async def get_label(drug: str, client: httpx.AsyncClient, route: str | None = No
         doc = {"setid": d.get("set_id"), "effective": d.get("effective_time"),
                "brand": (d.get("openfda", {}).get("brand_name") or [None])[0],
                "route": d.get("openfda", {}).get("route", []),
-               "sections": {s: " ".join(d.get(s, [])) for s in labeltext.SEARCH_SECTIONS if d.get(s)}}
+               "sections": labeltext.label_sections(d)}
     _LABEL_MEM[key] = doc
     return doc
 
 
 def label_facts(doc: dict | None, drug: str, pts: list[str]) -> dict:
-    """라벨 문서에서 반응별 기재 절과 인과 미확립 단서를 뽑습니다."""
+    """라벨 문서에서 반응별 기재 절, 라벨 상태, 인과 미확립 단서, 금기·적응증 맥락을 뽑습니다.
+    by_pt[pt] = {sections(기재 절, 강한 순), rank(정수 3 박스 경고 / 2 경고·주의 / 1 이상반응 / 0 미기재),
+                 label_status, disclaimer, contraindication(금기 절 인용 또는 None), indication_term, matched_via}.
+    listed[pt] 는 rank >= 1 과 같습니다. 금기 절이나 효능·효과 절에만 나온 반응은 기재가 아닙니다."""
     if not doc:
         return {"found": False, "drug": drug, "hits": [], "listed": {}, "by_pt": {}}
     hits, by_pt = [], {}
     for pt in pts:
-        m = labeltext.find_mentions(doc["sections"], pt)
-        disc = labeltext.causality_disclaimer(doc["sections"], pt) if m else None
-        by_pt[pt] = {"sections": [h["section"] for h in m], "rank": max((h["rank"] for h in m), default=0),
-                     "disclaimer": disc}
-        if m:
-            h = m[0]
+        f = labeltext.pt_facts(doc.get("sections") or {}, pt)
+        h = f.pop("primary")
+        by_pt[pt] = f
+        if h:
             hits.append({"id": f"label:{doc['setid']}#{h['section']}", "pt": pt, "section": h["section"],
-                         "quote": h["quote"]})
+                         "quote": h["quote"], "matched_via": h["matched_via"]})
     return {"found": True, "drug": drug, "setid": doc["setid"], "effective": doc["effective"], "route": doc["route"],
             "brand": doc["brand"], "hits": hits, "by_pt": by_pt,
-            "listed": {pt: bool(by_pt[pt]["sections"]) for pt in pts}}
+            "listed": {pt: by_pt[pt]["rank"] >= 1 for pt in pts}}
 
 
 async def label_lookup(drug: str, pts: list[str], client: httpx.AsyncClient, route: str | None = None) -> dict:
@@ -219,10 +223,14 @@ async def label_lookup(drug: str, pts: list[str], client: httpx.AsyncClient, rou
 
 # ---------------------------------------------------------------- PubMed 검색
 async def pubmed(drug: str, pt: str, client: httpx.AsyncClient, retmax: int = 5) -> dict:
-    term = f'"{drug.lower()}"[tiab] AND "{pt.lower()}"[tiab]'
+    """약물명과 반응명이 제목·초록에 함께 나오는 문헌을 찾습니다. 반응명은 정확한 동의어(labeltext.EQUIV)를 OR 로 묶습니다
+    (예: "pyrexia" OR "fever"). 동의어가 붙으면 검색식이 달라지므로 캐시 키도 따로 둡니다."""
+    eq = labeltext.equivalents(pt)
+    rx = " OR ".join(f'"{x}"[tiab]' for x in eq)
+    term = f'"{drug.lower()}"[tiab] AND ' + (rx if len(eq) == 1 else f"({rx})")
     status, body = await get_json(client, "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi",
                                   {"db": "pubmed", "term": term, "retmax": retmax, "retmode": "json", "sort": "relevance"},
-                                  PUBMED, key=f"pubmed_search_{drug.upper()}_{pt.lower()}_{retmax}")
+                                  PUBMED, key=f"pubmed_search_{drug.upper()}_{pt.lower()}_{retmax}" + ("_eq" if len(eq) > 1 else ""))
     if status != 200 or not isinstance(body, dict):
         return {"query": term, "count": None, "pmids": [], "ids": [], "error": f"HTTP {status}"}
     es = body["esearchresult"]
@@ -254,12 +262,21 @@ async def bundle(case: dict, suspect: str, read_literature: bool = True) -> dict
         elif f:
             catalog.append({"id": f["id"], "what": f"FAERS 2x2 for {suspect} / {f['pt']}: {f.get('note', 'not computed')}"})
     if label.get("found"):
-        listed = ", ".join(f"{k}={'listed' if v else 'not found'}" for k, v in label.get("listed", {}).items())
+        st = []
+        for k, v in label.get("by_pt", {}).items():
+            extra = (["named in contraindications only as a patient condition"] if v.get("contraindication") and not v["rank"]
+                     else []) + (["also an indication term"] if v.get("indication_term") else [])
+            st.append(f"{k}={v.get('label_status', 'unlisted')}" + (f" ({'; '.join(extra)})" if extra else ""))
         catalog.append({"id": f"label:{label['setid']}", "what": f"openFDA label for {suspect} ({label.get('brand')}, route "
                         f"{'/'.join(label.get('route', [])) or 'n/a'}), effective {label.get('effective')}; "
-                        f"reaction search in boxed warning/warnings/adverse reactions: {listed}"})
+                        "reaction search (PT, US spelling, word order, exact MedDRA-equivalent synonyms) in boxed warning, "
+                        "warnings and precautions, old-format warnings and general precautions, and adverse reactions split into "
+                        "clinical trials / postmarketing / pooled parts; mentions in patient-population, indication, negated or "
+                        "compound-term context are not counted, and contraindications and indications are context only, "
+                        f"not listings: {', '.join(st)}"})
         for h in label.get("hits", []):
-            catalog.append({"id": h["id"], "what": f"label section {h['section']} mentions '{h['pt']}': \"{h['quote']}\""})
+            catalog.append({"id": h["id"], "what": f"label section {h['section']} lists '{h['pt']}' "
+                            f"(matched via {h.get('matched_via', 'literal')}): \"{h['quote']}\""})
     for pt, lit in zip(pts, lits):
         if lit.get("count") is not None:
             catalog.append({"id": f"pubmed:search:{pt}", "what": f"PubMed search {lit['query']}: {lit['count']} records"})
