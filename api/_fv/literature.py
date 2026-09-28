@@ -139,7 +139,8 @@ _COMPARATIVE_TITLE = re.compile(r"randomi[sz]ed|\bcohort|case[- ]control|meta-an
 _CASE_TITLE = re.compile(r"case report|a case of|case series|: a case|report of (a|two|three|\d+) (case|patient)s?|"
                          r"\bcase\b.*review of (the )?literature|in an? (\d+-year-old|child|infant|woman|man|patient|girl|boy)", re.I)
 # 자발보고 DB 를 다시 분석한 연구입니다(규칙, 모델 미개입). FAERS 재분석은 FAERS 축과 같은 자료입니다.
-_SOURCE_DB = [("faers", r"\bFAERS\b|Adverse Event Reporting System"), ("vigibase", r"VigiBase|VigiAccess"),
+# 'Adverse Event Reporting System' 앞에 Vaccine(VAERS)·Korea(KAERS)가 붙으면 FAERS 가 아닙니다.
+_SOURCE_DB = [("faers", r"\bFAERS\b|(?<!vaccine )(?<!korea )(?<!korean )Adverse Event Reporting System"), ("vigibase", r"VigiBase|VigiAccess"),
               ("jader", r"\bJADER\b"), ("eudravigilance", r"EudraVigilance"), ("kaers", r"\bKAERS\b|KIDS-KD")]
 REVIEW_CONF = 0.55          # 이보다 확신이 낮은 항목은 사람 확인 목록(review)에 올립니다
 BORDERLINE = (0.3, 0.6)     # 관문 확률(focus+reported)이 이 사이면 addresses 도 확인 목록에 올립니다
@@ -235,15 +236,16 @@ def clip(a: dict, budget: int = CLIP) -> tuple[str, bool]:
     for k in top:  # 결과·증례·결론 절을 통째로 넣습니다
         if len(parts[k]) + 1 <= room:
             keep[k] = parts[k]; room -= len(parts[k]) + 1
-    # 방법 절의 첫 문장(대개 연구 설계를 밝힙니다)을 넣을 자리를 남겨 둡니다
+    # 방법 절의 첫 문장(대개 연구 설계를 밝힙니다)을 넣을 자리를 남겨 둡니다. 결과 절을 줄여 넣을 때도 남깁니다
     m = next((k for k in order if rank[k] == 2), None)
     lead = (re.split(r"(?<=[.;!?])\s+", parts[m])[0][:300] + " ...") if m is not None else ""
-    reserve = len(lead) + 1 if m is not None and len(parts[m]) + 1 > room else 0
+    reserve = len(lead) + 1 if m is not None and (len(parts[m]) + 1 > room or any(k not in keep for k in top)) else 0
     for k in top:  # 통째로 안 들어가는 결과 절은 남은 자리만큼 앞뒤를 남깁니다
         if k not in keep and room - reserve >= 200:
             keep[k] = _trim(parts[k], room - reserve - 1); room -= len(keep[k]) + 1
-    for k in order:  # 나머지 절은 통째로 들어갈 때만 넣습니다
-        if k not in keep and rank[k] < 5 and len(parts[k]) + 1 <= room:
+    for k in order:  # 나머지 절은 통째로 들어갈 때만 넣습니다. 방법 절이 빠져 있으면 배경 절 등이 그 첫 문장 자리를 쓰지 않습니다
+        held = reserve if m is not None and m not in keep and k != m else 0
+        if k not in keep and rank[k] < 5 and len(parts[k]) + 1 <= room - held:
             keep[k] = parts[k]; room -= len(parts[k]) + 1
     if m is not None and m not in keep and len(lead) + 1 <= room:
         keep[m] = lead; room -= len(lead) + 1

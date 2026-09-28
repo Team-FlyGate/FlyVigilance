@@ -195,7 +195,27 @@ def test_clip_keeps_labels_and_results_near_budget():
     assert len(literature.clip(big)[0]) <= literature.CLIP
 
 
+def test_clip_keeps_methods_lead_over_background():
+    # 방법 절이 통째로 안 들어가도 첫 문장(연구 설계)은 남기고, 배경 절이 그 자리를 쓰지 않습니다
+    lead = "We did a retrospective cohort study."
+    secs = [("BACKGROUND", "BACKGROUND", "b" * 300 + "."), ("METHODS", "METHODS", lead + " Details follow here." * 30),
+            ("RESULTS", "RESULTS", "HR 1.8 (95% CI 1.2-2.6). " * 48), ("CONCLUSIONS", "CONCLUSIONS", "X raises the risk. " * 23)]
+    text, cut = literature.clip({"abstract": "", "sections": secs})
+    assert cut and len(text) <= literature.CLIP and f"METHODS: {lead}" in text and "bbbb" not in text
+    # 결과 절을 줄여 넣어야 할 때도 방법 절 첫 문장 자리를 남깁니다
+    secs = [("BACKGROUND", "BACKGROUND", "b" * 300 + "."), ("METHODS", "METHODS", lead + " Details follow here." * 23),
+            ("RESULTS", "RESULTS", "HR 1.8 (95% CI 1.2-2.6). " * 100), ("CONCLUSIONS", "CONCLUSIONS", "X raises the risk. " * 10)]
+    text, cut = literature.clip({"abstract": "", "sections": secs})
+    assert cut and len(text) <= literature.CLIP and f"METHODS: {lead}" in text and "RESULTS: HR 1.8" in text
+    assert "CONCLUSIONS: X raises" in text
+
+
 def test_double_count_note_and_faers_reanalysis_rule():
     assert "21 CFR 314.80" in literature.DOUBLE_COUNT_NOTE and "FAERS" in literature.DOUBLE_COUNT_NOTE
     xml = XML.replace("We report a patient.", "We analysed the FDA Adverse Event Reporting System (FAERS).")
     assert literature.parse_efetch(xml)[0]["data_source"] == "faers"
+    # 한국(KAERS)·백신(VAERS) 자발보고 DB 는 FAERS 로 세지 않습니다
+    kaers = XML.replace("We report a patient.", "We analysed the Korea Adverse Event Reporting System (KAERS).")
+    assert literature.parse_efetch(kaers)[0]["data_source"] == "kaers"
+    vaers = XML.replace("We report a patient.", "We analysed the Vaccine Adverse Event Reporting System.")
+    assert literature.parse_efetch(vaers)[0]["data_source"] is None
