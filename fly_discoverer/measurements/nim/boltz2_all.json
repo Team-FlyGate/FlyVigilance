@@ -1,0 +1,106 @@
+{
+ "parp1-4r6e-chain-a--15r": {
+  "pic50": 7.96,
+  "p_binder": 0.375,
+  "iptm": 0.855,
+  "plddt": 0.907,
+  "sec": 10.9
+ },
+ "parp1-4r6e-chain-a--pamiparib": {
+  "pic50": 7.2,
+  "p_binder": 0.566,
+  "iptm": 0.974,
+  "plddt": 0.937,
+  "sec": 10.5
+ },
+ "parp1-4r6e-chain-a--niraparib": {
+  "pic50": 7.98,
+  "p_binder": 0.609,
+  "iptm": 0.946,
+  "plddt": 0.933,
+  "sec": 10.7
+ },
+ "parp1-4r6e-chain-a--rucaparib": {
+  "pic50": 7.95,
+  "p_binder": 0.473,
+  "iptm": 0.945,
+  "plddt": 0.943,
+  "sec": 10.5
+ },
+ "cox2-3ln1--celecoxib": {
+  "pic50": 6.56,
+  "p_binder": 0.371,
+  "iptm": 0.67,
+  "plddt": 0.944,
+  "sec": 13.6
+ },
+ "cox2-3ln1--niraparib": {
+  "pic50": 8.09,
+  "p_binder": 0.641,
+  "iptm": 0.535,
+  "plddt": 0.955,
+  "sec": 13.1
+ },
+ "factor-xa-2p16--apixaban": {
+  "pic50": 11.59,
+  "p_binder": 0.938,
+  "iptm": 0.972,
+  "plddt": 0.979,
+  "sec": 10.3
+ },
+ "factor-xa-2p16--niraparib": {
+  "pic50": 7.84,
+  "p_binder": 0.226,
+  "iptm": 0.953,
+  "plddt": 0.974,
+  "sec": 10.1
+ },
+ "niraparib@parp1": {
+  "pic50": 8.909,
+  "prob_binary": 0.766,
+  "plddt": 0.927,
+  "iptm": 0.98
+ },
+ "15r@parp1": {
+  "pic50": 9.868,
+  "prob_binary": 0.443,
+  "plddt": 0.914,
+  "iptm": 0.962
+ },
+ "pamiparib@parp1": {
+  "pic50": 7.822,
+  "prob_binary": 0.342,
+  "plddt": 0.927,
+  "iptm": 0.99
+ },
+ "rucaparib@parp1": {
+  "pic50": 8.2,
+  "prob_binary": 0.299,
+  "plddt": 0.931,
+  "iptm": 0.985
+ },
+ "apixaban@xa": {
+  "pic50": 11.743,
+  "prob_binary": 0.953,
+  "plddt": 0.979,
+  "iptm": 0.99
+ },
+ "niraparib@xa": {
+  "pic50": 7.433,
+  "prob_binary": 0.181,
+  "plddt": 0.966,
+  "iptm": 0.914
+ },
+ "celecoxib@cox2": {
+  "pic50": 7.092,
+  "prob_binary": 0.35,
+  "plddt": 0.931,
+  "iptm": 0.959
+ },
+ "niraparib@cox2": {
+  "pic50": 7.502,
+  "prob_binary": 0.305,
+  "plddt": 0.925,
+  "iptm": 0.895
+ }
+}
