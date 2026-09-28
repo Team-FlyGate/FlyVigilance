@@ -6,7 +6,7 @@ import time
 
 import httpx
 
-from . import config
+from . import calllog, config
 
 _TIMEOUT = httpx.Timeout(60.0, connect=10.0)
 
@@ -42,7 +42,7 @@ async def jev(state: str, questions: dict, client: httpx.AsyncClient | None = No
 
 async def nim_chat(messages: list, models: list[str], max_tokens: int = 1200, temperature: float = 0.2,
                    client: httpx.AsyncClient | None = None, deadline: float | None = None, json_mode: bool = False,
-                   template_kwargs: dict | None = None) -> dict:
+                   template_kwargs: dict | None = None, purpose: str | None = None) -> dict:
     """NVIDIA NIM chat/completions. 모델 사슬을 따라 폴백하고 사고 과정은 끈다.
 
     deadline(time.monotonic 기준)이 있으면 모든 시도를 그 안에서 끝냅니다. 서버리스 함수 제한 시간을 넘기지 않으려는 장치입니다.
@@ -50,6 +50,7 @@ async def nim_chat(messages: list, models: list[str], max_tokens: int = 1200, te
     json_mode 는 NIM 의 response_format(json_object)을 켭니다. 모델이 이를 거절하면(HTTP 400) 끄고 한 번 더 시도합니다.
     template_kwargs 는 chat_template_kwargs 에 덧붙입니다. Nemotron-3.5 Content Safety 의 BYO 정책(custom_policy,
     request_categories)이 이 경로로 들어갑니다. 이 모델의 chat template 은 system 메시지를 버리기 때문입니다.
+    purpose 는 호출 기록(FV_CALL_LOG)에만 쓰는 용도 이름입니다.
     """
     if not config.NVIDIA_API_KEY:
         raise NotConfigured("NVIDIA_API_KEY")
@@ -70,17 +71,38 @@ async def nim_chat(messages: list, models: list[str], max_tokens: int = 1200, te
                 if use_json:
                     body["response_format"] = {"type": "json_object"}
                 t0 = time.perf_counter()
+                url = f"{config.NIM_URL}/chat/completions"
+                log = calllog.enabled()
+                extra = {"json_mode": use_json, "attempt": attempt + 1, "max_tokens": max_tokens,
+                         "template": "+".join(sorted(k for k in (template_kwargs or {}) if k != "enable_thinking")) or None,
+                         "fallback_of": models[0] if model != models[0] else None} if log else None
                 try:
-                    r = await client.post(f"{config.NIM_URL}/chat/completions", json=body,
+                    r = await client.post(url, json=body,
                                           headers={"Authorization": f"Bearer {config.NVIDIA_API_KEY}"},
                                           timeout=httpx.Timeout(min(90.0, left) if left else 90.0, connect=10.0))
                 except httpx.TimeoutException as e:
                     errors.append(f"{model}: {type(e).__name__}")
+                    if log:
+                        calllog.record(url=url, model=model, purpose=purpose, latency_ms=(time.perf_counter() - t0) * 1000,
+                                       error=e, extra=extra)
                     break
                 except httpx.HTTPError as e:
                     errors.append(f"{model}: {type(e).__name__}")
+                    if log:
+                        calllog.record(url=url, model=model, purpose=purpose, latency_ms=(time.perf_counter() - t0) * 1000,
+                                       error=e, extra=extra)
                     continue
                 ms = (time.perf_counter() - t0) * 1000
+                if log:
+                    d_log = None
+                    if r.status_code == 200:
+                        try:
+                            d_log = r.json()
+                        except ValueError:
+                            d_log = None
+                    calllog.record(url=url, model=model, purpose=purpose, response=r, latency_ms=ms,
+                                   usage=(d_log or {}).get("usage"), error=None if r.status_code == 200 else f"HTTP{r.status_code}",
+                                   extra={**extra, "response_id": (d_log or {}).get("id")})
                 if r.status_code == 200:
                     d = r.json()
                     msg = d["choices"][0]["message"]
@@ -100,14 +122,19 @@ async def nim_chat(messages: list, models: list[str], max_tokens: int = 1200, te
             await client.aclose()
 
 
-async def nim_embed(texts: list[str], input_type: str = "query") -> dict:
+async def nim_embed(texts: list[str], input_type: str = "query", purpose: str | None = None) -> dict:
     if not config.NVIDIA_API_KEY:
         raise NotConfigured("NVIDIA_API_KEY")
     async with httpx.AsyncClient(timeout=_TIMEOUT) as c:
         t0 = time.perf_counter()
-        r = await c.post(f"{config.NIM_URL}/embeddings",
-                         json={"model": config.MODEL_EMBED, "input": texts, "input_type": input_type},
+        url = f"{config.NIM_URL}/embeddings"
+        r = await c.post(url, json={"model": config.MODEL_EMBED, "input": texts, "input_type": input_type},
                          headers={"Authorization": f"Bearer {config.NVIDIA_API_KEY}"})
+        if calllog.enabled():
+            calllog.record(url=url, model=config.MODEL_EMBED, purpose=purpose or "embedding", response=r,
+                           latency_ms=(time.perf_counter() - t0) * 1000, usage=_usage(r),
+                           error=None if r.status_code == 200 else f"HTTP{r.status_code}",
+                           extra={"input_type": input_type, "n_inputs": len(texts)})
         r.raise_for_status()
         d = r.json()
         return {"vectors": [x["embedding"] for x in d["data"]], "latency_ms": round((time.perf_counter() - t0) * 1000, 1),
@@ -115,15 +142,30 @@ async def nim_embed(texts: list[str], input_type: str = "query") -> dict:
 
 
 async def nim_embed_many(texts: list[str], input_type: str, client: httpx.AsyncClient,
-                         model: str | None = None) -> list[list[float]]:
+                         model: str | None = None, purpose: str | None = None) -> list[list[float]]:
     """여러 글을 한 번에 임베딩합니다. input_type 은 query 또는 passage 이고, 긴 글은 서버가 뒤를 자릅니다(truncate=END)."""
     if not config.NVIDIA_API_KEY:
         raise NotConfigured("NVIDIA_API_KEY")
-    r = await client.post(f"{config.NIM_URL}/embeddings",
+    t0 = time.perf_counter()
+    url = f"{config.NIM_URL}/embeddings"
+    r = await client.post(url,
                           json={"model": model or config.MODEL_EMBED, "input": texts, "input_type": input_type, "truncate": "END"},
                           headers={"Authorization": f"Bearer {config.NVIDIA_API_KEY}"}, timeout=_TIMEOUT)
+    if calllog.enabled():
+        calllog.record(url=url, model=model or config.MODEL_EMBED, purpose=purpose or "embedding", response=r,
+                       latency_ms=(time.perf_counter() - t0) * 1000, usage=_usage(r),
+                       error=None if r.status_code == 200 else f"HTTP{r.status_code}",
+                       extra={"input_type": input_type, "n_inputs": len(texts)})
     r.raise_for_status()
     return [x["embedding"] for x in sorted(r.json()["data"], key=lambda x: x.get("index", 0))]
+
+
+def _usage(r) -> dict | None:
+    """응답의 usage 만 꺼냅니다(호출 기록용). 읽지 못하면 None 입니다."""
+    try:
+        return r.json().get("usage") if r.status_code == 200 else None
+    except Exception:  # noqa: BLE001
+        return None
 
 
 def parse_rerank(body, n: int) -> list[float]:
@@ -146,17 +188,29 @@ def parse_rerank(body, n: int) -> list[float]:
     return scores
 
 
-async def nim_rerank(query: str, passages: list[str], client: httpx.AsyncClient, timeout: float = 4.0) -> dict:
+async def nim_rerank(query: str, passages: list[str], client: httpx.AsyncClient, timeout: float = 4.0,
+                     purpose: str | None = None) -> dict:
     """Nemotron 리랭커로 질의–글 쌍의 관련도 점수(logit)를 받습니다. 글은 서버가 뒤를 자릅니다(truncate=END).
     돌려주는 scores 는 passages 와 같은 순서입니다."""
     if not config.NVIDIA_API_KEY:
         raise NotConfigured("NVIDIA_API_KEY")
     t0 = time.perf_counter()
-    r = await client.post(config.RERANK_URL,
-                          json={"model": config.MODEL_RERANK, "query": {"text": query},
-                                "passages": [{"text": p} for p in passages], "truncate": "END"},
-                          headers={"Authorization": f"Bearer {config.NVIDIA_API_KEY}", "Accept": "application/json"},
-                          timeout=httpx.Timeout(timeout, connect=min(timeout, 3.0)))
+    log = calllog.enabled()
+    try:
+        r = await client.post(config.RERANK_URL,
+                              json={"model": config.MODEL_RERANK, "query": {"text": query},
+                                    "passages": [{"text": p} for p in passages], "truncate": "END"},
+                              headers={"Authorization": f"Bearer {config.NVIDIA_API_KEY}", "Accept": "application/json"},
+                              timeout=httpx.Timeout(timeout, connect=min(timeout, 3.0)))
+    except (httpx.HTTPError, asyncio.CancelledError) as e:
+        if log:
+            calllog.record(url=config.RERANK_URL, model=config.MODEL_RERANK, purpose=purpose or "literature rerank: PubMed top-20 -> read 6",
+                           latency_ms=(time.perf_counter() - t0) * 1000, error=e, extra={"n_inputs": len(passages)})
+        raise
+    if log:
+        calllog.record(url=config.RERANK_URL, model=config.MODEL_RERANK, purpose=purpose or "literature rerank: PubMed top-20 -> read 6", response=r,
+                       latency_ms=(time.perf_counter() - t0) * 1000, usage=_usage(r),
+                       error=None if r.status_code == 200 else f"HTTP{r.status_code}", extra={"n_inputs": len(passages)})
     r.raise_for_status()
     return {"scores": parse_rerank(r.json(), len(passages)), "model": config.MODEL_RERANK,
             "latency_ms": round((time.perf_counter() - t0) * 1000, 1)}

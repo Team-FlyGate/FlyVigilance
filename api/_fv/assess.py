@@ -205,7 +205,8 @@ async def guard(text: str, timeout_s: float = 20.0) -> dict:
             break
         try:
             out = await clients.nim_chat([{"role": "user", "content": text[:4000]}], [model], max_tokens=60,
-                                         temperature=0.0, deadline=time.monotonic() + min(left, timeout_s * 0.6))
+                                         temperature=0.0, deadline=time.monotonic() + min(left, timeout_s * 0.6),
+                                         purpose="Safety Guard: per-claim treatment-advice check (R11)")
         except Exception as e:
             errors.append(f"{model.split('/')[-1]}: {type(e).__name__}")
             continue
@@ -234,7 +235,8 @@ async def policy_guard(text: str, timeout_s: float = 20.0, think: bool = False) 
                 [{"role": "user", "content": text[:4000]}], [config.MODEL_SAFETY_FALLBACK],
                 max_tokens=600 if think else 60, temperature=0.0, deadline=time.monotonic() + left,
                 template_kwargs={"custom_policy": pv_policy(), "request_categories": "/categories",
-                                 "enable_thinking": think})
+                                 "enable_thinking": think},
+                purpose="PV policy guard: BYO custom_policy per claim")
         except Exception as e:
             errors.append(f"pv-policy: {type(e).__name__}")
             continue
@@ -347,7 +349,8 @@ async def assess(case_state: str, triage_answers: dict, bundle: dict, max_rounds
         out = await clients.nim_chat(
             [{"role": "system", "content": SYSTEM},
              {"role": "user", "content": _user_prompt(case_state, compact, bundle, feedback)}],
-            config.MODEL_DELIBERATE, max_tokens=1400, deadline=deadline - 15, json_mode=True)
+            config.MODEL_DELIBERATE, max_tokens=1400, deadline=deadline - 15, json_mode=True,
+            purpose="System-2 assessment memo (evidence-cited claims, JSON)")
         try:
             memo = clients.parse_json_block(out["content"])
         except Exception as e:

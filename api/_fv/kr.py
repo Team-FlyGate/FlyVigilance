@@ -147,7 +147,8 @@ async def intake(text: str, form: str) -> dict:
     out = await clients.nim_chat(
         [{"role": "system", "content": INTAKE_SYSTEM},
          {"role": "user", "content": f"FORM TYPE: {FORMS.get(form, form)}\n\nREPORT:\n{text[:12000]}"}],
-        config.MODEL_DELIBERATE, max_tokens=2000, temperature=0.0, deadline=time.monotonic() + 100, json_mode=True)
+        config.MODEL_DELIBERATE, max_tokens=2000, temperature=0.0, deadline=time.monotonic() + 100, json_mode=True,
+        purpose="KR report intake: structure a Korean AE form (JSON)")
     data = clients.parse_json_block(out["content"])
     case = _norm_case(data.get("kr_form", {}), data.get("case", {}))
     case["primaryid"] = "KR-DEMO"
