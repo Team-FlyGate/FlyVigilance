@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import BrainView from './BrainView'
 import { useBrain } from '../lib/brain'
 import { LAYER_COLOR, fmt } from '../lib/data'
@@ -9,6 +10,11 @@ export default function ConnectomePanel({ height = 240, focus }: { height?: numb
   // 작은 패널에서는 층 막대가 뇌를 가리므로 뺍니다
   const meter = height >= 220
   const { sim, conn, tick } = useBrain()
+  // 스파이크 수 추이 (FDDD 쇼릴 학습 장면처럼 큰 숫자 + 작은 선 그래프)
+  const hist = useRef<number[]>([])
+  useEffect(() => { if (sim) { hist.current.push(sim.spikes); if (hist.current.length > 90) hist.current.shift() } }, [tick, sim])
+  const h = hist.current, hi = Math.max(1, ...h), W = 150, Hs = 26
+  const line = h.map((v, i) => `${i ? 'L' : 'M'}${(i / 89) * W},${Hs - (v / hi) * Hs}`).join('')
   return (
     <div style={{ position: 'relative', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--line)', background: 'rgba(5,9,18,0.55)' }}>
       <div style={{ position: 'absolute', left: 12, top: 10, zIndex: 2, pointerEvents: 'none' }}>
@@ -18,7 +24,14 @@ export default function ConnectomePanel({ height = 240, focus }: { height?: numb
         </div>
         {focus && <div className="mono" style={{ fontSize: 10.5, marginTop: 4, color: 'var(--c-sense)' }}>{focus}</div>}
       </div>
-      <BrainView height={height} bloom={1} />
+      <div style={{ position: 'absolute', left: 12, bottom: 10, zIndex: 2, pointerEvents: 'none' }}>
+        <div className="row" style={{ alignItems: 'baseline', gap: 6 }}>
+          <span className="num" style={{ fontFamily: 'var(--font)', fontSize: height >= 220 ? 30 : 22, fontWeight: 700, letterSpacing: -0.5, textShadow: '0 0 18px rgba(55,230,255,0.35)' }}>{sim ? fmt.int(sim.spikes) : '–'}</span>
+          <span className="mono dim" style={{ fontSize: 10 }}>spikes / step</span>
+        </div>
+        <svg width={W} height={Hs} style={{ display: 'block', marginTop: 2 }}><path d={line} fill="none" stroke="var(--c-sense)" strokeWidth={1.4} style={{ filter: 'drop-shadow(0 0 4px rgba(55,230,255,0.6))' }} /></svg>
+      </div>
+      <BrainView height={height} bloom={0.55} />
       {meter && sim && conn && (
         <div style={{ position: 'absolute', right: 10, bottom: 10, zIndex: 2, width: 190, padding: '8px 10px', borderRadius: 10,
           background: 'rgba(5,9,18,0.72)', border: '1px solid var(--line)', backdropFilter: 'blur(8px)' }}>
