@@ -70,10 +70,11 @@ export default function DockingView({ scene, height = 600, playKey = 0, onSettle
       alts.forEach((g, i) => { const s = 150 + i * 330; setOpacity(g, t < s ? 0 : t < s + 900 ? Math.sin(((t - s) / 900) * Math.PI) : 0) })
       const k = ease((t - FLY_START) / FLY_MS)
       setOpacity(pivot, t < FLY_START ? 0 : 1)
-      pivot.position.copy(path.getPointAt(1 - k))
+      // 경로는 바깥(0)에서 결합 자리(1, 원점)로 갑니다
+      pivot.position.copy(path.getPointAt(k))
       pivot.rotation.set(2.4 * (1 - k), -1.7 * (1 - k), 1.1 * (1 - k))
       const pos = trail.geometry.getAttribute('position') as THREE.BufferAttribute
-      for (let i = 0; i < N; i++) { path.getPointAt(Math.max(0, 1 - k) + (i / N) * k * 0.999, v); pos.setXYZ(i, v.x, v.y, v.z) }
+      for (let i = 0; i < N; i++) { path.getPointAt((i / (N - 1)) * k, v); pos.setXYZ(i, v.x, v.y, v.z) }
       pos.needsUpdate = true
       setOpacity(trail, t > FLY_START && t < FLY_START + FLY_MS + 900 ? clamp(1 - (t - FLY_START - FLY_MS) / 900) : 0)
       setOpacity(ghost, t < FLY_START + FLY_MS - 200 ? 0.35 : 1)

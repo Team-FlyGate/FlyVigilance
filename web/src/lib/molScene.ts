@@ -49,7 +49,7 @@ void main(){
   float df = max(dot(n, l), 0.0), sp = pow(max(dot(n, normalize(l + v)), 0.0), 40.0), fr = pow(1.0 - max(dot(n, v), 0.0), 2.0);
   vec3 c = vC * (0.07 + df * 0.5) + sp * 0.16 + vC * fr * 0.38 * uGlow + vec3(1.0, 0.8, 0.5) * rim * 0.6;
   float head = exp(-(uReveal - vU) * 160.0) * step(uReveal, 0.999); c += vec3(1.0, 0.95, 0.85) * head * 1.4;
-  if (uScan >= 0.0) { float band = exp(-pow((vU - uScan) * 22.0, 2.0)); c = c * (0.35 + 0.65 * band) + vec3(0.55, 1.0, 1.0) * band * 1.4; }
+  if (uScan >= 0.0) { float band = exp(-pow((vU - uScan) * 22.0, 2.0)); c = c * (0.6 + 0.4 * band) + vec3(0.55, 1.0, 1.0) * band * 0.45; }
   gl_FragColor = vec4(c, uAlpha);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
@@ -91,6 +91,12 @@ export function ribbon(ca: { p: THREE.Vector3; resseq: number; color: THREE.Colo
   return { core, glow: new THREE.Group(), meshes, uniforms }
 }
 
+/** MSA 보존도 색 (쿼리와 같은 아미노산 비율): 낮을수록 어둡고 높을수록 밝은 시안 */
+export function conservationColor(c: number) {
+  const lo = new THREE.Color(0x2a2f5e), mid = new THREE.Color(0x4d8dff), hi = new THREE.Color(0x37e6ff)
+  return c < 0.6 ? lo.clone().lerp(mid, Math.max(0, c) / 0.6) : mid.clone().lerp(hi, (c - 0.6) / 0.4)
+}
+
 /** 사슬을 따라 세 색으로 물들입니다 (쇼릴의 표적별 팔레트) */
 export function chainGradient(n: number, a: number, b: number, c: number) {
   const A = new THREE.Color(a), B = new THREE.Color(b), C = new THREE.Color(c)
@@ -113,13 +119,15 @@ function cylinder(a: THREE.Vector3, b: THREE.Vector3, r: number, mat: THREE.Mate
 }
 
 /** 리간드 공-막대. ghost 는 결정 구조 정답(흰 윤곽), faint 는 나머지 포즈(탐색 흔적). */
-export function ballStick(lig: Ligand, style: 'solid' | 'ghost' | 'faint' = 'solid') {
+export function ballStick(lig: Ligand, style: 'solid' | 'ghost' | 'faint' = 'solid', tint?: number) {
   const g = new THREE.Group()
   const pts = lig.atoms.map((a) => new THREE.Vector3(a[0], a[1], a[2]))
   const mats = new Map<string, THREE.Material>()
-  const mat = (el: string) => {
+  const mat = (el0: string) => {
+    const el = tint === undefined ? el0 : 'tint'
     if (!mats.has(el)) {
-      const c = ELEMENT[el] ?? 0xd8dce8
+      // tint 가 있으면 원소와 관계없이 한 색으로 (여러 리간드를 구분할 때)
+      const c = tint ?? ELEMENT[el] ?? 0xd8dce8
       mats.set(el, style === 'solid'
         ? new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: 0.28, roughness: 0.25, metalness: 0.15, transparent: true, opacity: 1 })
         : new THREE.MeshBasicMaterial({ color: style === 'ghost' ? 0xe8eefc : c, transparent: true, opacity: style === 'ghost' ? 0.28 : 0.22, depthWrite: false,

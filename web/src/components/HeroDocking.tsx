@@ -2,8 +2,11 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import ConnectomePanel from './ConnectomePanel'
+import SplitTarget, { type XaSplit } from './SplitTarget'
+import MsaAnimation from './MsaAnimation'
+import AffinityMeter from './AffinityMeter'
 import { useBrain } from '../lib/brain'
-import { ballStick, disposeAll, dust, glowSprite, makeRenderer, plddtColor, ribbon, setOpacity, type Ligand } from '../lib/molScene'
+import { ballStick, conservationColor, disposeAll, dust, glowSprite, makeRenderer, plddtColor, ribbon, setOpacity, type Ligand } from '../lib/molScene'
 
 // STEP 1 대표 장면(쇼릴 03 장면의 3D 판): OpenFold3 NIM 이 예측한 PARP1 + 니라파립 복합체를 가운데 두고,
 // 위 단계 표시(MSA-Search → OpenFold3 → DiffDock → Boltz-2 → 크리틱)를 따라 장면과 오른쪽 수치가 바뀝니다.
@@ -16,6 +19,9 @@ export interface HeroScene {
   ribbon: [number, number, number, number, number][]
   crystal_ca: [number, number, number, number][]
   of3_ligand: Ligand; xtal_ligand: Ligand; diffdock_poses: Ligand[]
+  msa: { labels: [string, number | null][]; query: string; n_homologs: number; query_len: number; conservation: number[]; strip: string[]; pocket_residues: number[]; pocket_mean: number; overall_mean: number }
+  parp_set: { name: string; pose: Ligand; vina: number | null; dd_conf: number | null; boltz_pic50: number | null; boltz_p: number | null; chembl: number | null; chembl_n: number | null }[]
+  critic_split: { xa: XaSplit; parp1: { dd_conf: number; vina: number } }
 }
 export interface HeroExtras { boltz: { pic50: number; p: number; chembl: number | null; n: number } | null; bench: { n: number; spearman: number; mae: number } | null
   critic: { model: string; caught: number; n_over: number; passed: number; n_valid: number; sec: number; rows: [string, string, string][] } | null }
@@ -30,11 +36,11 @@ const STEPS = [
 const LOOP = 31000
 // 3D 장면 HUD (FDDD 쇼릴처럼 한 줄 태그 + 타자처럼 찍히는 제목)
 const HUD: Record<string, [string, string]> = {
-  msa: ['MSA-SEARCH · UNIREF30_2302 · PARP1', '상동 서열 정렬'],
-  of3: ['OPENFOLD3 · PDB 4R6E 대조 · CHAIN A', 'PARP1 촉매 도메인 + 니라파립'],
+  msa: ['MSA-SEARCH · 101 SEQUENCES · 보존도', '약물이 붙는 자리는 더 잘 보존됩니다'],
+  of3: ['OPENFOLD3 · PARP1 촉매 도메인 · 352 잔기', '서열에서 단백질 구조를 그립니다'],
   dd: ['DIFFDOCK · POSE 1 / 5 · 4R6E', '니라파립 → PARP1 결합 자리'],
-  bz: ['BOLTZ-2 · AFFINITY · CHEMBL', '예측 pIC50 vs 실측'],
-  critic: ['CRITIC · 3 TIERS · NEMOTRON', '결정 구조로 주장 검증'],
+  bz: ['BOLTZ-2 · PARP1 억제제 4종 · 같은 포켓', '같은 표적 안에서만 세기를 비교합니다'],
+  critic: ['CRITIC · PARP1 | FACTOR XA', '다른 표적의 점수는 비교할 수 없습니다'],
 }
 // 메뉴가 바뀔 때 커넥텀에서 반짝일 층 (STEP 2 관제 센터와 같은 시뮬레이터를 씁니다)
 const STEP_LAYERS: Record<string, string[]> = { msa: ['sense'], of3: ['encode'], dd: ['reflex', 'memory'], bz: ['memory', 'deliberate'], critic: ['critic', 'action'] }
@@ -120,7 +126,7 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
     const { renderer, scene, camera, composer, bloom, film, resize } = makeRenderer(el)
     const controls = new OrbitControls(camera, renderer.domElement)
     controls.enableDamping = true; controls.autoRotate = true; controls.autoRotateSpeed = 0.45
-    controls.minDistance = 14; controls.maxDistance = 140
+    controls.minDistance = 8; controls.maxDistance = 220; controls.enablePan = true; controls.enableZoom = true
 
     const root = new THREE.Group(); scene.add(root)
     scene.add(dust())
@@ -128,6 +134,14 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
     const ca = hero.ribbon.map((r) => ({ p: new THREE.Vector3(r[0], r[1], r[2]), resseq: r[3], color: plddtColor(r[4]) }))
     const protCenter = ca.reduce((v, a) => v.add(a.p), new THREE.Vector3()).multiplyScalar(1 / ca.length)
     const rb = ribbon(ca, 0.32); root.add(rb.core, rb.glow)
+    // MSA 단계: 같은 뼈대를 보존도로 칠하고, 포켓 잔기(니라파립 5 Å 안)는 주황으로 강조
+    const pocketSet = new Set(hero.msa.pocket_residues)
+    const rbCons = ribbon(hero.ribbon.map((r) => ({ p: new THREE.Vector3(r[0], r[1], r[2]), resseq: r[3],
+      color: pocketSet.has(r[3]) ? new THREE.Color(0xffb547) : conservationColor(hero.msa.conservation[r[3] - 1] ?? 0) })), 0.32)
+    root.add(rbCons.core)
+    // Boltz-2 단계: 같은 4R6E 포켓에 PARP1 억제제 4종 (니라파립은 DiffDock 1순위 포즈 그대로)
+    const PARP_TINT: Record<string, number> = { '15r': 0x2fd6c8, pamiparib: 0xa58bff, rucaparib: 0xff7ab6 }
+    const parpOthers = hero.parp_set.filter((x) => x.name !== 'niraparib').map((x) => { const g = ballStick(x.pose, 'solid', PARP_TINT[x.name]); root.add(g); return g })
     // 결정 구조 4R6E Cα (검증 단계에서 흰 선으로 겹침)
     const xs: number[] = []
     for (let i = 1; i < hero.crystal_ca.length; i++) {
@@ -152,11 +166,12 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
 
     // 단백질 전체가 들어오도록 경계 구 반지름으로 거리를 잡습니다
     const radius = Math.max(...ca.map((a) => a.p.distanceTo(protCenter)))
+    const msaPos = new THREE.Vector3(18, 12, 24)
     const farPos = protCenter.clone().add(new THREE.Vector3(0.62, 0.34, 0.71).normalize().multiplyScalar(radius / Math.sin((36 / 2) * Math.PI / 180) * 0.92)), nearPos = new THREE.Vector3(10, 6.5, 13)
     camera.position.copy(farPos); controls.target.copy(protCenter)
     const ro = new ResizeObserver(resize); ro.observe(el); resize()
     const v = new THREE.Vector3()
-    let lastStep = '', dragging = false, lastT = -1
+    let lastStep = '', dragging = false, lastT = -1, userCam = false
 
     const loop = (now: number) => {
       if (disposed) return
@@ -171,53 +186,65 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
       if (t < lastT) lastT = t - 1
       for (const [et, layer, amp] of EVENTS) if (lastT < et && et <= t) simRef.current?.stimulate('layer', layer, amp, 8)
       lastT = t
-      const camT = h ? (h.id === 'msa' || h.id === 'of3' ? 0 : 20000) : t
-      if (st.id !== lastStep) { lastStep = st.id; setStep(st.id) }
+      const camT = h ? (h.id === 'msa' || h.id === 'of3' ? 0 : h.id === 'dd' ? t : 20000) : t
+      if (st.id !== lastStep) { lastStep = st.id; setStep(st.id); userCam = false; controls.autoRotate = true }
       // OpenFold3: 리본을 N 말단부터 그리고, 끝에 함께 예측한 리간드가 나타납니다
       const U = rb.uniforms
       U.uEye.value.copy(camera.position)
+      const C = rbCons.uniforms
+      C.uEye.value.copy(camera.position)
+      rbCons.core.visible = t < 3000; rb.core.visible = t >= 3000
       if (t < 3000) {
-        // MSA-Search: 흐린 뼈대 위로 상동 서열 정렬이 N 말단부터 훑고 지나갑니다
-        U.uReveal.value = 1; U.uAlpha.value = 0.55; U.uScan.value = clamp(t / 2800); U.uCut.value = 0
+        // MSA-Search: 보존도로 칠한 뼈대 위로 정렬 띠가 지나가고, 결합 포켓(주황)을 가까이서 봅니다
+        C.uReveal.value = 1; C.uAlpha.value = 1; C.uScan.value = clamp(t / 2800); C.uCut.value = 5
       } else {
         // OpenFold3: 끝이 빛나며 N 말단부터 그려지고, 가까이 갈 때는 카메라와 결합 자리 사이 사슬을 잘라 냅니다(포켓 컷어웨이)
-        const closeK = ease((camT - 12200) / 3200) * (1 - ease((camT - 26000) / 4000))
+        const closeK = ease((camT - 12200) / 3200) * (t >= 24500 ? 1 : 1 - ease((camT - 26000) / 4000))
         U.uReveal.value = t < 7800 ? ease((t - 3000) / 4800) : 1; U.uAlpha.value = 1; U.uScan.value = -1; U.uCut.value = 7 * closeK
       }
       film.uniforms.uTime.value = (now % 1000) / 1000
-      setOpacity(of3Lig, t < 7600 ? 0 : t < 11000 ? clamp((t - 7600) / 700) : t < 16200 ? 1 - 0.65 * clamp((t - 11000) / 800) : 0.35 * clamp(1 - (t - 16200) / 500))
+      // OpenFold3 단계는 단백질만 보여 줍니다(함께 예측한 리간드는 수치로만). 약물은 DiffDock 단계에서 처음 들어옵니다
+      setOpacity(of3Lig, 0)
       // DiffDock: 나머지 포즈가 스쳐 가고, 1순위가 궤적을 그리며 날아와 박힙니다
       alts.forEach((g, i) => { const a = 11400 + i * 700; setOpacity(g, t < a ? 0 : t < a + 1400 ? Math.sin(((t - a) / 1400) * Math.PI) : 0) })
       const fk = ease((t - 13600) / 2600)
       const endFade = h ? 1 : clamp((LOOP - t) / 1200)
       setOpacity(ddPivot, t < 13600 ? 0 : endFade)
-      ddPivot.position.copy(path.getPointAt(1 - fk).multiplyScalar(1)).sub(path.getPointAt(1))
+      // 경로는 바깥(0)에서 결합 자리(1, 원점)로 갑니다. 진행도 fk 가 0 → 1 이면 약물이 바깥에서 포켓으로 들어옵니다
+      ddPivot.position.copy(path.getPointAt(fk))
       ddPivot.rotation.set(2.6 * (1 - fk), -1.8 * (1 - fk), 1.2 * (1 - fk))
       const pos = trail.geometry.getAttribute('position') as THREE.BufferAttribute
-      for (let i = 0; i < trailPts; i++) { path.getPointAt(Math.max(0, 1 - fk) + (i / trailPts) * fk * 0.999, v); pos.setXYZ(i, v.x, v.y, v.z) }
+      for (let i = 0; i < trailPts; i++) { path.getPointAt((i / (trailPts - 1)) * fk, v); pos.setXYZ(i, v.x, v.y, v.z) }
       pos.needsUpdate = true
       setOpacity(trail, t > 13600 && t < 17200 ? clamp(1 - (t - 16200) / 1000) : 0)
       // 검증: 결정 구조(뼈대 + 리간드 정답)가 겹쳐집니다
-      setOpacity(xtalLig, t < 16400 ? 0 : clamp((t - 16400) / 800) * endFade)
+      setOpacity(xtalLig, t < 16400 ? 0 : clamp((t - 16400) / 800) * endFade * (t >= 19000 && t < 24500 ? 0.25 : 1))
+      // OpenFold3 단계 끝에 결정 구조 4R6E 뼈대를 겹쳐 예측과 비교하고, DiffDock 검증 때 다시 한 번 겹칩니다
       setOpacity(xtalTrace, t < 16400 || t > 19500 ? 0 : 0.9 * Math.sin(clamp((t - 16400) / 3100) * Math.PI))
+      // Boltz-2: 억제제 3종이 차례로 같은 포켓에 나타납니다(니라파립은 그대로)
+      parpOthers.forEach((g, i) => setOpacity(g, t < 19400 + i * 700 ? 0 : t < 24500 ? clamp((t - 19400 - i * 700) / 500) : 0))
       const flash = t > 16200 && t < 18400 ? Math.sin(((t - 16200) / 2200) * Math.PI) : 0
       glow.material.opacity = 0.08 + 0.35 * flash + (t > 19000 ? 0.04 * (1 + Math.sin(now / 900)) : 0)
       // 카메라: 전체 → 결합 자리로 다가갔다가 다시 물러납니다
       const inK = ease((camT - 12200) / 3200), outK = ease((camT - 26000) / 4000)
-      const want = farPos.clone().lerp(nearPos, inK * (1 - outK)), tgt = protCenter.clone().lerp(new THREE.Vector3(), inK * (1 - outK))
-      if (!dragging) { camera.position.lerp(want, 0.04); controls.target.lerp(tgt, 0.06) }
+      const closeK2 = t >= 24500 ? inK : inK * (1 - outK)
+      const want = t < 3000 ? msaPos : farPos.clone().lerp(nearPos, closeK2), tgt = t < 3000 ? new THREE.Vector3() : protCenter.clone().lerp(new THREE.Vector3(), closeK2)
+      // 크리틱: 오른쪽 절반에 Factor Xa 를 띄우므로 PARP1 장면을 왼쪽 절반 가운데로 옮깁니다
+      const W = el.clientWidth, H = el.clientHeight
+      if (st.id === 'critic') camera.setViewOffset(W, H, W * 0.25, 0, W, H); else camera.clearViewOffset()
+      if (!dragging && !userCam) { camera.position.lerp(want, 0.04); controls.target.lerp(tgt, 0.06) }
       bloom.strength = 0.3 + 0.2 * flash
       controls.update(); composer.render()
       // 리간드 말풍선: 원점을 화면 좌표로 옮깁니다
       if (label.current) {
         v.set(0, 0, 0).project(camera)
-        const show = (t > 8000 && t < 11000) || (t > 16400 && t < 24500)
+        const show = t > 16400 && t < 24500
         label.current.style.opacity = show ? '1' : '0'
         label.current.style.transform = `translate(${((v.x + 1) / 2) * el.clientWidth + 26}px, ${((1 - v.y) / 2) * el.clientHeight - 74}px)`
       }
       raf = requestAnimationFrame(loop)
     }
-    controls.addEventListener('start', () => { dragging = true })
+    controls.addEventListener('start', () => { dragging = true; userCam = true; controls.autoRotate = false })
     controls.addEventListener('end', () => { dragging = false })
     raf = requestAnimationFrame(loop)
     const tk = setInterval(() => setTick((k) => k + 1), 500)
@@ -234,19 +261,26 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
     </div>
   )
   const stat: Record<StepId, ReactNode> = {
-    msa: <Big eyebrow="MSA-Search NIM · 상동 서열 정렬" value={String(m.msa_homologs)} unit="서열" lines={['PARP1 촉매 도메인 · Uniref30_2302', <span className="dim">OpenFold3 입력으로 그대로 잇습니다 (NVIDIA 공식 스킬 규격)</span>]} />,
+    msa: <Big eyebrow="MSA-Search NIM · 상동 서열 정렬" value={String(m.msa_homologs)} unit="서열"
+      lines={[<span>결합 포켓 잔기 {hero.msa.pocket_residues.length}개의 보존도 <b style={{ color: 'var(--jev)' }}>{hero.msa.pocket_mean.toFixed(2)}</b> · 단백질 전체 {hero.msa.overall_mean.toFixed(2)}</span>,
+        <span className="dim">보존도 = 상동 서열 중 PARP1 과 같은 아미노산의 비율 · 이 정렬이 OpenFold3 입력이 됩니다</span>]}
+      foot={<span className="mono" style={{ fontSize: 11, color: 'var(--ok)' }}>포켓 잔기가 더 잘 보존된다는 것은 여러 종에서 약물이 붙는 자리를 지켜 왔다는 뜻입니다</span>} />,
     of3: <Big eyebrow={`OpenFold3 NIM · 복합체 예측 · ${m.of3_seconds} s`} value={m.plddt.toFixed(2)} unit="pLDDT"
       lines={[`pTM ${m.ptm} · ipTM ${m.iptm}`, `4R6E 결정 구조 대비 Cα RMSD ${m.ca_rmsd_kabsch.toFixed(1)} Å · ${m.matched_ca} Cα`, <span style={{ color: 'var(--jev)' }}>리간드 RMSD {m.of3_ligand_rmsd} Å</span>]}
       foot={<div className="stack" style={{ gap: 12 }}>{legend}<div className="mono" style={{ fontSize: 11, color: 'var(--ok)' }}>고전 기준 · pLDDT ≥ 90 · 결정 구조 대비 Cα RMSD ≤ 2 Å</div></div>} />,
     dd: <Big eyebrow={`DiffDock NIM · 포즈 ${hero.pose_eval.length}개 중 1순위`} value={m.diffdock_rmsd.toFixed(2)} unit="Å RMSD"
       lines={[`결정 구조 4R6E 의 니라파립 자리 재현 · 신뢰도 ${m.diffdock_conf}`, <span className="dim">나머지 포즈 {hero.pose_eval.slice(1).map((p) => `${p.rmsd.toFixed(2)}`).join(' · ')} Å</span>, <span style={{ color: 'var(--ok)' }}>고전 기준 · 1순위 포즈 RMSD ≤ 2 Å 통과</span>]} />,
-    bz: <Big eyebrow="Boltz-2 NIM · 친화도 예측" value={extras.boltz ? extras.boltz.pic50.toFixed(2) : '–'} unit="pIC50"
-      lines={[extras.boltz ? `ChEMBL 실측 중앙값 ${extras.boltz.chembl} (n=${extras.boltz.n}) · 결합 확률 ${extras.boltz.p}` : '',
-        extras.bench ? <span>PARP1 {extras.bench.n}종 벤치마크 Spearman <b style={{ color: 'var(--ok)' }}>{extras.bench.spearman.toFixed(3)}</b> · MAE {extras.bench.mae} log</span> : '',
-        <span className="dim">예측값은 측정된 친화도가 아닙니다 (크리틱이 이 혼동을 반려합니다)</span>]} />,
+    bz: <Big eyebrow="Boltz-2 NIM · 같은 PARP1 포켓 · 친화도 예측" value={extras.boltz ? extras.boltz.pic50.toFixed(2) : '–'} unit="pIC50 · 니라파립"
+      lines={[...hero.parp_set.map((x) => (
+        <div className="row between" style={{ fontSize: 13.5, gap: 10 }} key={x.name}>
+          <span><i style={{ display: 'inline-block', width: 9, height: 9, borderRadius: 5, marginRight: 8, background: ({ '15r': '#2fd6c8', pamiparib: '#a58bff', rucaparib: '#ff7ab6', niraparib: '#ffb547' } as Record<string, string>)[x.name] }} />{x.name === '15r' ? '15R' : x.name.charAt(0).toUpperCase() + x.name.slice(1)}</span>
+          <span className="num">예측 {x.boltz_pic50?.toFixed(2) ?? '–'} · 실측 {x.chembl ?? '기록 없음'}</span>
+        </div>)),
+        extras.bench ? <span className="dim" style={{ fontSize: 13 }}>PARP1 {extras.bench.n}종 벤치마크 Spearman {extras.bench.spearman.toFixed(3)} · MAE {extras.bench.mae} log</span> : '']} />,
     critic: <Big eyebrow={extras.critic ? `크리틱 3단 · ${extras.critic.model} · ${extras.critic.sec} s` : '크리틱 3단'} value={extras.critic ? `${extras.critic.caught}/${extras.critic.n_over}` : '–'} unit="과잉해석 반려"
-      lines={extras.critic ? [`정상 주장 ${extras.critic.passed}/${extras.critic.n_valid} 통과`,
-        ...extras.critic.rows.filter((r) => r[1] === 'REJECT').slice(0, 2).map((r) => <span className="dim" style={{ fontSize: 13 }}>✗ {r[0]}</span>)] : []} />,
+      lines={[<span style={{ fontSize: 14 }}>“니라파립은 PARP1 {hero.critic_split.parp1.vina}, Factor Xa {hero.critic_split.xa.vina} 이므로 PARP1 에 선택적이다”</span>,
+        <span><span className="chip bad">REJECT</span> <span className="dim" style={{ fontSize: 13 }}>숫자는 모두 실측이지만 다른 표적의 도킹 점수는 비교할 수 없습니다</span></span>,
+        extras.critic ? <span className="dim" style={{ fontSize: 13 }}>정상 주장 {extras.critic.passed}/{extras.critic.n_valid} 통과</span> : '']} />,
   }
 
   return (
@@ -260,8 +294,29 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
         <div style={{ position: 'relative', height }}>
           <div ref={host} style={{ position: 'absolute', inset: 0, cursor: 'grab', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--line)' }}
             aria-label="OpenFold3 가 예측한 PARP1 과 니라파립, DiffDock 포즈, 결정 구조 4R6E. 드래그로 회전합니다." />
+          {step === 'critic' && (
+            <div className="fade-in" style={{ position: 'absolute', top: 0, bottom: 0, right: 0, width: '50%', zIndex: 1, borderLeft: '1px solid var(--line2)', borderRadius: '0 14px 14px 0', overflow: 'hidden' }}>
+              <SplitTarget xa={hero.critic_split.xa} />
+              <div style={{ position: 'absolute', left: 16, bottom: 14, pointerEvents: 'none' }}>
+                <div className="mono" style={{ fontSize: 10.5, letterSpacing: 1.4, color: '#ff7a45' }}>FACTOR XA · PDB 2P16</div>
+                <div className="num" style={{ fontSize: 15 }}>Vina {hero.critic_split.xa.vina} · DiffDock {hero.critic_split.xa.dd_conf}</div>
+              </div>
+            </div>
+          )}
+          {step === 'critic' && (
+            <div className="fade-in" style={{ position: 'absolute', left: 16, bottom: 14, zIndex: 2, pointerEvents: 'none' }}>
+              <div className="mono" style={{ fontSize: 10.5, letterSpacing: 1.4, color: 'var(--c-sense)' }}>PARP1 · PDB 4R6E</div>
+              <div className="num" style={{ fontSize: 15 }}>Vina {hero.critic_split.parp1.vina} · DiffDock {hero.critic_split.parp1.dd_conf}</div>
+            </div>
+          )}
+          {step === 'msa' && (
+            <div key="ov-msa" className="fade-in" style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
+              <MsaAnimation msa={hero.msa} query={hero.msa.query} duration={only ? 9000 : 2800} />
+            </div>
+          )}
+          {step === 'bz' && <AffinityMeter key="ov-bz" items={hero.parp_set} />}
           <div className="hud-corners" style={{ position: 'absolute', inset: 10, pointerEvents: 'none', zIndex: 1 }} />
-          <div key={step} style={{ position: 'absolute', left: 22, top: 18, zIndex: 2, pointerEvents: 'none' }}>
+          <div key={`hud-${step}`} style={{ position: 'absolute', left: 22, top: 18, zIndex: 2, pointerEvents: 'none' }}>
             <div className="mono" style={{ fontSize: 10.5, letterSpacing: 2, color: 'var(--c-sense)' }}>{HUD[step][0]}<span className="hud-caret" /></div>
             <div className="hud-type" style={{ fontFamily: 'var(--font)', fontSize: 26, fontWeight: 700, marginTop: 6, letterSpacing: -0.3,
               textShadow: '1px 0 rgba(255,93,108,0.35), -1px 0 rgba(55,230,255,0.35)', ['--n' as string]: HUD[step][1].length }}>{HUD[step][1]}</div>
