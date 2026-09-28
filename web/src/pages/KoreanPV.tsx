@@ -103,14 +103,14 @@ export default function KoreanPV() {
     <div className="page">
       <PageHead eyebrow="Korean PV · 국내 보고서식 · 한국형 인과성 평가 · 국내 규정 모드"
         title={<>국내 보고 한 장이 <span style={{ color: 'var(--c-sense)' }}>구조화</span>되고 <span style={{ color: 'var(--jev)' }}>평가</span>되기까지</>}
-        lede={<>의약전문가용·일반인 보고서나 병원·약사의 사례 기사를 넣으면 Nemotron이 식약처 공고 제2023-057호 서식(가~바)과 트리아지용 케이스로 구조화합니다.
-          지역의약품안전센터가 쓰는 한국형 인과성 평가 알고리즘 ver 2.0의 8개 항목 중 7개는 FlyVigilance가 Jev 엔진으로 판단하고, '약물에 대해 알려진 정보' 항목은 모델이 고르지 않고 허가 라벨·문헌 조회 규칙으로만 정합니다. 점수는 규칙으로 합산하며,
+        lede={<>의약전문가용·일반인 보고서나 병원·약사의 사례 기사를 넣으면 NVIDIA Nemotron이 식약처 공고 제2023-057호 서식(가~바)과 트리아지용 케이스로 구조화합니다.
+          지역의약품안전센터가 쓰는 한국형 인과성 평가 알고리즘 ver 2.0의 8개 항목 중 7개는 FlyVigilance가 비자기회귀 판단 모델로 판단하고, '약물에 대해 알려진 정보' 항목은 모델이 고르지 않고 허가 라벨·문헌 조회 규칙으로만 정합니다. 점수는 규칙으로 합산하며,
           국내 신속보고 기준(중대한 약물이상반응, 즉 인과관계를 배제할 수 없는 반응 → 15일)으로 라우팅합니다.</>} />
 
       <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1.35fr) minmax(340px,1fr)', alignItems: 'start' }}>
         <div className="stack" style={{ gap: 16 }}>
           <Card title="1. 보고 입력" sub="데모 사례를 고르거나 직접 붙여 넣으세요. 공개 사례는 요지만 다시 쓴 글입니다"
-            right={<button className="btn nv" onClick={doIntake} disabled={!!busy || !text.trim()}>{busy === 'intake' ? <span className="spin" /> : '◆'} 구조화 · Nemotron</button>}>
+            right={<button className="btn nv" onClick={doIntake} disabled={!!busy || !text.trim()}>{busy === 'intake' ? <span className="spin" /> : '◆'} 구조화 · NVIDIA Nemotron</button>}>
             <div className="row wrap" style={{ gap: 6, marginBottom: 10 }}>
               {KR_SAMPLES.map((s) => (
                 <button key={s.id} className="chip" onClick={() => pick(s)} style={{ cursor: 'pointer', color: s.id === sample.id ? 'var(--c-sense)' : undefined, borderColor: s.id === sample.id ? 'var(--c-sense)' : undefined }}>{s.label}</button>
@@ -127,7 +127,7 @@ export default function KoreanPV() {
 
           {intake && (
             <Card title={<>2. 식약처 보고서식으로 구조화 <span className="chip nv" style={{ marginLeft: 8 }}>{intake.model.split('/')[1]} · {fmt.ms(intake.latency_ms)}</span></>}
-              sub="의약품등 이상사례·약물이상반응 보고서식(의약전문가용)의 가~바 섹션. 원문에 없는 값은 비워 두고 누락 목록으로 돌려줍니다"
+              sub="의약품등 이상사례·약물이상반응 보고서식(의약전문가용)의 가~바 섹션입니다. 원문에 없는 값은 비워 두고 누락 목록으로 돌려 드립니다"
               right={<div className="row" style={{ gap: 8 }}>
                 <button className="btn jev" onClick={doCaus} disabled={!!busy}>{busy === 'caus' ? <span className="spin" /> : '⚡'} 한국형 알고리즘 · FlyVigilance</button>
                 <button className="btn" onClick={doTriage} disabled={!!busy}>{busy === 'triage' ? <span className="spin" /> : '⇄'} 규정 모드 비교</button>
@@ -137,7 +137,7 @@ export default function KoreanPV() {
               </div>
               {intake.missing?.length ? <div className="row wrap" style={{ gap: 6, marginTop: 12 }}><span className="dim mono" style={{ fontSize: 10.5 }}>누락 · 추가정보 요청 대상</span>{intake.missing.map((m) => <span key={m} className="chip warn">{m}</span>)}</div> : null}
               <div className="divider" />
-              <div className="dim mono" style={{ fontSize: 10.5, marginBottom: 6 }}>트리아지용 정규화 케이스 (역할·보고자·결과 코드는 서식 값에서 규칙으로 생성)</div>
+              <div className="dim mono" style={{ fontSize: 10.5, marginBottom: 6 }}>트리아지용 정규화 케이스 (역할·보고자·결과 코드는 서식 값에서 규칙으로 만듭니다)</div>
               <div className="row wrap" style={{ gap: 6 }}>
                 {intake.case.drugs.map((d) => <span key={d.drug} className={`chip ${d.role === 'PS' ? 'bad' : ''}`}>{d.role} · {d.drug}{d.dechal === 'Y' ? ' · dechal+' : ''}</span>)}
                 {intake.case.reactions.map((r) => <span key={r} className="chip" style={{ color: 'var(--text)' }}>{r}</span>)}
@@ -148,8 +148,8 @@ export default function KoreanPV() {
           )}
 
           {caus && (
-            <Card title={<>3. 한국형 인과성 평가 알고리즘 ver 2.0 <span className="chip jev" style={{ marginLeft: 8 }}>Jev {fmt.ms(caus.latency_ms)} · 7문항 + WHO-UMC 1회 호출</span></>}
-              sub="7개 항목 선택은 Jev, '약물에 대해 알려진 정보'는 조회 규칙, 점수 합산과 등급 구간은 규칙입니다. 신뢰도 0.55 미만 항목과 '알려진 정보' 항목은 평가자 검토 대상으로 표시합니다">
+            <Card title={<>3. 한국형 인과성 평가 알고리즘 ver 2.0 <span className="chip jev" style={{ marginLeft: 8 }}>비자기회귀 판단 {fmt.ms(caus.latency_ms)} · 7문항 + WHO-UMC 1회 호출</span></>}
+              sub="7개 항목 선택은 비자기회귀 판단 모델이, '약물에 대해 알려진 정보'는 조회 규칙이, 점수 합산과 등급 구간은 규칙이 정합니다. 신뢰도 0.55 미만 항목과 '알려진 정보' 항목은 평가자 검토 대상으로 표시합니다">
               <table className="tbl">
                 <thead><tr><th>항목</th><th>판단</th><th className="r">점수</th><th>근거</th><th className="r">신뢰도</th></tr></thead>
                 <tbody>{caus.items.map((it) => (
@@ -161,7 +161,7 @@ export default function KoreanPV() {
                       {it.scope && <div className="dim" style={{ fontSize: 10.5, marginTop: 3 }}>평가 반응 {it.reaction ?? '—'} · {it.scope}</div>}
                     </td>
                     <td className="r num" style={{ color: it.score > 0 ? 'var(--ok)' : it.score < 0 ? 'var(--bad)' : 'var(--text-3)' }}>{it.score > 0 ? `+${it.score}` : it.score}</td>
-                    <td>{it.source === 'jev' ? <span className="chip jev" style={{ fontSize: 9.5 }}>Jev</span> : <span className={`chip ${it.lookup_failed ? 'warn' : 'ev'}`} title={it.evidence.join('\n')}>{it.source}</span>}</td>
+                    <td>{it.source === 'jev' ? <span className="chip jev" style={{ fontSize: 9.5 }}>판단 모델</span> : <span className={`chip ${it.lookup_failed ? 'warn' : 'ev'}`} title={it.evidence.join('\n')}>{it.source}</span>}</td>
                     <td className="r" style={{ width: 120 }}>{it.method === 'rule'
                       ? <span className="dim mono" style={{ fontSize: 10.5 }}>{it.lookup_failed ? '조회 실패' : '규칙'}</span>
                       : <ProbBar p={it.confidence} color={it.needs_review ? 'var(--warn)' : 'var(--jev)'} />}</td>
@@ -198,13 +198,13 @@ export default function KoreanPV() {
           )}
 
           {tri.KR && tri.US && (
-            <Card title="4. 규정 모드 비교 · 같은 Jev 판단, 다른 신속보고 규칙" sub="미국은 '중대하고 예상하지 못한' 사례, 한국은 중대한 약물이상반응(인과관계를 배제할 수 없는 반응)이 15일 신속보고 대상입니다 (별표 4의3 제7호 나목)">
+            <Card title="4. 규정 모드 비교 · 같은 판단, 다른 신속보고 규칙" sub="미국은 '중대하고 예상하지 못한' 사례, 한국은 중대한 약물이상반응(인과관계를 배제할 수 없는 반응)이 15일 신속보고 대상입니다 (별표 4의3 제7호 나목)">
               <div className="grid g2" style={{ gap: 12 }}>
                 {(['KR', 'US'] as const).map((r) => {
                   const d = tri[r].decision, m = ACTION_META[d.action] ?? ACTION_META.monitor
                   return (
                     <div key={r} style={{ padding: 14, borderRadius: 14, border: `1px solid ${m.color}66`, background: `color-mix(in srgb, ${m.color} 8%, transparent)` }}>
-                      <div className="row between"><span className="eyebrow" style={{ color: m.color }}>{r === 'KR' ? '한국 식약처' : '미국 FDA'}</span><span className="chip">Jev {fmt.ms(tri[r].jev.latency_ms)}</span></div>
+                      <div className="row between"><span className="eyebrow" style={{ color: m.color }}>{r === 'KR' ? '한국 식약처' : '미국 FDA'}</span><span className="chip">반사 판단 {fmt.ms(tri[r].jev.latency_ms)}</span></div>
                       <b style={{ fontFamily: 'var(--font-kr)', fontSize: 17, display: 'block', marginTop: 6 }}>{m.label}</b>
                       {d.deadline && <div className={`chip ${d.report15 ? 'bad' : 'warn'}`} style={{ marginTop: 8, whiteSpace: 'normal' }}>{d.deadline}</div>}
                       <ul style={{ margin: '8px 0 0', paddingLeft: 16 }}>{d.reasons.map((x) => <li key={x} className="mono" style={{ fontSize: 11 }}>{x}</li>)}</ul>
@@ -215,7 +215,7 @@ export default function KoreanPV() {
               <div className="note" style={{ marginTop: 10 }}>
                 중대한 약물이상반응은 품목허가를 받은 자, 의약품도매상, 약국개설자, 의료기관개설자가 알게 된 날부터 15일 이내에 보고해야 합니다(별표 4의3 제7호 나목).
                 약국·의료기관 개설자의 보고 의무는 중대한 사례에 한정되고(약사법 제68조의8 제2항), 비중대 사례는 자율 보고입니다.
-                Jev가 WHO-UMC '가능성 적음(unlikely)'으로 본 중대 사례는 모델이 15일 대상에서 빼지 않고 사람 확인(즉시 검토)으로 보냅니다. 보고자와 품목허가권자가 모두 관련 없다고 판단한 경우에만 약물이상반응에서 제외되기 때문입니다(별표 4의3 제1호 차목).
+                판단 모델이 WHO-UMC '가능성 적음(unlikely)'으로 본 중대 사례도 15일 대상에서 자동으로 빼지 않고 사람 확인(즉시 검토)으로 보냅니다. 보고자와 품목허가권자가 모두 관련 없다고 판단한 경우에만 약물이상반응에서 제외되기 때문입니다(별표 4의3 제1호 차목).
               </div>
             </Card>
           )}

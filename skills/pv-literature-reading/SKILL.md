@@ -1,6 +1,6 @@
 ---
 name: pv-literature-reading
-description: Use when a drug–event pair needs its top PubMed articles read and typed — study design (PubMed publication type by rule, otherwise Jev choice), whether the article reports the association, dechallenge/rechallenge mentions and conclusion strength — with citable pubmed:<pmid>#<design> IDs.
+description: Use when a drug–event pair needs its top PubMed articles read and typed — study design (PubMed publication type by rule, otherwise judgment-model choice), whether the article reports the association, dechallenge/rechallenge mentions and conclusion strength — with citable pubmed:<pmid>#<design> IDs.
 license: Apache-2.0
 metadata:
   author: FlyVigilance
@@ -13,7 +13,7 @@ metadata:
 
 1. esearch 로 관련도 상위 문헌 PMID 를 받고, efetch 로 초록과 출판 유형을 받습니다.
 2. 연구 설계는 PubMed 출판 유형(Meta-Analysis, Randomized Controlled Trial, Case Reports, Review)이 있으면 규칙으로 정합니다.
-3. 출판 유형이 없을 때의 설계, 연관 보고 여부(noul), 결론 강도(score 0~4), 중단 후 호전·재투여 재발 기술(noul)은 Jev 가 한 번 호출로 판단합니다.
+3. 출판 유형이 없을 때의 설계, 연관 보고 여부(noul), 결론 강도(score 0~4), 중단 후 호전·재투여 재발 기술(noul)은 판단 모델이 한 번 호출로 판단합니다.
 4. 초록 원문은 판단에만 쓰고 결과에는 PMID·연도·제목·판정만 남깁니다.
 
 ## 검증

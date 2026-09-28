@@ -136,7 +136,7 @@ def summarize(cases: list[dict], full: list, ungrounded: list, raw: list, includ
     dme_cases = [j for j, i in enumerate(ok) if triage.dme_hits(cases[i])]
     res = {
         "n": len(ok), "serious": sum(y), "include_outcome": include_outcome,
-        "definition": ("human-first = FlyVigilance action 'expedite' / raw Jev review_first p>=0.5; "
+        "definition": ("human-first = FlyVigilance action 'expedite' / single-question model review_first p>=0.5; "
                        "truth = FAERS outcome code present (serious); "
                        + ("outcome codes shown in the triage input" if include_outcome else "outcome codes hidden from every arm")),
         "flyvigilance": arm("flyvigilance"), "flyvigilance_ungrounded": arm("flyvigilance_ungrounded"),

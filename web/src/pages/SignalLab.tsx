@@ -5,7 +5,8 @@ import GradeCard, { GradeLegend } from '../components/GradeCard'
 import { api, fmt, getJSON, type SignalRow } from '../lib/data'
 
 interface Resp { drug: string; asof: string; rows: SignalRow[] }
-const PRESETS = ['SEMAGLUTIDE', 'TIRZEPATIDE', 'DUPILUMAB', 'METFORMIN', 'CANAGLIFLOZIN', 'PEMBROLIZUMAB', 'ADALIMUMAB', 'MONTELUKAST', 'LEVOFLOXACIN', 'ISOTRETINOIN']
+// 니라파립은 FlyDiscovery(PARP1 결합)에서 FlyVigilance(시판 후 이상사례)로 이어지는 Project-FlyGate 의 공통 분자입니다
+const PRESETS = ['NIRAPARIB', 'SEMAGLUTIDE', 'TIRZEPATIDE', 'DUPILUMAB', 'METFORMIN', 'CANAGLIFLOZIN', 'PEMBROLIZUMAB', 'ADALIMUMAB', 'MONTELUKAST', 'LEVOFLOXACIN', 'ISOTRETINOIN']
 
 const nsig = (r: SignalRow) => Number(r.evans) + Number(r.ror_sig) + Number(r.ic_sig)
 const SIGCOL = ['#4a5878', '#ffcc4d', '#ff8f3a', '#ff4fd8']
@@ -71,7 +72,7 @@ function Forest({ rows }: { rows: SignalRow[] }) {
 
 export default function SignalLab() {
   const [drugs, setDrugs] = useState<{ drug: string; n: number }[]>([])
-  const [drug, setDrug] = useState('SEMAGLUTIDE')
+  const [drug, setDrug] = useState('NIRAPARIB')
   const [q, setQ] = useState('')
   const [data, setData] = useState<Resp | null>(null)
   const [err, setErr] = useState<string | null>(null)
@@ -89,10 +90,10 @@ export default function SignalLab() {
     <div className="page">
       <PageHead eyebrow="Signal Lab · disproportionality"
         title={<>통계가 먼저, 모델은 그 다음 <span style={{ color: 'var(--c-memory)' }}>Signal Memory</span></>}
-        lede="PRR, ROR, IC₀₂₅는 DuckDB 웨어하우스가 전 기간 중복 제거된 케이스로 계산한다. 모델은 이 숫자를 만들지도 고치지도 않고, 크리틱의 숫자 오라클이 모델 문장의 모든 숫자를 이 표와 대조한다."
+        lede="PRR, ROR, IC₀₂₅는 DuckDB 웨어하우스가 전 기간 중복 제거된 케이스로 계산합니다. 모델은 이 숫자를 만들지도 고치지도 않고, 크리틱의 숫자 오라클이 모델 문장의 모든 숫자를 이 표와 대조합니다. 세 기준(Evans ∧ ROR₀₂₅>1 ∧ IC₀₂₅>0)을 모두 넘으면 SDR(불균형 보고 신호)로 표시합니다. SDR은 검증된 신호가 아니라 검토를 시작할 이유입니다(EU GVP Module IX)."
         right={<div className="row" style={{ gap: 8 }}>
-          <span className="chip" style={{ color: SIGCOL[3] }}>● 3/3 signals</span><span className="chip" style={{ color: SIGCOL[2] }}>● 2/3</span>
-          <span className="chip" style={{ color: SIGCOL[1] }}>● 1/3</span><span className="chip" style={{ color: SIGCOL[0] }}>● none</span></div>} />
+          <span className="chip" style={{ color: SIGCOL[3] }}>● 3/3 = SDR</span><span className="chip" style={{ color: SIGCOL[2] }}>● 2/3</span>
+          <span className="chip" style={{ color: SIGCOL[1] }}>● 1/3</span><span className="chip" style={{ color: SIGCOL[0] }}>● 0/3</span></div>} />
 
       <Card style={{ marginBottom: 16 }}>
         <div className="row wrap" style={{ gap: 10 }}>
@@ -105,7 +106,7 @@ export default function SignalLab() {
             </div>}
           </div>
           {PRESETS.map((p) => <button key={p} className="chip" style={{ cursor: 'pointer', color: p === drug ? 'var(--c-sense)' : undefined, borderColor: p === drug ? 'var(--c-sense)' : undefined }} onClick={() => setDrug(p)}>{p}</button>)}
-          <label className="row" style={{ marginLeft: 'auto', gap: 6, fontSize: 12, cursor: 'pointer' }}><input type="checkbox" checked={onlySig} onChange={(e) => setOnlySig(e.target.checked)} />3중 신호만</label>
+          <label className="row" style={{ marginLeft: 'auto', gap: 6, fontSize: 12, cursor: 'pointer' }}><input type="checkbox" checked={onlySig} onChange={(e) => setOnlySig(e.target.checked)} />3중 기준 SDR만</label>
         </div>
       </Card>
 
@@ -114,7 +115,7 @@ export default function SignalLab() {
       {data && (
         <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1.3fr) minmax(0,1fr)' }}>
           <Card title={<>{data.drug} <span className="dim" style={{ fontSize: 13, fontWeight: 400 }}>· {n ? `${fmt.int(n)} suspect cases` : ''} · as of {data.asof}</span></>}
-            sub="점 크기 = log₂ PRR. 오른쪽 위일수록 보고 건수가 많고 베이지안 하한이 높은 신호">
+            sub="점 크기 = log₂ PRR. 오른쪽 위일수록 보고 건수가 많고 베이지안 하한이 높은 반응입니다">
             <Scatter rows={rows} sel={sel} onSel={setSel} />
             {selRow && <div className="fade-in" style={{ marginTop: 10, padding: 12, borderRadius: 12, border: '1px solid var(--line-2)', display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 10 }}>
               <div style={{ gridColumn: 'span 2' }}><div className="dim mono" style={{ fontSize: 10 }}>PT</div><b>{selRow.pt}</b></div>
@@ -124,18 +125,18 @@ export default function SignalLab() {
               <div><div className="dim mono" style={{ fontSize: 10 }}>IC · IC₀₂₅</div><span className="num">{fmt.f(selRow.ic)} · {fmt.f(selRow.ic025)}</span></div>
             </div>}
           </Card>
-          <Card title={<>근거 등급 <span className="dim" style={{ fontSize: 12, fontWeight: 400 }}>· {sel ? `${data.drug} × ${sel}` : '산점도나 표에서 반응을 고르세요'}</span></>}
-            sub="규칙으로 매깁니다: 라벨 절(규제 축) + FAERS 3중 신호(통계 축). 문헌은 Jev 가 읽어 참고 축으로 붙입니다" className="span2">
+          <Card title={<>PV 분류 · 근거 등급 <span className="dim" style={{ fontSize: 12, fontWeight: 400 }}>· {sel ? `${data.drug} × ${sel}` : '산점도나 표에서 반응을 고르세요'}</span></>}
+            sub="규칙으로 매깁니다: 라벨 상태(규제 축) × FAERS 3중 기준 SDR(통계 축). 문헌은 비자기회귀 판단 모델이 읽어 참고 축으로 붙입니다" className="span2">
             <GradeLegend />
-            <div style={{ marginTop: 12 }}>{sel ? <GradeCard drug={data.drug} pt={sel} /> : <div className="note">팀 시제품(A~D)을 이어받아, 라벨에는 있으나 신호가 없는 조합(L)과 판정 불가(U)를 나눴습니다. 인과 미확립 단서는 그 반응이 언급된 문장 주변에서만 찾습니다.</div>}</div>
+            <div style={{ marginTop: 12 }}>{sel ? <GradeCard drug={data.drug} pt={sel} /> : <div className="note">팀 시제품(A~D)을 이어받아, 라벨에는 있으나 SDR이 없는 조합(L)과 판정 불가(U)를 나눴습니다. 인과 미확립 단서는 그 반응이 언급된 문장 주변에서만 찾습니다.</div>}</div>
           </Card>
-          <Card title="Forest · PRR with 95% CI" sub="보고 건수 상위 반응. 점선 = PRR 2 (Evans)">
+          <Card title="Forest · PRR with 95% CI" sub="보고 건수 상위 반응입니다. 점선 = PRR 2 (Evans)">
             <Forest rows={top} />
           </Card>
-          <Card title="Signal table" className="span2" sub="SQL 산출값 그대로. 해석 한계: 불균형은 보고 연관성이지 인과나 발생률이 아니다 (R1, R2)">
+          <Card title="Disproportionality table" className="span2" sub="SQL 산출값 그대로입니다. 해석 기준: 불균형은 보고 연관성이며, 인과와 발생률은 따로 평가합니다 (R1, R2)">
             <div style={{ maxHeight: 420, overflow: 'auto' }}>
               <table className="tbl">
-                <thead><tr><th>PT</th><th className="r">a</th><th className="r">E</th><th className="r">PRR</th><th className="r">95% CI</th><th className="r">ROR₀₂₅</th><th className="r">χ²</th><th className="r">IC₀₂₅</th><th>signals</th></tr></thead>
+                <thead><tr><th>PT</th><th className="r">a</th><th className="r">E</th><th className="r">PRR</th><th className="r">95% CI</th><th className="r">ROR₀₂₅</th><th className="r">χ²</th><th className="r">IC₀₂₅</th><th>SDR criteria</th></tr></thead>
                 <tbody>{rows.map((r) => (
                   <tr key={r.pt} onClick={() => setSel(r.pt)} style={{ cursor: 'pointer', background: sel === r.pt ? 'rgba(55,230,255,0.06)' : undefined }}>
                     <td>{r.pt}</td><td className="r num">{fmt.int(r.a)}</td><td className="r num dim">{fmt.f(r.expected, 1)}</td>

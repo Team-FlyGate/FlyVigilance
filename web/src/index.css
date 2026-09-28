@@ -235,3 +235,58 @@ svg text { font-family: var(--mono); }
   .page { padding: 18px 16px 40px; }
   .g4, .g5 { grid-template-columns: 1fr; }
 }
+
+/* ---------- Project-FlyGate (추가분) ---------- */
+/* 메뉴가 네 묶음으로 늘어 내비게이션을 촘촘하게 하고, 화면이 낮으면 내비게이션만 스크롤합니다 */
+.nav { overflow-y: auto; gap: 2px; padding-top: 14px; }
+.nav .brand { padding-bottom: 10px; }
+.nav .nav-item { padding: 6px 10px; }
+.nav-grp {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 12px 10px 4px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: 1.2px; color: var(--text-3); text-transform: uppercase;
+}
+.nav-grp b { font-family: var(--font); font-size: 11.5px; font-weight: 600; letter-spacing: .2px; text-transform: none; }
+.nav-item.nav-reel { margin-top: 10px; text-decoration: none; border-color: rgba(255, 79, 216, 0.35); }
+.nav-sublink { font-family: var(--mono); font-size: 10.5px; color: var(--text-3); text-decoration: none; padding: 3px 10px 0 39px; }
+.nav-sublink:hover { color: var(--text-2); }
+.nav-foot { padding-top: 10px; }
+.status-row { line-height: 1.35; }
+a.status-link { color: var(--text-3); text-decoration: none; }
+a.status-link:hover { color: var(--text); }
+
+/* 단계 흐름: 상자와 화살표를 한 줄로 잇습니다 (개요, Discovery) */
+.flow { display: flex; align-items: stretch; gap: 0; }
+.flow-step {
+  flex: 1 1 0; min-width: 0; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line-2);
+  background: rgba(8, 13, 26, 0.72); position: relative;
+}
+.flow-step .fs-name { font-family: var(--font); font-weight: 600; font-size: 13.5px; line-height: 1.25; }
+.flow-step .fs-tech { font-family: var(--mono); font-size: 10px; letter-spacing: .6px; text-transform: uppercase; margin-top: 3px; }
+.flow-step .fs-val { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 12px; color: var(--text); margin-top: 6px; line-height: 1.35; }
+.flow-arrow { flex: none; width: 18px; display: flex; align-items: center; justify-content: center; color: var(--text-3); }
+.flow-arrow::before { content: ''; width: 10px; height: 10px; border-top: 1.6px solid currentColor; border-right: 1.6px solid currentColor; transform: rotate(45deg); margin-left: -4px; }
+
+/* 원문 보기(워크스페이스 파일, 정책 YAML) */
+.codebox {
+  margin: 0; font-family: var(--mono); font-size: 11.5px; line-height: 1.6; color: var(--text-2); white-space: pre-wrap; word-break: break-word;
+  background: rgba(4, 8, 18, 0.75); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; overflow: auto;
+}
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.tabs button { border: 1px solid var(--line-2); background: rgba(10, 16, 30, 0.6); color: var(--text-2); border-radius: 9px; padding: 5px 10px; cursor: pointer; font-family: var(--mono); font-size: 11.5px; }
+.tabs button.on { color: var(--text); border-color: rgba(226, 167, 78, 0.6); background: rgba(226, 167, 78, 0.1); }
+
+/* 에이전트 다이어그램의 은은한 움직임 */
+@keyframes ants { to { stroke-dashoffset: -40; } }
+.ants { animation: ants 3.2s linear infinite; }
+@keyframes breathe { 50% { opacity: .45; } }
+.breathe { animation: breathe 2.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .ants, .breathe { animation: none; } }
+
+@media (max-width: 1100px) {
+  .flow { flex-wrap: wrap; gap: 8px; }
+  .flow-step { flex: 1 1 140px; }
+  .flow-arrow { display: none; }
+}
+@media (max-width: 760px) {
+  .nav-grp, .nav-sublink { display: none; }
+}

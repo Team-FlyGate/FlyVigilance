@@ -74,7 +74,7 @@ function Stream({ examples }: { examples: BenchExample[] }) {
             </div>
             <div style={{ textAlign: 'right' }}>
               <span className="chip" style={{ color: m.color, borderColor: m.color + '66' }}>{m.label}</span>
-              <div className="mono dim" style={{ fontSize: 10, marginTop: 3 }}>Jev {Math.round(e.latency_ms)} ms · serious {(e.answers.serious as { noul: number }).noul.toFixed(2)}</div>
+              <div className="mono dim" style={{ fontSize: 10, marginTop: 3 }}>reflex {Math.round(e.latency_ms)} ms · serious {(e.answers.serious as { noul: number }).noul.toFixed(2)}</div>
             </div>
           </div>
         )
@@ -108,17 +108,20 @@ export default function MissionControl() {
 
   const perQ = ov?.per_quarter.map((q) => q.reports) ?? []
   const jt = bench?.jev_triage
+  const nt = bench?.nemotron?.triage.latency_ms
 
   return (
     <div className="page">
-      <PageHead eyebrow="FlyVigilance · Mission Control"
+      <PageHead eyebrow="Project-FlyGate · STEP 2 FlyVigilance · Mission Control"
         title={<>초파리 커넥텀으로 라우팅되는 <span style={{ color: 'var(--c-sense)' }}>약물감시 에이전트</span></>}
-        lede={<>분기마다 40만 건이 넘는 FAERS 이상사례가 들어옵니다. 초파리 뇌가 감각 입력을 반사, 기억, 숙고, 행동으로 나누듯
-          FlyVigilance는 모든 케이스를 <b style={{ color: 'var(--jev)' }}>약물감시 전용 반사 층</b>(TypeSafe AI의 Jev 엔진 위에 규칙·라벨 근거·결정 정책을 얹은 층)으로 수백 밀리초 안에 판단하고,
-          꼭 필요한 케이스만 <b style={{ color: 'var(--nvidia)' }}>NVIDIA Nemotron System-2</b>와 사람에게 올립니다.</>}
+        lede={<>분기마다 40만 건이 넘는 FAERS 이상사례가 들어옵니다. FlyVigilance는 <b style={{ color: 'var(--nvidia)' }}>NVIDIA 스킬</b>(build.nvidia.com NIM · Agent Skills · NemoClaw/OpenShell/OpenClaw) 위에 짠 약물감시 워크플로입니다.
+          초파리 뇌가 감각 입력을 반사, 기억, 숙고, 행동으로 나누듯, 모든 케이스를 규칙·라벨 근거·결정 정책으로 된 반사 층에서 수백 밀리초 안에 판단하고
+          꼭 필요한 케이스만 <b style={{ color: 'var(--nvidia)' }}>NVIDIA Nemotron System-2</b>와 사람에게 올립니다. 반사 층의 확률 판단에는 <b style={{ color: 'var(--jev)' }}>비자기회귀 판단 모델(Jev, TypeSafe AI)</b>을 함께 씁니다.</>}
         right={<div className="row wrap" style={{ justifyContent: 'flex-end', maxWidth: 380 }}>
-          <span className="chip">MaleCNS v1.0 · Janelia FlyEM</span><span className="chip jev">Jev · TypeSafe AI</span>
-          <span className="chip nv">NVIDIA NIM · Nemotron 3</span><span className="chip">openFDA · DailyMed · PubMed</span>
+          <span className="chip nv">NVIDIA NIM · Nemotron 3</span><span className="chip nv">NVIDIA Agent Skills</span>
+          <span className="chip nv">NemoClaw · OpenShell · OpenClaw</span>
+          <span className="chip jev">비자기회귀 판단 모델 · Jev (TypeSafe AI)</span>
+          <span className="chip">MaleCNS v1.0 · Janelia FlyEM</span><span className="chip">openFDA · DailyMed · PubMed</span>
         </div>} />
 
       <div className="grid" style={{ gridTemplateColumns: 'minmax(0, 1.75fr) minmax(320px, 1fr)', marginBottom: 16 }}>
@@ -165,10 +168,10 @@ export default function MissionControl() {
           sub={ov ? `${ov.first} – ${ov.asof} · ${ov.quarters} quarters` : '…'} />
         <Kpi label="Unique cases after dedupe" value={ov?.cases ?? 0} color="var(--c-encode)"
           sub={ov ? `${fmt.int(ov.raw_reports - ov.cases)} versions & deletions removed` : '…'} />
-        <Kpi label="Signals · Evans ∧ ROR ∧ IC025" value={ov?.all3 ?? 0} color="var(--c-memory)"
-          sub={ov ? `of ${fmt.int(ov.pairs)} drug–event pairs (a ≥ 3)` : '…'} />
+        <Kpi label="SDRs · Evans ∧ ROR ∧ IC025" value={ov?.all3 ?? 0} color="var(--c-memory)"
+          sub={ov ? `of ${fmt.int(ov.pairs)} drug–event pairs (a ≥ 3) · SDR ≠ validated signal` : '…'} />
         <Kpi label="FlyVigilance reflex p50" value={jt?.latency_ms?.p50 ?? 0} color="var(--jev)" format={(n) => `${Math.round(n)} ms`}
-          sub={jt ? `Jev 엔진 · 판단 7개/호출 · 라벨 조회 포함` : '…'} />
+          sub={jt ? `비자기회귀 판단 7문항을 1회 호출로 · 같은 7문항을 자기회귀로 생성하면 p50 ${nt ? fmt.ms(nt.p50) : '…'}` : '…'} />
       </div>
 
       <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1.2fr) minmax(0,1fr)', gap: 16 }}>
@@ -190,7 +193,7 @@ export default function MissionControl() {
                 <div><div className="k-label mono dim" style={{ fontSize: 10.5 }}>REFLEX ONLY</div>
                   <div className="num" style={{ fontSize: 22 }}>{fmt.pct((funnel.share.close ?? 0) + (funnel.share.monitor ?? 0) + (funnel.share.follow_up ?? 0), 1)}</div>
                   <div className="dim" style={{ fontSize: 11 }}>System-2 호출 없이 처리</div></div>
-                <div><div className="k-label mono dim" style={{ fontSize: 10.5 }}>JEV COST / QUARTER</div>
+                <div><div className="k-label mono dim" style={{ fontSize: 10.5 }}>REFLEX COST / QUARTER</div>
                   <div className="num" style={{ fontSize: 22 }}>{fmt.usd((jt.usd_per_case ?? 0) * funnel.cases)}</div>
                   <div className="dim" style={{ fontSize: 11 }}>입력 {jt.tokens_in_mean} tok/case × $0.042/M</div></div>
                 <div><div className="k-label mono dim" style={{ fontSize: 10.5 }}>REFLEX WALL-CLOCK</div>

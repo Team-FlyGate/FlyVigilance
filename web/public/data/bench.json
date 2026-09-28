@@ -4,7 +4,7 @@
   "n": 440,
   "serious": 250,
   "include_outcome": true,
-  "definition": "human-first = FlyVigilance action 'expedite' / raw Jev review_first p>=0.5; truth = FAERS outcome code present (serious); outcome codes shown in the triage input",
+  "definition": "human-first = FlyVigilance action 'expedite' / single-question model review_first p>=0.5; truth = FAERS outcome code present (serious); outcome codes shown in the triage input",
   "flyvigilance": {
    "sens": 0.896,
    "spec": 0.9894736842105263,
@@ -17072,7 +17072,7 @@
   "n": 440,
   "serious": 250,
   "include_outcome": false,
-  "definition": "human-first = FlyVigilance action 'expedite' / raw Jev review_first p>=0.5; truth = FAERS outcome code present (serious); outcome codes hidden from every arm",
+  "definition": "human-first = FlyVigilance action 'expedite' / single-question model review_first p>=0.5; truth = FAERS outcome code present (serious); outcome codes hidden from every arm",
   "flyvigilance": {
    "sens": 0.54,
    "spec": 0.9842105263157894,

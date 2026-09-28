@@ -4,7 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "sync-discovery": "node scripts/sync-discovery.mjs",
+    "predev": "node scripts/sync-discovery.mjs",
     "dev": "vite",
+    "prebuild": "node scripts/sync-discovery.mjs",
     "build": "tsc -b && vite build",
     "preview": "vite preview"
   },

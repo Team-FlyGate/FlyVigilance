@@ -5,6 +5,8 @@ import type { Overview, Schema } from '../lib/types'
 
 const LAYER_COL: Record<string, string> = { raw: '#4d8dff', core: '#37e6ff', ref: '#a58bff', sig: '#ff4fd8', ops: '#76b900', etl: '#ffb547' }
 const ORDER = ['raw', 'core', 'ref', 'sig', 'ops', 'etl']
+// schema.json 의 계층 이름 중 통계 기준 결과를 '신호'라 부르던 것을 SDR 용어로 바꿔 보여 드립니다
+const LAYER_LABEL: Record<string, string> = { sig: '불균형 분석 (SDR 판정)' }
 
 export default function Warehouse() {
   const [ov, setOv] = useState<Overview | null>(null)
@@ -19,7 +21,7 @@ export default function Warehouse() {
     { label: 'FDA 삭제 반영 후 케이스', value: ov.cases, color: '#3ddc97' },
     { label: '의심약 × 반응 삼중항', value: ov.triplets, color: '#ff4fd8' },
     { label: '약물-반응 쌍 (a ≥ 3)', value: ov.pairs, color: '#ffb547' },
-    { label: '3중 신호 (Evans ∧ ROR ∧ IC)', value: ov.all3, color: '#ff5d6c' },
+    { label: '3중 기준 SDR (Evans ∧ ROR ∧ IC)', value: ov.all3, color: '#ff5d6c' },
   ]
   const qs = ov.per_quarter
   const xt = qs.map((q, k) => ({ x: k, label: q.quarter.endsWith('Q1') ? q.quarter.slice(0, 4) : '' })).filter((t) => t.label)
@@ -27,8 +29,8 @@ export default function Warehouse() {
   return (
     <div className="page">
       <PageHead eyebrow="PV Data Warehouse · DuckDB"
-        title={<>원천부터 신호까지, <span style={{ color: 'var(--c-sense)' }}>감사 가능한 5계층</span></>}
-        lede={<>FDA FAERS 분기 파일 {ov.quarters}개({ov.first}–{ov.asof})를 증분 적재했다. 원문은 원천 계층에 VARCHAR 그대로 두고, 정제·참조·신호·운영 계층을 SQL로만 파생한다. 모든 신호 수치는 이 SQL을 다시 돌리면 같은 값이 나온다. DB 크기 {(sc.db_bytes / 1e9).toFixed(2)} GB.</>} />
+        title={<>원천부터 SDR까지, <span style={{ color: 'var(--c-sense)' }}>감사 가능한 5계층</span></>}
+        lede={<>FDA FAERS 분기 파일 {ov.quarters}개({ov.first}–{ov.asof})를 증분 적재했습니다. 원문은 원천 계층에 VARCHAR 그대로 두고, 정제·참조·불균형 분석·운영 계층을 SQL로만 파생합니다. 모든 불균형 지표 수치는 이 SQL을 다시 돌리면 같은 값이 나옵니다. DB 크기는 {(sc.db_bytes / 1e9).toFixed(2)} GB입니다.</>} />
 
       <div className="grid g4" style={{ marginBottom: 16 }}>
         <Kpi label="raw rows (demo+drug+reac)" value={ov.raw_reports + ov.raw_drug_rows + ov.raw_reac_rows} color="#4d8dff" sub={`${fmt.compact(ov.raw_drug_rows)} drug rows · ${fmt.compact(ov.raw_reac_rows)} reaction rows`} />
@@ -37,13 +39,13 @@ export default function Warehouse() {
         <Kpi label="MedDRA preferred terms" value={ov.pts} color="#ff4fd8" sub={`${fmt.compact(ov.triplets)} case-drug-event triplets`} />
       </div>
 
-      <Card title="계층 스키마" sub="클릭하면 컬럼이 펼쳐진다. 행 수는 빌드 시점 실측" style={{ marginBottom: 16 }}>
+      <Card title="계층 스키마" sub="클릭하면 컬럼이 펼쳐집니다. 행 수는 빌드 시점 실측값입니다" style={{ marginBottom: 16 }}>
         <div style={{ display: 'grid', gridTemplateColumns: `repeat(${ORDER.length}, minmax(0,1fr))`, gap: 12, position: 'relative' }}>
           {ORDER.map((L) => (
             <div key={L} className="stack" style={{ gap: 8 }}>
               <div style={{ padding: '8px 10px', borderRadius: 10, background: `color-mix(in srgb, ${LAYER_COL[L]} 14%, transparent)`, border: `1px solid ${LAYER_COL[L]}55` }}>
                 <div className="mono" style={{ fontSize: 11, color: LAYER_COL[L], letterSpacing: 1.2 }}>{L.toUpperCase()}</div>
-                <div style={{ fontSize: 11.5, color: 'var(--text-2)' }}>{sc.layers[L]}</div>
+                <div style={{ fontSize: 11.5, color: 'var(--text-2)' }}>{LAYER_LABEL[L] ?? sc.layers[L]}</div>
               </div>
               {sc.tables.filter((t) => t.layer === L).map((t) => (
                 <div key={t.name} onClick={() => setOpen(open === t.name ? null : t.name)} style={{ cursor: 'pointer', padding: '8px 10px', borderRadius: 10, border: `1px solid ${open === t.name ? LAYER_COL[L] : 'var(--line)'}`, background: 'rgba(10,16,30,0.6)' }}>
@@ -60,10 +62,10 @@ export default function Warehouse() {
       </Card>
 
       <div className="grid g2" style={{ marginBottom: 16 }}>
-        <Card title="정제 퍼널" sub="보고 → 케이스 → 신호. 각 단계는 SQL 한 단계">
+        <Card title="정제 퍼널" sub="보고 → 케이스 → SDR. 각 단계는 SQL 한 단계입니다">
           <HBars data={funnel} labelWidth={200} fmt={fmt.compact} height={34} />
         </Card>
-        <Card title="분기별 보고와 적재 시간" sub="원천 보고 수(파랑), 신속보고 EXP(분홍). 분기 zip 하나 적재 평균 시간은 아래">
+        <Card title="분기별 보고와 적재 시간" sub="원천 보고 수(파랑), 신속보고 EXP(분홍)입니다. 분기 zip 하나의 평균 적재 시간은 아래에 있습니다">
           <LineChart height={220} xTicks={xt} series={[
             { key: 'rep', color: '#4d8dff', area: true, values: qs.map((q, k) => ({ x: k, y: q.reports })) },
             { key: 'exp', color: '#ff4fd8', values: qs.map((q, k) => ({ x: k, y: q.expedited })) },
