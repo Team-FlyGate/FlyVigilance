@@ -255,6 +255,14 @@ def _discovery_data() -> dict:
 
 
 def cmd_discover(a) -> dict:
+    if a.live or a.resume:
+        from _fv import config, docking
+        try:
+            return docking.execute(api_key=config.NVIDIA_API_KEY, protein_path=a.protein,
+                                   ligand_path=a.ligand_file, smiles=a.smiles, num_poses=a.num_poses,
+                                   output_root=a.output_dir, resume=a.resume, timeout=a.timeout)
+        except (ValueError, OSError) as e:
+            return {"cmd": "discover", "mode": "live", "status": "failed", "error": str(e), "evidence_ids": []}
     norm = a.target.lower().replace(" ", "").replace("_", "-")
     key = ALIASES.get(norm) or ALIASES.get(norm.replace("-", ""))
     if not key:
@@ -582,7 +590,17 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--offline", action="store_true", help="rules only (T1, T2); result is human_check, never pass")
     s.set_defaults(fn=cmd_critic)
     s = sub.add_parser("discover", help="FlyDiscovery evidence and critic verdicts for a target")
-    s.add_argument("target", help="parp1 | xa | cox2")
+    s.add_argument("target", nargs="?", help="stored results: parp1 | xa | cox2")
+    live = s.add_mutually_exclusive_group()
+    live.add_argument("--live", action="store_true", help="submit a new DiffDock NIM request")
+    live.add_argument("--resume", help="poll an existing run directory without re-submitting")
+    s.add_argument("--protein", help="protein PDB file for live docking")
+    lig = s.add_mutually_exclusive_group()
+    lig.add_argument("--smiles", help="one small-molecule SMILES string")
+    lig.add_argument("--ligand-file", help="one ligand .sdf or SMILES .txt file")
+    s.add_argument("--num-poses", type=int, default=5, help="1 to 20 poses (default 5)")
+    s.add_argument("--output-dir", default="data/discovery-runs", help="parent folder for new runs")
+    s.add_argument("--timeout", type=int, default=300, help="wait budget, 1 to 1800 seconds")
     s.set_defaults(fn=cmd_discover)
     s = sub.add_parser("watch", help="heartbeat/cron job: detect quarter, recompute watchlist, write memory note")
     s.add_argument("--memory-dir", default=str(WORKSPACE / "memory"))
@@ -600,8 +618,16 @@ def main(argv=None) -> int:
     a = build_parser().parse_args(argv)
     if a.cmd == "triage" and not a.case and a.demo is None:
         build_parser().error("triage needs a case file or --demo N")
-    emit(a.fn(a))
-    return 0
+    if a.cmd == "discover":
+        if not (a.live or a.resume) and (not a.target or a.protein or a.smiles or a.ligand_file):
+            build_parser().error("discover needs a stored target, or --live with protein and ligand inputs")
+        if a.resume and (a.protein or a.smiles or a.ligand_file):
+            build_parser().error("--resume only accepts an existing run directory, not new inputs")
+        if (a.live or a.resume) and a.target:
+            build_parser().error("do not combine a stored target with --live/--resume")
+    result = a.fn(a)
+    emit(result)
+    return 1 if result.get("mode") == "live" and result.get("status") in ("failed", "unknown") else 0
 
 
 if __name__ == "__main__":
