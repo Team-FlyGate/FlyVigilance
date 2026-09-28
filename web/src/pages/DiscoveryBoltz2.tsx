@@ -2,7 +2,7 @@
 import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react'
 import * as d3 from 'd3'
 import { Card, Loading } from '../components/ui'
-import { KV, Progress, RunButton, SkillBox, SourceChip, StepPage, pulseReward } from '../components/DiscoveryShell'
+import { KV, pathOf, Progress, RunButton, SkillBox, SourceChip, StepPage, pulseReward } from '../components/DiscoveryShell'
 import { useBrain } from '../lib/brain'
 import {
   fmtS, getCatalog, rewardFromPic50, runStep, saveRun, setStore, useDiscovery,
@@ -77,6 +77,7 @@ export default function DiscoveryBoltz2() {
   const [busy, setBusy] = useState(false)
   const [elapsed, setElapsed] = useState(0)
   const [err, setErr] = useState<string | null>(null)
+  const [fresh, setFresh] = useState(false)
   const env = (envs.boltz2 ?? null) as Envelope<BoltzResult> | null
   const res = (runs.boltz2 ?? env?.measured ?? null) as BoltzResult | null
   const isLive = Boolean(runs.boltz2)
@@ -94,7 +95,7 @@ export default function DiscoveryBoltz2() {
     sim?.stimulate('layer', 'memory', 0.7, 8)
     const beat = setInterval(() => sim?.stimulate('layer', 'deliberate', 0.75, 6), 1000)
     try {
-      const params: Record<string, unknown> = { target, ligand }
+      const params: Record<string, unknown> = { target, ligand, no_cache: fresh }
       if (runs.msa?.a3m) params.a3m = runs.msa.a3m
       else if (runs.msa?.a3m_key) params.a3m_key = runs.msa.a3m_key
       const out = await runStep<BoltzResult>('boltz2', params, (e) => saveRun('boltz2', e as Envelope))
@@ -170,14 +171,14 @@ export default function DiscoveryBoltz2() {
                 ))}
               </select>
             </div>
-            <RunButton busy={busy} onClick={run} label="Boltz-2 실행"
+            <RunButton busy={busy} onClick={run} label="Boltz-2 실행" fresh={fresh} setFresh={setFresh}
               sub={<>친화도 예측은 리간드 하나에만 겁니다(predict_affinity)</>} />
             <div className="divider" />
             <Progress env={env} busy={busy} elapsed={elapsed} />
             {err && <div className="note" style={{ color: 'var(--warn)', marginTop: 8 }}>{err}</div>}
             {env?.note && <div className="note" style={{ color: 'var(--warn)', marginTop: 8 }}>{env.note}</div>}
           </Card>
-          <Card title="요청" sub={env?.endpoint ?? '/v1/biology/mit/boltz2/predict'}>
+          <Card title="요청" sub={<span className="mono" style={{ fontSize: 10.5 }} title={env?.endpoint ?? undefined}>{pathOf(env?.endpoint) || '/v1/biology/mit/boltz2/predict'}</span>}>
             <KV rows={[
               ['sequence', `${env?.request?.sequence_len ?? cat?.targets[target]?.sequence_len ?? '–'} aa`],
               ['msa', String(env?.request?.msa ?? (runs.msa ? 'a3m' : 'none'))],
@@ -192,7 +193,7 @@ export default function DiscoveryBoltz2() {
               ['결합 확률', res?.affinity.probability_binary ?? '–'],
               ['ipTM / pLDDT', res ? `${res.scores.iptm ?? '–'} / ${res.scores.plddt ?? '–'}` : '–'],
               ['ChEMBL 실측 중앙값', res?.chembl ? `${res.chembl.median_pchembl} (n=${res.chembl.n})` : '없음'],
-              ['소요', busy ? `${elapsed.toFixed(1)}초` : fmtS(env?.elapsed_s)],
+              ['소요', busy ? `${elapsed.toFixed(1)}초` : env?.source === 'cache' ? '캐시(같은 입력)' : fmtS(env?.elapsed_s)],
             ]} />
             <div className="divider" />
             <div className="row between">

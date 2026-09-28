@@ -514,6 +514,24 @@ def _fallback(kind: str, params: dict, env: dict, t0: float, err: str) -> dict:
             "note": "라이브 호출이 끝나지 않아 지난 측정 응답을 보여 드립니다(fly_discovery/measurements 의 원본)."}
 
 
+# 게이트웨이가 502·503·504 를 내면 예측 계열은 한 번만 다시 보냅니다. 같은 입력을 다시 접는 것이라 부작용이 없습니다.
+# DiffDock 은 다시 보내지 않습니다(api/_fv/docking.py 의 약속: 시간 초과가 이미 접수된 작업을 뜻할 수 있습니다).
+RETRY_KINDS = ("msa", "openfold3", "boltz2")
+
+
+async def _post_with_retry(kind: str, body: dict, client: httpx.AsyncClient) -> dict:
+    try:
+        return await nvcf_post(kind, body, client)
+    except (Pending, clients.NotConfigured):
+        raise
+    except RuntimeError as e:
+        transient = any(f"HTTP {c}" in str(e) for c in (429, 500, 502, 503, 504))
+        if kind not in RETRY_KINDS or not transient:
+            raise
+    await asyncio.sleep(2.0)
+    return await nvcf_post(kind, body, client)
+
+
 async def run(kind: str, params: dict, client: httpx.AsyncClient | None = None) -> dict:
     """한 NIM 을 실제로 부릅니다. 끝나면 결과를, 계산 중이면 요청 ID 를, 실패하면 지난 측정을 돌려줍니다."""
     if kind not in NIM_KINDS:
@@ -528,7 +546,7 @@ async def run(kind: str, params: dict, client: httpx.AsyncClient | None = None) 
     own = client is None
     client = client or httpx.AsyncClient()
     try:
-        resp = await nvcf_post(kind, body, client)
+        resp = await _post_with_retry(kind, body, client)
     except Pending as p:
         _MEM["req-" + p.req_id] = {"kind": kind, "params": params, "cache_key": ckey, "started": time.time()}
         return {**env, "state": "pending", "req_id": p.req_id, "elapsed_s": round(time.monotonic() - t0, 1),

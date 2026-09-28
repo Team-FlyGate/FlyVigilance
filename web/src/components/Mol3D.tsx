@@ -25,6 +25,22 @@ const EL_COLOR: Record<string, number> = {
   I: 0xa58bff, P: 0xffb547, H: 0xdfe8ff,
 }
 const MAX_CLOUD = 1400
+
+/** 점구름을 네모가 아닌 동그란 점으로 그리기 위한 작은 텍스처입니다. */
+function dotTexture() {
+  const c = document.createElement('canvas')
+  c.width = c.height = 64
+  const g = c.getContext('2d')!
+  const grd = g.createRadialGradient(32, 32, 0, 32, 32, 32)
+  grd.addColorStop(0, 'rgba(255,255,255,1)')
+  grd.addColorStop(0.45, 'rgba(255,255,255,0.65)')
+  grd.addColorStop(1, 'rgba(255,255,255,0)')
+  g.fillStyle = grd
+  g.fillRect(0, 0, 64, 64)
+  const t = new THREE.CanvasTexture(c)
+  t.needsUpdate = true
+  return t
+}
 const MAX_ATOMS = 90
 
 function colorOf(el: string) {
@@ -137,8 +153,10 @@ export default function Mol3D({ traces = [], mols = [], cloud = [], focus = null
       const g = new THREE.BufferGeometry()
       g.setAttribute('position', new THREE.BufferAttribute(pos, 3))
       g.setAttribute('color', new THREE.BufferAttribute(col, 3))
-      const m = new THREE.PointsMaterial({ size: 0.9, vertexColors: true, transparent: true, opacity: 0.55,
-        blending: THREE.AdditiveBlending, depthWrite: false })
+      const tex = dotTexture()
+      const m = new THREE.PointsMaterial({ size: 1.4, vertexColors: true, transparent: true, opacity: 0.5,
+        map: tex, alphaTest: 0.02, blending: THREE.AdditiveBlending, depthWrite: false })
+      state.current.dispose.push(() => tex.dispose())
       pivot.add(new THREE.Points(g, m))
       state.current.dispose.push(() => { g.dispose(); m.dispose() })
     }

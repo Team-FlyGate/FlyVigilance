@@ -257,9 +257,11 @@ a.status-link:hover { color: var(--text); }
 /* STEP 1 FlyDiscovery 단계 화면: 왼쪽 커넥텀 · 가운데 분자 시각화 · 오른쪽 실행 패널 */
 .disc-grid {
   display: grid; gap: 14px; align-items: start;
-  grid-template-columns: minmax(250px, 300px) minmax(0, 1fr) minmax(280px, 330px);
+  grid-template-columns: minmax(230px, 268px) minmax(0, 1fr) minmax(262px, 300px);
 }
-@media (max-width: 1500px) {
+/* 커넥텀 머리글은 점구름 위에 얹히므로 폭을 묶고 가독성을 위해 그림자를 둡니다 */
+.disc-brain-head { max-width: 210px; text-shadow: 0 1px 6px rgba(4, 6, 12, 0.95); }
+@media (max-width: 1180px) {
   .disc-grid { grid-template-columns: minmax(240px, 280px) minmax(0, 1fr); }
   .disc-grid > :last-child { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
 }
