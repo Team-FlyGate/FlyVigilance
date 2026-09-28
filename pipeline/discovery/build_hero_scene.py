@@ -6,6 +6,11 @@
 - 4R6E 를 OpenFold3 좌표계로 옮긴다: 잔기 번호(4R6E = 예측 + 660)와 잔기 이름이 같은 Cα 로 Kabsch 정렬
 - 정렬 뒤 Cα RMSD 가 저장된 값(measurements.json 의 ca_rmsd_vs_4R6E)과 맞는지 확인하고 파일에 남긴다
 - 좌표는 OpenFold3 리간드 중심을 원점으로 옮긴다. 결과는 fly_discovery/measurements/hero_scene.json
+- 단계별 장면 데이터도 함께 만든다
+  - MSA-Search: nim/parp1.a3m(상동 서열 101개)의 잔기별 보존도(쿼리와 같은 아미노산 비율)와 정렬 띠 그림용 행렬,
+    OpenFold3 리간드 5 Å 안의 포켓 잔기
+  - Boltz-2: 같은 4R6E 포켓에 DiffDock 으로 넣은 PARP1 억제제 4종(15R · 파미파립 · 니라파립 · 루카파립)과 Boltz-2 예측 pIC50
+  - 크리틱: 니라파립을 Factor Xa(2P16)에 넣은 DiffDock 포즈와 그 수용체 (PARP1 과 나란히 보여 줄 분할 장면)
 
 사용: .venv/bin/python pipeline/discovery/build_hero_scene.py
 """
@@ -86,6 +91,53 @@ def main():
     evals = json.loads((MEAS / "nim/diffdock_eval.json").read_text())["poses"]  # [rank, conf, rmsd, pocket_dist]
     ms = json.loads((MEAS / "measurements.json").read_text())
 
+    # MSA-Search: a3m 의 소문자(삽입)를 빼면 모든 서열이 쿼리 위치에 맞춰진다
+    seqs, cur, heads = [], [], []
+    for ln in (MEAS / "nim/parp1.a3m").read_text().splitlines():
+        if ln.startswith(">"):
+            if cur: seqs.append("".join(cur))
+            cur = []
+            f = ln[1:].split()
+            heads.append([f[0].split("|")[0], float(f[2]) if len(f) > 2 and f[2].replace(".", "", 1).isdigit() else None])
+        else:
+            cur.append("".join(ch for ch in ln.strip() if not ch.islower()))
+    if cur: seqs.append("".join(cur))
+    query, homologs = seqs[0], seqs[1:]
+    cons = []
+    for i, q in enumerate(query):
+        col = [h[i] for h in homologs if i < len(h)]
+        aligned = [x for x in col if x != "-"]
+        cons.append(round(sum(x == q for x in aligned) / max(1, len(col)), 3))
+    strip = ["".join("1" if (i < len(h) and h[i] == q) else ("-" if i >= len(h) or h[i] == "-" else "0") for i, q in enumerate(query)) for h in homologs]
+    # 포켓 잔기: OpenFold3 리간드 중원자 5 Å 안에 원자가 있는 잔기
+    pocket_res = sorted({int(ln[22:26]) for ln in of3_text.splitlines() if ln.startswith("ATOM") and ln[21] == "A"
+                         and min(np.linalg.norm(np.array([float(ln[30:38]), float(ln[38:46]), float(ln[46:54])]) - q) for q in p_xyz) <= 5.0})
+    pocket_cons = [cons[r - 1] for r in pocket_res if 0 < r <= len(cons)]
+    print(f"MSA {len(homologs)} homologs · query {len(query)} aa · mean conservation {np.mean(cons):.2f} · pocket {len(pocket_res)} res mean {np.mean(pocket_cons):.2f}")
+
+    # Boltz-2: 같은 4R6E 포켓의 PARP1 억제제 4종 (DiffDock 1순위 포즈, 4R6E 좌표계 → 예측 좌표계)
+    combos = {r[0]: r for r in ms["diffdock_boltz2_chembl"]}
+    parp_set = []
+    for lig in ["15r", "pamiparib", "niraparib", "rucaparib"]:
+        f = MEAS / f"nim/dd_parp1-4r6e-chain-a--{lig}.json"
+        sdf = json.loads(f.read_text())["ligand_positions"][0] if f.exists() else (MEAS / "nim/niraparib_diffdock_pose1.sdf").read_text()
+        xyz, el, bd = mol_atoms(Chem.MolFromMolBlock(sdf, removeHs=False, sanitize=False))
+        r = combos.get(f"{lig}@parp1")
+        parp_set.append({"name": lig, "pose": pack(xyz @ R.T + t, el, bd, c), "vina": r[1] if r else None, "dd_conf": r[2] if r else None,
+                         "boltz_pic50": r[3] if r else None, "boltz_p": r[4] if r else None, "chembl": r[5] if r else None, "chembl_n": r[6] if r else None})
+
+    # 크리틱: 니라파립 → Factor Xa (2P16). 아픽사반 결정 자리 중심을 원점으로
+    xa_text = redock.fetch_structure("2P16")
+    xa_chain, xa_prot, xa_lig = redock.split_structure(xa_text, "GG2")
+    xa_c = np.array([[float(l[30:38]), float(l[38:46]), float(l[46:54])] for l in xa_lig.splitlines() if l.startswith("HETATM")]).mean(0)
+    xa_ca = [[*map(lambda v: round(float(v), 2), np.array([float(l[30:38]), float(l[38:46]), float(l[46:54])]) - xa_c), int(l[22:26])]
+             for l in xa_prot.splitlines() if l.startswith("ATOM") and l[12:16].strip() == "CA"]
+    nx_xyz, nx_el, nx_b = mol_atoms(Chem.MolFromMolBlock(json.loads((MEAS / "nim/dd_factor-xa-2p16--niraparib.json").read_text())["ligand_positions"][0], removeHs=False, sanitize=False))
+    ev_all = json.loads((MEAS / "nim/dd_eval_all.json").read_text())
+    critic_split = {"xa": {"pdb": "2P16", "chain": xa_chain, "ca": xa_ca, "niraparib": pack(nx_xyz, nx_el, nx_b, xa_c),
+                           "dd_conf": ev_all["factor-xa-2p16--niraparib"]["top_conf"], "vina": ev_all["factor-xa-2p16--niraparib"]["vina"]},
+                    "parp1": {"dd_conf": ev_all["parp1-4r6e-chain-a--niraparib"]["top_conf"], "vina": ev_all["parp1-4r6e-chain-a--niraparib"]["vina"]}}
+
     ribbon = [[*map(lambda v: round(float(v), 2), of3[k][1] - c), k, round(of3[k][2], 1)] for k in sorted(of3)]
     crystal = [[*map(lambda v: round(float(v), 2), xtal[b][1] @ R.T + t - c), b] for b in sorted(xtal)]
     OUT.write_text(json.dumps({
@@ -99,6 +151,9 @@ def main():
         "pose_eval": [{"rank": r[0], "confidence": r[1], "rmsd": r[2]} for r in evals],
         "ribbon": ribbon, "crystal_ca": crystal,
         "of3_ligand": pack(p_xyz, p_el, p_b, c), "xtal_ligand": pack(x_xyz, x_el, x_b, c), "diffdock_poses": poses,
+        "msa": {"labels": heads[1:], "query": query, "n_homologs": len(homologs), "query_len": len(query), "conservation": cons, "strip": strip,
+                "pocket_residues": pocket_res, "pocket_mean": round(float(np.mean(pocket_cons)), 3), "overall_mean": round(float(np.mean(cons)), 3)},
+        "parp_set": parp_set, "critic_split": critic_split,
     }, ensure_ascii=False, separators=(",", ":")) + "\n")
     print(OUT, OUT.stat().st_size // 1024, "KB", "· poses", len(poses), "· OF3 ligand vs crystal centroid", round(lig_rmsd_centroid, 2), "Å")
 
