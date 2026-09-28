@@ -36,5 +36,4 @@ Project-FlyGate는 시판 전 표적 결합과 시판 후 이상사례를 함께
 
 **데이터와 소프트웨어**
 - FDA FAERS(미국 FDA 이상사례 보고 시스템) 55개 분기(2012Q4–2026Q2, 고유 사례 약 1,760만 건) + 구형 AERS 35개 분기, openFDA 라벨, DailyMed, PubMed E-utilities, RCSB PDB(단백질 구조 데이터베이스), ChEMBL(화합물 활성값 데이터베이스), EMA DME 목록(EMA가 지정한 특별 주의 이상사례), OMOP · EU-ADR · Harpaz 참조 세트(정답을 미리 정해 둔 평가용 목록)
-- [MaleCNS v1.0](https://male-cns.janelia.org/) 초파리 커넥텀(뉴런 간 연결 지도): Janelia FlyEM 등이 공개한 수컷 초파리 중추신경계 데이터(CC-BY 4.0). 이 중 중앙뇌 부분그래프(뉴런 49,244개, 뉴런 간 연결 1,051,255개)를 에이전트의 9개 기능 층에 대응시켜 작업 분기와 검토 경로를 시각화합니다.
 - Python 3.12, DuckDB(5계층 웨어하우스, 불균형 지표는 SQL 계산), FastAPI, React + Vite + TypeScript, Vercel
