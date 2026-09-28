@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import HeroDocking, { type StepId } from '../components/HeroDocking'
 import DockPlayground from '../components/DockPlayground'
 import SelectivityMap from '../components/SelectivityMap'
+import Step2Handoff from '../components/Step2Handoff'
 import { Card, Loading, PageHead } from '../components/ui'
 import { CriticStream, MissingCard, RedockBench, STEP_PAGES, Tile, title, useDiscoveryData } from './Discovery'
 
@@ -132,6 +133,7 @@ export default function DiscoveryStep({ step }: { step: StepId }) {
               <Card title="Critic Stream" sub={extras.critic ? `${extras.critic.model} · 과잉해석 ${extras.critic.caught}/${extras.critic.n_over} 반려 · 정상 ${extras.critic.passed}/${extras.critic.n_valid} 통과 · ${extras.critic.sec}초` : ''}
                 right={<span className="chip bad">크리틱 3단</span>}>
                 {extras.critic && <CriticStream rows={extras.critic.rows} />}
+                <div style={{ marginTop: 12 }}><Step2Handoff drug="niraparib" /></div>
               </Card>
               <Card title="모델별 평가 · 주장 8건" sub="정답(과잉해석 4 · 정상 4)과 모델 판정을 나란히 봅니다">
                 {Object.entries(critic).map(([k, v]) => (

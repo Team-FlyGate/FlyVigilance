@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import DockingView, { type RedockScene } from './DockingView'
 import ConnectomePanel from './ConnectomePanel'
+import Step2Handoff from './Step2Handoff'
 import { Card } from './ui'
 import { useBrain } from '../lib/brain'
 import { api, getJSON } from '../lib/data'
@@ -123,6 +124,7 @@ export default function DockPlayground({ scenes }: { scenes: Record<string, Redo
               {pocketDist !== null && settled && <div className="mono" style={{ fontSize: 11, color: 'var(--text-2)' }}>1순위 포즈 중심 ↔ 결정 리간드 자리 {pocketDist.toFixed(2)} Å</div>}
             </div>
           )}
+          {scene && settled && <Step2Handoff drug={scene.drug} />}
           <ConnectomePanel height={170} focus={settled ? '반사 · 기억 · 포즈 판단' : '감각 입력 · 포즈 탐색'} />
         </div>
       </div>
