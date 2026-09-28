@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import DockingView, { type RedockScene } from './DockingView'
 import ConnectomePanel from './ConnectomePanel'
 import Step2Handoff from './Step2Handoff'
+import DockCritic from './DockCritic'
 import { Card } from './ui'
 import { useBrain } from '../lib/brain'
 import { api, getJSON } from '../lib/data'
@@ -25,6 +26,8 @@ export default function DockPlayground({ scenes }: { scenes: Record<string, Redo
   const [status, setStatus] = useState<{ kind: 'idle' | 'saved' | 'live' | 'running' | 'error'; text: string }>({ kind: 'idle', text: '' })
   const [play, setPlay] = useState(0)
   const [settled, setSettled] = useState(false)
+  // 지금 장면이 어디서 온 결과인지 (크리틱의 근거 ID 에 씁니다)
+  const [shown, setShown] = useState<{ target: string; ligand: string; source: 'redock' | 'matrix' | 'live' } | null>(null)
   const { sim } = useBrain()
   // 선택성 히트맵의 칸을 누르면 그 조합을 이 장면에서 바로 도킹합니다
   const [auto, setAuto] = useState(0)
@@ -43,6 +46,13 @@ export default function DockPlayground({ scenes }: { scenes: Record<string, Redo
   const saved = !!t && !!l && t.native === l.name
 
   const base = scenes[target]
+  const other = useMemo(() => {
+    if (!lib || !shown) return null
+    const vals = lib.targets.filter((x) => x.key !== shown.target).map((x) => ({
+      gene: x.gene, conf: x.native === shown.ligand ? scenes[x.key]?.poses[0]?.confidence ?? null : matrix?.results[`${x.key}|${shown.ligand}`]?.confidence[0] ?? null,
+    })).filter((x): x is { gene: string; conf: number } => typeof x.conf === 'number').sort((a, b) => b.conf - a.conf)
+    return vals[0] ?? null
+  }, [lib, shown, matrix, scenes])
   const pocketDist = useMemo(() => {
     if (!scene) return null
     const a = scene.pose.atoms, c = [0, 1, 2].map((i) => a.reduce((s, x) => s + Number(x[i]), 0) / a.length)
@@ -54,7 +64,7 @@ export default function DockPlayground({ scenes }: { scenes: Record<string, Redo
     setSettled(false)
     sim?.stimulate('layer', 'sense', 0.45, 8)
     if (saved) {
-      setScene(base); setPlay((p) => p + 1); setStatus({ kind: 'saved', text: `저장된 재도킹 결과 · PDB ${t.pdb}` })
+      setScene(base); setPlay((p) => p + 1); setStatus({ kind: 'saved', text: `저장된 재도킹 결과 · PDB ${t.pdb}` }); setShown({ target, ligand: l.name, source: 'redock' })
       return
     }
     const show = (r: DockResult) => {
@@ -64,11 +74,12 @@ export default function DockPlayground({ scenes }: { scenes: Record<string, Redo
     }
     // 1) 미리 계산한 조합 (NVIDIA 키 없이 동작) → 2) 서버 실시간 호출 → 3) 실패하면 이 표적의 저장된 재도킹 결과
     const pre = matrix?.results[`${target}|${l.name}`]
-    if (pre) { show(pre); setStatus({ kind: 'saved', text: `DiffDock NIM 미리 계산 결과 · ${pre.seconds}s` }); return }
+    if (pre) { show(pre); setStatus({ kind: 'saved', text: `DiffDock NIM 미리 계산 결과 · ${pre.seconds}s` }); setShown({ target, ligand: l.name, source: 'matrix' }); return }
     setStatus({ kind: 'running', text: 'DiffDock NIM 호출 중…' })
     try {
       const r = await api<DockResult>('/api/dock', { target, smiles: l.smiles })
       show(r)
+      setShown({ target, ligand: l.name, source: 'live' })
       setStatus({ kind: 'live', text: r.cached ? `실시간 DiffDock NIM · 캐시 (${r.seconds}s)` : `실시간 DiffDock NIM · ${r.seconds}s` })
     } catch {
       setScene(base); setPlay((p) => p + 1)
@@ -76,7 +87,7 @@ export default function DockPlayground({ scenes }: { scenes: Record<string, Redo
     }
   }
   useEffect(() => { if (auto) { void run(); cardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }) } }, [auto]) // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { if (base && !scene) { setScene(base); setStatus({ kind: 'saved', text: `저장된 재도킹 결과 · PDB ${base.pdb}` }) } }, [base, scene])
+  useEffect(() => { if (base && !scene) { setShown({ target, ligand: t?.native ?? '', source: 'redock' }); setScene(base); setStatus({ kind: 'saved', text: `저장된 재도킹 결과 · PDB ${base.pdb}` }) } }, [base, scene])
   useEffect(() => { if (settled && sim) { sim.stimulate('layer', 'reflex', 0.6, 8); setTimeout(() => sim.stimulate('layer', 'memory', 0.5, 8), 250) } }, [settled, sim])
 
   return (
@@ -128,6 +139,10 @@ export default function DockPlayground({ scenes }: { scenes: Record<string, Redo
           <ConnectomePanel height={170} focus={settled ? '반사 · 기억 · 포즈 판단' : '감각 입력 · 포즈 탐색'} />
         </div>
       </div>
+      {scene && settled && shown && (
+        <DockCritic targetKey={shown.target} input={{ drug: scene.drug, gene: scene.gene, pdb: scene.pdb, target: scene.target,
+          confidence: scene.poses.map((p) => p.confidence), pocketDist, source: shown.source, other }} />
+      )}
     </Card>
     </div>
   )

@@ -11,6 +11,7 @@ POST /api/kr/causality    한국형 인과성 평가 알고리즘 ver 2.0 (Jev) 
 GET  /api/grade           근거 등급 (FAERS 통계 + 라벨 절 + 문헌 읽기)
 GET  /api/signals/{drug}  웨어하우스 불균형 지표 상위 반응
 POST /api/dock            STEP 1 직접 도킹: 결정 구조 수용체 × SMILES 를 DiffDock NIM 으로 실시간 도킹
+POST /api/dock/critic     STEP 1 도킹 주장을 크리틱 3단(1·2단 규칙 + 3단 도킹 해석 규칙 D1–D5, Jev)으로 판정
 """
 import gzip
 import json
@@ -174,3 +175,13 @@ async def dock(req: Request):
         return await dock_mod.dock(str(body.get("target", "")), str(body.get("smiles", "")))
     except dock_mod.DockError as e:
         raise HTTPException(400, str(e))
+
+
+@app.post("/api/dock/critic")
+async def dock_critic(req: Request):
+    """STEP 1 직접 도킹 결과에 대해 에이전트(또는 사람)가 쓴 주장을 크리틱 3단으로 판정한다."""
+    _rate(req, "critic")
+    body = await req.json()
+    claims = [{"id": str(c.get("id", f"c{i+1}"))[:8], "text": str(c.get("text", ""))[:400], "evidence": list(c.get("evidence") or [])[:5]}
+              for i, c in enumerate((body.get("claims") or [])[:8])]
+    return await dock_mod.critic(claims, str(body.get("state", ""))[:4000], [str(x) for x in (body.get("ids") or [])][:20])
