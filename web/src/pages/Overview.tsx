@@ -7,7 +7,7 @@ import type { Ablation, Bench, CriticProbe, DiscoveryMeasurements, DockEval, Esc
 // 수치는 정적 데이터(/data, /discovery/data)나 API 에서 읽습니다. 파일이 없으면 '…' 로 남깁니다.
 
 const REPO = 'https://github.com/Team-FlyGate/Project-FlyGate'
-const REEL = '/showreel/FlyGate_showreel_v3.0.0.html'
+const REEL = '/showreel/FlyGate_showreel_v4.0.0.html'
 const DIAGRAM = '/images/flygate_agent_diagram_v1.1.0.png'
 const MSA_SECONDS = 63.6 // MSA-Search 실측 시간입니다 (fly_discovery/README.md, measurements.json 에는 없는 값)
 
@@ -164,7 +164,7 @@ export default function Overview() {
           <b> STEP 2 FlyVigilance</b>는 시판 후 허가 약물의 FAERS 이상사례 보고를 분류하고 신호를 평가합니다. 데모에서는 이미 허가된 니라파립으로 시판 전 단계를 되짚어 재현하고, 같은 약의 실제 시판 후 보고로 이어 봅니다. NVIDIA 스킬(build.nvidia.com NIM, Agent Skills, NemoClaw · OpenShell · OpenClaw) 위에 만든
           에이전트 워크플로이며, NVIDIA Nemotron과 함께 <b style={{ color: 'var(--jev)' }}>비자기회귀 판단 모델</b>을 써서 빠른 속도와 통계적으로 유의한 개선을 얻었습니다.</>}
         right={<div className="stack" style={{ gap: 8, alignItems: 'flex-end' }}>
-          <a className="btn primary" href={REEL} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>▶ 쇼릴 영상 v3</a>
+          <a className="btn primary" href={REEL} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>▶ 쇼릴 영상 v4</a>
           <div className="row" style={{ gap: 8 }}>
             <a className="btn ghost" href={REPO} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>GitHub 저장소</a>
             <a className="btn ghost" href={`${REPO}/tree/main/docs`} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>문서</a>
