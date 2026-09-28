@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Card, Kpi, Loading, PageHead } from '../components/ui'
 import { fmt, getJSON } from '../lib/data'
 import type { Ablation, Bench, Escalation, LatStats, McNemar, Overview } from '../lib/types'
+import Term from '../components/Term'
 
 // 주 측정은 모든 조건의 입력에서 결과 코드를 가린 비교(bench.json 의 ablation_blind)입니다.
 // 결과 코드를 보여 준 비교(ablation)는 참고 조건으로 함께 보여 드립니다.
@@ -88,7 +89,7 @@ function AblationView({ ab, other, view }: { ab: Ablation; other?: Ablation; vie
   const serious = ab.serious ?? 0
   const fv = ab.flyvigilance, raw = ab.raw_jev
   const t = (k: string): McNemar | undefined => ab.tests?.[k]
-  const pTxt = (k: string) => { const r = t(k); return r ? ` · McNemar p = ${fmtP(r.p)}` : '' }
+  const pTxt = (k: string) => { const r = t(k); return r ? <> · <Term k="McNemar">McNemar</Term> <Term k="pvalue">p</Term> = {fmtP(r.p)}</> : '' }
   const rs = fv.routes_serious
   const g = ab.grounding
   const gt = t('serious_escalation_grounded_vs_ungrounded')
@@ -103,19 +104,19 @@ function AblationView({ ab, other, view }: { ab: Ablation; other?: Ablation; vie
   return (
     <>
       <div className="grid g4" style={{ marginBottom: 16 }}>
-        <Kpi label="자동 큐에 남은 중대 사례" value={fv.serious_without_review} color="var(--ok)" format={(x) => `${Math.round(x)} / ${serious}`}
-          sub={<>질문 하나 {raw.serious_without_review}건{pTxt('serious_unreviewed_fv_vs_raw')}<br />자동 큐 = 종결·모니터링, 사람도 System-2도 보지 않습니다</>} />
+        <Kpi label={<><Term k="autoqueue">자동 큐</Term>에 남은 중대 사례</>} value={fv.serious_without_review} color="var(--ok)" format={(x) => `${Math.round(x)} / ${serious}`}
+          sub={<>질문 하나 {raw.serious_without_review}건{pTxt('serious_unreviewed_fv_vs_raw')}<br />자동 큐 = 종결·모니터링, 사람도 <Term k="System2" />(숙고 단계)도 보지 않습니다</>} />
         <Kpi label="사람에게 넘긴 비중대 사례" value={fv.over_escalated} color="var(--c-memory)" format={(x) => `${Math.round(x)}건`}
           sub={<>질문 하나 {raw.over_escalated}건 (비중대의 {fmt.pct(raw.over_escalated / Math.max(1, n - serious), 0)}){pTxt('over_escalation_fv_vs_raw')}</>} />
         <Kpi label="사람 우선 업무량" value={fv.escalated} color="var(--c-sense)" format={(x) => `${Math.round(x)}건`}
           sub={<>질문 하나 {raw.escalated}건 · {fmt.pct(1 - fv.escalated / Math.max(1, raw.escalated), 0)} 적음{pTxt('workload_fv_vs_raw')}</>} />
-        <Kpi label="사람 우선 민감도" value={fv.sens} color="var(--warn)" format={(x) => fmt.pct(x, 1)}
+        <Kpi label={<>사람 우선 <Term k="sens">민감도</Term></>} value={fv.sens} color="var(--warn)" format={(x) => fmt.pct(x, 1)}
           sub={<>질문 하나 {fmt.pct(raw.sens, 1)} · 특이도 {fmt.pct(fv.spec, 1)} vs {fmt.pct(raw.spec, 1)}
             {rs ? <><br />사람 우선이 아닌 중대 사례 중 {rs.signal_review}건은 System-2 검토로 갑니다</> : null}</>} />
       </div>
 
       <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1.25fr) minmax(0,1fr)', marginBottom: 16 }}>
-        <Card title={`비교 실험 · 같은 ${n}건, 같은 판단 모델`}
+        <Card title={<><Term k="ablation">비교 실험</Term> · 같은 {n}건, 같은 판단 모델</>}
           sub="사람 우선 = FlyVigilance 행동 '사람 우선(expedite)' / 질문 하나 p ≥ 0.5. 자동 큐 = 종결·모니터링(질문 하나는 사람 우선이 아닌 전부). 정답 = FAERS 결과 코드 있음(중대)">
           <table className="tbl">
             <thead><tr><th>조건</th><th className="r">자동 큐에 남은 중대</th><th className="r">사람 우선</th><th className="r">비중대→사람</th><th className="r">민감도</th><th className="r">특이도</th></tr></thead>
@@ -126,7 +127,7 @@ function AblationView({ ab, other, view }: { ab: Ablation; other?: Ablation; vie
           </table>
           {ab.tests && <>
             <div className="divider" />
-            <div className="dim mono" style={{ fontSize: 10.5, marginBottom: 6 }}>짝지은 McNemar 정확 검정 · 같은 사례에서 한쪽 조건만 해당한 수</div>
+            <div className="dim mono" style={{ fontSize: 10.5, marginBottom: 6 }}>짝지은 <Term k="McNemar">McNemar 정확 검정</Term> · 같은 사례에서 한쪽 조건만 해당한 수</div>
             <table className="tbl" style={{ fontSize: 12 }}>
               <tbody>{TESTS.map((x) => {
                 const r = t(x.key)
@@ -142,7 +143,7 @@ function AblationView({ ab, other, view }: { ab: Ablation; other?: Ablation; vie
             </table>
           </>}
           <div className="note" style={{ marginTop: 10 }}>질문 하나의 '아니오'는 자동 큐로 가서 아무도 보지 않습니다. FlyVigilance는 사람 우선이 아니어도 판단이 불확실하거나 신호 검토가 필요하면
-            System-2(NVIDIA Nemotron 숙고 + 3단 크리틱)로 올리고, 판단이 분명히 낮은 것만 자동 큐로 보냅니다. 질문 하나의 순위 성능(AUROC {fmt.f(ab.raw_auroc, 3)})은 나쁘지 않지만,
+            System-2(NVIDIA Nemotron 숙고 + 3단 크리틱)로 올리고, 판단이 분명히 낮은 것만 자동 큐로 보냅니다. 질문 하나의 순위 성능(<Term k="AUC">AUROC</Term> {fmt.f(ab.raw_auroc, 3)})은 나쁘지 않지만,
             규정 기한·사유·경로가 없는 한 줄 판단이라 그대로 운영에 쓰기 어렵습니다.</div>
         </Card>
 
@@ -180,7 +181,7 @@ function AblationView({ ab, other, view }: { ab: Ablation; other?: Ablation; vie
       </div>
 
       <div className="grid" style={{ gridTemplateColumns: ab.dme ? 'minmax(0,1.25fr) minmax(0,1fr)' : 'minmax(0,1fr)', marginBottom: 16 }}>
-        <Card title="라벨 근거 주입 · 추정 대신 원문 조회" sub={`라벨을 찾은 ${g.label_found}/${g.cases}건에서 모델이 추정한 '라벨에 있음'과 openFDA 라벨 원문을 대조했습니다`}>
+        <Card title={<><Term k="grounding">라벨 근거 주입</Term> · 추정 대신 원문 조회</>} sub={`라벨을 찾은 ${g.label_found}/${g.cases}건에서 모델이 추정한 '라벨에 있음'과 openFDA 라벨 원문을 대조했습니다`}>
           <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 16, alignItems: 'start' }}>
             <table className="tbl" style={{ textAlign: 'center' }}>
               <thead><tr><th></th><th className="r">라벨에 있음</th><th className="r">라벨에 없음</th></tr></thead>
@@ -199,10 +200,10 @@ function AblationView({ ab, other, view }: { ab: Ablation; other?: Ablation; vie
             라벨 원문 조회로 {fmt.pct(diff / Math.max(1, g.label_found), 0)}의 사례에서 라벨 기재 여부를 바로잡았습니다. FlyVigilance는 이 값을 조회로 정하고, 근거로 라벨 절을 남깁니다.
             {gt && <> 중대 사례를 사람 우선으로 올린 경우는 주입 후에만 {gt.a_only}건, 주입 전에만 {gt.b_only}건이었습니다(p = {fmtP(gt.p)}{gt.p < 0.05 ? '' : ', 차이 없음'}).</>}
             {gtOther && <> {view === 'blind' ? '결과 코드를 보여 준 조건' : '결과 코드를 가린 조건'}에서는 {gtOther.a_only} 대 {gtOther.b_only}(p = {fmtP(gtOther.p)})였습니다.</>}
-            {' '}라벨 검색은 MedDRA PT와 라벨 문구의 일치(영국·미국 철자, 어순, 동의어 사전 포함)로 정하고, 찾지 못한 반응은 '예상하지 못한 반응'으로 두어 사람 검토 쪽으로 보냅니다.
+            {' '}라벨 검색은 <Term k="MedDRA" />와 라벨 문구의 일치(영국·미국 철자, 어순, 동의어 사전 포함)로 정하고, 찾지 못한 반응은 '예상하지 못한 반응'으로 두어 사람 검토 쪽으로 보냅니다.
           </div>
         </Card>
-        {ab.dme && <Card title="DME 안전망 · EMA 지정 의학적 사건" sub="보고된 반응이 EMA DME 목록(62개 PT)에 있으면 점수와 관계없이 사람 검토로 보냅니다 (약사 검토 반영)">
+        {ab.dme && <Card title={<><Term k="DME" /> 안전망 · <Term k="EMA" /> 지정 의학적 사건</>} sub="보고된 반응이 EMA DME 목록(62개 PT)에 있으면 점수와 관계없이 사람 검토로 보냅니다 (약사 검토 반영)">
           <div className="grid g3" style={{ gap: 10 }}>
             <div><div className="dim mono" style={{ fontSize: 10 }}>DME 반응이 있는 사례</div><div className="num" style={{ fontSize: 20 }}>{ab.dme.cases_with_dme}</div><div className="dim" style={{ fontSize: 10.5 }}>그중 중대 {ab.dme.serious_among_dme}</div></div>
             <div><div className="dim mono" style={{ fontSize: 10 }}>안전망이 바꾼 경로</div><div className="num" style={{ fontSize: 20 }}>{ab.dme.changed_by_dme}</div><div className="dim" style={{ fontSize: 10.5 }}>그중 중대 {ab.dme.serious_changed_by_dme}</div></div>
@@ -237,9 +238,9 @@ export default function Benchmarks() {
     <div className="page">
       <PageHead eyebrow={`Measured performance · ${b.ablation_generated ?? b.generated} · ${b.dataset.source} 실제 케이스 ${b.dataset.cases}건`}
         title={<>같은 모델, 다른 설계: <span style={{ color: 'var(--jev)' }}>질문 하나</span> vs <span style={{ color: 'var(--c-sense)' }}>FlyVigilance 워크플로</span></>}
-        lede={<>FlyVigilance는 NVIDIA 스킬(build.nvidia.com NIM · Agent Skills · NemoClaw/OpenShell) 위에 짠 약물감시 워크플로입니다. 글을 써야 하는 일은 NVIDIA Nemotron이 맡고,
-          확률만 필요한 판단에는 비자기회귀 판단 모델(Jev, TypeSafe AI)을 함께 씁니다. 여기서는 같은 판단 모델에 질문 하나만 던진 경우와 FlyVigilance 워크플로(규칙 게이트, 라벨 근거 주입,
-          규제 용어로 쪼갠 7문항, 결정 정책, DME 안전망)를 거친 경우를 같은 사례로 비교합니다. 정답은 FAERS 결과 코드(중대 여부)이고, 주 측정에서는 모든 조건의 입력에서 결과 코드를 가렸습니다.
+        lede={<>FlyVigilance는 NVIDIA 스킬(build.nvidia.com <Term k="NIM" /> · <Term k="AgentSkills" /> · <Term k="NemoClaw" />/<Term k="OpenShell" />) 위에 짠 <Term k="PV">약물감시</Term> 워크플로입니다. 글을 써야 하는 일은 NVIDIA <Term k="Nemotron" />이 맡고,
+          확률만 필요한 판단에는 <Term k="NAR">비자기회귀 판단 모델</Term>(<Term k="Jev" />, TypeSafe AI)을 함께 씁니다. 여기서는 같은 판단 모델에 질문 하나만 던진 경우와 FlyVigilance 워크플로(<Term k="gate">규칙 게이트</Term>, <Term k="grounding">라벨 근거 주입</Term>,
+          규제 용어로 쪼갠 <Term k="q7">7문항</Term>, <Term k="policy">결정 정책</Term>, <Term k="DME" ko /> 안전망)를 거친 경우를 같은 사례로 비교합니다. 정답은 <Term k="FAERS" /> <Term k="outcome">결과 코드</Term>(중대 여부)이고, 주 측정에서는 모든 조건의 입력에서 결과 코드를 <Term k="blind">가렸습니다</Term>.
           숫자는 <span className="mono">pipeline/bench/ablation.py</span> 실행 결과입니다.</>} />
 
       <Card style={{ marginBottom: 16 }}>
@@ -265,14 +266,14 @@ export default function Benchmarks() {
         : <Card style={{ marginBottom: 16 }}><div className="note">비교 실험 결과가 이 데이터 파일에 없습니다.</div></Card>}
 
       <div className="grid g4" style={{ marginBottom: 16 }}>
-        <Kpi label="반사 판단 p50 · 7문항 한 번 호출" value={jt.latency_ms.p50} color="var(--jev)" format={(n) => `${Math.round(n)} ms`} sub={`비자기회귀 판단 모델 · 라벨 조회 포함 · n=${jt.ok}`} />
-        <Kpi label="같은 7문항을 생성 방식으로" value={nt?.triage.latency_ms.p50 ?? 0} color="var(--nvidia)" format={(n) => fmt.ms(n)} sub={nt ? `NVIDIA Nemotron 3.5 Lightning · JSON 생성 · n=${nt.triage.n}` : '실행하지 않았습니다'} />
+        <Kpi label={<><Term k="reflex">반사 판단</Term> <Term k="pct">p50</Term> · 7문항 한 번 호출</>} value={jt.latency_ms.p50} color="var(--jev)" format={(n) => `${Math.round(n)} ms`} sub={`비자기회귀 판단 모델 · 라벨 조회 포함 · n=${jt.ok}`} />
+        <Kpi label={<>같은 7문항을 <Term k="AR">생성 방식</Term>으로</>} value={nt?.triage.latency_ms.p50 ?? 0} color="var(--nvidia)" format={(n) => fmt.ms(n)} sub={nt ? `NVIDIA Nemotron 3.5 Lightning · JSON 생성 · n=${nt.triage.n}` : '실행하지 않았습니다'} />
         <Kpi label="1,000건 반사 판단 비용" value={(jt.usd_per_1k ?? 0) * 1000} color="var(--c-memory)" format={(n) => `$${(n / 1000).toFixed(3)}`} sub={`입력 ${jt.tokens_in_mean} tok · 출력 과금 없음 · $0.042/M`} />
-        <Kpi label="중대성 맹검 AUROC" value={bl.jev.auroc * 1000} color="var(--c-feedback)" format={(n) => (n / 1000).toFixed(3)} sub={`결과 코드를 가린 중대성 확률 · n=${bl.jev.n}`} />
+        <Kpi label={<>중대성 <Term k="blind">맹검</Term> <Term k="AUC">AUROC</Term></>} hint="판별 정확도: 0.5 무작위, 1 완벽" value={bl.jev.auroc * 1000} color="var(--c-feedback)" format={(n) => (n / 1000).toFixed(3)} sub={`결과 코드를 가린 중대성 확률 · n=${bl.jev.n}`} />
       </div>
 
       <div className="grid g2" style={{ marginBottom: 16 }}>
-        <Card title="역할 분담 · 생성은 자기회귀, 타입 판단은 비자기회귀" sub="같은 7문항 스키마를 두 방식으로 받아 잰 지연입니다 (로그 축, 막대 = p50–p90)">
+        <Card title={<>역할 분담 · 생성은 <Term k="AR">자기회귀</Term>, 타입 판단은 <Term k="NAR">비자기회귀</Term></>} sub={<>같은 7문항 스키마를 두 방식으로 받아 잰 지연입니다 (로그 축, 막대 = <Term k="pct">p50–p90</Term>)</>}>
           <LatBox s={jt.latency_ms} color="var(--jev)" label="7문항 · 비자기회귀 판단" max={maxLat} />
           <LatBox s={bl.jev.latency_ms} color="#ffd38a" label="중대성 맹검 · 비자기회귀 판단" max={maxLat} />
           {nt && <LatBox s={nt.triage.latency_ms} color="var(--nvidia)" label="7문항 · 생성 (Nemotron 3.5 Lightning)" max={maxLat} />}
@@ -288,18 +289,18 @@ export default function Benchmarks() {
           <div className="note" style={{ marginTop: 10 }}>같은 7문항을 한 번 호출로 받으면 p50 {fmt.ms(jt.latency_ms.p50)}{nt ? <>, 생성 방식으로 받으면 p50 {fmt.ms(nt.triage.latency_ms.p50)}(n={nt.triage.n})</> : null}였습니다.
             이 비교는 어느 일에 어느 방식이 맞는지 정하려는 것이지 모델의 우열을 가리려는 것이 아닙니다. build.nvidia.com 호스팅 NIM은 공유 체험 엔드포인트라 대기열 지연이 섞입니다{nt ? `(p90 ${fmt.ms(nt.triage.latency_ms.p90)})` : ''}.</div>
         </Card>
-        <Card title="중대성 맹검과 보정" sub="결과 코드를 지운 케이스 문자열로 중대성 확률을 받아 실제 결과 코드로 채점했습니다">
+        <Card title={<>중대성 맹검과 <Term k="ECE">보정</Term></>} sub="결과 코드를 지운 케이스 문자열로 중대성 확률을 받아 실제 결과 코드로 채점했습니다">
           <table className="tbl">
             <thead><tr><th></th><th className="r">n</th><th className="r">AUROC</th><th className="r">정확도@0.5</th></tr></thead>
             <tbody>
               <tr><td>비자기회귀 판단 모델 · 전체</td><td className="r num">{bl.jev.n}</td><td className="r num">{fmt.f(bl.jev.auroc, 3)}</td><td className="r num">{fmt.pct(bl.jev.acc, 1)}</td></tr>
               {nt && <tr><td>비자기회귀 판단 모델 · 같은 표본</td><td className="r num">{nt.blind.n}</td><td className="r num">{fmt.f(nt.blind.jev_same_subset_auroc, 3)}</td><td className="r num">{fmt.pct(nt.blind.jev_same_subset_acc, 1)}</td></tr>}
               {nt && <tr><td>NVIDIA Nemotron 3.5 Lightning · 같은 표본</td><td className="r num">{nt.blind.n}</td><td className="r num">{fmt.f(nt.blind.auroc, 3)}</td><td className="r num">{fmt.pct(nt.blind.acc, 1)}</td></tr>}
-              <tr><td className="dim">다수 클래스 기준선</td><td className="r num dim">{bl.jev.n}</td><td className="r num dim">0.500</td><td className="r num dim">{fmt.pct(bl.majority_baseline_acc, 1)}</td></tr>
+              <tr><td className="dim"><Term k="baseline">다수 클래스 기준선</Term></td><td className="r num dim">{bl.jev.n}</td><td className="r num dim">0.500</td><td className="r num dim">{fmt.pct(bl.majority_baseline_acc, 1)}</td></tr>
             </tbody>
           </table>
           <div className="note" style={{ marginTop: 10 }}>같은 표본에서 두 방식의 차이는 표본이 작아 확정할 수 없습니다. 중대 비율 {fmt.pct(b.dataset.serious_rate, 0)}의 층화 표본이며 실제 분기 구성비와 다릅니다.
-            ECE {fmt.f(bl.jev.ece, 3)}. 확률은 집단 수준의 보정값이지 한 건에 대한 확신이 아닙니다(R10).</div>
+            <Term k="ECE" /> {fmt.f(bl.jev.ece, 3)}. 확률은 집단 수준의 보정값이지 한 건에 대한 확신이 아닙니다(R10).</div>
         </Card>
       </div>
 
@@ -315,7 +316,7 @@ export default function Benchmarks() {
         <Card title="외부 기준점" sub="우리가 잰 값이 아닙니다. 맥락으로만 씁니다">
           <table className="tbl">
             <tbody>
-              <tr><td>사람 · ICSR 내러티브 검토</td><td className="r num">5.56 min / case</td><td className="dim" style={{ fontSize: 11 }}>Warner 2026 CPT, 예비 수치</td></tr>
+              <tr><td>사람 · <Term k="ICSR" /> 서술(내러티브) 검토</td><td className="r num">5.56 min / case</td><td className="dim" style={{ fontSize: 11 }}>Warner 2026 CPT, 예비 수치</td></tr>
               <tr><td>고정 규칙 크리틱 · 과잉해석 적발</td><td className="r num">1 / 16</td><td className="dim" style={{ fontSize: 11 }}>팀 선행 실측 (FlyGate)</td></tr>
               <tr><td>TypeSafe AI 공개 속도 주장</td><td className="r num">40–200×</td><td className="dim" style={{ fontSize: 11 }}>공급사 자체 측정, 독립 재현 없음</td></tr>
             </tbody>

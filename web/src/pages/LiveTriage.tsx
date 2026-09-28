@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import BrainView from '../components/BrainView'
 import { Card, PageHead, ProbBar } from '../components/ui'
 import { useBrain } from '../lib/brain'
 import { api, fmt, OCCP_LABEL, OUTCOME_LABEL, type AssessResult, type Case, type ChoiceA, type Claim, type Issue, type NoulA, type ScoreA, type TriageResult } from '../lib/data'
 import { ACTION_META } from './MissionControl'
 import { GradeView } from '../components/GradeCard'
+import Term from '../components/Term'
 
 type Stage = 'idle' | 'reflex' | 'routed' | 'evidence' | 'deliberate' | 'done' | 'error'
 
@@ -16,22 +17,30 @@ const Q_LABEL: Record<string, string> = {
   serious: '중대성 (ICH E2A)', expected: '허가사항 기재 (예측성)', deep: '전문가 숙고 필요', causality: '인과성 (WHO-UMC)',
   special: '특수 상황', priority: '검토 우선순위', route: '다음 행동',
 }
+// 규제 용어가 든 문항 이름에는 풀이를 붙입니다
+const Q_NODE: Record<string, ReactNode> = {
+  serious: <><Term k="seriousness">중대성</Term> (<Term k="ICH">ICH E2A</Term>)</>,
+  expected: <>허가사항 기재 (<Term k="expectedness">예측성</Term>)</>,
+  causality: <><Term k="causality">인과성</Term> (<Term k="WHOUMC" />)</>,
+}
+const qLabel = (k: string) => Q_NODE[k] ?? Q_LABEL[k] ?? k
 
 function Stepper({ stage, timings }: { stage: Stage; timings: Record<string, number> }) {
   const steps = [
-    { k: 'intake', l: 'Intake', s: 'FAERS ICSR', c: 'var(--c-sense)' },
-    { k: 'rule', l: 'Rule gate', s: 'ICH 4요소', c: 'var(--c-encode)' },
-    { k: 'reflex', l: 'Reflex', s: '비자기회귀 판단 (Jev)', c: 'var(--jev)' },
+    { k: 'intake', l: 'Intake', s: <><Term k="FAERS" /> <Term k="ICSR" /></>, c: 'var(--c-sense)' },
+    { k: 'rule', l: 'Rule gate', s: <Term k="ICH4">ICH 4요소</Term>, c: 'var(--c-encode)' },
+    { k: 'reflex', l: 'Reflex', s: <><Term k="NAR">비자기회귀 판단</Term> (Jev)</>, c: 'var(--jev)' },
     { k: 'route', l: 'Router', s: '결정 정책', c: 'var(--c-reflex)' },
     { k: 'evidence', l: 'Memory', s: '통계·라벨·문헌·등급', c: 'var(--c-memory)' },
-    { k: 'deliberate', l: 'Deliberate', s: 'NVIDIA Nemotron System-2', c: 'var(--nvidia)' },
-    { k: 'critic', l: 'Critic ×3', s: '규칙 · 오라클 · 판정', c: 'var(--c-critic)' },
+    { k: 'deliberate', l: 'Deliberate', s: <>NVIDIA Nemotron <Term k="System2" /></>, c: 'var(--nvidia)' },
+    { k: 'critic', l: 'Critic ×3', s: <>규칙 · <Term k="oracle">오라클</Term> · 판정</>, c: 'var(--c-critic)' },
     { k: 'action', l: 'Action', s: '사람 · 보고', c: 'var(--c-action)' },
   ]
   const order: Record<Stage, number> = { idle: 0, reflex: 2, routed: 4, evidence: 5, deliberate: 6, done: 8, error: 0 }
   const reached = order[stage]
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${steps.length}, 1fr)`, gap: 6 }}>
+    // 가운데 열이 좁으면 여덟 단계를 두 줄로 접어 칸이 잘리지 않게 합니다
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(92px, 1fr))', gap: 6 }}>
       {steps.map((s, i) => {
         const on = i < reached
         const active = i === reached && stage !== 'done' && stage !== 'idle'
@@ -58,7 +67,7 @@ function AnswerView({ k, a }: { k: string; a: TriageResult['jev']['answers'][str
   if (a.type === 'noul') {
     const p = (a as NoulA).noul
     const col = k === 'serious' ? 'var(--bad)' : k === 'expected' ? 'var(--c-encode)' : 'var(--jev)'
-    return <ProbBar label={Q_LABEL[k] ?? k} p={p} color={col} />
+    return <ProbBar label={qLabel(k)} p={p} color={col} />
   }
   if (a.type === 'choice') {
     const c = a as ChoiceA
@@ -66,7 +75,7 @@ function AnswerView({ k, a }: { k: string; a: TriageResult['jev']['answers'][str
     return (
       <div>
         <div className="row between" style={{ marginBottom: 6 }}>
-          <span className="mono" style={{ fontSize: 11.5, color: 'var(--text-2)' }}>{Q_LABEL[k] ?? k}</span>
+          <span className="mono" style={{ fontSize: 11.5, color: 'var(--text-2)' }}>{qLabel(k)}</span>
           <span className="row" style={{ gap: 6 }}><b style={{ fontFamily: 'var(--font)' }}>{c.choice}</b><span className="chip">conf {c.confidence.toFixed(2)}</span></span>
         </div>
         <div style={{ display: 'flex', height: 22, borderRadius: 7, overflow: 'hidden', border: '1px solid var(--line)' }}>
@@ -86,7 +95,7 @@ function AnswerView({ k, a }: { k: string; a: TriageResult['jev']['answers'][str
   return (
     <div>
       <div className="row between" style={{ marginBottom: 6 }}>
-        <span className="mono" style={{ fontSize: 11.5, color: 'var(--text-2)' }}>{Q_LABEL[k] ?? k}</span>
+        <span className="mono" style={{ fontSize: 11.5, color: 'var(--text-2)' }}>{qLabel(k)}</span>
         <span className="row" style={{ gap: 6 }}><b className="num">{s.score.toFixed(2)}</b><span className="chip">conf {s.confidence.toFixed(2)}</span></span>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: `repeat(${levels.length}, 1fr)`, gap: 4 }}>
@@ -110,7 +119,7 @@ function CaseCard({ c }: { c: Case }) {
   return (
     <div className="stack" style={{ gap: 12 }}>
       <div className="row wrap" style={{ gap: 8 }}>
-        <span className="chip">primaryid {c.primaryid}</span><span className="chip">case {c.caseid}</span>
+        <span className="chip"><Term k="caseid">primaryid</Term> {c.primaryid}</span><span className="chip">case {c.caseid}</span>
         <span className="chip">{c.quarter} · FDA {c.fda_dt}</span>{c.rept_cod && <span className="chip">{c.rept_cod}</span>}
       </div>
       <div className="grid g4" style={{ gap: 8 }}>
@@ -122,7 +131,7 @@ function CaseCard({ c }: { c: Case }) {
         ))}
       </div>
       <div>
-        <div className="dim mono" style={{ fontSize: 10.5, marginBottom: 6 }}>DRUGS</div>
+        <div className="dim mono" style={{ fontSize: 10.5, marginBottom: 6 }}>DRUGS · <Term k="role">PS · SS · C</Term> · <Term k="dechal">dechal · rechal</Term></div>
         <table className="tbl">
           <tbody>
             {c.drugs.slice(0, 7).map((d, i) => (
@@ -137,11 +146,11 @@ function CaseCard({ c }: { c: Case }) {
         </table>
       </div>
       <div>
-        <div className="dim mono" style={{ fontSize: 10.5, marginBottom: 6 }}>REACTIONS · MedDRA PT</div>
+        <div className="dim mono" style={{ fontSize: 10.5, marginBottom: 6 }}>REACTIONS · <Term k="MedDRA" /></div>
         <div className="row wrap" style={{ gap: 6 }}>{c.reactions.map((r) => <span key={r} className="chip" style={{ color: 'var(--text)' }}>{r}</span>)}</div>
       </div>
       <div className="row wrap" style={{ gap: 6 }}>
-        <span className="dim mono" style={{ fontSize: 10.5 }}>OUTCOMES</span>
+        <span className="dim mono" style={{ fontSize: 10.5 }}><Term k="outcome">OUTCOMES</Term></span>
         {c.outcomes.length ? c.outcomes.map((o) => <span key={o} className={`chip ${o === 'DE' || o === 'LT' ? 'bad' : 'warn'}`}>{OUTCOME_LABEL[o] ?? o}</span>) : <span className="chip">보고 없음</span>}
       </div>
     </div>
@@ -163,11 +172,11 @@ function EvidenceView({ ev }: { ev: AssessResult['evidence'] }) {
       <div className="grid g3" style={{ gap: 10 }}>
         {ev.faers.map((f) => (
           <div key={f.id} style={{ padding: 12, borderRadius: 12, border: '1px solid rgba(255,79,216,0.3)', background: 'rgba(255,79,216,0.05)' }}>
-            <div className="row between"><b style={{ fontSize: 12.5 }}>{f.pt}</b><span className="num dim" style={{ fontSize: 11 }}>a = {fmt.int(f.a)}</span></div>
+            <div className="row between"><b style={{ fontSize: 12.5 }}>{f.pt}</b><span className="num dim" style={{ fontSize: 11 }}><Term k="aE">a</Term> = {fmt.int(f.a)}</span></div>
             {f.prr ? (
               <div className="mono" style={{ fontSize: 11, marginTop: 6, lineHeight: 1.7 }}>
-                PRR {fmt.f(f.prr)} <span className="dim">[{fmt.f(f.prr_lo)}–{fmt.f(f.prr_hi)}]</span><br />
-                ROR₀₂₅ {fmt.f(f.ror_lo)} · IC₀₂₅ {fmt.f(f.ic025)}
+                <Term k="PRR" /> {fmt.f(f.prr)} <span className="dim">[{fmt.f(f.prr_lo)}–{fmt.f(f.prr_hi)}]</span><br />
+                <Term k="ROR">ROR₀₂₅</Term> {fmt.f(f.ror_lo)} · <Term k="IC025" /> {fmt.f(f.ic025)}
                 <div className="row" style={{ gap: 4, marginTop: 6 }}>
                   <span className={`chip ${f.evans ? 'bad' : ''}`} style={{ fontSize: 9.5 }}>Evans</span>
                   <span className={`chip ${f.ror_sig ? 'bad' : ''}`} style={{ fontSize: 9.5 }}>ROR</span>
@@ -181,7 +190,7 @@ function EvidenceView({ ev }: { ev: AssessResult['evidence'] }) {
       </div>
       <div className="grid g2" style={{ gap: 10 }}>
         <div style={{ padding: 12, borderRadius: 12, border: '1px solid var(--line)' }}>
-          <div className="row between"><b style={{ fontSize: 12.5 }}>openFDA 라벨</b>
+          <div className="row between"><b style={{ fontSize: 12.5 }}><Term k="openFDA">openFDA</Term> 라벨</b>
             {ev.label.setid && <a className="mono" style={{ fontSize: 10.5 }} target="_blank" rel="noreferrer" href={`https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=${ev.label.setid}`}>DailyMed ↗</a>}</div>
           {ev.label.found ? (
             <div className="stack" style={{ gap: 8, marginTop: 8 }}>
@@ -241,7 +250,7 @@ function MemoView({ res }: { res: AssessResult }) {
               </div>
               <div style={{ textAlign: 'right' }}>
                 <span className={`chip ${iss.length ? 'bad' : 'ok'}`}>{iss.length ? '반려' : '통과'}</span>
-                {c.overclaim_p !== undefined && <div className="mono dim" style={{ fontSize: 10, marginTop: 4 }}>overclaim p {c.overclaim_p.toFixed(2)}</div>}
+                {c.overclaim_p !== undefined && <div className="mono dim" style={{ fontSize: 10, marginTop: 4 }}><Term k="overclaim">overclaim</Term> p {c.overclaim_p.toFixed(2)}</div>}
               </div>
             </div>
           )
@@ -284,7 +293,7 @@ function ProbeView({ asr, tri }: { asr: AssessResult; tri: TriageResult }) {
   // 가드는 주장마다 따로 돌고, 걸린 주장에 R11 사유가 붙습니다
   const guardHit = (id: string) => !!res?.issues.some((x) => x.claim === id && x.detail?.startsWith('NVIDIA safety guard'))
   return (
-    <Card title="과잉해석 주입 테스트" sub="이 케이스의 실제 근거로 일부러 틀린 주장을 만들어 크리틱에 넣습니다. 대조군은 Nemotron이 쓴 정상 주장입니다"
+    <Card title={<><Term k="overclaim">과잉해석</Term> 주입 테스트</>} sub="이 케이스의 실제 근거로 일부러 틀린 주장을 만들어 크리틱에 넣습니다. 대조군은 Nemotron이 쓴 정상 주장입니다"
       right={<button className="btn" onClick={run} disabled={busy}>{busy ? <span className="spin" /> : '☠'} 크리틱에 주입</button>}>
       <div className="stack" style={{ gap: 8 }}>
         {probes.map((p) => {
@@ -374,9 +383,9 @@ export default function LiveTriage() {
     <div className="page">
       <PageHead eyebrow="사례 분류(트리아지) · 실제 FAERS 2026Q2 · 실시간 API"
         title={<>이상사례 보고 한 건을 <span style={{ color: 'var(--jev)' }}>분류</span>하고, 필요하면 <span style={{ color: 'var(--nvidia)' }}>숙고</span>까지 보냅니다</>}
-        lede={<><b>트리아지</b>는 응급실의 환자 분류처럼, 들어온 이상사례 보고 한 건이 얼마나 급한지 가려 처리 경로를 정하는 첫 단계입니다.
-          중대한지, 허가 라벨에 있는 반응인지, 약과 관련 있을 가능성이 있는지를 보고 <b>신속보고 → 사람</b>, <b>신호 검토 → System-2</b>, <b>추가정보 요청</b>, <b>모니터링</b>, <b>종결</b> 중 하나로 보냅니다.
-          왼쪽에서 사례를 고르고 <b>① 반사 판단 실행</b>을 누르면 규칙 게이트, 라벨 조회, 비자기회귀 판단 모델의 7문항 판단, 결정 정책이 실제 API로 돌아갑니다. 이어서 <b>② Nemotron 숙고 실행</b>을 누르면 근거를 모아 NVIDIA Nemotron이 평가 메모를 쓰고 3단 크리틱이 검사합니다.</>} />
+        lede={<><b><Term k="triage">트리아지</Term></b>(사례 분류)는 응급실의 환자 분류처럼, 들어온 이상사례 보고 한 건(<Term k="ICSR" />)이 얼마나 급한지 가려 처리 경로를 정하는 첫 단계입니다.
+          <Term k="seriousness">중대</Term>한지, 허가 <Term k="label">라벨</Term>(허가사항)에 있는 반응인지, 약과 관련 있을 가능성이 있는지를 보고 <b><Term k="expedited">신속보고</Term> → 사람</b>, <b>신호 검토 → <Term k="System2" /></b>(숙고 단계), <b>추가정보 요청</b>, <b>모니터링</b>, <b>종결</b> 중 하나로 보냅니다.
+          왼쪽에서 사례를 고르고 <b>① 반사 판단 실행</b>을 누르면 <Term k="gate">규칙 게이트</Term>, 라벨 조회, <Term k="NAR">비자기회귀 판단 모델</Term>의 <Term k="q7">7문항 판단</Term>, <Term k="policy">결정 정책</Term>이 실제 <Term k="API" />로 돌아갑니다. 이어서 <b>② Nemotron 숙고 실행</b>을 누르면 근거를 모아 NVIDIA <Term k="Nemotron" />이 평가 메모를 쓰고 3단 <Term k="critic">크리틱</Term>이 검사합니다.</>} />
 
       <div className="grid" style={{ gridTemplateColumns: '300px minmax(0,1fr) 380px', alignItems: 'start' }}>
         <Card title="케이스 큐" sub={`${list.length} / ${cases.length} cases`} style={{ position: 'sticky', top: 0 }}>
@@ -418,7 +427,7 @@ export default function LiveTriage() {
           {err && <Card><div style={{ color: 'var(--bad)' }}>{err}</div></Card>}
           {tri && (
             <Card title={<>FlyVigilance 반사 판단 <span className="chip jev" style={{ marginLeft: 8 }}>비자기회귀 판단 모델 · {tri.jev.model}</span></>}
-              sub={`한 번의 호출 · ${fmt.ms(tri.jev.latency_ms)} · 입력 ${tri.jev.usage.input_tokens} tok · 출력 ${tri.jev.usage.output_tokens} tok · 비용 ${fmt.usd(tri.jev.usage.input_tokens * 0.042 / 1e6)}`}>
+              sub={<>한 번의 호출 · {fmt.ms(tri.jev.latency_ms)} · 입력 {tri.jev.usage.input_tokens} <Term k="token">tok</Term> · 출력 {tri.jev.usage.output_tokens} tok · 비용 {fmt.usd(tri.jev.usage.input_tokens * 0.042 / 1e6)}</>}>
               <div className="grid g2" style={{ gap: 18 }}>
                 <div className="stack" style={{ gap: 12 }}>
                   {['serious', 'expected', 'deep'].map((k) => tri.jev.answers[k] && <AnswerView key={k} k={k} a={tri.jev.answers[k]} />)}
@@ -431,7 +440,7 @@ export default function LiveTriage() {
               <div className="divider" />
               {tri.grounding && (
                 <div className="row wrap" style={{ gap: 6, marginBottom: 8 }}>
-                  <span className="dim mono" style={{ fontSize: 10.5 }}>LABEL GROUNDING · 기억 대신 조회</span>
+                  <span className="dim mono" style={{ fontSize: 10.5 }}><Term k="grounding">LABEL GROUNDING</Term> · 기억 대신 조회</span>
                   {tri.grounding.label.found ? Object.entries(tri.grounding.label.by_pt ?? {}).map(([pt, v]) => (
                     <span key={pt} className={`chip ${v.sections.length ? 'ok' : 'warn'}`}>{pt}: {v.sections.length ? v.sections[0] : '라벨에 없음'}</span>
                   )) : <span className="chip">라벨 없음 또는 비임상 PT</span>}
@@ -439,7 +448,7 @@ export default function LiveTriage() {
                 </div>
               )}
               <div className="row wrap" style={{ gap: 6 }}>
-                <span className="dim mono" style={{ fontSize: 10.5 }}>RULE GATE · ICH 최소 4요소</span>
+                <span className="dim mono" style={{ fontSize: 10.5 }}>RULE GATE · <Term k="ICH4" /></span>
                 {tri.validity && Object.entries(tri.validity.checks).map(([k, v]) => <span key={k} className={`chip ${v ? 'ok' : 'bad'}`}>{v ? '✓' : '✗'} {k}</span>)}
               </div>
               {dec && am && (
@@ -459,11 +468,11 @@ export default function LiveTriage() {
           )}
           {asr && (
             <>
-              <Card title="Signal Memory · 근거 묶음과 PV 분류" sub={`FAERS 웨어하우스 2×2 · openFDA 라벨 절 · PubMed 초록 읽기(비자기회귀 판단 모델) · 규칙 분류 · ${fmt.ms(asr.evidence_ms)}`}>
+              <Card title={<>Signal Memory · 근거 묶음과 <Term k="pvclass">PV 분류</Term></>} sub={<>FAERS <Term k="warehouse">웨어하우스</Term> <Term k="table22">2×2</Term> · openFDA 라벨 절 · <Term k="PubMed">PubMed</Term> 초록 읽기(비자기회귀 판단 모델) · 규칙 분류 · {fmt.ms(asr.evidence_ms)}</>}>
                 <EvidenceView ev={asr.evidence} />
               </Card>
               <Card title={<>System-2 메모와 3단 크리틱 <span className={`chip ${asr.verdict === 'pass' ? 'ok' : 'bad'}`} style={{ marginLeft: 8 }}>{asr.verdict === 'pass' ? '통과 → 사람 검토 큐' : '반려 → 작성자에게'}</span></>}
-                sub="T1 규칙(근거 ID 실재) · T2 숫자 오라클(근거 수치 일치) · T3 과잉해석 판정(비자기회귀 판단 모델, 규칙 13종) · NVIDIA Nemotron Safety Guard">
+                sub={<>T1 규칙(<Term k="evidenceId">근거 ID</Term> 실재) · T2 <Term k="oracle">숫자 오라클</Term>(근거 수치 일치) · T3 <Term k="overclaim">과잉해석</Term> 판정(비자기회귀 판단 모델, 규칙 13종) · NVIDIA Nemotron <Term k="guard">Safety Guard</Term></>}>
                 <MemoView res={asr} />
               </Card>
               {tri && <ProbeView asr={asr} tri={tri} />}
@@ -482,8 +491,8 @@ export default function LiveTriage() {
           <Card title="이 화면의 구성" sub="실시간으로 부르는 서비스와 각 값을 만드는 주체입니다">
             <div className="note" style={{ lineHeight: 1.7 }}>
               <b>실시간 호출:</b> NVIDIA Nemotron(integrate.api.nvidia.com), 비자기회귀 판단 모델 Jev(api.typesafe.ai), openFDA, PubMed.<br />
-              <b>SQL 계산:</b> PRR·ROR·IC는 DuckDB가 계산하고 모델은 숫자를 바꾸지 않습니다.<br />
-              <b>커넥텀:</b> 결정은 모델과 정책이 내립니다. 커넥텀은 결정이 켠 뉴런 집단에서 실제 MaleCNS 배선으로 활동을 전파해 보여 주는 라우팅 위상이며 임상 근거가 아닙니다.<br />
+              <b>SQL 계산:</b> PRR·ROR·IC는 <Term k="SQL">DuckDB</Term>가 계산하고 모델은 숫자를 바꾸지 않습니다.<br />
+              <b><Term k="connectome">커넥텀</Term>:</b> 결정은 모델과 정책이 내립니다. 커넥텀은 결정이 켠 뉴런 집단에서 실제 <Term k="MaleCNS" /> 배선으로 활동을 전파해 보여 주는 라우팅 위상이며 임상 근거가 아닙니다.<br />
               <b>확률:</b> 판단 모델의 확률은 집단 수준 보정값입니다. 이 한 건에 대한 확신이 아닙니다.
             </div>
           </Card>

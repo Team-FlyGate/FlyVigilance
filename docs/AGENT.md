@@ -1,8 +1,9 @@
 # FlyGate 에이전트: NemoClaw · OpenShell · OpenClaw
 
 Project-FlyGate 는 시판 전 후보 물질의 표적 결합(STEP 1 FlyDiscovery)과 시판 후 허가 약물의 이상사례(STEP 2 FlyVigilance)를
-근거로 다루는 에이전트 워크플로입니다. 데모에서는 이미 허가된 니라파립(PARP1 억제제)으로 시판 전 단계를 되짚어 재현하고 같은 약의 시판 후 보고로 이어 봅니다. 이 문서는 그 에이전트를 NVIDIA DLI 과정 *Securing Agents with NemoClaw and OpenShell*
+근거로 다루는 에이전트 워크플로입니다. 데모에서는 이미 허가된 니라파립(PARP1 억제제: DNA 손상을 고치는 단백질 PARP1을 막는 항암제)으로 시판 전 단계를 되짚어 재현하고 같은 약의 시판 후 보고로 이어 봅니다. 이 문서는 그 에이전트를 NVIDIA DLI(Deep Learning Institute, NVIDIA 교육 과정) 과정 *Securing Agents with NemoClaw and OpenShell*
 (모듈 01a–04c)이 가르치는 구조대로 포장한 방법과, 실제 OpenShell 샌드박스에서 확인한 결과를 정리합니다.
+세 이름은 다음과 같습니다. OpenClaw는 작업 공간 파일과 스킬을 읽고 도구를 부르며 일하는 에이전트 실행 틀(하네스)이고, OpenShell은 정책이 허용한 네트워크·파일·시스템 호출만 통과시키는 NVIDIA 샌드박스(외부와 격리된 실행 공간)이며, NemoClaw는 둘을 한 벌로 배포·관리하는 NVIDIA 구성(청사진)입니다.
 
 ![FlyGate 에이전트 구성도](images/flygate_agent_diagram_v1.1.0.png)
 
@@ -15,10 +16,10 @@ NemoClaw 과정(03a)은 배포를 네 부품으로 나눕니다. FlyGate 는 각
 
 | 층 | 과정의 정의 | FlyGate |
 | --- | --- | --- |
-| LLM 엔드포인트 | 프롬프트와 도구 결과를 응답으로 바꿉니다. 세션 상태는 없습니다. | NVIDIA build.nvidia.com NIM: Nemotron 3 Super(숙의 메모, 국내 보고 구조화), Nemotron Safety Guard(주장별 안전 검사), BioNeMo NIM 4종(MSA-Search, OpenFold3, DiffDock, Boltz-2). FlyVigilance 안의 비자기회귀 판단 모델(Jev, TypeSafe AI)이 타입 있는 확률 판단을 맡습니다. |
-| OpenClaw 하네스 | 세션 기록, 파일 기반 작업 공간, 도구 접근을 유지합니다. | 작업 공간 파일 7개(`agent/workspace/`), Agent Skills 12개(`skills/` 11개 + `agent/skills/discovery-evidence`), 도구는 `flygate` CLI 하위 명령 7개(exec). |
-| OpenShell 샌드박스 | 실행 중인 에이전트가 닿는 파일·네트워크·시스템 호출을 제한합니다. | `agent/policy/flygate.yaml`: 기본 거부, 외부 API 5곳을 파이썬 실행 파일에만 묶어 메서드·경로 단위로 허용, 쓰기 경로 제한, 비루트, Landlock. |
-| NemoClaw 청사진 | OpenClaw 와 OpenShell 이 함께 돌도록 구성합니다. | NemoClaw 청사진의 OpenClaw 샌드박스 이미지와 게이트웨이 위에 올립니다. `agent/deploy_nemoclaw.sh` 가 정책 프리셋, 도구 묶음, 작업 공간, 스킬, cron 을 더합니다. |
+| LLM(대형 언어 모델) 엔드포인트(모델을 부르는 주소) | 프롬프트와 도구 결과를 응답으로 바꿉니다. 세션 상태는 없습니다. | NVIDIA build.nvidia.com NIM(NVIDIA 추론 마이크로서비스: AI 모델을 표준 API로 부르게 포장한 서비스): Nemotron(NVIDIA 언어 모델 계열) 3 Super(숙의 메모, 국내 보고 구조화), Nemotron Safety Guard(주장별 안전 검사), BioNeMo NIM 4종(MSA-Search, OpenFold3, DiffDock, Boltz-2). FlyVigilance 안의 비자기회귀 판단 모델(글을 한 글자씩 생성하지 않고 확률을 한 번에 돌려주는 모델. Jev, TypeSafe AI)이 타입 있는 확률 판단(예/아니오 · 선택지 · 점수처럼 형식이 정해진 답)을 맡습니다. |
+| OpenClaw 하네스 | 세션 기록, 파일 기반 작업 공간, 도구 접근을 유지합니다. | 작업 공간 파일 7개(`agent/workspace/`), Agent Skills(에이전트 능력 패키지 규격) 12개(`skills/` 11개 + `agent/skills/discovery-evidence`), 도구는 `flygate` CLI(명령줄 인터페이스) 하위 명령 7개(exec). |
+| OpenShell 샌드박스 | 실행 중인 에이전트가 닿는 파일·네트워크·시스템 호출을 제한합니다. | `agent/policy/flygate.yaml`: 기본 거부, 외부 API 5곳을 파이썬 실행 파일에만 묶어 메서드·경로 단위로 허용, 쓰기 경로 제한, 비루트(관리자 권한 없이 실행), Landlock(읽고 쓸 수 있는 파일 경로를 제한하는 리눅스 보안 기능). |
+| NemoClaw 청사진 | OpenClaw 와 OpenShell 이 함께 돌도록 구성합니다. | NemoClaw 청사진의 OpenClaw 샌드박스 이미지와 게이트웨이 위에 올립니다. `agent/deploy_nemoclaw.sh` 가 정책 프리셋, 도구 묶음, 작업 공간, 스킬, cron(정해진 시각에 명령을 자동 실행하는 예약 도구) 을 더합니다. |
 
 ## 2. 배포
 
@@ -31,7 +32,7 @@ NemoClaw 과정(03a)은 배포를 네 부품으로 나눕니다. FlyGate 는 각
 SANDBOX=flygate agent/deploy_nemoclaw.sh worker
 ```
 
-스크립트가 하는 일은 아래 명령과 같습니다. API 키는 샌드박스에 넣지 않고 OpenShell provider 로 붙입니다(프록시가 허용된 호스트로 가는 요청에만 키를 넣습니다).
+스크립트가 하는 일은 아래 명령과 같습니다. API 키는 샌드박스에 넣지 않고 OpenShell provider(자격 증명을 프록시에서 붙여 주는 기능) 로 붙입니다(프록시가 허용된 호스트로 가는 요청에만 키를 넣습니다).
 
 ```bash
 openshell sandbox create --name flygate --from ghcr.io/nvidia/nemoclaw/openclaw-sandbox@sha256:7dcb6046542110dc21d128377be5d49c53204b5ed9b54b70fb8370c8e695f5c1 \
@@ -76,16 +77,16 @@ SANDBOX=flygate agent/openshell_smoke.sh     # 결과: agent/evidence/openshell_
 
 | 모듈 | 주제 | FlyGate 적용 | 상태 | 위치 |
 | --- | --- | --- | --- | --- |
-| 01a | 에이전트 루프 | ICSR 한 건을 인지(규칙 게이트, 라벨 근거) → 판단(타입 있는 확률 7개) → 행동(라우팅)으로 처리합니다. | 구현 | `api/_fv/triage.py`, `flygate triage` |
-| 01b | ReAct 와 도구 호출 | OpenClaw 가 `flygate` 를 exec 로 부르고 JSON 을 읽어 다음 행동을 정합니다. 크리틱이 반려하면 사유대로 한 번 고칩니다. | 구현 | `agent/workspace/AGENTS.md`, `agent/flygate.py` |
-| 01c | 도구 확장, 함수 호출, MCP | 하위 명령 7개를 한 계약(JSON + `evidence_ids`)으로 묶었습니다. 역할별 지식은 Agent Skills 로 나눴고, 도구 경계는 MCP 서버 대신 CLI 계약으로 두었습니다. | 구현 | `agent/flygate.py`, `skills/`, `agent/skills/` |
-| 02a | 워크플로와 라우팅 | 결정 정책이 규칙으로 라우팅합니다(반사 → System-2 → 사람). 라벨과 문헌은 병렬로 모읍니다. | 구현 | `api/_fv/triage.py`, `api/_fv/evidence.py` |
-| 02b | 에이전트 RAG | openFDA 라벨 절, PubMed 검색·초록, FAERS 2×2 SQL. 모델은 근거 카탈로그의 ID 만 인용합니다. | 구현 | `api/_fv/evidence.py`, `api/_fv/literature.py`, `pipeline/faers/` |
+| 01a | 에이전트 루프 | ICSR(개별 이상사례 보고) 한 건을 인지(규칙 게이트: 모델을 부르기 전 규칙으로 거르는 관문, 라벨 근거) → 판단(타입 있는 확률 7개) → 행동(라우팅)으로 처리합니다. | 구현 | `api/_fv/triage.py`, `flygate triage` |
+| 01b | ReAct(추론과 행동을 번갈아 하는 에이전트 방식) 와 도구 호출 | OpenClaw 가 `flygate` 를 exec 로 부르고 JSON("항목 이름: 값" 형식의 데이터) 을 읽어 다음 행동을 정합니다. 크리틱(근거를 넘는 주장을 반려하는 검사 단계)이 반려하면 사유대로 한 번 고칩니다. | 구현 | `agent/workspace/AGENTS.md`, `agent/flygate.py` |
+| 01c | 도구 확장, 함수 호출, MCP(Model Context Protocol: 에이전트에 도구를 붙이는 표준 규약) | 하위 명령 7개를 한 계약(JSON + `evidence_ids`: 주장이 기댄 자료를 가리키는 근거 ID)으로 묶었습니다. 역할별 지식은 Agent Skills 로 나눴고, 도구 경계는 MCP 서버 대신 CLI 계약으로 두었습니다. | 구현 | `agent/flygate.py`, `skills/`, `agent/skills/` |
+| 02a | 워크플로와 라우팅 | 결정 정책이 규칙으로 라우팅합니다(반사 → System-2(숙고 단계) → 사람). 라벨과 문헌은 병렬로 모읍니다. | 구현 | `api/_fv/triage.py`, `api/_fv/evidence.py` |
+| 02b | 에이전트 RAG(검색 증강 생성: 찾아 온 자료를 근거로 답하는 방식) | openFDA(FDA 공개 데이터 조회 API) 라벨 절, PubMed(의학 논문 검색 서비스) 검색·초록, FAERS(미국 FDA 이상사례 보고 시스템) 2×2 표(약 × 반응 네 칸 표) SQL(데이터베이스 질의 언어). 모델은 근거 카탈로그의 ID 만 인용합니다. | 구현 | `api/_fv/evidence.py`, `api/_fv/literature.py`, `pipeline/faers/` |
 | 02c | 딥 에이전트 | 공유 저장소(근거 ID 카탈로그)를 독립 작업자가 채우고 Nemotron 이 종합, 크리틱이 검사합니다(7절). | 구현 | `api/_fv/evidence.py::bundle`, `api/_fv/assess.py` |
 | 03a | NemoClaw 스택 연결 | 게이트웨이 `nemoclaw-8090` 에 샌드박스 `flygate-smoke` 를 만들고 exec 로 도구를 돌렸습니다. | 구현 | `agent/openshell_smoke.sh`, `agent/evidence/` |
 | 03b | OpenClaw 작업 공간 | 작업 공간 파일 7개를 `/sandbox/.openclaw/workspace` 에 올려 확인했습니다. 날짜별 메모는 `flygate watch` 가 씁니다. | 구현 | `agent/workspace/` |
-| 03c | 상시 실행 | 샌드박스 안에 OpenClaw 게이트웨이(loopback, 토큰 인증)를 띄워 하트비트가 도는 것을 확인했고, `flygate-daily-watch` cron(매일 07:00 서울, 격리 세션, 전달 없음)을 등록했습니다. 하트비트 점검 `flygate watch` 도 샌드박스 안에서 돌렸습니다. 하위 에이전트 위임은 트리거 표(6절)에 정의했습니다. | 구현 | `agent/workspace/HEARTBEAT.md`, `agent/deploy_nemoclaw.sh`, `agent/evidence/openclaw_cron_2026-09-28.txt` |
-| 04a | OpenShell 샌드박스 | 기본 거부, 파이썬 바인딩, L7 메서드·경로 규칙, Landlock, 비루트, seccomp 를 실제 샌드박스에서 확인했습니다(9절). | 구현 | `agent/policy/flygate.yaml`, `tests/test_agent.py` |
+| 03c | 상시 실행 | 샌드박스 안에 OpenClaw 게이트웨이(loopback, 토큰 인증)를 띄워 하트비트(에이전트가 정해진 간격으로 점검 목록을 스스로 확인하는 작업)가 도는 것을 확인했고, `flygate-daily-watch` cron(매일 07:00 서울, 격리 세션, 전달 없음)을 등록했습니다. 하트비트 점검 `flygate watch` 도 샌드박스 안에서 돌렸습니다. 하위 에이전트 위임은 트리거 표(6절)에 정의했습니다. | 구현 | `agent/workspace/HEARTBEAT.md`, `agent/deploy_nemoclaw.sh`, `agent/evidence/openclaw_cron_2026-09-28.txt` |
+| 04a | OpenShell 샌드박스 | 기본 거부, 파이썬 바인딩, L7(HTTP 요청 수준) 메서드·경로 규칙, Landlock, 비루트, seccomp(쓸 수 있는 시스템 호출을 제한하는 리눅스 기능) 를 실제 샌드박스에서 확인했습니다(9절). | 구현 | `agent/policy/flygate.yaml`, `tests/test_agent.py` |
 | 04b | 현대 CLI 에이전트 | 작업 디렉터리, 도구 팔레트, 기억, 무인 실행, 네트워크의 자유도를 `flygate` CLI 와 정책으로 하나씩 묶었습니다. | 구현 | `agent/flygate.py`, `agent/bin/flygate` |
 | 04c | 배포, 자체 데이터, 오픈 모델 | 자체 데이터(FAERS 2012Q4–2026Q2 웨어하우스, 공개 참조 세트)와 build.nvidia.com NIM, BioNeMo NIM 으로 배포 경로를 만들었습니다. | 구현 | `agent/deploy_nemoclaw.sh`, `pipeline/` |
 
@@ -105,7 +106,7 @@ SANDBOX=flygate agent/openshell_smoke.sh     # 결과: agent/evidence/openshell_
 | --- | --- | --- |
 | `api.fda.gov` | GET `/drug/label.json`, `/drug/event.json` | 라벨 근거, openFDA 갱신일 |
 | `eutils.ncbi.nlm.nih.gov` | GET `/entrez/eutils/esearch.fcgi`, `efetch.fcgi`, `esummary.fcgi` | 문헌 읽기 |
-| `api.typesafe.ai` | POST `/v1/systemone` | 타입 있는 판단(반사 트리아지, 크리틱 과잉해석, 문헌 설계 분류) |
+| `api.typesafe.ai` | POST `/v1/systemone` | 타입 있는 판단(반사 트리아지(사례 분류), 크리틱 과잉해석, 문헌 설계 분류) |
 | `integrate.api.nvidia.com` | POST `/v1/chat/completions`, GET `/v1/models` | Nemotron, Safety Guard |
 | `health.api.nvidia.com` | POST MSA-Search, OpenFold3, DiffDock, Boltz-2 경로, GET `/v1/status/**` | FlyDiscovery BioNeMo NIM |
 
@@ -115,6 +116,8 @@ SANDBOX=flygate agent/openshell_smoke.sh     # 결과: agent/evidence/openshell_
 
 ## 5. 치명적 삼박자와 차단 (04a)
 
+치명적 삼박자(lethal trifecta)는 비공개 데이터 접근, 신뢰할 수 없는 입력, 외부 통신이 한 에이전트에 모이면 데이터가 샐 수 있다는 보안 원칙입니다.
+
 | 조건 | FlyGate 에서 해당하는 것 |
 | --- | --- |
 | 비공개 데이터 | ICSR(FAERS 사례, 국내 보고 서술의 나이·성별·약물·반응), 감시 목록과 날짜별 메모, 작업 공간 파일, API 자격 증명(샌드박스 안에는 자리표시자) |
@@ -123,18 +126,18 @@ SANDBOX=flygate agent/openshell_smoke.sh     # 결과: agent/evidence/openshell_
 
 세 조건 가운데 외부 통신 다리를 좁히고, 결과가 큰 행동은 사람에게 둡니다.
 
-1. 판단 모델은 지시문이 아니라 타입 있는 확률(noul, choice, score)만 돌려줍니다. 외부 텍스트가 에이전트의 행동을 바꿀 통로가 좁습니다.
+1. 판단 모델은 지시문이 아니라 타입 있는 확률(noul 예/아니오 확률, choice 선택지, score 점수)만 돌려줍니다. 외부 텍스트가 에이전트의 행동을 바꿀 통로가 좁습니다.
 2. 모든 주장은 근거 ID 카탈로그 안에서만 인용하고, 크리틱 3단(근거 ID 규칙, 숫자 대조, 과잉해석 판단)과 주장별 Safety Guard 를 통과해야 요약에 들어갑니다.
 3. 허용 호스트는 조회와 모델 API 뿐이고 파이썬에만 묶였으며 메서드·경로가 고정되어 있습니다. 자유 형식으로 밖에 쓰는 경로(메일, 메신저, GitHub, 붙여넣기 사이트)가 없습니다.
 4. 보고 제출과 통보는 사람이 합니다. cron 은 `--no-deliver`, `flygate watch` 의 `submitted` 는 늘 빈 목록입니다.
 
-| 실패 유형(OWASP Agentic) | 샌드박스가 주는 것 | 그 위의 FlyGate 통제 |
+| 실패 유형(OWASP Agentic: 웹 보안 단체 OWASP의 에이전트 위험 목록) | 샌드박스가 주는 것 | 그 위의 FlyGate 통제 |
 | --- | --- | --- |
 | 목표 탈취, 프롬프트 주입 | 닿는 파일·호스트를 제한 | 외부 텍스트는 자료로만(SOUL.md 경계 6), 타입 있는 판단, 크리틱 3단 |
 | 도구 오용 | 도구가 도는 OS·네트워크 범위를 제한 | 도구는 `flygate` 7개 명령뿐, argparse 인자 검증, 제출 기능 없음 |
 | 신원·권한 남용 | 비루트, capability 0, no_new_privs | 자격 증명은 provider 가 프록시에서 주입, 호스트별 치환 |
 | 공급망, 예상 밖 코드 실행 | 파일·시스템 호출·외부 접속 축소 | 의존성은 배포 묶음(vendor/)에 고정, 실행 중 pypi 차단 |
-| 기억·맥락 오염 | 시스템 경로 읽기 전용 | 페르소나 파일 SHA-256 대조(`flygate watch --workspace`), MEMORY.md 는 사람 검토 뒤 반영 |
+| 기억·맥락 오염 | 시스템 경로 읽기 전용 | 페르소나 파일 SHA-256(파일 지문 해시) 대조(`flygate watch --workspace`), MEMORY.md 는 사람 검토 뒤 반영 |
 
 ## 6. 트리거 (03c)
 
@@ -150,7 +153,7 @@ SANDBOX=flygate agent/openshell_smoke.sh     # 결과: agent/evidence/openshell_
 과정의 네 단계(계획 → 조사 → 보존 → 종합)가 FlyVigilance 의 근거 수집과 같은 모양입니다.
 
 1. 계획: 사례에서 주 반응을 3개까지 고르고(비임상 용어 제외) 주 의심약을 정합니다.
-2. 조사: 독립 작업자가 각자 필요한 도구만 씁니다. FAERS 2×2 SQL, openFDA 라벨 절 조회, PubMed 문헌 읽기(반응마다 병렬), 보고자 구성(변호사·소비자 비중), EMA DME 목록.
+2. 조사: 독립 작업자가 각자 필요한 도구만 씁니다. FAERS 2×2 SQL, openFDA 라벨 절 조회, PubMed 문헌 읽기(반응마다 병렬), 보고자 구성(변호사·소비자 비중), EMA(유럽의약품청) DME(EMA가 지정한 특별 주의 이상사례) 목록.
 3. 보존: 결과는 근거 ID 카탈로그(`faers:2x2:…`, `label:<setid>#<절>`, `pubmed:<PMID>#<설계>`, `grade:…`)라는 공유 저장소에 남습니다.
 4. 종합: Nemotron 이 카탈로그의 ID 만 인용해 주장 JSON 을 쓰고, 크리틱 3단이 주장마다 검사합니다. 반려되면 사유와 함께 한 번 되돌립니다.
 
@@ -163,10 +166,10 @@ SANDBOX=flygate agent/openshell_smoke.sh     # 결과: agent/evidence/openshell_
 | 명령 | 하는 일 |
 | --- | --- |
 | `flygate triage <case.json> [--regime KR] [--no-outcome]` | ICSR 반사 판단: 규칙 게이트 → 라벨 근거 → 타입 있는 확률 7개(한 번의 호출) → 결정 정책 + DME 안전망 |
-| `flygate grade <DRUG> "<PT>"` | PV 분류 후보(라벨 상태 × SDR)와 근거 등급: FAERS 3중 기준, 라벨 절, 문헌 읽기 |
-| `flygate signals <DRUG> [--pt …]` | 불균형 지표(a, PRR, ROR025, IC025)와 SDR 단계, 모델 미개입 |
-| `flygate kr-causality <report.txt> --route` | 국내 보고 구조화(Nemotron), 한국형 인과성 평가 ver 2.0, 15일 신속보고 후보 라우팅 |
-| `flygate critic <claims.json>` | 크리틱 3단 + 주장별 NVIDIA Safety Guard. `--offline` 은 T1·T2 만 돌리며, 문제가 없어도 `pass` 가 아니라 `human_check` 입니다 |
+| `flygate grade <DRUG> "<PT>"` | PV(약물감시) 분류 후보(라벨 상태 × SDR. SDR은 특정 약·이상반응 조합이 다른 약보다 유난히 많이 보고되는 불균형 보고 신호)와 근거 등급: FAERS 3중 기준(Evans · ROR₀₂₅ > 1 · IC₀₂₅ > 0 모두 충족), 라벨 절, 문헌 읽기 |
+| `flygate signals <DRUG> [--pt …]` | 불균형 지표(a 함께 보고된 사례 수, PRR 비례 보고 비, ROR025 보고 오즈비 하한, IC025 정보 성분 하한)와 SDR 단계, 모델 미개입 |
+| `flygate kr-causality <report.txt> --route` | 국내 보고 구조화(Nemotron), 한국형 인과성(약이 반응을 일으켰을 가능성) 평가 ver 2.0, 15일 신속보고(중요한 사례를 정해진 기한 안에 규제기관에 보고하는 의무) 후보 라우팅 |
+| `flygate critic <claims.json>` | 크리틱 3단 + 주장별 NVIDIA Safety Guard. `--offline` 은 T1·T2(근거 ID 실재 확인 · 숫자 대조) 만 돌리며, 문제가 없어도 `pass` 가 아니라 `human_check` 입니다 |
 | `flygate discover parp1\|xa\|cox2` | FlyDiscovery 실측(MSA-Search, OpenFold3, DiffDock, Boltz-2, ChEMBL)과 크리틱 판정, STEP 2 인계 |
 | `flygate watch --memory-dir memory --workspace .` | 정기 점검: 분기 확인, 감시 목록 SDR 재계산, 새 사례 분류, 날짜별 메모, 사람 검토 대기열 |
 

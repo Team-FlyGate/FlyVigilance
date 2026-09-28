@@ -4,6 +4,7 @@ import HeroDocking, { type HeroExtras, type HeroScene, type StepId } from '../co
 import { Card, Kpi, Loading, PageHead } from '../components/ui'
 import { getJSON } from '../lib/data'
 import type { DiscoveryMeasurements, DockEval } from '../lib/types'
+import Term from '../components/Term'
 
 // STEP 1 FlyDiscovery: 개요 페이지와, 다섯 단계 페이지(DiscoveryStep.tsx)가 함께 쓰는 데이터 · 부품입니다.
 // 데이터는 모두 fly_discovery/measurements/ 의 실측 JSON 이고, scripts/sync-discovery.mjs 가 /discovery/data/ 로 복사합니다.
@@ -275,8 +276,8 @@ export default function Discovery() {
   return (
     <div className="page">
       <PageHead eyebrow="Project-FlyGate · STEP 1 FlyDiscovery · 개요"
-        title={<>시판 전 후보 물질을 <span style={{ color: 'var(--nvidia)' }}>NVIDIA BioNeMo NIM</span>으로 평가합니다</>}
-        lede={<>후보 물질이 표적에 어떻게 붙는지 다섯 단계(MSA-Search → OpenFold3 → DiffDock → Boltz-2 → 크리틱)로 계산하고, 단계마다 그 분야의 전통 기준으로 채점합니다.
+        title={<>시판 전 후보 물질을 <span style={{ color: 'var(--nvidia)' }}>NVIDIA BioNeMo <Term k="NIM" /></span>으로 평가합니다</>}
+        lede={<>후보 물질이 <Term k="target">표적</Term>(약이 붙어 작용하는 단백질)에 어떻게 붙는지 다섯 단계(<Term k="MSA">MSA-Search</Term> 상동 서열 정렬 → <Term k="OpenFold3" /> 구조 예측 → <Term k="DiffDock" /> 도킹 → <Term k="Boltz2" /> 친화도 예측 → <Term k="critic">크리틱</Term>)로 계산하고, 단계마다 그 분야의 전통 기준으로 채점합니다. NIM은 NVIDIA가 AI 모델을 API로 바로 부를 수 있게 포장한 추론 마이크로서비스입니다.
           결과를 더 내기보다 <b style={{ color: 'var(--c-sense)' }}>결과가 말해도 되는 범위</b>를 정하는 것이 목표입니다. 데모 약물 니라파립은 <a href="#/mission">STEP 2 FlyVigilance</a>의 시판 후 보고로 이어집니다.
           왼쪽 메뉴에서 단계별 화면을 따로 볼 수 있습니다.</>}
         right={<div className="row wrap" style={{ justifyContent: 'flex-end', maxWidth: 380 }}>
@@ -293,13 +294,13 @@ export default function Discovery() {
           </Card>
 
           <div className="grid g4" style={{ marginBottom: 16 }}>
-            <Kpi label="OpenFold3 · pLDDT" value={of3?.plddt ?? 0} color="var(--c-sense)" format={(n) => n.toFixed(2)}
+            <Kpi label={<>OpenFold3 · <Term k="pLDDT" /></>} hint="구조 예측 신뢰도 · 0~100, 90 이상이면 매우 믿을 만합니다" value={of3?.plddt ?? 0} color="var(--c-sense)" format={(n) => n.toFixed(2)}
               sub={of3 ? `4R6E 대비 Cα RMSD ${of3.ca_rmsd_vs_4R6E} Å · MSA 상동 서열 ${of3.msa_homologs}개` : '…'} />
-            <Kpi label="Redock pass · RMSD ≤ 2 Å" value={pass} color="var(--nvidia)" format={(n) => `${Math.round(n)} / ${all.length || '–'}`}
+            <Kpi label={<><Term k="docking">Redock</Term> pass · <Term k="RMSD" /> ≤ 2 Å</>} hint="정답 결정 구조의 제자리를 2 Å 안으로 되찾은 약물 수" value={pass} color="var(--nvidia)" format={(n) => `${Math.round(n)} / ${all.length || '–'}`}
               sub={`가용성 ${soluble.filter((s) => s.success).length}/${soluble.length} · 세포막 ${membrane.filter((s) => s.success).length}/${membrane.length}`} />
-            <Kpi label="Boltz-2 vs ChEMBL · Spearman" value={bm?.spearman ?? 0} color="var(--jev)" format={(n) => `ρ ${n.toFixed(3)}`}
+            <Kpi label={<>Boltz-2 vs <Term k="ChEMBL" /> · <Term k="spearman">Spearman</Term></>} hint="예측 친화도 순위와 실측 순위의 일치 정도 · 1이면 완전 일치" value={bm?.spearman ?? 0} color="var(--jev)" format={(n) => `ρ ${n.toFixed(3)}`}
               sub={bm ? `PARP1 ${bm.n}종 · MAE ${bm.mae} log · 상위 25% EF ${bm.ef_top25}` : '…'} />
-            <Kpi label="Critic · 과잉해석 반려" value={extras?.critic?.caught ?? 0} color="var(--bad)" format={(n) => `${Math.round(n)} / ${extras?.critic?.n_over ?? '–'}`}
+            <Kpi label={<><Term k="critic">Critic</Term> · <Term k="overclaim">과잉해석</Term> 반려</>} hint="근거가 허락하는 범위를 넘는 주장을 걸러 낸 수" value={extras?.critic?.caught ?? 0} color="var(--bad)" format={(n) => `${Math.round(n)} / ${extras?.critic?.n_over ?? '–'}`}
               sub={extras?.critic ? `${extras.critic.model} · 정상 주장 ${extras.critic.passed}/${extras.critic.n_valid} 통과` : '…'} />
           </div>
 

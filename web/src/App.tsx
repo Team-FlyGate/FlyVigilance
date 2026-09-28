@@ -17,6 +17,8 @@ import Problem from './pages/Problem'
 import Skills from './pages/Skills'
 import KoreanPV from './pages/KoreanPV'
 import Validation from './pages/Validation'
+import Glossary from './pages/Glossary'
+import Term from './components/Term'
 
 const I = (d: string) => (
   <svg className="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d={d} /></svg>
@@ -24,11 +26,12 @@ const I = (d: string) => (
 
 interface Page { id: string; label: string; en: string; icon: ReactNode; el: () => ReactNode }
 
-// 메뉴는 네 묶음입니다: 개요 · STEP 1 시판 전 · STEP 2 시판 후 · 에이전트
+// 메뉴는 네 묶음입니다: 개요(문제 정의 · 용어 풀이 포함) · STEP 1 시판 전 · STEP 2 시판 후 · 에이전트
 const GROUPS: { step?: string; name?: string; color?: string; pages: Page[] }[] = [
   { pages: [
     { id: 'overview', label: '개요', en: 'Discovery → Vigilance', icon: I('M3 11 12 4l9 7M5 10v10h5v-6h4v6h5V10'), el: () => <Overview /> },
     { id: 'problem', label: '문제 정의', en: 'Why it matters', icon: I('M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z'), el: () => <Problem /> },
+    { id: 'glossary', label: '용어 풀이', en: 'Glossary · 약어와 전문 용어', icon: I('M4 19.5V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2Zm0 0a2 2 0 0 0 2 2h13M9 8h6M9 12h4'), el: () => <Glossary /> },
   ] },
   { step: 'STEP 1 · 시판 전', name: 'FlyDiscovery', color: 'var(--c-sense)', pages: [
     { id: 'discovery', label: '후보 탐색 개요', en: 'Discovery · 약물 패널', icon: I('M12 3l7.8 4.5v9L12 21l-7.8-4.5v-9ZM12 8.5l3 1.75v3.5L12 15.5l-3-1.75v-3.5Z'), el: () => <Discovery /> },
@@ -58,7 +61,7 @@ const GROUPS: { step?: string; name?: string; color?: string; pages: Page[] }[] 
 const PAGES = GROUPS.flatMap((g) => g.pages)
 
 function useHashPage() {
-  const get = () => (location.hash.replace('#/', '') || 'overview')
+  const get = () => (location.hash.replace('#/', '').split('?')[0] || 'overview')
   const [page, setPage] = useState(get)
   useEffect(() => {
     const on = () => setPage(get())
@@ -106,10 +109,10 @@ export default function App() {
             <span className="lbl">쇼릴 영상<small>FlyGate · v4.1 · 3분 29초</small></span>
           </a>
           <div className="nav-foot">
-            <div className="status-row" title="Jev · TypeSafe AI"><span className={`dot ${health?.jev ? 'on pulse' : healthErr ? 'off' : ''}`} />비자기회귀 판단 모델 {live(health?.jev)}</div>
-            <div className="status-row"><span className={`dot ${health?.nim ? 'on pulse' : healthErr ? 'off' : ''}`} />NVIDIA NIM {live(health?.nim)}</div>
+            <div className="status-row"><span className={`dot ${health?.jev ? 'on pulse' : healthErr ? 'off' : ''}`} /><Term k="NAR">비자기회귀 판단 모델</Term> {live(health?.jev)}</div>
+            <div className="status-row"><span className={`dot ${health?.nim ? 'on pulse' : healthErr ? 'off' : ''}`} />NVIDIA <Term k="NIM" /> {live(health?.nim)}</div>
             <a className="status-row status-link" href="#/agent"><span className="dot" style={{ background: '#e2a74e' }} />OpenShell 정책 →</a>
-            <div className="status-row"><span className="dot on" />MaleCNS v1.0 · FAERS {health?.signals_asof ?? '2026Q2'}</div>
+            <div className="status-row"><span className="dot on" /><Term k="MaleCNS">MaleCNS v1.0</Term> · <Term k="FAERS" /> {health?.signals_asof ?? '2026Q2'}</div>
             <div style={{ marginTop: 6, lineHeight: 1.5 }}>NVIDIA Korea Agentic AI Hackathon 2026</div>
           </div>
         </nav>

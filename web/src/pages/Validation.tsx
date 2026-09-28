@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Card, Loading, PageHead } from '../components/ui'
 import { fmt, getJSON } from '../lib/data'
 import type { LiteratureEval, RocMethod, RefsetResult, Validation as V } from '../lib/types'
+import Term from '../components/Term'
 
 const FAMILY: Record<RocMethod['family'], { name: string; color: string; dash?: string; width: number }> = {
   metric: { name: '통계 지표 (SQL)', color: '#4d8dff', width: 1.6 },
@@ -88,7 +89,7 @@ function LitEval({ le }: { le: LiteratureEval }) {
           한 번 호출에 {le.articles_per_call}편, 중앙값 {fmt.ms(le.latency_ms_p50)}. 운영에서는 출판 유형이 있으면 규칙으로 정하고, 없을 때만 이 판단을 씁니다.</div>
       </div>
       <div>
-        <div className="dim mono" style={{ fontSize: 10.5, marginBottom: 6 }}>혼동 행렬 (행 = 정답, 열 = 판정)</div>
+        <div className="dim mono" style={{ fontSize: 10.5, marginBottom: 6 }}><Term k="confusion">혼동 행렬</Term> (행 = 정답, 열 = 판정)</div>
         <table className="tbl" style={{ fontSize: 11.5 }}>
           <thead><tr><th></th>{le.labels.map((q) => <th key={q} className="r">{DESIGN_KO[q] ?? q}</th>)}</tr></thead>
           <tbody>{cls.map((t) => (
@@ -123,23 +124,23 @@ export default function Validation() {
     <div className="page">
       <PageHead eyebrow="Reference validation · 공개 참조 세트 · 전향적 검증"
         title={<>어느 부품이 어디서 이기는지 <span style={{ color: 'var(--c-sense)' }}>재고 나서</span> 배치했습니다</>}
-        lede={<>공개 참조 세트 세 개(OMOP, EU-ADR, Harpaz)의 약물–반응 {Object.values(v.refsets).slice(0, 3).reduce((a, r) => a + r.n, 0)}쌍에서
-          통계 지표, 모델 단독 판단, FlyVigilance의 두 판별 모드(지식 기반·통계 기반)를 같은 조건으로 비교했습니다. Harpaz는 2013년 라벨 변경을 정답으로 삼으므로,
-          2013년 이전 보고(구형 AERS 2004–2012Q3, {fmt.compact(pro?.N ?? 0)}건)만으로 다시 재어 "미리 알 수 있었는가"를 봤습니다. 이 전향 조건은 2013년 이전 정보만 쓰므로 통계 기반 판별로 비교합니다.</>} />
+        lede={<>공개 <Term k="refset">참조 세트</Term>(정답을 미리 정해 둔 평가용 목록) 세 개(OMOP, EU-ADR, Harpaz)의 약물–반응 {Object.values(v.refsets).slice(0, 3).reduce((a, r) => a + r.n, 0)}쌍에서
+          통계 지표, 모델 단독 판단, FlyVigilance의 두 판별 모드(<Term k="kbmode">지식 기반·통계 기반</Term>)를 같은 조건으로 비교했습니다. Harpaz는 2013년 <Term k="label">라벨</Term>(허가사항) 변경을 정답으로 삼으므로,
+          2013년 이전 보고(구형 <Term k="FAERS">AERS</Term> 2004–2012Q3, {fmt.compact(pro?.N ?? 0)}건)만으로 다시 재어 "미리 알 수 있었는가"를 봤습니다. 이 <Term k="prospective">전향</Term> 조건은 2013년 이전 정보만 쓰므로 통계 기반 판별로 비교합니다.</>} />
 
       <div className="grid g3" style={{ marginBottom: 16 }}>
         <Finding n="1" color="#7cffb2" title="공인된 연관은 지식 기반 판별이 가려냅니다"
-          body={<>약·반응 이름으로 묻는 FlyVigilance 지식 기반 판별이 최고 통계 지표보다 AUC가 높았습니다
+          body={<>약·반응 이름으로 묻는 FlyVigilance 지식 기반 판별이 최고 통계 지표보다 <Term k="AUC" />(판별 정확도: 0.5 무작위, 1 완벽)가 높았습니다
             ({(['OMOP', 'EU-ADR', 'Harpaz'] as const).map((k) => { const r = v.refsets[k]; const d = r.deltas.find((x) => x.best_metric && x.a === 'raw_named')
               return d ? `${k} ${m(r, 'raw_named').auc.toFixed(3)} vs ${best(r).auc.toFixed(3)}${d.ci[0] > 0 ? ' 유의' : ''}` : '' }).filter(Boolean).join(', ')}).
             판단 한 번에 {fmt.ms(v.jev.latency_ms_p50)}(중앙값)이라 트리아지 흐름 안에서 바로 씁니다.</>} />
         <Finding n="2" color="#4d8dff" title="새 조합은 통계, 예측성은 라벨 조회"
-          body={<>아직 알려지지 않은 조합의 순위는 SQL 불균형 통계(PRR·ROR·IC, SDR 3중 기준)가 맡고, 모델이 숫자를 바꾸지 못하게 했습니다.
-            라벨 기재 여부(예측성)는 FDA 허가 라벨을 조회해서 정합니다. 이름을 가린 통계 기반 판별은 통계 지표와 같은 수준입니다
+          body={<>아직 알려지지 않은 조합의 순위는 SQL 불균형 통계(<Term k="PRR" />·<Term k="ROR" />·<Term k="IC025">IC</Term>, <Term k="SDR" /> <Term k="triple">3중 기준</Term>)가 맡고, 모델이 숫자를 바꾸지 못하게 했습니다.
+            라벨 기재 여부(<Term k="expectedness">예측성</Term>)는 FDA 허가 라벨을 조회해서 정합니다. 이름을 가린 통계 기반 판별은 통계 지표와 같은 수준입니다
             (OMOP {m(omop, 'fv').auc.toFixed(2)} vs {best(omop).auc.toFixed(2)}, 차이 없음).</>} />
         <Finding n="3" color="#ff4fd8" title="라벨이 바뀌기 전에 선 SDR"
           body={<>2013년 이전 보고만으로 3중 기준은 그해 라벨이 바뀐 {pro.pos}건 중 <b style={{ color: 'var(--text)' }}>{pro.points.triple.tp}건</b>을 이미 SDR로 잡았고,
-            음성 {pro.neg}건 중 오경보는 {pro.points.triple.fp}건이었습니다(PPV {fmt.pct(pro.points.triple.ppv ?? 0, 0)}). 연속 자동 감시의 근거입니다.
+            음성 {pro.neg}건 중 오경보는 {pro.points.triple.fp}건이었습니다(양성 예측도 <Term k="PPV" /> {fmt.pct(pro.points.triple.ppv ?? 0, 0)}). 연속 자동 감시의 근거입니다.
             라벨 개정 시점보다 앞섰다는 뜻이며, 규제기관의 인지 시점과는 별개입니다.</>} />
       </div>
 
@@ -151,7 +152,7 @@ export default function Validation() {
       </Card>
 
       <div className="grid" style={{ gridTemplateColumns: 'minmax(320px, 440px) minmax(0,1fr)', alignItems: 'start', marginBottom: 16 }}>
-        <Card title="ROC" sub="범례를 눌러 곡선을 켜고 끕니다">
+        <Card title={<Term k="ROC" />} sub={<><Term k="sens">민감도</Term>(세로)와 오경보율(가로)을 그린 곡선입니다. 왼쪽 위로 붙을수록 좋습니다. 범례를 눌러 곡선을 켜고 끕니다</>}>
           <RocChart res={res} hidden={hidden} />
           <div className="row wrap" style={{ gap: 6, marginTop: 8 }}>
             {res.methods.map((mm) => (
@@ -160,7 +161,7 @@ export default function Validation() {
           </div>
         </Card>
         <div className="stack" style={{ gap: 16 }}>
-          <Card title="AUC · 95% 부트스트랩 구간" sub="같은 쌍, 같은 정답. 모델 계열은 확률 0.5 기준 민감도·특이도도 함께">
+          <Card title={<><Term k="AUC" /> · 95% <Term k="bootstrap">부트스트랩</Term> 구간</>} sub="같은 쌍, 같은 정답. 모델 계열은 확률 0.5 기준 민감도·특이도도 함께">
             <table className="tbl">
               <thead><tr><th>방법</th><th>계열</th><th className="r">AUC</th><th className="r">95% CI</th><th className="r">민감도@0.5</th><th className="r">특이도@0.5</th></tr></thead>
               <tbody>{[...res.methods].sort((a, b) => b.auc - a.auc).map((mm) => (
@@ -181,7 +182,7 @@ export default function Validation() {
                   <div key={k} style={{ padding: 10, borderRadius: 10, border: '1px solid rgba(255,79,216,0.35)' }}>
                     <div className="mono" style={{ fontSize: 11, color: '#ff9ce8' }}>{k === 'evans' ? 'Evans (PRR≥2, χ²≥4, a≥3)' : '3중 기준 (Evans ∧ ROR₀₂₅>1 ∧ IC₀₂₅>0)'}</div>
                     <div className="num" style={{ fontSize: 13, marginTop: 4 }}>민감도 {fmt.pct(p.sens ?? 0, 0)} · 특이도 {fmt.pct(p.spec ?? 0, 0)} · PPV {fmt.pct(p.ppv ?? 0, 0)}</div>
-                    <div className="dim mono" style={{ fontSize: 10.5 }}>TP {p.tp} · FP {p.fp} · TN {p.tn} · FN {p.fn}</div>
+                    <div className="dim mono" style={{ fontSize: 10.5 }}><Term k="confusion">TP</Term> {p.tp} · FP {p.fp} · TN {p.tn} · FN {p.fn}</div>
                   </div>
                 )
               })}
@@ -225,7 +226,7 @@ export default function Validation() {
             </table>
           </div>
         </Card>
-        <Card title="반응 정의" sub="Harpaz 정의를 먼저 쓰고, 없는 것은 공개 정규식으로 MedDRA PT를 묶었습니다">
+        <Card title="반응 정의" sub={<>Harpaz 정의를 먼저 쓰고, 없는 것은 공개 정규식으로 <Term k="MedDRA" />(이상반응 표준 용어)를 묶었습니다</>}>
           <div className="stack" style={{ gap: 8, maxHeight: 460, overflow: 'auto' }}>
             {Object.entries(v.events).filter(([k]) => (v.pairs[set] ?? []).some((p) => p.event === k)).map(([k, e]) => (
               <details key={k} style={{ padding: '8px 10px', borderRadius: 10, border: '1px solid var(--line)' }}>
@@ -238,7 +239,7 @@ export default function Validation() {
         </Card>
       </div>
 
-      {le && <Card title="문헌 읽기 단계 검증 · 연구 설계 판정" sub={`${le.pairs}개 약물–반응 쌍의 PubMed 상위 문헌 중 MEDLINE 이 설계를 색인한 ${le.n}편`} style={{ marginBottom: 16 }}>
+      {le && <Card title={<>문헌 읽기 단계 검증 · <Term k="design">연구 설계</Term> 판정</>} sub={<>{le.pairs}개 약물–반응 쌍의 PubMed 상위 문헌 중 <Term k="PubMed">MEDLINE</Term>이 설계를 색인한 {le.n}편</>} style={{ marginBottom: 16 }}>
         <LitEval le={le} />
       </Card>}
 

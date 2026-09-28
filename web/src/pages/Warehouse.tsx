@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Card, HBars, Kpi, LineChart, Loading, PageHead } from '../components/ui'
 import { OCCP_LABEL, OUTCOME_LABEL, fmt, getJSON } from '../lib/data'
 import type { Overview, Schema } from '../lib/types'
+import Term from '../components/Term'
 
 const LAYER_COL: Record<string, string> = { raw: '#4d8dff', core: '#37e6ff', ref: '#a58bff', sig: '#ff4fd8', ops: '#76b900', etl: '#ffb547' }
 const ORDER = ['raw', 'core', 'ref', 'sig', 'ops', 'etl']
@@ -29,14 +30,14 @@ export default function Warehouse() {
   return (
     <div className="page">
       <PageHead eyebrow="PV Data Warehouse · DuckDB"
-        title={<>원천부터 SDR까지, <span style={{ color: 'var(--c-sense)' }}>감사 가능한 5계층</span></>}
-        lede={<>FDA FAERS 분기 파일 {ov.quarters}개({ov.first}–{ov.asof})를 증분 적재했습니다. 원문은 원천 계층에 VARCHAR 그대로 두고, 정제·참조·불균형 분석·운영 계층을 SQL로만 파생합니다. 모든 불균형 지표 수치는 이 SQL을 다시 돌리면 같은 값이 나옵니다. DB 크기는 {(sc.db_bytes / 1e9).toFixed(2)} GB입니다.</>} />
+        title={<>원천부터 <Term k="SDR" />까지, <span style={{ color: 'var(--c-sense)' }}>감사 가능한 5계층</span></>}
+        lede={<><Term k="warehouse">웨어하우스</Term>는 원천 데이터를 분석하기 좋게 층층이 정리한 데이터베이스입니다. <Term k="FAERS" ko /> 분기 파일 {ov.quarters}개({ov.first}–{ov.asof})를 증분 적재했습니다. 원문은 원천 계층에 VARCHAR 그대로 두고, 정제·참조·<Term k="disproportionality">불균형 분석</Term>·운영 계층을 <Term k="SQL">SQL</Term>로만 파생합니다. 모든 불균형 지표 수치는 이 SQL을 다시 돌리면 같은 값이 나옵니다. SDR은 불균형 보고 신호(세 통계 기준을 모두 넘은 약물–반응 쌍)입니다. DB 크기는 {(sc.db_bytes / 1e9).toFixed(2)} GB입니다.</>} />
 
       <div className="grid g4" style={{ marginBottom: 16 }}>
-        <Kpi label="raw rows (demo+drug+reac)" value={ov.raw_reports + ov.raw_drug_rows + ov.raw_reac_rows} color="#4d8dff" sub={`${fmt.compact(ov.raw_drug_rows)} drug rows · ${fmt.compact(ov.raw_reac_rows)} reaction rows`} />
-        <Kpi label="unique cases" value={ov.cases} color="#37e6ff" sub={`${fmt.int(ov.deleted_cases)} FDA-deleted caseids excluded`} />
-        <Kpi label="drug names normalized" value={ov.drug_names_norm} color="#a58bff" sub={`from ${fmt.int(ov.drug_names_raw)} raw spellings`} />
-        <Kpi label="MedDRA preferred terms" value={ov.pts} color="#ff4fd8" sub={`${fmt.compact(ov.triplets)} case-drug-event triplets`} />
+        <Kpi label="raw rows (demo+drug+reac)" hint="원천 파일의 보고 · 약물 · 반응 행을 모두 더한 수" value={ov.raw_reports + ov.raw_drug_rows + ov.raw_reac_rows} color="#4d8dff" sub={`${fmt.compact(ov.raw_drug_rows)} drug rows · ${fmt.compact(ov.raw_reac_rows)} reaction rows`} />
+        <Kpi label={<>unique <Term k="caseid">cases</Term></>} hint="같은 사례의 옛 버전과 FDA 삭제분을 뺀 고유 사례 수" value={ov.cases} color="#37e6ff" sub={`${fmt.int(ov.deleted_cases)} FDA-deleted caseids excluded`} />
+        <Kpi label="drug names normalized" hint="제각각인 약 이름을 성분명으로 통일한 수" value={ov.drug_names_norm} color="#a58bff" sub={`from ${fmt.int(ov.drug_names_raw)} raw spellings`} />
+        <Kpi label={<Term k="MedDRA">MedDRA preferred terms</Term>} hint="보고에 나온 이상반응 표준 용어 수" value={ov.pts} color="#ff4fd8" sub={`${fmt.compact(ov.triplets)} case-drug-event triplets`} />
       </div>
 
       <Card title="계층 스키마" sub="클릭하면 컬럼이 펼쳐집니다. 행 수는 빌드 시점 실측값입니다" style={{ marginBottom: 16 }}>
@@ -65,7 +66,7 @@ export default function Warehouse() {
         <Card title="정제 퍼널" sub="보고 → 케이스 → SDR. 각 단계는 SQL 한 단계입니다">
           <HBars data={funnel} labelWidth={200} fmt={fmt.compact} height={34} />
         </Card>
-        <Card title="분기별 보고와 적재 시간" sub="원천 보고 수(파랑), 신속보고 EXP(분홍)입니다. 분기 zip 하나의 평균 적재 시간은 아래에 있습니다">
+        <Card title="분기별 보고와 적재 시간" sub={<>원천 보고 수(파랑), <Term k="expedited">신속보고</Term> EXP(분홍)입니다. 분기 zip 하나의 평균 적재 시간은 아래에 있습니다</>}>
           <LineChart height={220} xTicks={xt} series={[
             { key: 'rep', color: '#4d8dff', area: true, values: qs.map((q, k) => ({ x: k, y: q.reports })) },
             { key: 'exp', color: '#ff4fd8', values: qs.map((q, k) => ({ x: k, y: q.expedited })) },
@@ -78,7 +79,7 @@ export default function Warehouse() {
       </div>
 
       <div className="grid g3">
-        <Card title="결과 코드 분포" sub="core_outc · 케이스당 중복 허용">
+        <Card title={<Term k="outcome">결과 코드 분포</Term>} sub="core_outc · 케이스당 중복 허용">
           <HBars data={Object.entries(ov.outcomes).map(([k, v]) => ({ label: `${OUTCOME_LABEL[k] ?? k} (${k})`, value: v, color: k === 'DE' ? '#ff5d6c' : k === 'LT' ? '#ff8f3a' : '#37e6ff' }))} fmt={fmt.compact} labelWidth={120} />
         </Card>
         <Card title="보고자 유형" sub="occp_cod">
@@ -87,7 +88,7 @@ export default function Warehouse() {
         <Card title="보고 국가 상위" sub="reporter_country">
           <HBars data={ov.countries.slice(0, 9).map(([k, v]) => ({ label: k, value: v, color: '#76b900' }))} fmt={fmt.compact} labelWidth={60} />
         </Card>
-        <Card title="의심약 상위" sub="PS/SS 기준 케이스 수" className="span2">
+        <Card title="의심약 상위" sub={<><Term k="role">PS/SS</Term>(주 · 부 의심약) 기준 케이스 수</>} className="span2">
           <HBars data={ov.top_drugs.slice(0, 14).map(([k, v]) => ({ label: k, value: v, color: '#ffb547' }))} fmt={fmt.compact} labelWidth={200} />
         </Card>
         <Card title="연령 분포" sub="age_years (보고된 경우)">
