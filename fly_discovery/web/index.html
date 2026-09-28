@@ -170,7 +170,7 @@ body{overflow-x:hidden}
 </section>
 
 <section class="card" style="display: grid; grid-template-columns: 150px minmax(0, 1fr); overflow: hidden; flex-grow: 1;">
-<canvas ref="{{ brainRef }}" aria-label="MaleCNS 뉴런 위치 점구름" style="width: 150px; height: 100%; min-height: 150px; display: block; background: #070B15;"></canvas>
+<div style="position: relative; width: 150px; min-height: 150px;"><canvas ref="{{ brainRef }}" aria-label="MaleCNS 뉴런 위치 점구름" style="position: absolute; inset: 0; width: 100%; height: 100%; display: block; background: #070B15;"></canvas></div>
 <div style="padding: 18px 20px; display: flex; flex-direction: column; gap: 8px;">
 <span class="lbl" style="font-size: 11px;">FDDD 커넥톰 · 보조</span>
 <span style="font-size: 14px; line-height: 1.55;">초파리 뇌가 도킹 점수를 보상으로 받아 선호를 학습합니다</span>
