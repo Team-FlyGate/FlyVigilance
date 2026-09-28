@@ -123,6 +123,26 @@ STEP 1 FlyDiscovery                         STEP 2 FlyVigilance
 
 MaleCNS 초파리 커넥텀(뉴런 49,244개) 화면은 에이전트의 라우팅 위상을 시각화한 것입니다.
 
+## flygate CLI
+
+에이전트가 쓰는 도구와 사람이 쓰는 명령이 같습니다. 모든 명령은 근거 ID(`evidence_ids`)가 붙은 JSON을 출력합니다.
+
+```bash
+git clone https://github.com/Team-FlyGate/Project-FlyGate && cd Project-FlyGate
+./scripts/install_flygate.sh              # .venv 생성, 의존성 설치, ~/.local/bin/flygate 연결
+# 키: 저장소 루트 .env 에 TYPESAFE_API_KEY, NVIDIA_API_KEY (없으면 판단이 필요한 명령은 '사람 확인'으로 돌립니다)
+
+flygate discover parp1                    # STEP 1: BioNeMo NIM 실측과 크리틱 판정
+flygate signals NIRAPARIB                 # 불균형 지표 상위 반응 (SQL 추출본)
+flygate grade NIRAPARIB thrombocytopenia  # PV 분류 후보: 라벨 절 + SDR + 문헌(리랭커)
+flygate triage agent/examples/case_niraparib.json      # 반사 트리아지 7문항 + 결정 정책
+flygate critic agent/examples/claims_niraparib.json    # 크리틱 3단 + PV 정책 가드
+flygate kr-causality agent/examples/kr_report.txt --route   # 국내 보고 구조화 + 한국형 인과성
+flygate watch                             # 하트비트 · cron 점검 (제출하지 않습니다)
+```
+
+OpenShell 샌드박스 배포는 `agent/deploy_nemoclaw.sh worker|assistant`, 점검은 `agent/openshell_smoke.sh`로 합니다([docs/AGENT.md](docs/AGENT.md)).
+
 ## 실행
 
 ```bash
@@ -137,11 +157,6 @@ NVIDIA_API_KEY=nvapi-...
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt duckdb pandas pyarrow numpy scipy uvicorn pytest
 .venv/bin/python -m uvicorn api.index:app --port 8000
 cd web && npm install && npm run dev          # http://localhost:5173
-
-# 에이전트 도구 (샌드박스 안팎에서 같은 명령입니다)
-.venv/bin/python agent/flygate.py triage agent/examples/case_niraparib.json
-.venv/bin/python agent/flygate.py grade NIRAPARIB thrombocytopenia
-.venv/bin/python agent/flygate.py critic agent/examples/claims_niraparib.json
 
 # OpenShell 샌드박스 스모크
 ./agent/openshell_smoke.sh

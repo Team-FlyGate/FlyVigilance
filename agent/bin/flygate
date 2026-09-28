@@ -3,7 +3,13 @@
 # 파이썬은 FLYGATE_PYTHON > 저장소 .venv > python3 순서로 고릅니다.
 # 샌드박스 배포본(/sandbox/flygate)에는 순수 파이썬 의존성이 vendor/ 에 함께 올라가므로 그 경로를 PYTHONPATH 에 더합니다.
 set -eu
-HERE="$(cd "$(dirname "$0")" && pwd)"
+# 심볼릭 링크(~/.local/bin/flygate)로 불려도 저장소 안의 실제 위치를 찾습니다
+SELF="$0"
+while [ -L "$SELF" ]; do
+  LINK="$(readlink "$SELF")"
+  case "$LINK" in /*) SELF="$LINK" ;; *) SELF="$(dirname "$SELF")/$LINK" ;; esac
+done
+HERE="$(cd "$(dirname "$SELF")" && pwd)"
 AGENT="$(dirname "$HERE")"
 ROOT="$(dirname "$AGENT")"
 if [ -n "${FLYGATE_PYTHON:-}" ]; then
