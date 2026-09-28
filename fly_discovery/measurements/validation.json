@@ -1,0 +1,2347 @@
+{
+ "results": {
+  "parp1-4r6e--niraparib": {
+   "key": "parp1-4r6e--niraparib",
+   "drug": "niraparib",
+   "target": "PARP1 catalytic domain",
+   "gene": "PARP1",
+   "pdb": "4R6E",
+   "ligand": "3JD",
+   "chain": "A",
+   "structure": {
+    "method": "X-ray",
+    "resolution": 2.2,
+    "organism": "Homo sapiens",
+    "pocket_residues": 53,
+    "pocket_gaps": [],
+    "verdict": "도킹 가능",
+    "reasons": []
+   },
+   "runs": 5,
+   "seconds": 15.3,
+   "top1_rmsd": [
+    0.896,
+    1.036,
+    0.395,
+    0.495,
+    0.964
+   ],
+   "top1_confidence": [
+    0.6,
+    0.496,
+    0.738,
+    0.81,
+    0.719
+   ],
+   "confidence_mean": 0.673,
+   "confidence_sd": 0.111,
+   "pairwise_top1_rmsd": [
+    0.688,
+    0.783,
+    0.644,
+    0.402,
+    0.864,
+    0.934,
+    0.865,
+    0.571,
+    0.945,
+    0.662
+   ],
+   "pairwise_median": 0.74,
+   "converged": true,
+   "crystal_hits": 5,
+   "grade": "HIGH",
+   "runs_detail": [
+    [
+     {
+      "confidence": 0.6,
+      "rmsd": 0.896
+     },
+     {
+      "confidence": 0.583,
+      "rmsd": 1.067
+     },
+     {
+      "confidence": 0.539,
+      "rmsd": 1.167
+     },
+     {
+      "confidence": 0.512,
+      "rmsd": 1.133
+     },
+     {
+      "confidence": 0.471,
+      "rmsd": 1.212
+     }
+    ],
+    [
+     {
+      "confidence": 0.496,
+      "rmsd": 1.036
+     },
+     {
+      "confidence": 0.487,
+      "rmsd": 0.773
+     },
+     {
+      "confidence": 0.455,
+      "rmsd": 1.15
+     },
+     {
+      "confidence": 0.323,
+      "rmsd": 1.273
+     },
+     {
+      "confidence": 0.239,
+      "rmsd": 1.163
+     }
+    ],
+    [
+     {
+      "confidence": 0.738,
+      "rmsd": 0.395
+     },
+     {
+      "confidence": 0.637,
+      "rmsd": 0.402
+     },
+     {
+      "confidence": 0.537,
+      "rmsd": 1.256
+     },
+     {
+      "confidence": 0.507,
+      "rmsd": 0.71
+     },
+     {
+      "confidence": 0.36,
+      "rmsd": 0.621
+     }
+    ],
+    [
+     {
+      "confidence": 0.81,
+      "rmsd": 0.495
+     },
+     {
+      "confidence": 0.689,
+      "rmsd": 0.486
+     },
+     {
+      "confidence": 0.625,
+      "rmsd": 0.453
+     },
+     {
+      "confidence": 0.596,
+      "rmsd": 1.165
+     },
+     {
+      "confidence": 0.513,
+      "rmsd": 0.525
+     }
+    ],
+    [
+     {
+      "confidence": 0.719,
+      "rmsd": 0.964
+     },
+     {
+      "confidence": 0.701,
+      "rmsd": 0.882
+     },
+     {
+      "confidence": 0.621,
+      "rmsd": 0.8
+     },
+     {
+      "confidence": 0.593,
+      "rmsd": 1.209
+     },
+     {
+      "confidence": 0.579,
+      "rmsd": 1.235
+     }
+    ]
+   ]
+  },
+  "gr-1m2z--dexamethasone": {
+   "key": "gr-1m2z--dexamethasone",
+   "drug": "dexamethasone",
+   "target": "Glucocorticoid receptor LBD",
+   "gene": "NR3C1",
+   "pdb": "1M2Z",
+   "ligand": "DEX",
+   "chain": "A",
+   "structure": {
+    "method": "X-ray",
+    "resolution": 2.5,
+    "organism": "Homo sapiens",
+    "pocket_residues": 58,
+    "pocket_gaps": [],
+    "verdict": "도킹 가능",
+    "reasons": []
+   },
+   "runs": 5,
+   "seconds": 9.8,
+   "top1_rmsd": [
+    0.573,
+    0.997,
+    0.991,
+    0.678,
+    0.426
+   ],
+   "top1_confidence": [
+    0.959,
+    0.894,
+    0.969,
+    1.034,
+    1.16
+   ],
+   "confidence_mean": 1.003,
+   "confidence_sd": 0.09,
+   "pairwise_top1_rmsd": [
+    1.044,
+    1.105,
+    0.997,
+    0.759,
+    0.334,
+    1.19,
+    1.23,
+    1.148,
+    1.219,
+    0.69
+   ],
+   "pairwise_median": 1.07,
+   "converged": true,
+   "crystal_hits": 5,
+   "grade": "HIGH",
+   "runs_detail": [
+    [
+     {
+      "confidence": 0.959,
+      "rmsd": 0.573
+     },
+     {
+      "confidence": 0.926,
+      "rmsd": 0.864
+     },
+     {
+      "confidence": 0.912,
+      "rmsd": 0.639
+     },
+     {
+      "confidence": 0.886,
+      "rmsd": 0.608
+     },
+     {
+      "confidence": 0.868,
+      "rmsd": 0.843
+     }
+    ],
+    [
+     {
+      "confidence": 0.894,
+      "rmsd": 0.997
+     },
+     {
+      "confidence": 0.811,
+      "rmsd": 0.963
+     },
+     {
+      "confidence": 0.811,
+      "rmsd": 1.012
+     },
+     {
+      "confidence": 0.802,
+      "rmsd": 0.949
+     },
+     {
+      "confidence": 0.772,
+      "rmsd": 0.956
+     }
+    ],
+    [
+     {
+      "confidence": 0.969,
+      "rmsd": 0.991
+     },
+     {
+      "confidence": 0.877,
+      "rmsd": 0.98
+     },
+     {
+      "confidence": 0.862,
+      "rmsd": 0.987
+     },
+     {
+      "confidence": 0.828,
+      "rmsd": 1.005
+     },
+     {
+      "confidence": 0.748,
+      "rmsd": 0.971
+     }
+    ],
+    [
+     {
+      "confidence": 1.034,
+      "rmsd": 0.678
+     },
+     {
+      "confidence": 0.986,
+      "rmsd": 0.702
+     },
+     {
+      "confidence": 0.981,
+      "rmsd": 0.754
+     },
+     {
+      "confidence": 0.856,
+      "rmsd": 0.794
+     },
+     {
+      "confidence": 0.845,
+      "rmsd": 0.753
+     }
+    ],
+    [
+     {
+      "confidence": 1.16,
+      "rmsd": 0.426
+     },
+     {
+      "confidence": 1.141,
+      "rmsd": 0.435
+     },
+     {
+      "confidence": 1.136,
+      "rmsd": 0.492
+     },
+     {
+      "confidence": 1.129,
+      "rmsd": 0.451
+     },
+     {
+      "confidence": 1.086,
+      "rmsd": 0.494
+     }
+    ]
+   ]
+  },
+  "d2-6cm4--risperidone": {
+   "key": "d2-6cm4--risperidone",
+   "drug": "risperidone",
+   "target": "Dopamine D2 receptor",
+   "gene": "DRD2",
+   "pdb": "6CM4",
+   "ligand": "8NU",
+   "chain": "A",
+   "structure": {
+    "method": "X-ray",
+    "resolution": 2.867,
+    "organism": "Homo sapiens",
+    "pocket_residues": 59,
+    "pocket_gaps": [],
+    "verdict": "주의",
+    "reasons": [
+     "해상도 2.867 Å"
+    ]
+   },
+   "runs": 5,
+   "seconds": 14.8,
+   "top1_rmsd": [
+    2.123,
+    1.479,
+    1.012,
+    1.846,
+    1.955
+   ],
+   "top1_confidence": [
+    0.111,
+    -0.16,
+    0.272,
+    -0.432,
+    0.157
+   ],
+   "confidence_mean": -0.01,
+   "confidence_sd": 0.254,
+   "pairwise_top1_rmsd": [
+    1.432,
+    2.077,
+    1.861,
+    2.81,
+    1.581,
+    1.279,
+    2.385,
+    1.707,
+    2.049,
+    2.581
+   ],
+   "pairwise_median": 1.96,
+   "converged": true,
+   "crystal_hits": 4,
+   "grade": "MEDIUM",
+   "runs_detail": [
+    [
+     {
+      "confidence": 0.111,
+      "rmsd": 2.123
+     },
+     {
+      "confidence": -0.217,
+      "rmsd": 1.42
+     },
+     {
+      "confidence": -0.641,
+      "rmsd": 1.797
+     },
+     {
+      "confidence": -0.809,
+      "rmsd": 2.297
+     },
+     {
+      "confidence": -1.584,
+      "rmsd": 2.483
+     }
+    ],
+    [
+     {
+      "confidence": -0.16,
+      "rmsd": 1.479
+     },
+     {
+      "confidence": -0.399,
+      "rmsd": 1.797
+     },
+     {
+      "confidence": -0.623,
+      "rmsd": 2.855
+     },
+     {
+      "confidence": -0.912,
+      "rmsd": 2.098
+     },
+     {
+      "confidence": -0.997,
+      "rmsd": 2.307
+     }
+    ],
+    [
+     {
+      "confidence": 0.272,
+      "rmsd": 1.012
+     },
+     {
+      "confidence": -0.135,
+      "rmsd": 1.235
+     },
+     {
+      "confidence": -0.374,
+      "rmsd": 1.501
+     },
+     {
+      "confidence": -0.515,
+      "rmsd": 2.135
+     },
+     {
+      "confidence": -0.604,
+      "rmsd": 2.04
+     }
+    ],
+    [
+     {
+      "confidence": -0.432,
+      "rmsd": 1.846
+     },
+     {
+      "confidence": -0.518,
+      "rmsd": 2.114
+     },
+     {
+      "confidence": -0.64,
+      "rmsd": 2.497
+     },
+     {
+      "confidence": -1.109,
+      "rmsd": 2.045
+     },
+     {
+      "confidence": -1.7,
+      "rmsd": 2.598
+     }
+    ],
+    [
+     {
+      "confidence": 0.157,
+      "rmsd": 1.955
+     },
+     {
+      "confidence": 0.034,
+      "rmsd": 1.142
+     },
+     {
+      "confidence": -0.447,
+      "rmsd": 1.539
+     },
+     {
+      "confidence": -1.179,
+      "rmsd": 2.916
+     },
+     {
+      "confidence": -1.211,
+      "rmsd": 2.504
+     }
+    ]
+   ]
+  },
+  "jak2-6vgl--ruxolitinib": {
+   "key": "jak2-6vgl--ruxolitinib",
+   "drug": "ruxolitinib",
+   "target": "JAK2 JH1 kinase",
+   "gene": "JAK2",
+   "pdb": "6VGL",
+   "ligand": "RXT",
+   "chain": "D",
+   "structure": {
+    "method": "X-ray",
+    "resolution": 1.9,
+    "organism": "Homo sapiens",
+    "pocket_residues": 50,
+    "pocket_gaps": [],
+    "verdict": "도킹 가능",
+    "reasons": []
+   },
+   "runs": 5,
+   "seconds": 12.2,
+   "top1_rmsd": [
+    2.907,
+    0.94,
+    0.8,
+    0.488,
+    0.616
+   ],
+   "top1_confidence": [
+    0.021,
+    0.037,
+    0.633,
+    0.603,
+    0.243
+   ],
+   "confidence_mean": 0.307,
+   "confidence_sd": 0.266,
+   "pairwise_top1_rmsd": [
+    2.96,
+    2.862,
+    2.912,
+    2.947,
+    0.927,
+    0.849,
+    0.862,
+    0.757,
+    1.001,
+    0.615
+   ],
+   "pairwise_median": 0.96,
+   "converged": true,
+   "crystal_hits": 4,
+   "grade": "HIGH",
+   "runs_detail": [
+    [
+     {
+      "confidence": 0.021,
+      "rmsd": 2.907
+     },
+     {
+      "confidence": -0.23,
+      "rmsd": 1.694
+     },
+     {
+      "confidence": -0.316,
+      "rmsd": 1.122
+     },
+     {
+      "confidence": -0.375,
+      "rmsd": 2.702
+     },
+     {
+      "confidence": -1.861,
+      "rmsd": 2.849
+     }
+    ],
+    [
+     {
+      "confidence": 0.037,
+      "rmsd": 0.94
+     },
+     {
+      "confidence": 0.033,
+      "rmsd": 2.739
+     },
+     {
+      "confidence": -0.223,
+      "rmsd": 1.294
+     },
+     {
+      "confidence": -0.284,
+      "rmsd": 1.339
+     },
+     {
+      "confidence": -0.854,
+      "rmsd": 2.54
+     }
+    ],
+    [
+     {
+      "confidence": 0.633,
+      "rmsd": 0.8
+     },
+     {
+      "confidence": 0.466,
+      "rmsd": 0.476
+     },
+     {
+      "confidence": 0.043,
+      "rmsd": 0.894
+     },
+     {
+      "confidence": -0.161,
+      "rmsd": 1.332
+     },
+     {
+      "confidence": -1.05,
+      "rmsd": 2.683
+     }
+    ],
+    [
+     {
+      "confidence": 0.603,
+      "rmsd": 0.488
+     },
+     {
+      "confidence": 0.078,
+      "rmsd": 0.915
+     },
+     {
+      "confidence": -0.363,
+      "rmsd": 3.009
+     },
+     {
+      "confidence": -0.387,
+      "rmsd": 1.335
+     },
+     {
+      "confidence": -1.404,
+      "rmsd": 2.74
+     }
+    ],
+    [
+     {
+      "confidence": 0.243,
+      "rmsd": 0.616
+     },
+     {
+      "confidence": 0.207,
+      "rmsd": 0.924
+     },
+     {
+      "confidence": 0.07,
+      "rmsd": 2.762
+     },
+     {
+      "confidence": -0.343,
+      "rmsd": 2.89
+     },
+     {
+      "confidence": -0.616,
+      "rmsd": 1.641
+     }
+    ]
+   ]
+  },
+  "crbn-4ci2--lenalidomide": {
+   "key": "crbn-4ci2--lenalidomide",
+   "drug": "lenalidomide",
+   "target": "Cereblon (DDB1-CRBN)",
+   "gene": "CRBN",
+   "pdb": "4CI2",
+   "ligand": "LVY",
+   "chain": "B",
+   "structure": {
+    "method": "X-ray",
+    "resolution": 2.95,
+    "organism": "Gallus gallus",
+    "pocket_residues": 33,
+    "pocket_gaps": [],
+    "verdict": "주의",
+    "reasons": [
+     "해상도 2.95 Å",
+     "생물종 Gallus gallus"
+    ]
+   },
+   "runs": 5,
+   "seconds": 12.3,
+   "top1_rmsd": [
+    0.177,
+    0.675,
+    0.352,
+    0.525,
+    0.541
+   ],
+   "top1_confidence": [
+    0.39,
+    0.077,
+    0.299,
+    0.277,
+    0.301
+   ],
+   "confidence_mean": 0.269,
+   "confidence_sd": 0.103,
+   "pairwise_top1_rmsd": [
+    0.649,
+    0.381,
+    0.505,
+    0.548,
+    0.922,
+    0.258,
+    0.617,
+    0.741,
+    0.658,
+    0.48
+   ],
+   "pairwise_median": 0.58,
+   "converged": true,
+   "crystal_hits": 5,
+   "grade": "MEDIUM",
+   "runs_detail": [
+    [
+     {
+      "confidence": 0.39,
+      "rmsd": 0.177
+     },
+     {
+      "confidence": 0.277,
+      "rmsd": 0.289
+     },
+     {
+      "confidence": 0.254,
+      "rmsd": 0.317
+     },
+     {
+      "confidence": 0.248,
+      "rmsd": 0.392
+     },
+     {
+      "confidence": 0.247,
+      "rmsd": 0.405
+     }
+    ],
+    [
+     {
+      "confidence": 0.077,
+      "rmsd": 0.675
+     },
+     {
+      "confidence": 0.057,
+      "rmsd": 0.681
+     },
+     {
+      "confidence": 0.057,
+      "rmsd": 0.68
+     },
+     {
+      "confidence": 0.043,
+      "rmsd": 0.664
+     },
+     {
+      "confidence": -0.019,
+      "rmsd": 0.716
+     }
+    ],
+    [
+     {
+      "confidence": 0.299,
+      "rmsd": 0.352
+     },
+     {
+      "confidence": 0.268,
+      "rmsd": 0.37
+     },
+     {
+      "confidence": 0.26,
+      "rmsd": 0.281
+     },
+     {
+      "confidence": 0.216,
+      "rmsd": 0.31
+     },
+     {
+      "confidence": 0.173,
+      "rmsd": 0.467
+     }
+    ],
+    [
+     {
+      "confidence": 0.277,
+      "rmsd": 0.525
+     },
+     {
+      "confidence": 0.225,
+      "rmsd": 0.574
+     },
+     {
+      "confidence": 0.209,
+      "rmsd": 0.535
+     },
+     {
+      "confidence": 0.154,
+      "rmsd": 0.541
+     },
+     {
+      "confidence": 0.153,
+      "rmsd": 0.616
+     }
+    ],
+    [
+     {
+      "confidence": 0.301,
+      "rmsd": 0.541
+     },
+     {
+      "confidence": 0.284,
+      "rmsd": 0.508
+     },
+     {
+      "confidence": 0.283,
+      "rmsd": 0.536
+     },
+     {
+      "confidence": 0.228,
+      "rmsd": 0.69
+     },
+     {
+      "confidence": 0.187,
+      "rmsd": 0.665
+     }
+    ]
+   ]
+  },
+  "mpro-7si9--nirmatrelvir": {
+   "key": "mpro-7si9--nirmatrelvir",
+   "drug": "nirmatrelvir",
+   "target": "SARS-CoV-2 main protease",
+   "gene": "Mpro (nsp5)",
+   "pdb": "7SI9",
+   "ligand": "4WI",
+   "chain": "A",
+   "structure": {
+    "method": "X-ray",
+    "resolution": 2.0,
+    "organism": "Severe acute respiratory syndrome coronavirus 2",
+    "pocket_residues": 49,
+    "pocket_gaps": [],
+    "verdict": "도킹 가능",
+    "reasons": []
+   },
+   "runs": 5,
+   "seconds": 153.0,
+   "top1_rmsd": [
+    0.681,
+    1.322,
+    0.813,
+    0.732,
+    0.803
+   ],
+   "top1_confidence": [
+    -0.341,
+    -0.263,
+    -0.223,
+    -0.129,
+    -0.181
+   ],
+   "confidence_mean": -0.227,
+   "confidence_sd": 0.072,
+   "pairwise_top1_rmsd": [
+    1.283,
+    0.987,
+    0.962,
+    1.09,
+    1.252,
+    1.593,
+    1.295,
+    0.977,
+    0.671,
+    0.936
+   ],
+   "pairwise_median": 1.04,
+   "converged": true,
+   "crystal_hits": 5,
+   "grade": "HIGH",
+   "runs_detail": [
+    [
+     {
+      "confidence": -0.341,
+      "rmsd": 0.681
+     },
+     {
+      "confidence": -0.382,
+      "rmsd": 0.832
+     },
+     {
+      "confidence": -0.549,
+      "rmsd": 0.712
+     },
+     {
+      "confidence": -1.341,
+      "rmsd": 2.673
+     },
+     {
+      "confidence": -1.588,
+      "rmsd": 6.647
+     }
+    ],
+    [
+     {
+      "confidence": -0.263,
+      "rmsd": 1.322
+     },
+     {
+      "confidence": -0.313,
+      "rmsd": 0.907
+     },
+     {
+      "confidence": -0.613,
+      "rmsd": 1.164
+     },
+     {
+      "confidence": -0.671,
+      "rmsd": 1.302
+     },
+     {
+      "confidence": -0.821,
+      "rmsd": 1.632
+     }
+    ],
+    [
+     {
+      "confidence": -0.223,
+      "rmsd": 0.813
+     },
+     {
+      "confidence": -0.374,
+      "rmsd": 0.866
+     },
+     {
+      "confidence": -0.517,
+      "rmsd": 1.227
+     },
+     {
+      "confidence": -0.728,
+      "rmsd": 3.236
+     },
+     {
+      "confidence": -1.126,
+      "rmsd": 2.542
+     }
+    ],
+    [
+     {
+      "confidence": -0.129,
+      "rmsd": 0.732
+     },
+     {
+      "confidence": -0.293,
+      "rmsd": 0.743
+     },
+     {
+      "confidence": -0.443,
+      "rmsd": 1.216
+     },
+     {
+      "confidence": -0.767,
+      "rmsd": 2.669
+     },
+     {
+      "confidence": -1.028,
+      "rmsd": 1.708
+     }
+    ],
+    [
+     {
+      "confidence": -0.181,
+      "rmsd": 0.803
+     },
+     {
+      "confidence": -0.266,
+      "rmsd": 0.724
+     },
+     {
+      "confidence": -0.28,
+      "rmsd": 0.7
+     },
+     {
+      "confidence": -0.729,
+      "rmsd": 1.258
+     },
+     {
+      "confidence": -1.073,
+      "rmsd": 2.408
+     }
+    ]
+   ]
+  },
+  "parp1-7kk3--talazoparib": {
+   "key": "parp1-7kk3--talazoparib",
+   "drug": "talazoparib",
+   "target": "PARP1 catalytic domain",
+   "gene": "PARP1",
+   "pdb": "7KK3",
+   "ligand": "2YQ",
+   "chain": "A",
+   "structure": {
+    "method": "X-ray",
+    "resolution": 2.06,
+    "organism": "Homo sapiens",
+    "pocket_residues": 50,
+    "pocket_gaps": [],
+    "verdict": "도킹 가능",
+    "reasons": []
+   },
+   "runs": 5,
+   "seconds": 10.3,
+   "top1_rmsd": [
+    0.512,
+    0.408,
+    0.957,
+    1.565,
+    0.594
+   ],
+   "top1_confidence": [
+    0.487,
+    0.427,
+    0.647,
+    -0.701,
+    0.553
+   ],
+   "confidence_mean": 0.283,
+   "confidence_sd": 0.497,
+   "pairwise_top1_rmsd": [
+    0.348,
+    0.975,
+    1.173,
+    0.435,
+    0.817,
+    1.403,
+    0.26,
+    1.752,
+    0.717,
+    1.354
+   ],
+   "pairwise_median": 0.9,
+   "converged": true,
+   "crystal_hits": 5,
+   "grade": "HIGH",
+   "runs_detail": [
+    [
+     {
+      "confidence": 0.487,
+      "rmsd": 0.512
+     },
+     {
+      "confidence": 0.338,
+      "rmsd": 0.547
+     },
+     {
+      "confidence": 0.306,
+      "rmsd": 0.467
+     },
+     {
+      "confidence": 0.278,
+      "rmsd": 0.819
+     },
+     {
+      "confidence": 0.164,
+      "rmsd": 0.662
+     }
+    ],
+    [
+     {
+      "confidence": 0.427,
+      "rmsd": 0.408
+     },
+     {
+      "confidence": 0.385,
+      "rmsd": 0.451
+     },
+     {
+      "confidence": 0.353,
+      "rmsd": 0.465
+     },
+     {
+      "confidence": 0.352,
+      "rmsd": 0.41
+     },
+     {
+      "confidence": 0.334,
+      "rmsd": 0.378
+     }
+    ],
+    [
+     {
+      "confidence": 0.647,
+      "rmsd": 0.957
+     },
+     {
+      "confidence": 0.422,
+      "rmsd": 0.828
+     },
+     {
+      "confidence": 0.292,
+      "rmsd": 0.579
+     },
+     {
+      "confidence": 0.277,
+      "rmsd": 0.462
+     },
+     {
+      "confidence": 0.242,
+      "rmsd": 0.477
+     }
+    ],
+    [
+     {
+      "confidence": -0.701,
+      "rmsd": 1.565
+     },
+     {
+      "confidence": -0.928,
+      "rmsd": 1.57
+     },
+     {
+      "confidence": -0.998,
+      "rmsd": 1.538
+     },
+     {
+      "confidence": -1.085,
+      "rmsd": 1.616
+     },
+     {
+      "confidence": -1.311,
+      "rmsd": 1.565
+     }
+    ],
+    [
+     {
+      "confidence": 0.553,
+      "rmsd": 0.594
+     },
+     {
+      "confidence": 0.384,
+      "rmsd": 0.507
+     },
+     {
+      "confidence": 0.361,
+      "rmsd": 0.552
+     },
+     {
+      "confidence": 0.353,
+      "rmsd": 0.53
+     },
+     {
+      "confidence": 0.298,
+      "rmsd": 0.527
+     }
+    ]
+   ]
+  },
+  "5ht2a-8zmg--pimavanserin": {
+   "key": "5ht2a-8zmg--pimavanserin",
+   "drug": "pimavanserin",
+   "target": "Serotonin 2A receptor",
+   "gene": "HTR2A",
+   "pdb": "8ZMG",
+   "ligand": "A1L11",
+   "chain": "A",
+   "structure": {
+    "method": "X-ray",
+    "resolution": 3.4,
+    "organism": "Homo sapiens",
+    "pocket_residues": 60,
+    "pocket_gaps": [],
+    "verdict": "주의",
+    "reasons": [
+     "해상도 3.4 Å"
+    ]
+   },
+   "runs": 5,
+   "seconds": 40.7,
+   "top1_rmsd": [
+    9.196,
+    10.333,
+    6.464,
+    8.969,
+    1.707
+   ],
+   "top1_confidence": [
+    -1.156,
+    -0.635,
+    -1.392,
+    -1.054,
+    -0.072
+   ],
+   "confidence_mean": -0.862,
+   "confidence_sd": 0.465,
+   "pairwise_top1_rmsd": [
+    3.299,
+    3.903,
+    9.251,
+    8.434,
+    6.14,
+    8.823,
+    9.618,
+    8.802,
+    5.724,
+    8.56
+   ],
+   "pairwise_median": 8.5,
+   "converged": false,
+   "crystal_hits": 1,
+   "grade": "LOW",
+   "runs_detail": [
+    [
+     {
+      "confidence": -1.156,
+      "rmsd": 9.196
+     },
+     {
+      "confidence": -1.836,
+      "rmsd": 7.728
+     },
+     {
+      "confidence": -1.999,
+      "rmsd": 4.642
+     },
+     {
+      "confidence": -3.306,
+      "rmsd": 4.17
+     },
+     {
+      "confidence": -4.018,
+      "rmsd": 31.19
+     }
+    ],
+    [
+     {
+      "confidence": -0.635,
+      "rmsd": 10.333
+     },
+     {
+      "confidence": -1.069,
+      "rmsd": 1.949
+     },
+     {
+      "confidence": -1.328,
+      "rmsd": 8.281
+     },
+     {
+      "confidence": -1.69,
+      "rmsd": 2.973
+     },
+     {
+      "confidence": -2.716,
+      "rmsd": 4.992
+     }
+    ],
+    [
+     {
+      "confidence": -1.392,
+      "rmsd": 6.464
+     },
+     {
+      "confidence": -1.511,
+      "rmsd": 3.231
+     },
+     {
+      "confidence": -2.404,
+      "rmsd": 6.571
+     },
+     {
+      "confidence": -2.987,
+      "rmsd": 5.119
+     },
+     {
+      "confidence": -3.797,
+      "rmsd": 31.758
+     }
+    ],
+    [
+     {
+      "confidence": -1.054,
+      "rmsd": 8.969
+     },
+     {
+      "confidence": -1.63,
+      "rmsd": 8.698
+     },
+     {
+      "confidence": -2.101,
+      "rmsd": 8.193
+     },
+     {
+      "confidence": -2.766,
+      "rmsd": 30.693
+     },
+     {
+      "confidence": -2.807,
+      "rmsd": 31.232
+     }
+    ],
+    [
+     {
+      "confidence": -0.072,
+      "rmsd": 1.707
+     },
+     {
+      "confidence": -0.795,
+      "rmsd": 7.797
+     },
+     {
+      "confidence": -1.09,
+      "rmsd": 6.813
+     },
+     {
+      "confidence": -1.258,
+      "rmsd": 7.869
+     },
+     {
+      "confidence": -2.356,
+      "rmsd": 5.029
+     }
+    ]
+   ]
+  },
+  "5ht2a-7voe--aripiprazole": {
+   "key": "5ht2a-7voe--aripiprazole",
+   "drug": "aripiprazole",
+   "target": "Serotonin 2A receptor",
+   "gene": "HTR2A",
+   "pdb": "7VOE",
+   "ligand": "9SC",
+   "chain": "A",
+   "structure": {
+    "method": "X-ray",
+    "resolution": 2.9,
+    "organism": "Homo sapiens",
+    "pocket_residues": 61,
+    "pocket_gaps": [],
+    "verdict": "주의",
+    "reasons": [
+     "해상도 2.9 Å"
+    ]
+   },
+   "runs": 5,
+   "seconds": 35.1,
+   "top1_rmsd": [
+    10.363,
+    11.836,
+    11.895,
+    10.621,
+    11.587
+   ],
+   "top1_confidence": [
+    -1.765,
+    -1.699,
+    -2.055,
+    -1.716,
+    -0.93
+   ],
+   "confidence_mean": -1.633,
+   "confidence_sd": 0.374,
+   "pairwise_top1_rmsd": [
+    4.174,
+    3.269,
+    2.369,
+    2.479,
+    2.32,
+    4.381,
+    3.759,
+    3.205,
+    2.276,
+    2.247
+   ],
+   "pairwise_median": 2.84,
+   "converged": true,
+   "crystal_hits": 0,
+   "grade": "LOW",
+   "runs_detail": [
+    [
+     {
+      "confidence": -1.765,
+      "rmsd": 10.363
+     },
+     {
+      "confidence": -1.837,
+      "rmsd": 11.806
+     },
+     {
+      "confidence": -1.921,
+      "rmsd": 10.747
+     },
+     {
+      "confidence": -2.157,
+      "rmsd": 12.987
+     },
+     {
+      "confidence": -2.309,
+      "rmsd": 11.996
+     }
+    ],
+    [
+     {
+      "confidence": -1.699,
+      "rmsd": 11.836
+     },
+     {
+      "confidence": -1.733,
+      "rmsd": 12.06
+     },
+     {
+      "confidence": -2.089,
+      "rmsd": 12.098
+     },
+     {
+      "confidence": -2.411,
+      "rmsd": 12.422
+     },
+     {
+      "confidence": -2.561,
+      "rmsd": 12.445
+     }
+    ],
+    [
+     {
+      "confidence": -2.055,
+      "rmsd": 11.895
+     },
+     {
+      "confidence": -2.368,
+      "rmsd": 10.828
+     },
+     {
+      "confidence": -2.662,
+      "rmsd": 11.976
+     },
+     {
+      "confidence": -2.769,
+      "rmsd": 12.83
+     },
+     {
+      "confidence": -3.153,
+      "rmsd": 12.964
+     }
+    ],
+    [
+     {
+      "confidence": -1.716,
+      "rmsd": 10.621
+     },
+     {
+      "confidence": -2.139,
+      "rmsd": 12.453
+     },
+     {
+      "confidence": -2.386,
+      "rmsd": 12.194
+     },
+     {
+      "confidence": -2.616,
+      "rmsd": 12.643
+     },
+     {
+      "confidence": -2.907,
+      "rmsd": 12.74
+     }
+    ],
+    [
+     {
+      "confidence": -0.93,
+      "rmsd": 11.587
+     },
+     {
+      "confidence": -1.502,
+      "rmsd": 11.87
+     },
+     {
+      "confidence": -1.891,
+      "rmsd": 12.931
+     },
+     {
+      "confidence": -2.473,
+      "rmsd": 12.562
+     },
+     {
+      "confidence": -4.058,
+      "rmsd": 13.035
+     }
+    ]
+   ]
+  },
+  "sglt2-7vsi--empagliflozin": {
+   "key": "sglt2-7vsi--empagliflozin",
+   "drug": "empagliflozin",
+   "target": "SGLT2 (SGLT2-MAP17)",
+   "gene": "SLC5A2",
+   "pdb": "7VSI",
+   "ligand": "7R3",
+   "chain": "A",
+   "structure": {
+    "method": "cryo-EM",
+    "resolution": 2.95,
+    "organism": "Homo sapiens",
+    "pocket_residues": 65,
+    "pocket_gaps": [],
+    "verdict": "도킹 가능",
+    "reasons": []
+   },
+   "runs": 5,
+   "seconds": 13.9,
+   "top1_rmsd": [
+    9.899,
+    1.432,
+    8.921,
+    8.92,
+    2.229
+   ],
+   "top1_confidence": [
+    -1.685,
+    -0.175,
+    -1.983,
+    -1.399,
+    -0.631
+   ],
+   "confidence_mean": -1.175,
+   "confidence_sd": 0.672,
+   "pairwise_top1_rmsd": [
+    10.315,
+    4.009,
+    8.566,
+    10.285,
+    9.167,
+    8.95,
+    1.833,
+    7.91,
+    9.11,
+    8.902
+   ],
+   "pairwise_median": 8.93,
+   "converged": false,
+   "crystal_hits": 1,
+   "grade": "LOW",
+   "runs_detail": [
+    [
+     {
+      "confidence": -1.685,
+      "rmsd": 9.899
+     },
+     {
+      "confidence": -2.21,
+      "rmsd": 8.625
+     },
+     {
+      "confidence": -2.278,
+      "rmsd": 8.564
+     },
+     {
+      "confidence": -2.393,
+      "rmsd": 10.633
+     },
+     {
+      "confidence": -3.537,
+      "rmsd": 9.812
+     }
+    ],
+    [
+     {
+      "confidence": -0.175,
+      "rmsd": 1.432
+     },
+     {
+      "confidence": -1.086,
+      "rmsd": 3.316
+     },
+     {
+      "confidence": -2.205,
+      "rmsd": 8.823
+     },
+     {
+      "confidence": -2.802,
+      "rmsd": 10.621
+     },
+     {
+      "confidence": -2.855,
+      "rmsd": 10.675
+     }
+    ],
+    [
+     {
+      "confidence": -1.983,
+      "rmsd": 8.921
+     },
+     {
+      "confidence": -2.029,
+      "rmsd": 8.388
+     },
+     {
+      "confidence": -2.042,
+      "rmsd": 9.518
+     },
+     {
+      "confidence": -2.344,
+      "rmsd": 9.165
+     },
+     {
+      "confidence": -3.2,
+      "rmsd": 9.25
+     }
+    ],
+    [
+     {
+      "confidence": -1.399,
+      "rmsd": 8.92
+     },
+     {
+      "confidence": -1.801,
+      "rmsd": 8.645
+     },
+     {
+      "confidence": -2.375,
+      "rmsd": 9.881
+     },
+     {
+      "confidence": -3.587,
+      "rmsd": 10.862
+     },
+     {
+      "confidence": -3.656,
+      "rmsd": 8.297
+     }
+    ],
+    [
+     {
+      "confidence": -0.631,
+      "rmsd": 2.229
+     },
+     {
+      "confidence": -1.628,
+      "rmsd": 8.442
+     },
+     {
+      "confidence": -2.021,
+      "rmsd": 8.888
+     },
+     {
+      "confidence": -2.356,
+      "rmsd": 8.794
+     },
+     {
+      "confidence": -3.105,
+      "rmsd": 10.595
+     }
+    ]
+   ]
+  },
+  "fxa-2p16--apixaban": {
+   "key": "fxa-2p16--apixaban",
+   "drug": "apixaban",
+   "target": "Coagulation factor Xa",
+   "gene": "F10",
+   "pdb": "2P16",
+   "ligand": "GG2",
+   "chain": "A",
+   "structure": {
+    "method": "X-ray",
+    "resolution": 2.3,
+    "organism": "Homo sapiens",
+    "pocket_residues": 48,
+    "pocket_gaps": [
+     148,
+     219
+    ],
+    "verdict": "주의",
+    "reasons": [
+     "결합 자리 옆 잔기 2개가 구조에 없음"
+    ]
+   },
+   "runs": 5,
+   "seconds": 69.9,
+   "top1_rmsd": [
+    0.721,
+    0.706,
+    0.646,
+    0.654,
+    0.506
+   ],
+   "top1_confidence": [
+    0.896,
+    0.836,
+    0.633,
+    0.625,
+    0.825
+   ],
+   "confidence_mean": 0.763,
+   "confidence_sd": 0.112,
+   "pairwise_top1_rmsd": [
+    0.666,
+    1.145,
+    1.105,
+    0.548,
+    0.959,
+    1.038,
+    0.656,
+    0.444,
+    0.808,
+    0.839
+   ],
+   "pairwise_median": 0.82,
+   "converged": true,
+   "crystal_hits": 5,
+   "grade": "MEDIUM",
+   "runs_detail": [
+    [
+     {
+      "confidence": 0.896,
+      "rmsd": 0.721
+     },
+     {
+      "confidence": 0.836,
+      "rmsd": 0.747
+     },
+     {
+      "confidence": 0.592,
+      "rmsd": 0.95
+     },
+     {
+      "confidence": 0.458,
+      "rmsd": 1.046
+     },
+     {
+      "confidence": 0.43,
+      "rmsd": 1.253
+     }
+    ],
+    [
+     {
+      "confidence": 0.836,
+      "rmsd": 0.706
+     },
+     {
+      "confidence": 0.734,
+      "rmsd": 0.719
+     },
+     {
+      "confidence": 0.716,
+      "rmsd": 0.728
+     },
+     {
+      "confidence": 0.685,
+      "rmsd": 1.187
+     },
+     {
+      "confidence": 0.643,
+      "rmsd": 1.029
+     }
+    ],
+    [
+     {
+      "confidence": 0.633,
+      "rmsd": 0.646
+     },
+     {
+      "confidence": 0.585,
+      "rmsd": 0.943
+     },
+     {
+      "confidence": 0.531,
+      "rmsd": 0.914
+     },
+     {
+      "confidence": 0.46,
+      "rmsd": 0.863
+     },
+     {
+      "confidence": 0.11,
+      "rmsd": 1.425
+     }
+    ],
+    [
+     {
+      "confidence": 0.625,
+      "rmsd": 0.654
+     },
+     {
+      "confidence": 0.563,
+      "rmsd": 0.688
+     },
+     {
+      "confidence": 0.477,
+      "rmsd": 0.796
+     },
+     {
+      "confidence": 0.353,
+      "rmsd": 1.072
+     },
+     {
+      "confidence": 0.276,
+      "rmsd": 1.33
+     }
+    ],
+    [
+     {
+      "confidence": 0.825,
+      "rmsd": 0.506
+     },
+     {
+      "confidence": 0.747,
+      "rmsd": 0.851
+     },
+     {
+      "confidence": 0.703,
+      "rmsd": 0.694
+     },
+     {
+      "confidence": 0.434,
+      "rmsd": 1.291
+     },
+     {
+      "confidence": 0.044,
+      "rmsd": 1.763
+     }
+    ]
+   ]
+  },
+  "mor-8ef5--fentanyl": {
+   "key": "mor-8ef5--fentanyl",
+   "drug": "fentanyl",
+   "target": "Mu-opioid receptor (Gi complex)",
+   "gene": "OPRM1",
+   "pdb": "8EF5",
+   "ligand": "7V7",
+   "chain": "R",
+   "structure": {
+    "method": "cryo-EM",
+    "resolution": 3.3,
+    "organism": "Homo sapiens",
+    "pocket_residues": 52,
+    "pocket_gaps": [],
+    "verdict": "주의",
+    "reasons": [
+     "해상도 3.3 Å"
+    ]
+   },
+   "runs": 5,
+   "seconds": 9.4,
+   "top1_rmsd": [
+    8.438,
+    8.504,
+    8.48,
+    8.797,
+    1.189
+   ],
+   "top1_confidence": [
+    -0.267,
+    -0.342,
+    -0.075,
+    -0.224,
+    -0.387
+   ],
+   "confidence_mean": -0.259,
+   "confidence_sd": 0.108,
+   "pairwise_top1_rmsd": [
+    1.923,
+    1.332,
+    1.755,
+    8.312,
+    1.863,
+    2.585,
+    8.352,
+    2.232,
+    8.41,
+    8.688
+   ],
+   "pairwise_median": 2.41,
+   "converged": true,
+   "crystal_hits": 1,
+   "grade": "LOW",
+   "runs_detail": [
+    [
+     {
+      "confidence": -0.267,
+      "rmsd": 8.438
+     },
+     {
+      "confidence": -0.389,
+      "rmsd": 8.812
+     },
+     {
+      "confidence": -0.513,
+      "rmsd": 8.715
+     },
+     {
+      "confidence": -0.713,
+      "rmsd": 1.456
+     },
+     {
+      "confidence": -1.803,
+      "rmsd": 2.425
+     }
+    ],
+    [
+     {
+      "confidence": -0.342,
+      "rmsd": 8.504
+     },
+     {
+      "confidence": -0.523,
+      "rmsd": 2.471
+     },
+     {
+      "confidence": -0.544,
+      "rmsd": 8.888
+     },
+     {
+      "confidence": -0.553,
+      "rmsd": 3.32
+     },
+     {
+      "confidence": -0.748,
+      "rmsd": 3.973
+     }
+    ],
+    [
+     {
+      "confidence": -0.075,
+      "rmsd": 8.48
+     },
+     {
+      "confidence": -0.349,
+      "rmsd": 1.531
+     },
+     {
+      "confidence": -0.405,
+      "rmsd": 8.766
+     },
+     {
+      "confidence": -0.593,
+      "rmsd": 1.531
+     },
+     {
+      "confidence": -1.819,
+      "rmsd": 3.071
+     }
+    ],
+    [
+     {
+      "confidence": -0.224,
+      "rmsd": 8.797
+     },
+     {
+      "confidence": -0.37,
+      "rmsd": 7.67
+     },
+     {
+      "confidence": -0.712,
+      "rmsd": 3.337
+     },
+     {
+      "confidence": -0.961,
+      "rmsd": 3.966
+     },
+     {
+      "confidence": -1.233,
+      "rmsd": 2.498
+     }
+    ],
+    [
+     {
+      "confidence": -0.387,
+      "rmsd": 1.189
+     },
+     {
+      "confidence": -0.519,
+      "rmsd": 2.155
+     },
+     {
+      "confidence": -0.569,
+      "rmsd": 8.797
+     },
+     {
+      "confidence": -0.664,
+      "rmsd": 2.131
+     },
+     {
+      "confidence": -2.772,
+      "rmsd": 8.532
+     }
+    ]
+   ]
+  },
+  "pde5-1tbf--sildenafil": {
+   "key": "pde5-1tbf--sildenafil",
+   "drug": "sildenafil",
+   "target": "PDE5A catalytic domain",
+   "gene": "PDE5A",
+   "pdb": "1TBF",
+   "ligand": "VIA",
+   "chain": "A",
+   "structure": {
+    "method": "X-ray",
+    "resolution": 1.3,
+    "organism": "Homo sapiens",
+    "pocket_residues": 56,
+    "pocket_gaps": [],
+    "verdict": "도킹 가능",
+    "reasons": []
+   },
+   "runs": 5,
+   "seconds": 10.3,
+   "top1_rmsd": [
+    0.562,
+    0.846,
+    0.644,
+    0.987,
+    0.894
+   ],
+   "top1_confidence": [
+    0.086,
+    -0.126,
+    0.04,
+    -0.099,
+    -0.106
+   ],
+   "confidence_mean": -0.041,
+   "confidence_sd": 0.087,
+   "pairwise_top1_rmsd": [
+    1.038,
+    0.762,
+    1.183,
+    1.108,
+    0.857,
+    0.804,
+    0.898,
+    0.829,
+    0.964,
+    1.011
+   ],
+   "pairwise_median": 0.93,
+   "converged": true,
+   "crystal_hits": 5,
+   "grade": "HIGH",
+   "runs_detail": [
+    [
+     {
+      "confidence": 0.086,
+      "rmsd": 0.562
+     },
+     {
+      "confidence": 0.005,
+      "rmsd": 1.108
+     },
+     {
+      "confidence": -0.01,
+      "rmsd": 1.178
+     },
+     {
+      "confidence": -0.318,
+      "rmsd": 3.005
+     },
+     {
+      "confidence": -0.408,
+      "rmsd": 2.878
+     }
+    ],
+    [
+     {
+      "confidence": -0.126,
+      "rmsd": 0.846
+     },
+     {
+      "confidence": -0.178,
+      "rmsd": 0.809
+     },
+     {
+      "confidence": -0.282,
+      "rmsd": 1.051
+     },
+     {
+      "confidence": -0.318,
+      "rmsd": 1.166
+     },
+     {
+      "confidence": -0.556,
+      "rmsd": 1.436
+     }
+    ],
+    [
+     {
+      "confidence": 0.04,
+      "rmsd": 0.644
+     },
+     {
+      "confidence": -0.028,
+      "rmsd": 0.694
+     },
+     {
+      "confidence": -0.073,
+      "rmsd": 1.098
+     },
+     {
+      "confidence": -0.457,
+      "rmsd": 1.078
+     },
+     {
+      "confidence": -0.641,
+      "rmsd": 3.59
+     }
+    ],
+    [
+     {
+      "confidence": -0.099,
+      "rmsd": 0.987
+     },
+     {
+      "confidence": -0.269,
+      "rmsd": 2.768
+     },
+     {
+      "confidence": -0.33,
+      "rmsd": 2.694
+     },
+     {
+      "confidence": -0.714,
+      "rmsd": 2.364
+     },
+     {
+      "confidence": -0.907,
+      "rmsd": 1.476
+     }
+    ],
+    [
+     {
+      "confidence": -0.106,
+      "rmsd": 0.894
+     },
+     {
+      "confidence": -0.179,
+      "rmsd": 3.116
+     },
+     {
+      "confidence": -0.195,
+      "rmsd": 0.794
+     },
+     {
+      "confidence": -0.353,
+      "rmsd": 3.127
+     },
+     {
+      "confidence": -0.424,
+      "rmsd": 2.916
+     }
+    ]
+   ]
+  },
+  "dhfr-1u72--methotrexate": {
+   "key": "dhfr-1u72--methotrexate",
+   "drug": "methotrexate",
+   "target": "Dihydrofolate reductase",
+   "gene": "DHFR",
+   "pdb": "1U72",
+   "ligand": "MTX",
+   "chain": "A",
+   "structure": {
+    "method": "X-ray",
+    "resolution": 1.9,
+    "organism": "Homo sapiens",
+    "pocket_residues": 56,
+    "pocket_gaps": [],
+    "verdict": "도킹 가능",
+    "reasons": []
+   },
+   "runs": 5,
+   "seconds": 12.0,
+   "top1_rmsd": [
+    1.317,
+    0.806,
+    0.628,
+    0.53,
+    0.828
+   ],
+   "top1_confidence": [
+    -0.433,
+    -0.262,
+    -0.119,
+    -0.133,
+    -0.264
+   ],
+   "confidence_mean": -0.242,
+   "confidence_sd": 0.113,
+   "pairwise_top1_rmsd": [
+    1.421,
+    1.31,
+    1.347,
+    1.534,
+    0.69,
+    0.802,
+    1.189,
+    0.596,
+    0.833,
+    0.625
+   ],
+   "pairwise_median": 1.01,
+   "converged": true,
+   "crystal_hits": 5,
+   "grade": "HIGH",
+   "runs_detail": [
+    [
+     {
+      "confidence": -0.433,
+      "rmsd": 1.317
+     },
+     {
+      "confidence": -0.656,
+      "rmsd": 1.123
+     },
+     {
+      "confidence": -0.726,
+      "rmsd": 1.086
+     },
+     {
+      "confidence": -0.964,
+      "rmsd": 1.823
+     },
+     {
+      "confidence": -1.513,
+      "rmsd": 1.754
+     }
+    ],
+    [
+     {
+      "confidence": -0.262,
+      "rmsd": 0.806
+     },
+     {
+      "confidence": -0.517,
+      "rmsd": 0.734
+     },
+     {
+      "confidence": -0.656,
+      "rmsd": 1.55
+     },
+     {
+      "confidence": -0.704,
+      "rmsd": 1.551
+     },
+     {
+      "confidence": -0.878,
+      "rmsd": 2.747
+     }
+    ],
+    [
+     {
+      "confidence": -0.119,
+      "rmsd": 0.628
+     },
+     {
+      "confidence": -0.126,
+      "rmsd": 0.611
+     },
+     {
+      "confidence": -0.329,
+      "rmsd": 0.815
+     },
+     {
+      "confidence": -0.532,
+      "rmsd": 2.742
+     },
+     {
+      "confidence": -1.559,
+      "rmsd": 3.88
+     }
+    ],
+    [
+     {
+      "confidence": -0.133,
+      "rmsd": 0.53
+     },
+     {
+      "confidence": -0.511,
+      "rmsd": 0.867
+     },
+     {
+      "confidence": -0.638,
+      "rmsd": 1.298
+     },
+     {
+      "confidence": -0.643,
+      "rmsd": 1.086
+     },
+     {
+      "confidence": -1.336,
+      "rmsd": 2.757
+     }
+    ],
+    [
+     {
+      "confidence": -0.264,
+      "rmsd": 0.828
+     },
+     {
+      "confidence": -0.278,
+      "rmsd": 0.732
+     },
+     {
+      "confidence": -0.301,
+      "rmsd": 0.891
+     },
+     {
+      "confidence": -0.992,
+      "rmsd": 1.286
+     },
+     {
+      "confidence": -1.008,
+      "rmsd": 2.109
+     }
+    ]
+   ]
+  }
+ },
+ "endpoint": "https://health.api.nvidia.com/v1/biology/mit/diffdock",
+ "runs": 5,
+ "success_A": 2.0,
+ "converged_A": 3.0,
+ "rules": [
+  [
+   "구조",
+   "X-ray 2.5 Å 이하 또는 cryo-EM 3.0 Å 이하, 표적 생물종 일치, 결합 자리 8 Å 안 잔기 끊김 없음 → 도킹 가능. 하나라도 어긋나면 주의"
+  ],
+  [
+   "수렴",
+   "반복 1순위 포즈끼리의 RMSD 중앙값 ≤ 3.0 Å → 같은 자리로 수렴 (결정 구조 없이도 알 수 있음)"
+  ],
+  [
+   "결정 대조",
+   "반복마다 1순위 포즈가 결정 리간드와 2.0 Å 이하인 비율"
+  ],
+  [
+   "HIGH",
+   "결정 대조 4/5 이상 + 수렴 + 구조 도킹 가능"
+  ],
+  [
+   "MEDIUM",
+   "결정 대조 2/5 이상 (구조 주의 또는 수렴 실패가 섞임)"
+  ],
+  [
+   "LOW",
+   "결정 대조 1/5 이하. 수렴했더라도 틀린 자리로 모인 것"
+  ]
+ ],
+ "updated": "2026-09-28 17:32 KST"
+}

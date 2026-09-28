@@ -1,0 +1,401 @@
+{
+ "source": "ChEMBL activity API (pchembl_value, parent molecule)",
+ "strong_pchembl": 6.0,
+ "targets": {
+  "CRBN": {
+   "chembl": "CHEMBL3763008",
+   "pref_name": "Protein cereblon",
+   "uniprot": "Q96SW2"
+  },
+  "DHFR": {
+   "chembl": "CHEMBL202",
+   "pref_name": "Dihydrofolate reductase",
+   "uniprot": "P00374"
+  },
+  "DRD2": {
+   "chembl": "CHEMBL217",
+   "pref_name": "D(2) dopamine receptor",
+   "uniprot": "P14416"
+  },
+  "F10": {
+   "chembl": "CHEMBL244",
+   "pref_name": "Coagulation factor X",
+   "uniprot": "P00742"
+  },
+  "HTR2A": {
+   "chembl": "CHEMBL224",
+   "pref_name": "5-hydroxytryptamine receptor 2A",
+   "uniprot": "P28223"
+  },
+  "JAK2": {
+   "chembl": "CHEMBL2971",
+   "pref_name": "Tyrosine-protein kinase JAK2",
+   "uniprot": "O60674"
+  },
+  "Mpro (nsp5)": {
+   "chembl": "CHEMBL4523582",
+   "pref_name": "Replicase polyprotein 1ab",
+   "uniprot": "P0DTD1"
+  },
+  "NR3C1": {
+   "chembl": "CHEMBL2034",
+   "pref_name": "Glucocorticoid receptor",
+   "uniprot": "P04150"
+  },
+  "OPRM1": {
+   "chembl": "CHEMBL233",
+   "pref_name": "Mu-type opioid receptor",
+   "uniprot": "P35372"
+  },
+  "PARP1": {
+   "chembl": "CHEMBL3105",
+   "pref_name": "Poly [ADP-ribose] polymerase 1",
+   "uniprot": "P09874"
+  },
+  "PDE5A": {
+   "chembl": "CHEMBL1827",
+   "pref_name": "cGMP-specific 3',5'-cyclic phosphodiesterase",
+   "uniprot": "O76074"
+  },
+  "SLC5A2": {
+   "chembl": "CHEMBL3884",
+   "pref_name": "Sodium/glucose cotransporter 2",
+   "uniprot": "P31639"
+  }
+ },
+ "ligands": {
+  "acetaminophen": {
+   "chembl": "CHEMBL112",
+   "pref_name": "ACETAMINOPHEN"
+  },
+  "apixaban": {
+   "chembl": "CHEMBL231779",
+   "pref_name": "APIXABAN"
+  },
+  "aripiprazole": {
+   "chembl": "CHEMBL1112",
+   "pref_name": "ARIPIPRAZOLE"
+  },
+  "dexamethasone": {
+   "chembl": "CHEMBL384467",
+   "pref_name": "DEXAMETHASONE"
+  },
+  "empagliflozin": {
+   "chembl": "CHEMBL2107830",
+   "pref_name": "EMPAGLIFLOZIN"
+  },
+  "fentanyl": {
+   "chembl": "CHEMBL596",
+   "pref_name": "FENTANYL"
+  },
+  "foscarbidopa": {
+   "chembl": "CHEMBL4802240",
+   "pref_name": "FOSCARBIDOPA"
+  },
+  "lenalidomide": {
+   "chembl": "CHEMBL848",
+   "pref_name": "LENALIDOMIDE"
+  },
+  "medroxyprogesterone": {
+   "chembl": "CHEMBL717",
+   "pref_name": "MEDROXYPROGESTERONE ACETATE"
+  },
+  "methotrexate": {
+   "chembl": "CHEMBL34259",
+   "pref_name": "METHOTREXATE"
+  },
+  "niraparib": {
+   "chembl": "CHEMBL1094636",
+   "pref_name": "NIRAPARIB"
+  },
+  "nirmatrelvir": {
+   "chembl": "CHEMBL4802135",
+   "pref_name": "NIRMATRELVIR"
+  },
+  "paliperidone palmitate": {
+   "chembl": "CHEMBL2107360",
+   "pref_name": "PALIPERIDONE PALMITATE"
+  },
+  "pimavanserin": {
+   "chembl": "CHEMBL2111101",
+   "pref_name": "PIMAVANSERIN"
+  },
+  "risperidone": {
+   "chembl": "CHEMBL85",
+   "pref_name": "RISPERIDONE"
+  },
+  "ruxolitinib": {
+   "chembl": "CHEMBL1789941",
+   "pref_name": "RUXOLITINIB"
+  },
+  "sildenafil": {
+   "chembl": "CHEMBL192",
+   "pref_name": "SILDENAFIL"
+  },
+  "talazoparib": {
+   "chembl": "CHEMBL3137320",
+   "pref_name": "TALAZOPARIB"
+  },
+  "tenapanor": {
+   "chembl": "CHEMBL3304485",
+   "pref_name": "TENAPANOR"
+  },
+  "upadacitinib": {
+   "chembl": "CHEMBL3622821",
+   "pref_name": "UPADACITINIB"
+  }
+ },
+ "cells": {
+  "F10|apixaban": {
+   "n": 13,
+   "median": 10.1,
+   "max": 10.1,
+   "types": [
+    "IC50",
+    "Ki"
+   ],
+   "docs": 12,
+   "evidence": "strong"
+  },
+  "DRD2|aripiprazole": {
+   "n": 76,
+   "median": 8.4,
+   "max": 9.7,
+   "types": [
+    "AC50",
+    "EC50",
+    "IC50",
+    "Ki"
+   ],
+   "docs": 37,
+   "evidence": "strong"
+  },
+  "HTR2A|aripiprazole": {
+   "n": 37,
+   "median": 8.0,
+   "max": 9.1,
+   "types": [
+    "AC50",
+    "IC50",
+    "Ki"
+   ],
+   "docs": 32,
+   "evidence": "strong"
+  },
+  "OPRM1|aripiprazole": {
+   "n": 2,
+   "median": 4.93,
+   "max": 5.03,
+   "types": [
+    "AC50"
+   ],
+   "docs": 1,
+   "evidence": "weak"
+  },
+  "NR3C1|dexamethasone": {
+   "n": 116,
+   "median": 8.52,
+   "max": 10.0,
+   "types": [
+    "AC50",
+    "EC50",
+    "ED50",
+    "IC50",
+    "Kd",
+    "Ki"
+   ],
+   "docs": 58,
+   "evidence": "strong"
+  },
+  "SLC5A2|empagliflozin": {
+   "n": 8,
+   "median": 8.51,
+   "max": 8.52,
+   "types": [
+    "EC50",
+    "IC50"
+   ],
+   "docs": 7,
+   "evidence": "strong"
+  },
+  "OPRM1|fentanyl": {
+   "n": 29,
+   "median": 8.48,
+   "max": 10.29,
+   "types": [
+    "AC50",
+    "EC50",
+    "IC50",
+    "Ki"
+   ],
+   "docs": 18,
+   "evidence": "strong"
+  },
+  "DRD2|fentanyl": {
+   "n": 1,
+   "median": 4.68,
+   "max": 4.68,
+   "types": [
+    "Ki"
+   ],
+   "docs": 1,
+   "evidence": "weak"
+  },
+  "CRBN|lenalidomide": {
+   "n": 18,
+   "median": 5.83,
+   "max": 7.24,
+   "types": [
+    "IC50",
+    "Kd",
+    "Ki"
+   ],
+   "docs": 13,
+   "evidence": "weak"
+  },
+  "NR3C1|medroxyprogesterone": {
+   "n": 13,
+   "median": 7.88,
+   "max": 8.06,
+   "types": [
+    "AC50",
+    "EC50",
+    "IC50",
+    "Ki"
+   ],
+   "docs": 9,
+   "evidence": "strong"
+  },
+  "DHFR|methotrexate": {
+   "n": 87,
+   "median": 8.05,
+   "max": 11.0,
+   "types": [
+    "IC50",
+    "Ki"
+   ],
+   "docs": 75,
+   "evidence": "strong"
+  },
+  "PARP1|niraparib": {
+   "n": 27,
+   "median": 7.79,
+   "max": 9.0,
+   "types": [
+    "EC50",
+    "IC50",
+    "Kd",
+    "Ki"
+   ],
+   "docs": 20,
+   "evidence": "strong"
+  },
+  "Mpro (nsp5)|nirmatrelvir": {
+   "n": 66,
+   "median": 7.96,
+   "max": 9.59,
+   "types": [
+    "EC50",
+    "IC50",
+    "Kd",
+    "Ki"
+   ],
+   "docs": 52,
+   "evidence": "strong"
+  },
+  "HTR2A|pimavanserin": {
+   "n": 15,
+   "median": 8.05,
+   "max": 10.2,
+   "types": [
+    "IC50",
+    "Ki"
+   ],
+   "docs": 8,
+   "evidence": "strong"
+  },
+  "OPRM1|pimavanserin": {
+   "n": 1,
+   "median": 4.78,
+   "max": 4.78,
+   "types": [
+    "AC50"
+   ],
+   "docs": 1,
+   "evidence": "weak"
+  },
+  "DRD2|risperidone": {
+   "n": 28,
+   "median": 8.22,
+   "max": 9.36,
+   "types": [
+    "AC50",
+    "IC50",
+    "Ki"
+   ],
+   "docs": 25,
+   "evidence": "strong"
+  },
+  "HTR2A|risperidone": {
+   "n": 28,
+   "median": 9.3,
+   "max": 10.0,
+   "types": [
+    "AC50",
+    "IC50",
+    "Ki"
+   ],
+   "docs": 23,
+   "evidence": "strong"
+  },
+  "JAK2|ruxolitinib": {
+   "n": 68,
+   "median": 8.54,
+   "max": 10.44,
+   "types": [
+    "EC50",
+    "IC50",
+    "Kd",
+    "Ki"
+   ],
+   "docs": 49,
+   "evidence": "strong"
+  },
+  "PDE5A|sildenafil": {
+   "n": 68,
+   "median": 8.44,
+   "max": 9.0,
+   "types": [
+    "EC50",
+    "IC50",
+    "Ki"
+   ],
+   "docs": 59,
+   "evidence": "strong"
+  },
+  "PARP1|talazoparib": {
+   "n": 25,
+   "median": 9.15,
+   "max": 9.24,
+   "types": [
+    "EC50",
+    "IC50",
+    "Kd",
+    "Ki"
+   ],
+   "docs": 20,
+   "evidence": "strong"
+  },
+  "JAK2|upadacitinib": {
+   "n": 32,
+   "median": 6.92,
+   "max": 8.8,
+   "types": [
+    "IC50"
+   ],
+   "docs": 15,
+   "evidence": "strong"
+  }
+ },
+ "updated": "2026-09-28 17:55 KST"
+}

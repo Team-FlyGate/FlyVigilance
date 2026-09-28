@@ -130,7 +130,7 @@ def flygate():
 def test_cli_has_all_subcommands(flygate):
     parser = flygate.build_parser()
     sub = next(a for a in parser._actions if a.dest == "cmd")
-    assert set(sub.choices) == {"triage", "grade", "signals", "kr-causality", "critic", "discover", "watch"}
+    assert set(sub.choices) == {"login", "chat", "triage", "grade", "signals", "kr-causality", "critic", "discover", "watch"}
 
 
 def test_discover_parp1_offline(flygate, capsys):

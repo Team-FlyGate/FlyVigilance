@@ -22,6 +22,8 @@ const DATA = {
   'dock_library.json': 'measurements/dock_library.json',
   'dock_matrix.json': 'measurements/dock_matrix.json',
   'redock.json': 'measurements/redock.json',
+  'validation.json': 'measurements/validation.json',
+  'selectivity_evidence.json': 'measurements/selectivity_evidence.json',
   'drug_panel.json': 'measurements/drug_panel.json',
   'critic_v2.json': 'measurements/nim/critic_v2.json',
 }
