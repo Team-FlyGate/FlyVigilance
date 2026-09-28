@@ -33,7 +33,9 @@ export default function MsaAnimation({ msa, query, duration = 9000, loop = false
 
       // ── 위: 확대 정렬 창 ──
       const padL = 150, top = 118, rowH = 17, cols = W0, cw = (w - padL - 20) / cols
-      const vis = Math.min(13, Math.floor((h * 0.52 - top) / rowH))
+      // 아래 설명 줄(mapTop - 48) 위에서 줄이 끝나게 합니다. 화면이 낮으면 줄 수를 줄여 겹치지 않게 합니다
+      const captionY = h * 0.6 - 48
+      const vis = Math.max(0, Math.min(13, Math.floor((captionY - 20 - top - 4) / rowH)))
       x.font = '600 11px "JetBrains Mono", monospace'; x.textBaseline = 'middle'; x.textAlign = 'center'
       for (let c = 0; c < cols; c++) {
         const r = s0 + c

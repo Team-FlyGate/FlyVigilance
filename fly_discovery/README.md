@@ -5,7 +5,7 @@
 FlyDiscovery는 Project-FlyGate의 STEP 1(시판 전 탐색)이고, FlyVigilance는 STEP 2(시판 후 감시)입니다.
 이 저장소는 한 후보(니라파립)를 PARP1 결정 구조부터 친화도 벤치마크까지 따라가며, 단계마다 그 분야의
 전통 기준으로 채점합니다. 이 후보의 시판 후 이상사례는 FlyVigilance
-[라이브 트리아지](https://project-flygate.vercel.app/#/triage)가 이어받습니다.
+[라이브 트리아지](https://flygate.kr/#/triage)가 이어받습니다.
 
 ## 왜 만들었나
 
