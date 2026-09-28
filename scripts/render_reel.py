@@ -1,6 +1,6 @@
-"""쇼릴을 30fps 프레임 단위로 렌더링해 MP4 로 만든다. 사용: render_reel.py OUT.mp4 [fps] [page_url]
+"""쇼릴을 30fps 프레임 단위로 렌더링해 MP4 로 만듭니다. 사용: render_reel.py OUT.mp4 [fps] [page_url]
 
-page_url 기본값은 개발 서버의 v1 쇼릴입니다. v2 는 파일 하나로 완결되므로 file:// 주소를 그대로 줄 수 있습니다.
+page_url 기본값은 개발 서버의 v3 쇼릴입니다. 쇼릴은 파일 하나로 완결되므로 file:// 주소를 그대로 줄 수 있습니다.
 """
 import asyncio
 import subprocess
@@ -10,7 +10,7 @@ from playwright.async_api import async_playwright
 
 OUT = sys.argv[1]
 FPS = int(sys.argv[2]) if len(sys.argv) > 2 else 30
-PAGE = sys.argv[3] if len(sys.argv) > 3 else "http://127.0.0.1:5173/showreel/index.html"
+PAGE = sys.argv[3] if len(sys.argv) > 3 else "http://127.0.0.1:5173/showreel/FlyGate_showreel_v3.0.0.html"
 
 
 async def main():
