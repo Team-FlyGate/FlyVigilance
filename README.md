@@ -177,6 +177,11 @@ cd web && npm install && npm run dev      # http://localhost:5173
 
 ![Showreel](docs/images/showreel_intro.png)
 
+## 시판 전 탐색 (FlyDiscoverer)
+
+같은 후보(니라파립)의 시판 전 단계는 [`fly_discoverer/`](fly_discoverer/)에 있다.
+MSA-Search → OpenFold3 → DiffDock → Boltz-2 결과를 전통 기준으로 채점하고, 크리틱 3단으로 근거를 넘는 주장을 반려한다.
+
 ## 출처와 라이선스
 
 - **초파리 커넥텀**: MaleCNS v1.0, Janelia FlyEM · Cambridge Drosophila Connectomics Group. **CC-BY 4.0**, 출처 표기 필요 (https://male-cns.janelia.org)

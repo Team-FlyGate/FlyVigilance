@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FlyGate — 1 · 시판 전 탐색</title>
+<title>FlyDiscoverer — 시판 전 탐색</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
 <style>
@@ -51,7 +51,7 @@ body{overflow-x:hidden}
 
 <header style="height: 64px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; border-bottom: 1px solid var(--line); background: #080E17;">
 <div style="display: flex; align-items: baseline; gap: 16px;">
-<span style="font-size: 22px; font-weight: 600; letter-spacing: 5px;">FLYGATE</span>
+<span style="font-size: 22px; font-weight: 600; letter-spacing: 5px;">FLYDISCOVERER</span>
 <span style="font-size: 14px; color: var(--muted2);">Discovery 워크벤치</span>
 <span class="mono" style="font-size: 12px; letter-spacing: .1em; color: var(--accent); border: 1px solid #23485C; border-radius: 4px; padding: 4px 10px;">STEP 1 / 2 · 시판 전 탐색</span>
 </div>
@@ -147,7 +147,7 @@ body{overflow-x:hidden}
 <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--line);"><span style="font-size: 14px; color: var(--muted2);">허가 라벨 · DailyMed</span><span style="font-size: 15px; text-align: right;">{{ hum.label }}</span></div>
 <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--line);"><span style="font-size: 14px; color: var(--muted2);">이상사례 · FAERS</span><span class="mono" style="font-size: 15px;">{{ hum.faers }}</span></div>
 <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 16px;"><span style="font-size: 14px; color: var(--muted2);">문헌 · PubMed</span><span class="mono" style="font-size: 15px; color: var(--muted);">미조회</span></div>
-<div style="display: flex; align-items: center; gap: 10px; margin-top: 4px; padding: 12px 14px; border: 1px dashed var(--line2); border-radius: var(--r);"><span class="mono" style="font-size: 12px; color: var(--accent);">STEP 2 →</span><span style="font-size: 13px; line-height: 1.55; color: var(--muted2);">이 후보의 시판 후 이상사례는 2단계 콘솔에서 보고 단위로 평가합니다</span></div>
+<div style="display: flex; align-items: center; gap: 10px; margin-top: 4px; padding: 12px 14px; border: 1px dashed var(--line2); border-radius: var(--r);"><span class="mono" style="font-size: 12px; color: var(--accent);">STEP 2 →</span><span style="font-size: 13px; line-height: 1.55; color: var(--muted2);">이 후보의 시판 후 이상사례는 <a href="https://flyvigilance.vercel.app/#/triage">FlyVigilance 라이브 트리아지</a>에서 보고 단위로 평가합니다</span></div>
 </div>
 <p style="margin: 0; font-size: 13px; line-height: 1.65; color: var(--muted2);">{{ hum.note }}</p>
 </section>
