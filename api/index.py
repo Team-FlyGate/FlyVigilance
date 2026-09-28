@@ -175,6 +175,14 @@ def discovery_scene(target: str):
         raise HTTPException(404, str(e))
 
 
+@app.get("/api/discovery/measured/{kind}")
+def discovery_measured(kind: str, target: str = "parp1", ligand: str | None = None):
+    """지난 측정만 돌려줍니다(NIM 을 부르지 않음). 단계 페이지가 실행 전 · 실패 시에도 비교 열을 채우는 데 씁니다."""
+    if kind not in disc_mod.NIM_KINDS:
+        raise HTTPException(404, f"unknown step {kind}")
+    return {"kind": kind, "measured": disc_mod.measured_for(kind, {"target": target, "ligand": ligand})}
+
+
 @app.post("/api/discovery/{kind}")
 async def discovery_run(kind: str, req: Request):
     """NVIDIA BioNeMo NIM 을 실제로 부릅니다(kind: msa | openfold3 | diffdock | boltz2), 또는 크리틱을 돌립니다."""

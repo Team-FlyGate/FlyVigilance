@@ -129,6 +129,12 @@ export async function runStep<T = StepResult>(kind: StepKind, params: Record<str
   return env
 }
 
+/** 지난 측정만 받습니다(NIM 을 부르지 않음). 실행 전 · 실패했을 때 비교 열을 채웁니다. */
+export function getMeasured<T = StepResult>(kind: StepKind, target: string, ligand?: string): Promise<{ measured: T | null }> {
+  const q = new URLSearchParams({ target, ...(ligand ? { ligand } : {}) })
+  return fresh(`/api/discovery/measured/${kind}?${q}`)
+}
+
 export const runCritic = (body: { claims?: Claim[]; runs: Record<string, unknown> }) =>
   fresh<CriticResult>('/api/discovery/critic', body)
 
