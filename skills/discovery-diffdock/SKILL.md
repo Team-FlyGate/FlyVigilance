@@ -34,6 +34,11 @@ metadata:
 - To compare scores across different proteins or to infer selectivity (rule D1).
 - To claim binding from an exploratory cross-docking pose (rule D6).
 
+## Receptor for a target chosen on screen
+
+1. coordinates sent in the request, 2. the OpenFold3 prediction from step 2 (`receptor_structure_key`), 3. the RCSB experimental structure for the chosen PDB id and chain, downloaded and cached server-side.
+A target chosen on screen has no co-crystal reference for the selected ligand, so the run reports `기준 결정 구조 없음` instead of an RMSD. The structure's own co-crystal ligand is used only to place the pocket view, and its code is named in that note.
+
 ## Requirements
 
 `NVIDIA_API_KEY`. The receptor is ATOM records only (no HETATM, no water), as the official skill requires; SMILES go in as `ligand_file_type: "txt"`, never `"smiles"`.
