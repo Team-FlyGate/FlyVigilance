@@ -1,0 +1,224 @@
+{
+ "targets": [
+  {
+   "key": "parp1-4r6e--niraparib",
+   "gene": "PARP1",
+   "target": "PARP1 catalytic domain",
+   "pdb": "4R6E",
+   "native": "niraparib"
+  },
+  {
+   "key": "gr-1m2z--dexamethasone",
+   "gene": "NR3C1",
+   "target": "Glucocorticoid receptor LBD",
+   "pdb": "1M2Z",
+   "native": "dexamethasone"
+  },
+  {
+   "key": "d2-6cm4--risperidone",
+   "gene": "DRD2",
+   "target": "Dopamine D2 receptor",
+   "pdb": "6CM4",
+   "native": "risperidone"
+  },
+  {
+   "key": "jak2-6vgl--ruxolitinib",
+   "gene": "JAK2",
+   "target": "JAK2 JH1 kinase",
+   "pdb": "6VGL",
+   "native": "ruxolitinib"
+  },
+  {
+   "key": "crbn-4ci2--lenalidomide",
+   "gene": "CRBN",
+   "target": "Cereblon (DDB1-CRBN)",
+   "pdb": "4CI2",
+   "native": "lenalidomide"
+  },
+  {
+   "key": "mpro-7si9--nirmatrelvir",
+   "gene": "Mpro (nsp5)",
+   "target": "SARS-CoV-2 main protease",
+   "pdb": "7SI9",
+   "native": "nirmatrelvir"
+  },
+  {
+   "key": "parp1-7kk3--talazoparib",
+   "gene": "PARP1",
+   "target": "PARP1 catalytic domain",
+   "pdb": "7KK3",
+   "native": "talazoparib"
+  },
+  {
+   "key": "5ht2a-8zmg--pimavanserin",
+   "gene": "HTR2A",
+   "target": "Serotonin 2A receptor",
+   "pdb": "8ZMG",
+   "native": "pimavanserin"
+  },
+  {
+   "key": "5ht2a-7voe--aripiprazole",
+   "gene": "HTR2A",
+   "target": "Serotonin 2A receptor",
+   "pdb": "7VOE",
+   "native": "aripiprazole"
+  },
+  {
+   "key": "sglt2-7vsi--empagliflozin",
+   "gene": "SLC5A2",
+   "target": "SGLT2 (SGLT2-MAP17)",
+   "pdb": "7VSI",
+   "native": "empagliflozin"
+  },
+  {
+   "key": "fxa-2p16--apixaban",
+   "gene": "F10",
+   "target": "Coagulation factor Xa",
+   "pdb": "2P16",
+   "native": "apixaban"
+  },
+  {
+   "key": "mor-8ef5--fentanyl",
+   "gene": "OPRM1",
+   "target": "Mu-opioid receptor (Gi complex)",
+   "pdb": "8EF5",
+   "native": "fentanyl"
+  },
+  {
+   "key": "pde5-1tbf--sildenafil",
+   "gene": "PDE5A",
+   "target": "PDE5A catalytic domain",
+   "pdb": "1TBF",
+   "native": "sildenafil"
+  },
+  {
+   "key": "dhfr-1u72--methotrexate",
+   "gene": "DHFR",
+   "target": "Dihydrofolate reductase",
+   "pdb": "1U72",
+   "native": "methotrexate"
+  }
+ ],
+ "ligands": [
+  {
+   "name": "acetaminophen",
+   "smiles": "CC(=O)Nc1ccc(O)cc1",
+   "source": "ChEMBL CHEMBL112",
+   "native_target": null
+  },
+  {
+   "name": "apixaban",
+   "smiles": "COc1ccc(cc1)n2c3c(c(n2)C(=O)N)CCN(C3=O)c4ccc(cc4)N5CCCCC5=O",
+   "source": "RCSB GG2",
+   "native_target": "fxa-2p16--apixaban"
+  },
+  {
+   "name": "aripiprazole",
+   "smiles": "c1cc(c(c(c1)Cl)Cl)N2CCN(CC2)CCCCOc3ccc4c(c3)NC(=O)CC4",
+   "source": "RCSB 9SC",
+   "native_target": "5ht2a-7voe--aripiprazole"
+  },
+  {
+   "name": "dexamethasone",
+   "smiles": "C[C@@H]1C[C@H]2[C@@H]3CCC4=CC(=O)C=C[C@@]4([C@]3([C@H](C[C@@]2([C@]1(C(=O)CO)O)C)O)F)C",
+   "source": "RCSB DEX",
+   "native_target": "gr-1m2z--dexamethasone"
+  },
+  {
+   "name": "empagliflozin",
+   "smiles": "c1cc(ccc1Cc2cc(ccc2Cl)[C@H]3[C@@H]([C@H]([C@@H]([C@H](O3)CO)O)O)O)O[C@H]4CCOC4",
+   "source": "RCSB 7R3",
+   "native_target": "sglt2-7vsi--empagliflozin"
+  },
+  {
+   "name": "fentanyl",
+   "smiles": "CCC(=O)N(c1ccccc1)C2CCN(CC2)CCc3ccccc3",
+   "source": "RCSB 7V7",
+   "native_target": "mor-8ef5--fentanyl"
+  },
+  {
+   "name": "foscarbidopa",
+   "smiles": "C[C@@](Cc1ccc(OP(=O)(O)O)c(O)c1)(NN)C(=O)O",
+   "source": "ChEMBL CHEMBL4802240",
+   "native_target": null
+  },
+  {
+   "name": "lenalidomide",
+   "smiles": "c1cc2c(c(c1)N)CN(C2=O)[C@H]3CCC(=O)NC3=O",
+   "source": "RCSB LVY",
+   "native_target": "crbn-4ci2--lenalidomide"
+  },
+  {
+   "name": "medroxyprogesterone",
+   "smiles": "CC(=O)[C@@]1(O)CC[C@H]2[C@@H]3C[C@H](C)C4=CC(=O)CC[C@]4(C)[C@H]3CC[C@@]21C",
+   "source": "ChEMBL CHEMBL1390",
+   "native_target": null
+  },
+  {
+   "name": "methotrexate",
+   "smiles": "CN(Cc1cnc2c(n1)c(nc(n2)N)N)c3ccc(cc3)C(=O)N[C@@H](CCC(=O)O)C(=O)O",
+   "source": "RCSB MTX",
+   "native_target": "dhfr-1u72--methotrexate"
+  },
+  {
+   "name": "niraparib",
+   "smiles": "c1cc2cn(nc2c(c1)C(=O)N)c3ccc(cc3)[C@@H]4CCCNC4",
+   "source": "RCSB 3JD",
+   "native_target": "parp1-4r6e--niraparib"
+  },
+  {
+   "name": "nirmatrelvir",
+   "smiles": "[H]/N=C/[C@H](C[C@@H]1CCNC1=O)NC(=O)[C@@H]2[C@@H]3[C@@H](C3(C)C)CN2C(=O)[C@H](C(C)(C)C)NC(=O)C(F)(F)F",
+   "source": "RCSB 4WI",
+   "native_target": "mpro-7si9--nirmatrelvir"
+  },
+  {
+   "name": "paliperidone palmitate",
+   "smiles": "CCCCCCCCCCCCCCCC(=O)OC1CCCn2c1nc(C)c(CCN1CCC(c3noc4cc(F)ccc34)CC1)c2=O",
+   "source": "ChEMBL CHEMBL2107360",
+   "native_target": null
+  },
+  {
+   "name": "pimavanserin",
+   "smiles": "CC(C)COc1ccc(cc1)CNC(=O)N(Cc2ccc(cc2)F)C3CCN(CC3)C",
+   "source": "RCSB A1L11",
+   "native_target": "5ht2a-8zmg--pimavanserin"
+  },
+  {
+   "name": "risperidone",
+   "smiles": "CC1=C(C(=O)N2CCCCC2=N1)CCN3CCC(CC3)c4c5ccc(cc5on4)F",
+   "source": "RCSB 8NU",
+   "native_target": "d2-6cm4--risperidone"
+  },
+  {
+   "name": "ruxolitinib",
+   "smiles": "c1c[nH]c2c1c(ncn2)c3cnn(c3)[C@H](CC#N)C4CCCC4",
+   "source": "RCSB RXT",
+   "native_target": "jak2-6vgl--ruxolitinib"
+  },
+  {
+   "name": "sildenafil",
+   "smiles": "CCCc1c2c(n(n1)C)C(=O)NC(=N2)c3cc(ccc3OCC)S(=O)(=O)N4CCN(CC4)C",
+   "source": "RCSB VIA",
+   "native_target": "pde5-1tbf--sildenafil"
+  },
+  {
+   "name": "talazoparib",
+   "smiles": "Cn1c(ncn1)[C@@H]2[C@H](Nc3cc(cc4c3C2=NNC4=O)F)c5ccc(cc5)F",
+   "source": "RCSB 2YQ",
+   "native_target": "parp1-7kk3--talazoparib"
+  },
+  {
+   "name": "tenapanor",
+   "smiles": "CN1Cc2c(Cl)cc(Cl)cc2[C@H](c2cccc(S(=O)(=O)NCCOCCOCCNC(=O)NCCCCNC(=O)NCCOCCOCCNS(=O)(=O)c3cccc([C@@H]4CN(C)Cc5c(Cl)cc(Cl)cc54)c3)c2)C1",
+   "source": "ChEMBL CHEMBL3304485",
+   "native_target": null
+  },
+  {
+   "name": "upadacitinib",
+   "smiles": "CC[C@@H]1CN(C(=O)NCC(F)(F)F)C[C@@H]1c1cnc2cnc3[nH]ccc3n12",
+   "source": "ChEMBL CHEMBL3622821",
+   "native_target": null
+  }
+ ]
+}
