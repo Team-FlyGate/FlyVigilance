@@ -14,7 +14,7 @@ export default function SplitTarget({ xa }: { xa: XaSplit }) {
     const el = host.current
     if (!el) return
     let disposed = false, raf = 0
-    const { scene, camera, composer, film, renderer, resize } = makeRenderer(el)
+    const { scene, camera, composer, film, renderer, resize, shown } = makeRenderer(el)
     scene.add(dust(300, 90))
     const cols = chainGradient(xa.ca.length, ...(TARGET_PALETTE.F10))
     const rb = ribbon(xa.ca.map((c, i) => ({ p: new THREE.Vector3(c[0], c[1], c[2]), resseq: c[3], color: cols[i] })), 0.3)
@@ -31,7 +31,7 @@ export default function SplitTarget({ xa }: { xa: XaSplit }) {
       camera.position.set(c.x + Math.cos(a) * 46, c.y + 16, c.z + Math.sin(a) * 46); camera.lookAt(c)
       rb.uniforms.uEye.value.copy(camera.position); rb.uniforms.uCut.value = 4
       film.uniforms.uTime.value = (now % 1000) / 1000
-      composer.render()
+      if (shown()) composer.render()
       raf = requestAnimationFrame(loop)
     }
     raf = requestAnimationFrame(loop)
