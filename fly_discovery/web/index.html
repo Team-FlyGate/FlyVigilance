@@ -3,38 +3,55 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FlyDiscoverer — 시판 전 탐색</title>
+<title>FlyDiscovery — 시판 전 탐색</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;family=Noto+Sans+KR:wght@300;400;500;700&amp;display=swap" rel="stylesheet">
 <style>
-/* 색·컴포넌트 토큰은 FDDD(fly-connectome-template) src/style.css 에서 가져옴.
-   글자 크기만 가독성을 위해 상향. 크레딧은 각 화면 푸터에 표시. */
+/* 색·폰트·패널 토큰은 FlyVigilance web/src/index.css 와 같은 값을 쓴다 (FlyGate 로 합칠 때 한 벌로 맞추려고).
+   레이아웃과 화면 구성은 FDDD(fly-connectome-template) 기반이며, 크레딧은 푸터에 표시한다. */
 :root{
---bg:#060B13; --panel:#080F1A; --panel2:#0B1421; --panel3:#101B2B;
---line:#1D2B3D; --line2:#2B3D53; --line3:#25405E;
---text:#DCE8F4; --bright:#EDF6FF; --muted:#8093AC; --muted2:#92A8BE;
---accent:#65D9F1; --ok:#70F2B8; --warn:#FFC445; --no:#FF8B35; --human:#B76CFF; --ligand:#DDBB65;
---r:7px;
+--bg:#04060c; --bg-2:#070b15;
+--panel:rgba(12,18,34,0.72); --panel-solid:#0b1122; --panel2:rgba(18,27,50,0.7); --panel3:#121a30;
+--line:rgba(120,170,255,0.12); --line2:rgba(120,170,255,0.22); --line3:rgba(55,230,255,0.25);
+--text:#e8eefc; --bright:#f4f7ff; --muted:#6f7d9e; --muted2:#a9b6d3;
+--accent:#37e6ff; --ok:#3ddc97; --warn:#ffcc4d; --no:#ff5d6c; --human:#a58bff; --ligand:#ffb547; --nvidia:#76b900;
+--r:16px; --r-sm:10px;
+--shadow:0 20px 60px -20px rgba(0,0,0,0.7),0 0 0 1px var(--line);
+--glow:0 0 40px -8px rgba(55,230,255,0.35);
+--font:'Space Grotesk','Noto Sans KR',system-ui,sans-serif;
+--font-kr:'Noto Sans KR','Space Grotesk',system-ui,sans-serif;
+--mono:'JetBrains Mono',ui-monospace,monospace;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);font-family:'DM Sans','IBM Plex Sans KR',system-ui,sans-serif;color:var(--text);font-size:15px;line-height:1.5;font-synthesis:none}
-a{color:#9DC7E2;text-decoration:none}a:hover{color:#FFFFFF}
-button{font:inherit;color:var(--text);background:#101C2B;border:1px solid var(--line2);border-radius:5px;cursor:pointer}
-button:hover{border-color:#78B7DC;color:#FFFFFF}
-button:focus-visible{outline:2px solid #4EE4FF;outline-offset:4px}
-.mono{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
-.lbl{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.13em;color:#7392AE;text-transform:uppercase}
-.card{background:var(--panel);border:1px solid var(--line2);border-radius:var(--r)}
-.h2{margin:0;font-size:17px;font-weight:600;letter-spacing:-.2px;color:var(--bright)}
+body{margin:0;color:var(--text);font-family:var(--font-kr);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;
+background:
+ radial-gradient(1200px 700px at 78% -10%,rgba(55,110,255,0.14),transparent 60%),
+ radial-gradient(900px 600px at -10% 110%,rgba(118,185,0,0.08),transparent 60%),
+ radial-gradient(700px 500px at 50% 50%,rgba(255,79,216,0.04),transparent 70%),
+ var(--bg);background-attachment:fixed}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+background-image:linear-gradient(rgba(120,170,255,0.035) 1px,transparent 1px),linear-gradient(90deg,rgba(120,170,255,0.035) 1px,transparent 1px);
+background-size:48px 48px;-webkit-mask-image:radial-gradient(ellipse at center,#000 30%,transparent 80%);mask-image:radial-gradient(ellipse at center,#000 30%,transparent 80%)}
+#app{position:relative;z-index:1}
+a{color:var(--accent);text-decoration:none}a:hover{color:#ffffff}
+::selection{background:rgba(55,230,255,0.3)}
+button{font:inherit;font-family:var(--font);color:var(--text);background:rgba(20,30,56,0.7);border:1px solid var(--line2);border-radius:var(--r-sm);cursor:pointer;transition:all .16s ease}
+button:hover{border-color:rgba(55,230,255,0.5);box-shadow:var(--glow);color:#ffffff}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.lbl{font-family:var(--mono);font-size:11px;letter-spacing:.13em;color:var(--muted);text-transform:uppercase}
+.card{background:var(--panel);border:0;border-radius:var(--r);box-shadow:var(--shadow);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);position:relative}
+.card::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(135deg,rgba(255,255,255,0.05),transparent 40%)}
+.h2{margin:0;font-family:var(--font);font-size:17px;font-weight:600;letter-spacing:-.1px;color:var(--bright)}
 .trow{background:transparent;border-radius:0}
-.trow:hover{background:#17263A;border-color:transparent}
-.foot{font-family:'IBM Plex Mono',monospace;font-size:12px;color:#516A83}
-.foot a{color:#779AB7}
+.trow:hover{background:rgba(120,170,255,0.06);border-color:transparent;box-shadow:none}
+.foot{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.foot a{color:var(--muted2)}
 @keyframes fadeA{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
 @keyframes fadeB{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
 @keyframes grow{from{width:0}}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.live{animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.live{animation:pulse 1.8s ease-in-out infinite}
 .bar{transition:width .6s cubic-bezier(.2,.8,.2,1)}
 .grow{animation:grow 1s cubic-bezier(.2,.8,.2,1) both}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
@@ -49,13 +66,13 @@ body{overflow-x:hidden}
 <template id="tpl">
 <div style="width: 100%; max-width: 1440px; min-height: 1830px; height: auto; display: flex; flex-direction: column; background: var(--bg);">
 
-<header style="height: 64px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; border-bottom: 1px solid var(--line); background: #080E17;">
+<header style="height: 64px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; border-bottom: 1px solid var(--line); background: linear-gradient(180deg, rgba(8, 12, 24, 0.9), rgba(5, 8, 16, 0.95)); backdrop-filter: blur(16px);">
 <div style="display: flex; align-items: baseline; gap: 16px;">
-<span style="font-size: 22px; font-weight: 600; letter-spacing: 5px;">FLYDISCOVERER</span>
+<span style="font-family: var(--font); font-size: 20px; font-weight: 700; letter-spacing: 0.2px;">FlyDiscovery</span>
 <span style="font-size: 14px; color: var(--muted2);">Discovery 워크벤치</span>
-<span class="mono" style="font-size: 12px; letter-spacing: .1em; color: var(--accent); border: 1px solid #23485C; border-radius: 4px; padding: 4px 10px;">STEP 1 / 2 · 시판 전 탐색</span>
+<span class="mono" style="font-size: 12px; letter-spacing: .1em; color: var(--accent); border: 1px solid var(--line3); border-radius: 999px; padding: 4px 10px;">STEP 1 / 2 · 시판 전 탐색</span>
 </div>
-<span class="mono" style="font-size: 13px; color: var(--muted);">4R6E · 2P16 · 3LN1</span>
+<div style="display: flex; align-items: center; gap: 8px;"><span style="display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; font-family: var(--mono); font-size: 11.5px; white-space: nowrap; color: #c8f36b; border: 1px solid rgba(118, 185, 0, 0.5); background: rgba(118, 185, 0, 0.1);">NVIDIA NIM · OpenFold3 · DiffDock · Boltz-2</span><span style="display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; font-family: var(--mono); font-size: 11.5px; white-space: nowrap; color: var(--muted2); border: 1px solid var(--line2); background: rgba(10, 16, 30, 0.6);">4R6E · 2P16 · 3LN1</span></div>
 </header>
 
 <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 20px; padding: 24px 32px 28px;">
@@ -99,7 +116,7 @@ body{overflow-x:hidden}
 <button type="button" class="trow" onClick="{{ r.pick }}" style="display: grid; grid-template-columns: 1.5fr 1.4fr 1.5fr 1fr 1.1fr 1.1fr; gap: 16px; align-items: center; width: 100%; min-height: 60px; padding: 12px 20px; text-align: left; cursor: pointer; border: 0; border-bottom: 1px solid var(--line); border-left: 3px solid {{ r.edge }}; color: var(--text); background: {{ r.bg }}; transition: background .2s; animation: fade{{ ab }} .35s ease both; animation-delay: {{ r.d }};">
 <span style="display: flex; align-items: baseline; gap: 10px;"><span class="mono" style="font-size: 13px; color: var(--muted); width: 14px;">{{ r.rank }}</span><span style="font-size: 16px; font-weight: 600;">{{ r.name }}</span></span>
 <span style="font-size: 13px; color: {{ r.roleC }};">{{ r.role }}</span>
-<span style="display: flex; align-items: center; gap: 12px;"><span class="mono" style="font-size: 15px; width: 60px;">{{ r.score }}</span><span style="display: block; flex-grow: 1; height: 6px; border-radius: 3px; background: #1B2B3E;"><span class="bar" style="display: block; height: 6px; border-radius: 3px; width: {{ r.bar }}; background: {{ r.barC }};"></span></span></span>
+<span style="display: flex; align-items: center; gap: 12px;"><span class="mono" style="font-size: 15px; width: 60px;">{{ r.score }}</span><span style="display: block; flex-grow: 1; height: 6px; border-radius: 3px; background: #16203A;"><span class="bar" style="display: block; height: 6px; border-radius: 3px; width: {{ r.bar }}; background: {{ r.barC }};"></span></span></span>
 <span class="mono" style="font-size: 14px; color: {{ r.ddC }};">{{ r.dd }}</span>
 <span style="display: flex; align-items: baseline; gap: 8px;"><span class="mono" style="font-size: 15px;">{{ r.bz }}</span><span class="mono" style="font-size: 12px; color: {{ r.pbC }};">{{ r.pb }}</span></span>
 <span class="mono" style="font-size: 14px; color: {{ r.chC }};">{{ r.ch }}</span>
@@ -134,10 +151,10 @@ body{overflow-x:hidden}
 <h2 class="h2">결합 포즈</h2>
 <span class="mono" style="margin-left: auto; font-size: 12px; color: var(--muted);">{{ tgt.pdb }} · mode 1</span>
 </div>
-<canvas ref="{{ structRef }}" aria-label="선택한 수용체 원자와 도킹 포즈" style="width: 100%; height: 300px; display: block; background: #070D17;"></canvas>
+<canvas ref="{{ structRef }}" aria-label="선택한 수용체 원자와 도킹 포즈" style="width: 100%; height: 300px; display: block; background: #070B15;"></canvas>
 <div style="display: flex; align-items: center; gap: 18px; padding: 14px 20px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted2);">
 <span style="display: flex; align-items: center; gap: 8px;"><span style="width: 10px; height: 10px; border-radius: 2px; background: {{ tgt.c }};"></span>수용체</span>
-<span style="display: flex; align-items: center; gap: 8px;"><span style="width: 10px; height: 10px; border-radius: 2px; background: #DDBB65;"></span>{{ sel.name }} 포즈</span>
+<span style="display: flex; align-items: center; gap: 8px;"><span style="width: 10px; height: 10px; border-radius: 2px; background: #FFB547;"></span>{{ sel.name }} 포즈</span>
 </div>
 </section>
 
@@ -153,7 +170,7 @@ body{overflow-x:hidden}
 </section>
 
 <section class="card" style="display: grid; grid-template-columns: 150px minmax(0, 1fr); overflow: hidden; flex-grow: 1;">
-<canvas ref="{{ brainRef }}" aria-label="MaleCNS 뉴런 위치 점구름" style="width: 150px; height: 100%; min-height: 150px; display: block; background: #070D17;"></canvas>
+<canvas ref="{{ brainRef }}" aria-label="MaleCNS 뉴런 위치 점구름" style="width: 150px; height: 100%; min-height: 150px; display: block; background: #070B15;"></canvas>
 <div style="padding: 18px 20px; display: flex; flex-direction: column; gap: 8px;">
 <span class="lbl" style="font-size: 11px;">FDDD 커넥톰 · 보조</span>
 <span style="font-size: 14px; line-height: 1.55;">초파리 뇌가 도킹 점수를 보상으로 받아 선호를 학습합니다</span>
@@ -166,8 +183,8 @@ body{overflow-x:hidden}
 <div class="card" style="display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; overflow: hidden; flex-shrink: 0;">
 <div style="padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; border-right: 1px solid var(--line);">
 <span class="lbl" style="font-size: 11px;">과잉해석 적발 · 8건</span>
-<div style="display: flex; align-items: center; gap: 14px;"><span style="font-size: 14px; width: 110px; color: var(--muted2);">규칙만</span><span style="display: block; flex-grow: 1; height: 6px; border-radius: 3px; background: #1B2B3E;"><span class="grow" style="display: block; width: 4%; height: 6px; border-radius: 3px; background: var(--muted);"></span></span><span class="mono" style="font-size: 14px; width: 40px; text-align: right;">0/4</span></div>
-<div style="display: flex; align-items: center; gap: 14px;"><span style="font-size: 14px; width: 110px; color: var(--muted2);">+ Nemotron</span><span style="display: block; flex-grow: 1; height: 6px; border-radius: 3px; background: #1B2B3E;"><span class="grow" style="display: block; width: 100%; height: 6px; border-radius: 3px; background: var(--accent); animation-delay: .15s;"></span></span><span class="mono" style="font-size: 14px; width: 40px; text-align: right;">4/4</span></div>
+<div style="display: flex; align-items: center; gap: 14px;"><span style="font-size: 14px; width: 110px; color: var(--muted2);">규칙만</span><span style="display: block; flex-grow: 1; height: 6px; border-radius: 3px; background: #16203A;"><span class="grow" style="display: block; width: 4%; height: 6px; border-radius: 3px; background: var(--muted);"></span></span><span class="mono" style="font-size: 14px; width: 40px; text-align: right;">0/4</span></div>
+<div style="display: flex; align-items: center; gap: 14px;"><span style="font-size: 14px; width: 110px; color: var(--muted2);">+ Nemotron</span><span style="display: block; flex-grow: 1; height: 6px; border-radius: 3px; background: #16203A;"><span class="grow" style="display: block; width: 100%; height: 6px; border-radius: 3px; background: var(--accent); animation-delay: .15s;"></span></span><span class="mono" style="font-size: 14px; width: 40px; text-align: right;">4/4</span></div>
 </div>
 <div style="padding: 18px 20px; display: flex; flex-direction: column; gap: 6px; border-right: 1px solid var(--line);"><span class="lbl" style="font-size: 11px;">정상 오탐</span><span class="mono" style="font-size: 26px; color: var(--warn);">1 / 4</span></div>
 <div style="padding: 18px 20px; display: flex; flex-direction: column; gap: 6px; border-right: 1px solid var(--line);"><span class="lbl" style="font-size: 11px;">실행된 도킹</span><span class="mono" style="font-size: 26px;">8 <span style="font-size: 13px; color: var(--muted2);">runs · 3 타깃</span></span></div>
@@ -176,7 +193,7 @@ body{overflow-x:hidden}
 
 </div>
 <section class="card" style="display: grid; grid-template-columns: 430px minmax(0, 1fr); overflow: hidden; flex-shrink: 0;">
-<canvas ref="{{ scatRef }}" aria-label="ChEMBL 실측 pChEMBL 대 Boltz-2 예측 pIC50 산점도" style="width: 430px; height: 300px; display: block; background: #070D17;"></canvas>
+<canvas ref="{{ scatRef }}" aria-label="ChEMBL 실측 pChEMBL 대 Boltz-2 예측 pIC50 산점도" style="width: 430px; height: 300px; display: block; background: #070B15;"></canvas>
 <div style="padding: 20px 24px; display: flex; flex-direction: column; gap: 14px;">
 <div style="display: flex; align-items: baseline; gap: 14px;">
 <h2 class="h2">친화도 예측 벤치마크</h2>
@@ -190,9 +207,9 @@ body{overflow-x:hidden}
 <div style="display: flex; flex-direction: column; gap: 4px;"><span class="lbl" style="font-size: 11px;">포즈 RMSD ≤ 2Å</span><span class="mono" style="font-size: 24px; color: var(--ok);">3 / 3</span><span style="font-size: 12px; color: var(--muted2);">재도킹 대조</span></div>
 </div>
 <div style="display: flex; gap: 18px; font-size: 12px; color: var(--muted2);">
-<span style="display: flex; align-items: center; gap: 7px;"><span style="width: 9px; height: 9px; border-radius: 50%; background: #70F2B8;"></span>오차 0.5 이내</span>
-<span style="display: flex; align-items: center; gap: 7px;"><span style="width: 9px; height: 9px; border-radius: 50%; background: #FFC445;"></span>0.5–1.0</span>
-<span style="display: flex; align-items: center; gap: 7px;"><span style="width: 9px; height: 9px; border-radius: 50%; background: #FF8B35;"></span>1.0 초과</span>
+<span style="display: flex; align-items: center; gap: 7px;"><span style="width: 9px; height: 9px; border-radius: 50%; background: #3DDC97;"></span>오차 0.5 이내</span>
+<span style="display: flex; align-items: center; gap: 7px;"><span style="width: 9px; height: 9px; border-radius: 50%; background: #FFCC4D;"></span>0.5–1.0</span>
+<span style="display: flex; align-items: center; gap: 7px;"><span style="width: 9px; height: 9px; border-radius: 50%; background: #FF5D6C;"></span>1.0 초과</span>
 </div>
 <p style="margin: 0; font-size: 13px; line-height: 1.65; color: var(--muted2);"><b style="color: var(--warn);">한계.</b> ChEMBL IC50은 측정 조건이 실험마다 달라 정답지 자체에 폭이 있습니다. 39종은 PARP1 한 타깃이라 다른 타깃으로 일반화할 수 없고, 상관이 높다고 개별 화합물 예측을 신뢰할 근거도 아닙니다. 가장 큰 오차는 1.76 log 단위입니다.</p>
 </div>
@@ -225,9 +242,9 @@ class Component extends DCLogic {
     ];
     this.DD = { 'niraparib@parp1': [10.69, 0.52, 5.09, 9.62, 1.55, 5.37, 8.25, 1.03, 4.96, 8.37, -0.21, 4.12, 9.07, -1.27, 4.78, 10.19, -0.84, 5.56, 7.47, 2.04, 4.23, 6.77, 1.73, 3.08, 6.03, 2.67, 2.4, 5.99, 3.95, 2.86, 6.69, 4.26, 4.0, 7.42, 3.35, 4.7, 5.23, 4.95, 2.16, 5.46, 6.28, 2.15, 4.52, 6.93, 1.36, 4.29, 8.24, 1.01, 3.24, 8.6, 0.19, 2.43, 7.59, -0.28, 2.65, 6.26, 0.07, 3.7, 5.91, 0.9, 4.17, 4.76, 1.4, 1.78, 5.23, -0.44, 0.85, 5.51, -1.21, 1.97, 3.88, -0.05] };
     this.T = {
-      parp1: { label: 'PARP1', full: 'Human PARP1 · 4R6E chain A', pdb: '4R6E-A', c: '#65D9F1', rgb: '101,217,241', sc: 3.4, note: 'PARP1 후보 4개는 같은 수용체·같은 프로토콜로 도킹되어 서로 순위를 매길 수 있습니다.' },
-      xa: { label: 'Factor Xa', full: 'Human factor Xa · 2P16', pdb: '2P16', c: '#FF8B35', rgb: '255,150,80', sc: 3.3, note: 'Apixaban은 재도킹 대조, Niraparib은 교차 도킹입니다. PARP1 점수와 나란히 놓고 비교하지 않습니다.' },
-      cox2: { label: 'COX-2', full: 'Mouse COX-2 · 3LN1', pdb: '3LN1', c: '#B76CFF', rgb: '183,108,255', sc: 1.55, note: 'Celecoxib은 재도킹 대조, Niraparib은 교차 도킹입니다. 쥐 단백질이라 사람 결과로 옮기지 않습니다.' }
+      parp1: { label: 'PARP1', full: 'Human PARP1 · 4R6E chain A', pdb: '4R6E-A', c: '#37E6FF', rgb: '55,230,255', sc: 3.4, note: 'PARP1 후보 4개는 같은 수용체·같은 프로토콜로 도킹되어 서로 순위를 매길 수 있습니다.' },
+      xa: { label: 'Factor Xa', full: 'Human factor Xa · 2P16', pdb: '2P16', c: '#FF5D6C', rgb: '255,93,108', sc: 3.3, note: 'Apixaban은 재도킹 대조, Niraparib은 교차 도킹입니다. PARP1 점수와 나란히 놓고 비교하지 않습니다.' },
+      cox2: { label: 'COX-2', full: 'Mouse COX-2 · 3LN1', pdb: '3LN1', c: '#A58BFF', rgb: '165,139,255', sc: 1.55, note: 'Celecoxib은 재도킹 대조, Niraparib은 교차 도킹입니다. 쥐 단백질이라 사람 결과로 옮기지 않습니다.' }
     };
   }
   componentDidMount() {
@@ -253,7 +270,7 @@ class Component extends DCLogic {
     var s = this.fit(this.sc);
     if (s) {
       var ctx = s.ctx, W = s.w, H = s.h, P = D.proteins[st.tgt].atoms, L = D.ligands[c.k] || [];
-      ctx.fillStyle = '#070D17'; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = '#070B15'; ctx.fillRect(0, 0, W, H);
       var rot = reduce ? 0.6 : ts * 0.00008, ca = Math.cos(rot), sa = Math.sin(rot);
       var cx = 0, cy = 0, cz = 0, nl = L.length / 3;
       for (var i = 0; i < nl; i++) { cx += L[i * 3]; cy += L[i * 3 + 1]; cz += L[i * 3 + 2]; }
@@ -271,7 +288,7 @@ class Component extends DCLogic {
         ctx.fillRect(ox + x1 * sc * f, oy - q[1] * sc * f, z1 < 0 ? 1.8 : 1.2, z1 < 0 ? 1.8 : 1.2);
       }
       ctx.fillStyle = 'rgba(221,187,101,' + (0.25 + 0.75 * de).toFixed(2) + ')';
-      ctx.shadowColor = '#FFC445'; ctx.shadowBlur = 6 + 4 * Math.sin(ts * 0.004);
+      ctx.shadowColor = '#FFCC4D'; ctx.shadowBlur = 6 + 4 * Math.sin(ts * 0.004);
       var lx = 0, ly = 0;
       for (var b = 0; b < L.length; b += 3) {
         var r = shift(L[b] + off, L[b + 1] + off * 0.6, L[b + 2]);
@@ -301,29 +318,29 @@ class Component extends DCLogic {
         ctx.globalAlpha = de;
         ctx.strokeStyle = 'rgba(221,187,101,0.7)'; ctx.lineWidth = 1;
         ctx.beginPath(); ctx.moveTo(lx + 22, ly - 14); ctx.lineTo(lx + 60, ly - 40); ctx.lineTo(lx + 120, ly - 40); ctx.stroke();
-        ctx.fillStyle = '#EDF6FF'; ctx.font = '500 11px "IBM Plex Mono", monospace'; ctx.textAlign = 'left';
+        ctx.fillStyle = '#F4F7FF'; ctx.font = '500 11px "JetBrains Mono", monospace'; ctx.textAlign = 'left';
         ctx.fillText(c.name + '  ' + c.s.toFixed(3), lx + 64, ly - 46);
         ctx.globalAlpha = 1;
       }
-      ctx.fillStyle = dp < 1 ? '#FFC445' : '#70F2B8'; ctx.font = '9px "IBM Plex Mono", monospace'; ctx.textAlign = 'left';
+      ctx.fillStyle = dp < 1 ? '#FFCC4D' : '#3DDC97'; ctx.font = '9px "JetBrains Mono", monospace'; ctx.textAlign = 'left';
       ctx.fillText(dp < 1 ? 'DOCKING POSE · MODE 1 …' : 'POSE LOADED · ' + c.s.toFixed(3) + ' kcal/mol', 14, 20);
-      if (DDp && dp >= 1) { ctx.fillStyle = '#65D9F1'; ctx.fillText('DIFFDOCK NIM · conf 0.752 · RMSD 0.71 Å vs 4R6E', 14, 34); }
+      if (DDp && dp >= 1) { ctx.fillStyle = '#37E6FF'; ctx.fillText('DIFFDOCK NIM · conf 0.752 · RMSD 0.71 Å vs 4R6E', 14, 34); }
     }
     var sx = this.fit(this.sx);
     if (sx) {
       var g2 = sx.ctx, W2 = sx.w, H2 = sx.h, pad = 42;
-      g2.fillStyle = '#070D17'; g2.fillRect(0, 0, W2, H2);
+      g2.fillStyle = '#070B15'; g2.fillRect(0, 0, W2, H2);
       var lo = 4.5, hi = 10, X = function (v) { return pad + (v - lo) / (hi - lo) * (W2 - pad - 14); },
           Y = function (v) { return H2 - pad + 6 - (v - lo) / (hi - lo) * (H2 - pad - 12); };
-      g2.strokeStyle = '#1D2B3D'; g2.lineWidth = 1;
+      g2.strokeStyle = '#1A2540'; g2.lineWidth = 1;
       g2.beginPath(); g2.moveTo(pad, Y(lo)); g2.lineTo(pad, Y(hi)); g2.lineTo(X(hi), Y(hi)); g2.stroke();
-      g2.setLineDash([4, 4]); g2.strokeStyle = '#3B5570';
+      g2.setLineDash([4, 4]); g2.strokeStyle = '#34466E';
       g2.beginPath(); g2.moveTo(X(lo), Y(lo)); g2.lineTo(X(hi), Y(hi)); g2.stroke(); g2.setLineDash([]);
-      g2.font = '11px "IBM Plex Mono", monospace'; g2.fillStyle = '#7392AE'; g2.textAlign = 'center';
+      g2.font = '11px "JetBrains Mono", monospace'; g2.fillStyle = '#6F7D9E'; g2.textAlign = 'center';
       for (var v = 5; v <= 9; v++) { g2.fillText(String(v), X(v), H2 - 14); }
       g2.textAlign = 'right';
       for (var v2 = 5; v2 <= 9; v2++) { g2.fillText(String(v2), pad - 8, Y(v2) + 4); }
-      g2.textAlign = 'center'; g2.fillStyle = '#8093AC';
+      g2.textAlign = 'center'; g2.fillStyle = '#6F7D9E';
       g2.fillText('ChEMBL 실측 pChEMBL', (pad + W2) / 2, H2 - 2);
       g2.save(); g2.translate(12, H2 / 2); g2.rotate(-Math.PI / 2); g2.fillText('Boltz-2 예측 pIC50', 0, 0); g2.restore();
       this.BENCH.forEach(function (p) {
@@ -335,7 +352,7 @@ class Component extends DCLogic {
     var bcv = this.fit(this.bc);
     if (bcv) {
       var g = bcv.ctx, B = D.brain, BW = bcv.w, BH = bcv.h;
-      g.fillStyle = '#070D17'; g.fillRect(0, 0, BW, BH);
+      g.fillStyle = '#070B15'; g.fillRect(0, 0, BW, BH);
       var R = Math.min(BH * 0.42, 70), t = reduce ? -0.5 : -0.5 + ts * 0.00015, tl = -0.42, c1 = Math.cos(t), s1 = Math.sin(t), c2 = Math.cos(tl), s2 = Math.sin(tl);
       for (var k = 0; k < B.length; k += 8) {
         var x = B[k] / 1000, y = B[k + 1] / 1000, z = B[k + 2] / 1000;
@@ -348,7 +365,7 @@ class Component extends DCLogic {
   }
   renderVals() {
     var self = this, st = this.state, C = this.C, T = this.T, tg = T[st.tgt];
-    var OK = '#70F2B8', NO = '#FF8B35', WAIT = '#FFC445', NA = '#516E89';
+    var OK = '#3DDC97', NO = '#FF5D6C', WAIT = '#FFCC4D', NA = '#56627F';
     var BZ = {
       '15r@parp1': [9.868, 0.443, null, 0], 'pamiparib@parp1': [7.822, 0.342, 8.89, 10], 'niraparib@parp1': [8.909, 0.766, 7.79, 27],
       'rucaparib@parp1': [8.200, 0.299, 8.70, 38], 'celecoxib@cox2': [7.092, 0.350, 7.22, 17], 'niraparib@cox2': [7.502, 0.305, null, 0],
@@ -365,13 +382,13 @@ class Component extends DCLogic {
       var c = o.c, on = o.i === st.sel, d = DDR[c.k], b = BZ[c.k];
       return {
         rank: c.kind === 'in' ? String(n + 1) : '·', name: c.name, role: c.role,
-        roleC: c.kind === 'cross' ? NO : (c.kind === 'ctrl' ? '#B76CFF' : 'var(--muted2)'),
+        roleC: c.kind === 'cross' ? NO : (c.kind === 'ctrl' ? '#A58BFF' : 'var(--muted2)'),
         score: c.s.toFixed(3), bar: Math.round(35 + 65 * ((c.s - worst) / ((best - worst) || 1))) + '%', barC: tg.c,
         dd: d[2] ? d[0].toFixed(2) + ' · ' + d[2] + 'Å' : d[0].toFixed(2),
         ddC: d[2] ? 'var(--accent)' : (d[0] < 0 ? '#C99A6E' : 'var(--text)'),
         bz: b[0].toFixed(2), pb: 'p' + b[1].toFixed(2), pbC: b[1] >= 0.5 ? OK : '#C99A6E',
         ch: b[2] === null ? '기록 없음' : b[2].toFixed(2) + ' (n' + b[3] + ')', chC: b[2] === null ? '#C99A6E' : 'var(--text)',
-        edge: on ? tg.c : 'transparent', bg: on ? '#17263A' : 'transparent', d: (n * 0.05).toFixed(2) + 's',
+        edge: on ? tg.c : 'transparent', bg: on ? '#16223F' : 'transparent', d: (n * 0.05).toFixed(2) + 's',
         pick: function () { if (self.state.sel !== o.i) self.setState({ sel: o.i, k: self.state.k + 1 }); }
       };
     });
@@ -401,7 +418,7 @@ class Component extends DCLogic {
           : { text: 'DiffDock 신뢰도 ' + d[0].toFixed(2) + '가 높으므로 결합 친화도도 높다.', reason: 'DiffDock 신뢰도는 포즈 정확도 추정치이지 친화도가 아님.', v: 'REJECT', ev: 'rule:confidence≠affinity' }
       ];
     }
-    var VC = { PASS: ['#0A2A20', OK], REJECT: ['#2B1A0C', NO], HUMAN: ['#211539', '#B76CFF'] };
+    var VC = { PASS: ['#0B2A22', OK], REJECT: ['#2E1218', NO], HUMAN: ['#1D1640', '#A58BFF'] };
     var nira = s.name === 'Niraparib', niraP = nira && s.p === 'parp1';
     return {
       structRef: this.structRef, brainRef: this.brainRef, scatRef: this.scatRef, tgt: tg, rows: rows, ab: st.k % 2 ? 'A' : 'B',

@@ -1,8 +1,8 @@
-# FlyDiscoverer
+# FlyDiscovery
 
 **시판 전 탐색: 후보 하나를 구조 예측, 도킹, 친화도로 따라가며 근거를 넘는 주장을 반려하는 워크벤치**
 
-FlyVigilance가 시판 후 감시라면 FlyDiscoverer는 그 앞 단계다. 한 후보(니라파립)를 PARP1 결정 구조부터
+FlyVigilance가 시판 후 감시라면 FlyDiscovery는 그 앞 단계다. 한 후보(니라파립)를 PARP1 결정 구조부터
 친화도 벤치마크까지 따라가고, 단계마다 그 분야의 전통 기준으로 채점한다.
 이 후보의 시판 후 이상사례는 FlyVigilance [라이브 트리아지](https://flyvigilance.vercel.app/#/triage)가 이어받는다.
 
@@ -82,12 +82,13 @@ Lightning의 0점은 성능이 아니라 출력 토큰 문제다. 추론에 토�
 ## 실행
 
 ```bash
-cd fly_discoverer/web && python3 -m http.server 8777   # http://localhost:8777 (fetch 때문에 정적 서버 필요)
+cd fly_discovery/web && python3 -m http.server 8777   # http://localhost:8777 (fetch 때문에 정적 서버 필요)
 ```
 
 ## 고칠 때
 
-- 색·간격 토큰은 `web/index.html`의 `:root`에 있다.
+- 색·폰트·패널 토큰은 `web/index.html`의 `:root`에 있고, FlyVigilance `web/src/index.css`와 같은 값이다.
+  FlyGate로 합칠 때 한 벌로 맞추려는 것이므로 한쪽을 바꾸면 다른 쪽도 같이 바꾼다.
 - 수치를 바꿀 때는 `measurements/`의 원본과 대조한다. 근거가 없으면 `미조회` 또는 `—`로 남기고 추정값을 채우지 않는다.
 - 푸터의 크레딧 줄은 라이선스 요구사항이라 지우면 안 된다. 색·컴포넌트 토큰은 [FDDD](https://github.com/AwesomeZun/FDDD)(fly-connectome-template)에서 가져왔다.
 
