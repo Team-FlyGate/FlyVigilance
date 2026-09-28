@@ -1,8 +1,6 @@
 import type { ReactNode } from 'react'
 import HeroDocking, { DRUG_LABEL, useHeroDrug, type StepId } from '../components/HeroDocking'
 import DockPlayground from '../components/DockPlayground'
-import SelectivityMap from '../components/SelectivityMap'
-import ValidationGate from '../components/ValidationGate'
 import Step2Handoff from '../components/Step2Handoff'
 import { Card, Loading, PageHead } from '../components/ui'
 import { CriticStream, MissingCard, RedockBench, STEP_PAGES, Tile, title, useDiscoveryData } from './Discovery'
@@ -92,20 +90,7 @@ export default function DiscoveryStep({ step }: { step: StepId }) {
                 <span className="mono dim" style={{ fontSize: 11 }}>결정 구조: RCSB PDB · 포즈: DiffDock NIM</span>
               </div>
               {scenes && <DockPlayground scenes={scenes.scenes} />}
-              <ValidationGate />
-              {scenes && <SelectivityMap scenes={scenes.scenes} />}
               <RedockBench list={redockList} pocketR={scenes?.pocket_radius_A} />
-              <Card title="니라파립 케이스 스터디 · 도킹 조합 8개" sub="같은 표적 안에서만 순위를 매길 수 있습니다. 다른 표적끼리 Vina 점수를 비교하는 주장은 크리틱이 반려합니다" style={{ marginBottom: 16 }}>
-                <div className="mono dim" style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr 1fr 1fr', gap: 12, fontSize: 10.5, padding: '6px 4px', textTransform: 'uppercase' }}>
-                  <span>조합</span><span>Vina kcal/mol</span><span>DiffDock 신뢰도</span><span>재도킹 RMSD</span>
-                </div>
-                {combos.map((c) => (
-                  <div key={c[0]} style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr 1fr 1fr', gap: 12, fontSize: 12.5, padding: '8px 4px', borderTop: '1px solid var(--line)' }}>
-                    <b style={{ fontFamily: 'var(--font)' }}>{combo(c[0])}</b><span className="num">{c[1].toFixed(3)}</span><span className="num">{c[2].toFixed(2)}</span>
-                    <span className="num dim">{c[0] === 'niraparib@parp1' ? <span style={{ color: 'var(--ok)' }}>{hm?.diffdock_rmsd} Å ✓</span> : '—'}</span>
-                  </div>
-                ))}
-              </Card>
             </>
           )}
 
@@ -132,6 +117,12 @@ export default function DiscoveryStep({ step }: { step: StepId }) {
             </div>
           )}
 
+          {step === 'critic' && (
+            <a href="#/d-evidence" className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', textDecoration: 'none', color: 'inherit', padding: '14px 18px', marginBottom: 16, border: '1px solid rgba(61,220,151,0.35)' }}>
+              <span><b style={{ fontFamily: 'var(--font)' }}>다음 · 근거 검증</b> <span className="dim" style={{ fontSize: 13 }}>도킹 결과를 믿어도 되는지 → 실측 근거가 있는지 → 선택적인지 → 후보 근거 카드</span></span>
+              <span style={{ color: 'var(--ok)' }}>→</span>
+            </a>
+          )}
           {step === 'critic' && critic && (
             <div className="grid" style={{ gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 16, marginBottom: 16 }}>
               <Card title="Critic Stream" sub={extras.critic ? `${extras.critic.model} · 과잉해석 ${extras.critic.caught}/${extras.critic.n_over} 반려 · 정상 ${extras.critic.passed}/${extras.critic.n_valid} 통과 · ${extras.critic.sec}초` : ''}

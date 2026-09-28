@@ -12,7 +12,7 @@
   - Boltz-2: 같은 4R6E 포켓에 DiffDock 으로 넣은 PARP1 억제제 4종(15R · 파미파립 · 니라파립 · 루카파립)과 Boltz-2 예측 pIC50
   - 크리틱: 니라파립을 Factor Xa(2P16)에 넣은 DiffDock 포즈와 그 수용체 (PARP1 과 나란히 보여 줄 분할 장면)
 - 장면에서 고를 수 있는 약물(drugs): 니라파립 · 탈라조파립 · 루카파립. 모두 같은 4R6E 수용체에 DiffDock 으로 넣고,
-  정답 자리는 각 약물의 PARP1 결정 구조(4R6E · 7KK3 · 4RV6)를 Cα 로 4R6E 에 겹쳐 가져온다. Factor Xa 포즈도 약물마다 둔다.
+  정답 자리는 각 약물의 PARP1 결정 구조(4R6E · 7KK3 · 6VKK)를 Cα 로 4R6E 에 겹쳐 가져온다. Factor Xa 포즈도 약물마다 둔다.
   빠진 DiffDock 응답만 NVIDIA_API_KEY 가 있을 때 새로 부른다(nim/dd_<키>.json)
 
 사용: .venv/bin/python pipeline/discovery/build_hero_scene.py
@@ -63,7 +63,7 @@ def pack(xyz, el, bonds, c):
 
 
 # 장면에서 고를 수 있는 약물: 결정 구조(PDB, 리간드 코드). 니라파립 결정 구조는 수용체와 같은 4R6E
-HERO_DRUGS = {"niraparib": ("4R6E", "3JD"), "talazoparib": ("7KK3", "2YQ"), "rucaparib": ("4RV6", "RPB")}
+HERO_DRUGS = {"niraparib": ("4R6E", "3JD"), "talazoparib": ("7KK3", "2YQ"), "rucaparib": ("6VKK", "RPB")}
 
 
 def dd_cached(key, protein, smiles):
