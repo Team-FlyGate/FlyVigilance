@@ -1,8 +1,8 @@
 """Project-FlyGate 쇼릴 v4.3.0 최종본을 만듭니다. 제출 주소(https://flygate.kr/showreel/FlyGate_showreel_v4.3.0.html)가 이 파일입니다.
 
 먼저 나온 판은 v4.3.0-pre(build_reel_v4_3.py)로 남겨 두었고, 장면 · 내레이션 · 시간표는 그 판과 같습니다. 최종본에서 바뀐 점:
-  1) 화면 아래에 자막 띠를 두고 내레이션을 자막으로 띄웁니다. 장면 전체를 조금 줄여 위로 올리고, 자막은 한 번에 한 줄(최대 SUB_MAX 자)만 보입니다.
-     긴 문장은 쉼표 · 띄어쓰기 자리에서 나누고, 글자 수에 비례해 시간을 나눕니다. 읽기용 표기(플라이게이트 · 옹스트롬)는 원래 표기(FlyGate · Å)로 되돌립니다.
+  1) 화면 아래에 자막 띠를 두고 내레이션을 자막으로 띄웁니다. 장면 전체를 조금 줄여 위로 올리고, 자막은 한 문장을 나누지 않고 최대 두 줄로 띄웁니다.
+     내레이션보다 조금 먼저 뜨고 다음 자막이 나올 때까지 남아 읽을 시간을 충분히 둡니다. 읽기용 표기(플라이게이트 · 옹스트롬)는 원래 표기(FlyGate · Å)로 되돌립니다.
   2) 장면마다 '용어' 풀이를 고정 자리에 띄웁니다(GLOSS). FAERS · PRR · SDR · RMSD 같은 약어를 전문가가 아닌 시청자도 읽을 수 있게 합니다.
   3) 강조 틀은 중요한 순간(EMPHASIS)에만 제자리에서 나타났다 사라집니다. 옮겨 다니던 틀, 틀을 따라 돌던 빛,
      CLI 창에서 줄마다 차례로 켜지던 강조는 없앴습니다. CLI 확대는 그대로 두고, 틀 · 스포트라이트는 grade · critic · dock 세 명령에서만 씁니다.
@@ -103,8 +103,10 @@ EMPHASIS = [
     ("cli_grade", "grade 출력 확대 줄"), ("cli_critic", "critic 의 safe / flagged 줄"), ("cli_dock", "DiffDock status · run 줄"),
 ]
 
-# 자막: 한 번에 한 줄, SUB_MAX 자 이하. 읽기용 표기를 원래 표기로 되돌립니다
-SUB_MAX = 36
+# 자막: 내레이션 한 문장을 나누지 않고 한 장면(최대 두 줄, 줄당 SUB_LINE 자)으로 띄웁니다.
+# 읽을 시간을 벌려고 내레이션보다 SUB_LEAD 초 먼저 띄우고, 다음 자막이 나올 때까지(최대 SUB_HOLD 초 더) 남겨 둡니다.
+# 읽기용 표기(플라이게이트 · 옹스트롬)는 원래 표기(FlyGate · Å)로 되돌립니다
+SUB_LINE, SUB_LEAD, SUB_HOLD = 28, 0.3, 1.6
 SUB_FIX = [("프로젝트 플라이게이트", "Project-FlyGate"), ("플라이디스커버리", "FlyDiscovery"), ("플라이비질런스", "FlyVigilance"), ("플라이게이트", "FlyGate")]
 
 
@@ -114,29 +116,36 @@ def sub_text(vo: str) -> str:
     return re.sub(r"(\d)\s?옹스트롬", r"\1 Å", vo).replace("옹스트롬", "Å")
 
 
-def sub_split(s: str) -> list[str]:
-    """한 문장을 SUB_MAX 자 이하 조각으로 나눕니다. 마침표 · 쉼표 뒤를 먼저, 없으면 가운데에 가까운 띄어쓰기에서 자릅니다"""
+def sub_lines(s: str) -> list[str]:
+    """SUB_LINE 자를 넘으면 두 줄로 나눕니다. 마침표 · 쉼표 뒤를 먼저, 없으면 가운데에 가까운 띄어쓰기에서 자릅니다"""
     s = s.strip()
-    if len(s) <= SUB_MAX:
+    if len(s) <= SUB_LINE:
         return [s]
-    cuts = [m.end() for m in re.finditer(r"[.,?!]\s", s)] or [m.start() for m in re.finditer(r"\s", s)]
     mid = len(s) / 2
-    best = min(cuts, key=lambda c: abs(c - mid))
-    return sub_split(s[:best]) + sub_split(s[best:])
+    punct = [m.end() for m in re.finditer(r"[.,?!]\s", s) if abs(m.end() - mid) < len(s) * 0.3]
+    cuts = punct or [m.start() for m in re.finditer(r"\s", s)]
+
+    def cost(c):
+        # 영문 낱말(수식어) 바로 뒤나 '중' 앞, 숫자와 단위 사이에서는 되도록 자르지 않습니다
+        prev, nxt = s[:c].split()[-1] if s[:c].split() else "", s[c:].split()[0] if s[c:].split() else ""
+        pen = 10 if re.fullmatch(r"[A-Za-z0-9.\-]+", prev) or nxt in ("중", "Å") or re.fullmatch(r"[\d.]+", prev) else 0
+        # 관형어(네 · 한 · 그 · 모델 · 샌드박스 · 식약처)와 그 뒤 낱말(개 · 건 · 단독 · 안에서 · 서식)은 한 줄에 둡니다
+        if prev in ("네", "한", "두", "세", "그", "모델", "샌드박스", "식약처", "시점") or re.match(r"(개|건|단독|안에서|서식|데이터)", nxt):
+            pen += 10
+        return abs(c - mid) + pen
+    best = min(cuts, key=cost)
+    return [s[:best].strip(), s[best:].strip()]
 
 
 def subtitles(tl: list[dict]) -> list[list]:
+    beats = [(sc["t0"] + bt["a"], sc["t0"] + bt["b"], sub_text(bt["vo"])) for sc in tl for bt in sc["beats"]]
+    dur = tl[-1]["t1"]
     out = []
-    for sc in tl:
-        for bt in sc["beats"]:
-            parts = [p.strip() for p in sub_split(sub_text(bt["vo"])) if p.strip()]
-            a, b = sc["t0"] + bt["a"], sc["t0"] + bt["b"]
-            tot = sum(len(p) for p in parts)
-            t = a
-            for p in parts:
-                d = (b - a) * len(p) / tot
-                out.append([round(t, 2), round(t + d, 2), p])
-                t += d
+    for i, (a, b, t) in enumerate(beats):
+        nxt = beats[i + 1][0] - SUB_LEAD if i + 1 < len(beats) else dur
+        start = max(a - SUB_LEAD, out[-1][1] if out else 0.0)
+        end = max(b, min(nxt, b + SUB_HOLD))
+        out.append([round(start, 2), round(end, 2), "\n".join(sub_lines(t))])
     return out
 
 INSTALL_LINE = "git clone https://github.com/Team-FlyGate/Project-FlyGate && cd Project-FlyGate && ./scripts/install_flygate.sh"
@@ -539,8 +548,9 @@ def write_script(tl: list[dict], dur: float, built: str, d: dict):
     for sid, what in EMPHASIS:
         lines.append(f"| {lab.get(sid, sid)} | {what} |")
     subs = subtitles(tl)
-    lines += ["", "## 화면 자막", "", f"내레이션을 한 줄 {SUB_MAX}자 이하로 나눠 화면 아래 자막 띠에 띄웁니다(총 {len(subs)}줄, 가장 긴 줄 {max(len(x[2]) for x in subs)}자).", "",
-              "| 시간 | 자막 |", "| --- | --- |"] + [f"| {mmss(x[0])}–{mmss(x[1])} | {x[2]} |" for x in subs]
+    cps = [len(x[2].replace("\n", "").replace(" ", "")) / (x[1] - x[0]) for x in subs]
+    lines += ["", "## 화면 자막", "", f"내레이션 한 문장을 나누지 않고 화면 아래 자막 띠에 최대 두 줄(줄당 {SUB_LINE}자 이하)로 띄웁니다. 내레이션보다 {SUB_LEAD}초 먼저 뜨고 다음 자막이 나올 때까지 남습니다(총 {len(subs)}개 · 가장 짧게 머무는 자막 {min(x[1] - x[0] for x in subs):.1f}초 · 공백 뺀 읽기 속도 평균 {sum(cps) / len(cps):.1f}자/초, 최대 {max(cps):.1f}자/초).", "",
+              "| 시간 | 자막 |", "| --- | --- |"] + [f"| {mmss(x[0])}–{mmss(x[1])} | {x[2].replace(chr(10), ' / ')} |" for x in subs]
     lines += ["", "## CLI 구간에 넣은 실제 터미널 캡처", "", "| 장면 | 캡처 | 명령 | 촬영(UTC) · 실행 | 넣은 크기 | 강조 · 확대한 줄 |", "| --- | --- | --- | --- | --- | --- |"]
     for sid, n in pick.items():
         cp = caps[n]

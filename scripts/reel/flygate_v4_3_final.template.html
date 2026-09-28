@@ -2647,13 +2647,13 @@
     X.save(); X.globalAlpha = 1
     const gr = X.createLinearGradient(0, SUB_TOP - 6, 0, H); gr.addColorStop(0, 'rgba(3,5,10,0)'); gr.addColorStop(0.18, 'rgba(3,5,10,0.92)'); gr.addColorStop(1, 'rgba(3,5,10,0.98)')
     X.fillStyle = gr; X.fillRect(0, SUB_TOP - 6, W, H - SUB_TOP + 6); X.restore()
-    const cur = SUBS.find((q) => T >= q[0] && T < q[1] + 0.12)
+    const cur = SUBS.find((q) => T >= q[0] && T < q[1])
     if (!cur) return
-    const a = Math.min(seg(T, cur[0], cur[0] + 0.12), 1 - seg(T, cur[1] + 0.02, cur[1] + 0.12)) * (1 - seg(T, DUR - 0.6, DUR - 0.1))
+    const a = Math.min(seg(T, cur[0], cur[0] + 0.1), 1 - seg(T, cur[1] - 0.1, cur[1])) * (1 - seg(T, DUR - 0.6, DUR - 0.1))
     if (a <= 0.003) return
     const g = GA; GA = 1
-    const cy = SUB_TOP + (H - SUB_TOP) / 2 + 2
-    text(cur[2], W / 2, cy, { size: 44, weight: 700, color: '#f4f7ff', a, align: 'center', base: 'middle', maxW: W - 240, glow: 0 })
+    const L = cur[2].split('\n'), lh = 50, cy = SUB_TOP + (H - SUB_TOP) / 2 + 2 - (L.length - 1) * lh / 2
+    L.forEach((ln, i) => text(ln, W / 2, cy + i * lh, { size: L.length > 1 ? 40 : 44, weight: 700, color: '#f4f7ff', a, align: 'center', base: 'middle', maxW: W - 240 }))
     GA = g
   }
   function render(T) {
