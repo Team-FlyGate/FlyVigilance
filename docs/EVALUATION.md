@@ -135,7 +135,7 @@ AUC의 95% 구간은 층화 부트스트랩 2,000회로 구했고, 방법 간 �
 - 보고 수 상위 31종이라 결과가 낙관적일 수 있습니다. 약별 IC₀₂₅ AUC는 0.522에서 0.870까지 벌어집니다.
 - 라벨에는 여러 약에 두루 흔해서 어느 한 약에서도 불균형이 서지 않는 반응이 적혀 있습니다. 낮은 민감도 가운데 얼마가 지표의 한계이고 얼마가 참조 세트의 성격인지는 이 측정으로 가르지 못합니다.
 
-재현(팀 선행 저장소, `metric-validation` 브랜치): 참조 세트는 `scripts/build_refset.py`, 지표 성능은 `scripts/metric_validation.py`, 그림은 `scripts/plot_metric_roc.py`로 만듭니다. 참조 세트 64,796쌍의 지표 표(`eval/refsets/pilot_sider_2026-09-28_pairs.tsv.gz`)가 그 저장소에 있어 지표 성능은 웨어하우스 없이 다시 계산됩니다. 전체 명령과 인자는 [불균형 지표 실측 노트](https://github.com/Team-FlyGate/korea-agentic-hackathon-2026/blob/metric-validation/docs/notes/metric-validation-2026-09-28.md) 5절에 있습니다.
+재현: 이 저장소의 `pipeline/refsets/sider_refset.py --download`로 참조 세트를 만들고 `pipeline/refsets/sider_evaluate.py`로 지표 성능과 그림을 냅니다(6절). 측정 원본은 팀 선행 저장소(`metric-validation` 브랜치)의 `scripts/build_refset.py`, `scripts/metric_validation.py`, `scripts/plot_metric_roc.py`입니다. 참조 세트 64,796쌍의 지표 표(`eval/refsets/pilot_sider_2026-09-28_pairs.tsv.gz`)가 그 저장소에 있어 지표 성능은 웨어하우스 없이 다시 계산됩니다. 전체 명령과 인자는 [불균형 지표 실측 노트](https://github.com/Team-FlyGate/korea-agentic-hackathon-2026/blob/metric-validation/docs/notes/metric-validation-2026-09-28.md) 5절에 있습니다.
 ```bash
 .venv/bin/python scripts/metric_validation.py --refset eval/refsets/pilot_sider_2026-09-28.json.gz \
     --pairs-tsv eval/refsets/pilot_sider_2026-09-28_pairs.tsv.gz --out eval/results/metric_validation_2026-09-28.json
@@ -163,7 +163,7 @@ python scripts/plot_metric_roc.py --results eval/results/metric_validation_2026-
 
 <sub>Jev 곡선 둘은 200쌍에서, 지표 곡선은 64,796쌍 전체에서 그렸습니다. 같은 200행에서 잰 지표 AUC는 표 아래 문단에 있습니다.</sub>
 
-재현: 팀 선행 저장소 `scripts/metric_validation_jev.py --arm novel|blind --limit 200 --pairs-tsv eval/refsets/pilot_sider_2026-09-28_pairs.tsv.gz --yes`(키는 `TYPESAFE_API_KEY` 환경 변수). 실행 기록은 불균형 지표 실측 노트 7절에 있습니다.
+재현: 이 저장소의 `pipeline/refsets/sider_jev.py --arm novel|blind --limit 200 --jev-cache data/cache/jev_sider_<arm>.json --yes`(키는 `TYPESAFE_API_KEY` 환경 변수). 실행 기록은 불균형 지표 실측 노트 7절에 있습니다.
 
 ## 2. 사례 트리아지 비교 실험 (결과 코드 가림)
 
@@ -353,6 +353,25 @@ p3(가짜 근거 ID)는 문장만으로는 가려지지 않으므로 크리틱 T
 - 불균형 지표·AUC·ROC 계산
 - PubMed XML 파싱과 문헌 요약 상태
 
+SIDER 규모 참조 세트 검증, Jev 비교 팔, 오믹스(기전 타당성) 축은 `pipeline/refsets/sider_refset.py`, `sider_evaluate.py`, `sider_jev.py`, `omics_plausibility.py` 가 맡고, 오프라인 테스트는 `tests/test_sider_refset.py`, `tests/test_sider_evaluate.py`, `tests/test_sider_jev.py`, `tests/test_omics_plausibility.py` 입니다.
+
+재현:
+```bash
+# SIDER 4.1 을 받고 웨어하우스(data/derived/faers.duckdb, 다른 위치는 FV_DB)에서 참조 세트와 지표 표를 만듭니다
+.venv/bin/python pipeline/refsets/sider_refset.py --download
+# 지표 ROC·AUC·귀무 뒤섞기·약별 AUC → data/derived/refsets/sider_metric_validation.json, docs/images/sider_metric_roc_<date>.png, api/_data/metrics.json
+TZ=Asia/Seoul .venv/bin/python pipeline/refsets/sider_evaluate.py
+# Jev 비교 팔: 비용만 보고(--dry-run), 확인한 뒤 --yes 로 부릅니다. 응답은 캐시에 쌓여 재실행 비용이 없습니다. 이름을 가린 팔은 --arm blind 입니다
+TZ=Asia/Seoul .venv/bin/python pipeline/refsets/sider_jev.py --arm novel --limit 200 --jev-cache data/cache/jev_sider_novel.json --dry-run
+TZ=Asia/Seoul .venv/bin/python pipeline/refsets/sider_jev.py --arm novel --limit 200 --jev-cache data/cache/jev_sider_novel.json --yes
+# 오믹스 축: Open Targets 응답은 data/cache/opentargets/ 에 캐시되고 --dry-run 은 캐시만 씁니다
+TZ=Asia/Seoul .venv/bin/python pipeline/refsets/omics_plausibility.py --dry-run
+TZ=Asia/Seoul .venv/bin/python pipeline/refsets/omics_plausibility.py --refset data/derived/refsets/sider_pairs.json.gz
+# Jev 곡선을 더한 그림(sider_metric_roc_jev_<date>.png)과 같은 행 기준 오믹스 그림(sider_omics_roc_<date>.png)
+.venv/bin/python pipeline/refsets/sider_evaluate.py --plot-only --jev data/derived/refsets/sider_jev_novel_<date>.json \
+    --jev data/derived/refsets/sider_jev_blind_<date>.json --omics data/derived/refsets/omics_plausibility_refset_<date>.json.gz
+```
+
 ## 7. 기전 타당성 축 파일럿 (Open Targets)
 
 팀 선행 저장소에서 약의 작용기전 표적과 이상반응 사이의 표적-질환 연관 점수가 라벨 기재 쌍을 가르는지 쟀습니다. 참조 세트는 1-6과 같은 약 31종, 64,796쌍이고, 불균형 지표도 같은 행에서 다시 쟀습니다. FlyVigilance의 PV 분류와 화면에는 아직 넣지 않았습니다.
@@ -393,7 +412,7 @@ PT 3,929개 가운데 963개(24.5%)가 매핑되어, 참조 세트 64,796쌍 가
 - 매핑된 963개 용어는 MONDO 610개, HP 212개, EFO 135개 등 여러 온톨로지에 걸쳐 있고, 질환 용어와 표현형 용어의 점수를 한 척도로 썼습니다.
 - 약 31종, 소스 하나, 연관 축 하나의 파일럿입니다. 조직 발현 축은 아직 없습니다.
 
-재현(팀 선행 저장소, `omics-plausibility` 브랜치): `scripts/omics_plausibility.py --refset eval/refsets/pilot_sider_2026-09-28.json.gz`로 점수를 매기고, `scripts/plot_metric_roc.py --omics eval/results/omics_plausibility_refset_2026-09-28.json.gz`로 그림을 그립니다. 캐시 경로는 `OMICS_DIR` 환경 변수로 줍니다. 전체 절차는 [기전 타당성 축 노트](https://github.com/Team-FlyGate/korea-agentic-hackathon-2026/blob/omics-plausibility/docs/notes/omics-plausibility-2026-09-28.md) 5절에 있습니다.
+재현: 이 저장소의 `pipeline/refsets/omics_plausibility.py --refset data/derived/refsets/sider_pairs.json.gz`로 점수를 매기고, `pipeline/refsets/sider_evaluate.py --plot-only --omics ...`로 그림을 그립니다(6절). 측정 원본과 전체 절차는 [기전 타당성 축 노트](https://github.com/Team-FlyGate/korea-agentic-hackathon-2026/blob/omics-plausibility/docs/notes/omics-plausibility-2026-09-28.md) 5절에 있습니다.
 
 ## 출처
 
