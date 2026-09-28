@@ -58,7 +58,7 @@ const GROUPS: { step?: string; name?: string; color?: string; pages: Page[] }[] 
 const PAGES = GROUPS.flatMap((g) => g.pages)
 
 function useHashPage() {
-  const get = () => (location.hash.replace('#/', '') || 'overview')
+  const get = () => (location.hash.replace('#/', '').split('?')[0] || 'overview')
   const [page, setPage] = useState(get)
   useEffect(() => {
     const on = () => setPage(get())
