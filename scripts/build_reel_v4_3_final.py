@@ -28,8 +28,10 @@ v4.2.0 의 파일(build_reel_v4_2.py, flygate_v4_2.template.html, 타임라인 �
 
 사용:
   .venv/bin/python scripts/build_reel_v4_3_final.py [출력 경로]
+  .venv/bin/python scripts/build_reel_v4_3_final.py --en [출력 경로]   # 영어판(같은 템플릿 · 같은 시간표, 영어 문구는 scripts/reel_v4_3_en.py)
 출력:
   web/public/showreel/FlyGate_showreel_v4.3.0.html · scripts/reel/flygate_v4_3_final.timeline.json · docs/SHOWREEL_SCRIPT_v4.3.0.md
+  --en: web/public/showreel/FlyGate_showreel_v4.3.0-en.html · scripts/reel/flygate_v4_3_final_en.timeline.json · docs/SHOWREEL_SCRIPT_v4.3.0-en.md
 음원:
   v4.3.0-pre 음원(scripts/reel/FlyGate_showreel_v4.3.0_audio.m4a)을 그대로 씁니다
 """
@@ -48,6 +50,7 @@ import build_reel_v3 as v3  # noqa: E402
 import build_reel_v4 as v4  # noqa: E402
 import build_reel_v4_1 as v41  # noqa: E402
 import build_reel_v4_2 as v42  # noqa: E402  CLI 실행 기록 · 약어 풀이 · 구호를 그대로 씁니다
+import reel_v4_3_en as en  # noqa: E402  영어판 문구 · 자막 규칙
 
 VERSION = "4.3.0"
 ROOT, PUB, REEL = v4.ROOT, v4.PUB, v4.REEL
@@ -55,6 +58,9 @@ TEMPLATE = REEL / "flygate_v4_3_final.template.html"
 DEFAULT_OUT = PUB / f"showreel/FlyGate_showreel_v{VERSION}.html"
 TIMELINE_OUT = REEL / "flygate_v4_3_final.timeline.json"
 SCRIPT_OUT = ROOT / f"docs/SHOWREEL_SCRIPT_v{VERSION}.md"
+DEFAULT_OUT_EN = PUB / f"showreel/FlyGate_showreel_v{VERSION}-en.html"
+TIMELINE_OUT_EN = REEL / "flygate_v4_3_final_en.timeline.json"
+SCRIPT_OUT_EN = ROOT / f"docs/SHOWREEL_SCRIPT_v{VERSION}-en.md"
 AUDIO_REL = "scripts/reel/FlyGate_showreel_v4.3.0_audio.m4a"   # v4.3.0-pre 와 시간표가 같습니다
 CAP_DIR = PUB / "cli/captures"
 CAP_MANIFEST = PUB / "cli/captures.json"
@@ -578,9 +584,46 @@ def write_script(tl: list[dict], dur: float, built: str, d: dict):
     SCRIPT_OUT.write_text("\n".join(lines))
 
 
+def build_en(data: dict, tl: list[dict], dur: float, out: pathlib.Path):
+    """영어판: 한국어판과 같은 데이터 · 시간표에서 화면 문구 · 자막 · 장면 이름만 영어로 바꿔 씁니다."""
+    en.check_vo(tl)
+    assert set(en.GLOSS_EN) == set(GLOSS), f"GLOSS_EN 키가 GLOSS 와 다릅니다: {set(GLOSS) ^ set(en.GLOSS_EN)}"
+    missing = []
+    page = en.en_data(data, "", missing)
+    if missing:
+        raise SystemExit("영어로 바꾸지 못한 데이터 문자열(reel_v4_3_en.DATA_EN 에 더하세요):\n  " + "\n  ".join(missing))
+    page["lang"] = "en"
+    page["gloss"], page["slogan"] = en.GLOSS_EN, en.SLOGAN_PARTS_EN
+    page["subs"] = en.subtitles_en(tl, SUB_LEAD, SUB_HOLD)
+    page["tl"] = {**data["tl"], "scenes": [{**s, "label": en.label_en(s), "name": en.NAME_EN.get(s["name"], s["name"])} for s in data["tl"]["scenes"]]}
+    # 캡처의 핵심 줄 원문(text)은 화면에 그리지 않으므로 영어판에서는 뺍니다
+    page["caps"] = {k: {**{kk: vv for kk, vv in v.items() if kk not in ("text", "vals")}, "keys": [{kk: vv for kk, vv in q.items() if kk != "text"} for q in v["keys"]]}
+                    for k, v in data["caps"].items()}
+    html = TEMPLATE.read_text()
+    marker = "/*__DATA__*/null"
+    assert html.count(marker) == 1, "template data marker missing"
+    for a, b in [('<html lang="ko">', '<html lang="en">'), ("<title>FlyGate Showreel v4.3</title>", f"<title>{en.TITLE_EN}</title>")]:
+        assert html.count(a) == 1, a
+        html = html.replace(a, b)
+    html = re.sub(r'(<meta name="description" content=")[^"]*(")', lambda m: m.group(1) + en.DESCRIPTION_EN + m.group(2), html, count=1)
+    blob = json.dumps(page, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(html.replace(marker, blob))
+    scenes = [{**s, "label": en.label_en(s), "name": en.NAME_EN.get(s["name"], s["name"]),
+               "beats": [{**bt, "vo": en.VO_EN[(s["id"], i)][1], "vo_ko": bt["vo"]} for i, bt in enumerate(s["beats"])]} for s in tl]
+    TIMELINE_OUT_EN.write_text(json.dumps({"version": VERSION, "lang": "en", "built": data["meta"]["built"], "dur": dur, "rate": RATE,
+                                           "captures": {sid: data["caps"][n]["file"] for sid, n in data["cap_of"].items()},
+                                           "scenes": scenes}, ensure_ascii=False, indent=1) + "\n")
+    st = en.write_script_en(SCRIPT_OUT_EN, tl, dur, data["meta"]["built"], page["subs"], VERSION, en.GLOSS_EN, EMPHASIS, mmss)
+    print(f"wrote {out} ({out.stat().st_size / 1024:.0f} KB) · {len(tl)} scenes · {dur:.1f} s · EN")
+    print(f"wrote {TIMELINE_OUT_EN.relative_to(ROOT)} · {SCRIPT_OUT_EN.relative_to(ROOT)}")
+    print(f"  subtitles {st['n']} · two-line {st['two_line']} · longest line {st['max_line']} · mean {st['avg_cps']:.1f} cps · max {st['max_cps']:.1f} cps · >17 cps {st['over17']}")
+
+
 def main():
+    EN = "--en" in sys.argv[1:]
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
-    out = pathlib.Path(args[0]) if args else DEFAULT_OUT
+    out = pathlib.Path(args[0]) if args else (DEFAULT_OUT_EN if EN else DEFAULT_OUT)
     fv = v3.fv_part()
     disc = v3.disc_part()
     val = v4.jload_opt(PUB / "data/validation.json")
@@ -605,6 +648,9 @@ def main():
     data["subs"] = subtitles(tl)
     data["tl"] = {"dur": dur, "scenes": [{k: s[k] for k in ("id", "t0", "t1", "name", "label", "step", "fresh", "old_t0", "old_t1", "warp")} for s in tl],
                   "beats": {s["id"]: [[bt["a"], bt["b"]] for bt in s["beats"]] for s in tl}}
+    if EN:
+        build_en(data, tl, dur, out)
+        return
     html = TEMPLATE.read_text()
     marker = "/*__DATA__*/null"
     assert html.count(marker) == 1, "template data marker missing"
