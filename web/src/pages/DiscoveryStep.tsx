@@ -7,8 +7,9 @@ import { CriticStream, MissingCard, RedockBench, STEP_PAGES, Tile, title, useDis
 import Term from '../components/Term'
 import LiveRun from '../components/LiveRun'
 import LiveScene from '../components/LiveScene'
+import StepFlow from '../components/StepFlow'
 import { t } from '../lib/i18n'
-import { dataText, ligandName, liveFor, useDiscovery, type StepKind } from '../lib/discovery'
+import { STEP_KIND, dataText, ligandName, liveFor, useDiscovery } from '../lib/discovery'
 
 // STEP 1 FlyDiscovery 의 다섯 단계 페이지. 가운데 3D 장면(HeroDocking)은 그 단계에 고정되고,
 // 위 단계 표시를 누르면 다른 단계 페이지로 갑니다. 왼쪽 위 초파리 커넥텀은 단계마다 다른 층을 자극합니다.
@@ -60,7 +61,7 @@ export default function DiscoveryStep({ step }: { step: StepId }) {
   const combos = m?.diffdock_boltz2_chembl ?? []
   // 아래 라이브 실행 카드에서 이 단계를 새로 부르면 위 장면을 그 결과로 바꾸고, 칩으로 대표 장면에 되돌아갈 수 있게 합니다
   const store = useDiscovery()
-  const kind = ({ msa: 'msa', of3: 'openfold3', dd: 'diffdock', bz: 'boltz2' } as Partial<Record<StepId, StepKind>>)[step]
+  const kind = STEP_KIND[step]
   const env = kind ? liveFor(kind, store) : undefined
   const live = env && env.state === 'done' && env.result ? env : undefined
   const stamp = live ? `${live.req_id ?? ''}|${live.elapsed_s ?? ''}|${live.source ?? ''}` : ''
@@ -82,6 +83,7 @@ export default function DiscoveryStep({ step }: { step: StepId }) {
 
       {missing ? <MissingCard /> : !m || !hero || !extras ? <Loading /> : (
         <>
+          <StepFlow step={step} />
           <Card className="" style={{ marginBottom: 16 }}>
             {live && (
               <div className="row" style={{ gap: 8, marginBottom: 10, alignItems: 'center' }}>
