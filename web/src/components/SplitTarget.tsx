@@ -17,7 +17,10 @@ export default function SplitTarget({ xa }: { xa: XaSplit }) {
     const el = host.current
     if (!el) return
     let disposed = false, raf = 0
-    const { scene, camera, composer, film, renderer, resize, shown } = makeRenderer(el, () => setEpoch((k) => k + 1))
+    const { scene, camera, composer, renderer, resize, shown } = makeRenderer(el, () => setEpoch((k) => k + 1))
+    // 크리틱 단계는 왼쪽 PARP1 장면(블룸) · 커넥텀과 함께 캔버스 3개가 동시에 돌아 프레임이 끊겼습니다(34 fps, 최대 0.16초 멈춤).
+    // 오른쪽 절반은 비교용이라 블룸 후처리 없이 바로 그리고, 픽셀 비율도 1로 둡니다
+    renderer.setPixelRatio(1)
     scene.add(dust(300, 90))
     const cols = chainGradient(xa.ca.length, ...(TARGET_PALETTE.F10))
     const rb = ribbon(xa.ca.map((c, i) => ({ p: new THREE.Vector3(c[0], c[1], c[2]), resseq: c[3], color: cols[i] })), 0.3)
@@ -33,8 +36,7 @@ export default function SplitTarget({ xa }: { xa: XaSplit }) {
       const a = (now - t0) / 1000 * 0.12
       camera.position.set(c.x + Math.cos(a) * 46, c.y + 16, c.z + Math.sin(a) * 46); camera.lookAt(c)
       rb.uniforms.uEye.value.copy(camera.position); rb.uniforms.uCut.value = 4
-      film.uniforms.uTime.value = (now % 1000) / 1000
-      if (shown()) composer.render()
+      if (shown()) renderer.render(scene, camera)
       raf = requestAnimationFrame(loop)
     }
     raf = requestAnimationFrame(loop)
