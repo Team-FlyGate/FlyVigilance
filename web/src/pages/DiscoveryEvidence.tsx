@@ -1,4 +1,5 @@
 import ValidationGate from '../components/ValidationGate'
+import PoseRanking from '../components/PoseRanking'
 import SelectivityMap from '../components/SelectivityMap'
 import EvidenceCard from '../components/EvidenceCard'
 import { Loading, PageHead } from '../components/ui'
@@ -9,7 +10,7 @@ import { t } from '../lib/i18n'
 // 붙을 수 있나(도킹 검증 관문) → 실측 근거가 있나 · 선택적인가(선택성 근거 표) → 후보로 넘길까(후보 근거 카드)
 
 // 언어에 따라 문구가 바뀌므로 렌더할 때 만듭니다.
-const flow = () => [t('① 도킹 결과를 믿어도 되나', '① Can the docking result be trusted?'), t('② 실측 결합 근거가 있나 · 선택적인가', '② Is there measured binding evidence? Is it selective?'), t('③ 무엇을 말해도 되나 → STEP 2', '③ What may be claimed → STEP 2')]
+const flow = () => [t('① 같은 자리로 다시 나오나', '① Does it land in the same place again?'), t('② 1순위 포즈를 믿어도 되나', '② Can the top-ranked pose be trusted?'), t('③ 실측 결합 근거가 있나 · 선택적인가', '③ Is there measured binding evidence? Is it selective?'), t('④ 무엇을 말해도 되나 → STEP 2', '④ What may be claimed → STEP 2')]
 
 export default function DiscoveryEvidence() {
   const { scenes, missing } = useDiscoveryData()
@@ -31,6 +32,7 @@ export default function DiscoveryEvidence() {
             {FLOW.map((f, i) => <span key={f} className="row" style={{ gap: 8 }}><span className="chip">{f}</span>{i < FLOW.length - 1 && <span className="dim">→</span>}</span>)}
           </div>
           <ValidationGate />
+          <PoseRanking />
           {scenes ? <SelectivityMap scenes={scenes.scenes} /> : <Loading />}
           <EvidenceCard />
         </>
