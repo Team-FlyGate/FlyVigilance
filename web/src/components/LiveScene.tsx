@@ -88,9 +88,12 @@ function DockLive({ env, height, drugName }: { env: Envelope; height: number; dr
   useEffect(() => { let live = true; getSceneForSelection().then((s) => live && setSc(s)).catch(() => live && setErr(true)); return () => { live = false } }, [env.req_id])
   const scene = useMemo<RedockScene | null>(() => {
     if (!sc || !r.poses?.length) return null
-    // 결합 자리 중심(결정 리간드 중심, 없으면 1순위 포즈 중심)을 원점으로
-    const c = sc.pocket_center ?? r.poses[0].centroid ?? centroid(r.poses[0].atoms.map((a) => a.slice(1) as XYZ))
-    const xl = r.xtal_ligand ?? sc.xtal_ligand
+    // 기준 결정 구조가 없는 표적(검색으로 고른 단백질 등)은 구조에 들어 있던 다른 리간드를 '정답'처럼 그리지 않고,
+    // 1순위 포즈 중심을 원점으로 둡니다. 기준이 있으면 결정 리간드 중심(결합 자리)을 원점으로
+    const noRef = r.reference === 'none'
+    const posC = r.poses[0].centroid ?? centroid(r.poses[0].atoms.map((a) => a.slice(1) as XYZ))
+    const c = noRef ? posC : sc.pocket_center ?? posC
+    const xl = noRef ? null : r.xtal_ligand ?? sc.xtal_ligand
     return {
       drug: drugName, target: sc.target, gene: env.target?.gene ?? sc.label, pdb: sc.pdb, chain: sc.chain, note: '', membrane: false,
       top1_rmsd: r.top1_rmsd, success: r.redock ? r.top1_success : null,
