@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { STEP_KIND, liveFor, fmtS, runPipeline, targetLabel, useDiscovery, useLigandLabel, type BoltzResult, type DockResult, type MsaResult, type Of3Result } from '../lib/discovery'
+import { STEP_KIND, downloadRuns, liveFor, fmtS, runPipeline, targetLabel, useDiscovery, useLigandLabel, type BoltzResult, type DockResult, type MsaResult, type Of3Result } from '../lib/discovery'
 import { useBrain } from '../lib/brain'
 import { STEP_PAGES } from '../pages/Discovery'
 import { t } from '../lib/i18n'
@@ -22,6 +22,7 @@ export default function StepFlow({ step }: { step: StepId }) {
   const [busy, setBusy] = useState(false)
   const [at, setAt] = useState<string | null>(null)
   const [fails, setFails] = useState<{ kind: string; error: string }[]>([])
+  const [saved, setSaved] = useState<string | null>(null)
   const runAll = async () => {
     setBusy(true); setFails([]); setAt(null)
     sim?.stimulate('layer', 'sense', 1.1, 12)
@@ -68,6 +69,7 @@ export default function StepFlow({ step }: { step: StepId }) {
       gave: t('예측값 · 실측값', 'prediction · measurement') }
   }
   const cells = ORDER.map(cell)
+  const ran = cells.some((c, i) => c && ORDER[i] !== 'critic')
   return (
     <div className="card" style={{ padding: '10px 14px', marginBottom: 14 }}>
       <div className="row between" style={{ marginBottom: 8, gap: 10 }}>
@@ -76,8 +78,13 @@ export default function StepFlow({ step }: { step: StepId }) {
           <span className="mono dim" style={{ fontSize: 10 }}>{busy ? t(`${at} 실행 중…`, `Running ${at}…`) : t('빈 칸은 아직 실행하지 않은 단계입니다', 'Empty cells are steps not run yet')}</span>
           <button className="btn nv" style={{ fontSize: 11.5, padding: '4px 10px' }} disabled={busy} onClick={() => void runAll()}>
             {busy ? t('실행 중…', 'Running…') : t('다섯 단계 이어 실행', 'Run all five steps')}</button>
+          {/* 실행 기록은 브라우저 메모리에만 있어 새로 고치면 사라집니다. 근거 ID · 요청 ID 와 함께 파일로 남깁니다 */}
+          <button className="btn" style={{ fontSize: 11.5, padding: '4px 10px' }} disabled={busy || !ran}
+            title={t('이번 세션 실행 기록을 JSON 으로 내려받습니다 (근거 ID · 요청 ID · 수치)', 'Download this session\u2019s run record as JSON (evidence IDs, request IDs, numbers)')}
+            onClick={() => setSaved(downloadRuns())}>{t('기록 내려받기', 'Download record')}</button>
         </div>
       </div>
+      {saved && <div className="mono dim" style={{ fontSize: 10.5, marginBottom: 8 }}>{t(`내려받았습니다 · ${saved}`, `Downloaded · ${saved}`)}</div>}
       {!busy && fails.length > 0 && (
         <div style={{ fontSize: 11.5, color: 'var(--bad)', marginBottom: 8 }}>
           {fails.map((f) => `${KIND_NAME[f.kind] ?? f.kind}: ${f.error}`).join(' · ')}
