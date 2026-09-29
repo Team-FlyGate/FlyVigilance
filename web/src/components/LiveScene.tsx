@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { ballStick, disposeAll, dust, makeRenderer, plddtColor, ribbon, type Atom, type Ligand } from '../lib/molScene'
-import { SOURCE_LABEL, getCatalog, getSceneForSelection, getStore, ligandName, targetLabel, type BoltzResult, type DockResult, type Envelope, type MsaResult, type Of3Result, type Scene } from '../lib/discovery'
+import { SOURCE_LABEL, getSceneForSelection, targetLabel, useLigandLabel, type BoltzResult, type DockResult, type Envelope, type MsaResult, type Of3Result, type Scene } from '../lib/discovery'
 import { t } from '../lib/i18n'
 import MsaAnimation, { type MsaData } from './MsaAnimation'
 import AffinityMeter from './AffinityMeter'
@@ -128,17 +128,9 @@ function DockLive({ env, height, drugName, pred }: { env: Envelope; height: numb
   return scene ? <DockingView scene={scene} height={height} playKey={env.req_id ? env.req_id.length + env.req_id.charCodeAt(0) : 1} /> : <div className="shimmer" style={{ height }} />
 }
 
-// 고른 리간드의 화면 이름(한국어 이름은 카탈로그에서)
-function useLigandName() {
-  const [ko, setKo] = useState<Record<string, string>>({})
-  useEffect(() => { getCatalog().then((c) => setKo(Object.fromEntries(Object.entries(c.ligands).map(([k, v]) => [k, v.ko])))).catch(() => {}) }, [])
-  const s = getStore()
-  return s.customLigand ? s.customLigand.name : ligandName(s.ligand, ko[s.ligand])
-}
-
 export default function LiveScene({ step, env, height = 600, pocket, pred }: { step: StepId; env: Envelope; height?: number; pocket?: { query_len: number; residues: number[] }; pred?: Of3Result }) {
   const res = env.result
-  const drugName = useLigandName()
+  const drugName = useLigandLabel()
   const src = env.source ? SOURCE_LABEL[env.source] : null
   const what = step === 'msa' ? targetLabel() : `${targetLabel()} + ${drugName}`
   const msa = useMemo<{ data: MsaData; query: string; pocketKnown: boolean } | null>(() => {
