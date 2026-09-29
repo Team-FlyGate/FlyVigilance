@@ -7,3 +7,4 @@ web/dist
 KakaoTalk_Photo_*
 docs/images
 scripts/shoot*.py
+.claude
