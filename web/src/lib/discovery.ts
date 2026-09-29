@@ -219,6 +219,59 @@ export function useLigandLabel(): string {
 
 export const PIPELINE: StepKind[] = ['msa', 'openfold3', 'diffdock', 'boltz2']
 
+/** 이번 세션 실행 기록을 한 장으로 묶습니다. 좌표 배열처럼 큰 값은 빼고, 어디서 나온 숫자인지 되짚을 수 있는 것만 담습니다:
+ *  무엇을 어느 엔드포인트로 불렀는지 · 요청 ID · 받은 시각 · 근거 ID(크리틱 1단과 같은 형식) · 핵심 수치. */
+export function exportRuns(): Record<string, unknown> {
+  const s = getStore()
+  const target = s.customTarget ? s.customTarget.label : s.target
+  const ligand = s.customLigand ? s.customLigand.name : s.ligand
+  const num = (v: unknown) => (typeof v === 'number' ? v : null)
+  const steps = PIPELINE.filter((k) => s.envs[k]).map((kind) => {
+    const env = s.envs[kind]!
+    const r = (env.result ?? {}) as Record<string, unknown>
+    const tgt = r.target ?? (s.customTarget ? 'custom' : s.target)
+    const lig = r.ligand ?? (s.customLigand ? 'custom' : s.ligand)
+    // 근거 ID 는 서버 크리틱(bundle_from_runs)이 쓰는 것과 같은 형식입니다
+    const evidence_id = kind === 'msa' ? `msa:${tgt}` : `${kind}:${tgt}/${lig}`
+    const out: Record<string, unknown> = {
+      step: kind, endpoint: env.endpoint, evidence_id,
+      source: env.source ?? null, request_id: env.req_id ?? null, elapsed_s: env.elapsed_s ?? null,
+      state: env.state, error: env.error ?? null,
+      request: env.request, skills: (env.skills ?? []).map((k) => k.name),
+    }
+    if (kind === 'msa') out.result = { database: r.database, homologs: num(r.homologs), query_len: num(r.query_len), mean_depth: num(r.mean_depth), coverage: num(r.coverage) }
+    if (kind === 'openfold3') out.result = { scores: r.scores, ca_rmsd: num(r.ca_rmsd), n_ca: num(r.n_ca), ligand_rmsd: num(r.ligand_rmsd), msa_source: r.msa_source, reference: r.reference, reference_note: r.reference_note }
+    if (kind === 'diffdock') out.result = {
+      receptor_source: r.receptor_source, receptor_predicted: r.receptor_predicted ?? false, redock: r.redock,
+      criterion: r.criterion, top1_confidence: num(r.top1_confidence), top1_rmsd: num(r.top1_rmsd), best_rmsd: num(r.best_rmsd),
+      poses: ((r.poses ?? []) as Record<string, unknown>[]).map((q) => ({ rank: q.rank, confidence: q.confidence, rmsd: q.rmsd, pocket_dist: q.pocket_dist })),
+      reference: r.reference, reference_note: r.reference_note,
+    }
+    if (kind === 'boltz2') out.result = { affinity: r.affinity, scores: r.scores, chembl: r.chembl }
+    return out
+  })
+  return {
+    tool: 'Project-FlyGate · STEP 1 FlyDiscovery',
+    exported_at: new Date().toISOString(),
+    input: { target, ligand, custom_target: s.customTarget ? { id: s.customTarget.id, gene: s.customTarget.gene, pdb: s.customTarget.pdb, chain: s.customTarget.chain, range: [s.customTarget.start, s.customTarget.end] } : null,
+      custom_ligand: s.customLigand ? { name: s.customLigand.name, smiles: s.customLigand.smiles, cid: s.customLigand.cid } : null },
+    steps,
+    note: '좌표와 정렬 원문은 담지 않았습니다. 같은 요청 ID 로 서버에서 원본을 다시 받을 수 있습니다. 예측값은 측정값이 아닙니다(크리틱 D3).',
+  }
+}
+
+/** 위 기록을 JSON 파일로 내려받습니다. */
+export function downloadRuns(): string {
+  const data = exportRuns()
+  const s = getStore()
+  const name = `flydiscovery_${(s.customTarget?.gene || s.target).replace(/\W+/g, '')}_${(s.customLigand?.name || s.ligand).replace(/\W+/g, '')}_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '')}.json`
+  const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' }))
+  const a = document.createElement('a')
+  a.href = url; a.download = name; a.click()
+  setTimeout(() => URL.revokeObjectURL(url), 5000)
+  return name
+}
+
 /** 다섯 단계를 차례로 부르고, 각 결과를 다음 단계 입력으로 넘깁니다.
  *  한 단계가 실패하면 사유를 남기고 다음 단계로 넘어갑니다(앞 단계 없이 되는 단계가 있습니다). */
 export async function runPipeline(opts: {
