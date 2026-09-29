@@ -246,7 +246,9 @@ async def ensure_receptor(t: dict) -> dict:
 
 
 async def resolve_receptor(params: dict, t: dict) -> dict:
-    """도킹 수용체를 정합니다. 1) 요청에 실려 온 좌표 2) 앞 단계 OpenFold3 예측 구조 3) RCSB 실험 구조 순입니다."""
+    """도킹 수용체를 정합니다. 1) 요청에 실려 온 좌표 2) 앞 단계 OpenFold3 예측 구조 3) RCSB 실험 구조 순입니다.
+    2번은 화면이 앞 단계 OpenFold3 결과의 structure_key 를 함께 보낼 때만 쓰며, 목록 표적에서도 고를 수 있습니다
+    (같은 표적을 방금 예측한 구조에 도킹하는 것이 파이프라인 본래 순서입니다)."""
     if params.get("receptor_pdb"):
         return {**t, "receptor_pdb": params["receptor_pdb"], "receptor_source": "요청 본문"}
     key = params.get("receptor_structure_key")
@@ -254,7 +256,8 @@ async def resolve_receptor(params: dict, t: dict) -> dict:
         saved = cache_get(key)
         if saved and saved.get("structure"):
             return {**t, "receptor_pdb": receptor_from_structure({"structure_pdb": saved["structure"]}),
-                    "receptor_source": "OpenFold3 예측 구조"}
+                    "receptor_source": "OpenFold3 예측 구조", "receptor_predicted": True}
+        raise KeyError("앞 단계 예측 구조를 서버에서 찾지 못했습니다. OpenFold3 를 다시 실행하시기 바랍니다.")
     t = await ensure_receptor(t)
     return {**t, "receptor_source": f"RCSB {t.get('pdb')} 체인 {t.get('chain')}"}
 
@@ -462,7 +465,11 @@ def process_diffdock(resp: dict, req: dict) -> dict:
     ref_c = mg.centroid([a["xyz"] for a in ref]) if ref else None
     # 공결정 대조는 표적의 공결정 약물과 지금 넣은 리간드가 같을 때만입니다.
     # 사용자가 고른 표적(xtal_drug 없음)에서는 언제나 거짓이라 RMSD 를 내지 않습니다.
-    is_redock = bool(t.get("xtal_drug")) and t.get("xtal_drug") == req.get("ligand")
+    # 예측 구조에 도킹하면 좌표계가 결정 구조와 달라 결정 리간드와의 RMSD·주머니 거리를 그대로 쓸 수 없습니다
+    predicted = bool(t.get("receptor_predicted"))
+    if predicted:
+        ref, ref_bonds, ref_c = [], [], None
+    is_redock = (not predicted) and bool(t.get("xtal_drug")) and t.get("xtal_drug") == req.get("ligand")
     poses = []
     for i, sdf in enumerate(poses_sdf[:MAX_POSES]):
         atoms, bonds = mg.parse_sdf(sdf)
@@ -476,8 +483,11 @@ def process_diffdock(resp: dict, req: dict) -> dict:
     rms = [p["rmsd"] for p in poses if p["rmsd"] is not None]
     return {"target": req.get("target"), "ligand": req.get("ligand"), "receptor_source": req.get("receptor_source"),
             "target_label": t.get("label"), "reference": "crystal" if is_redock else "none",
-            "reference_note": None if is_redock else ("기준 결정 구조 없음 · 공결정 대조가 없어 RMSD 를 내지 않습니다"
-                                                      + (f" (주머니 위치는 {t['pocket_ligand_code']} 리간드 기준입니다)" if t.get("pocket_ligand_code") else "")),
+            "receptor_predicted": predicted,
+            "reference_note": None if is_redock else (
+                "앞 단계 OpenFold3 예측 구조에 도킹했습니다 · 결정 구조와 좌표계가 달라 RMSD 를 내지 않습니다" if predicted else
+                "기준 결정 구조 없음 · 공결정 대조가 없어 RMSD 를 내지 않습니다"
+                + (f" (주머니 위치는 {t['pocket_ligand_code']} 리간드 기준입니다)" if t.get("pocket_ligand_code") and not predicted else "")),
             "receptor_source": req.get("receptor_source_label") or t.get("receptor_source"),
             "redock": is_redock, "n_poses": len(poses_sdf), "poses": poses,
             "top1_confidence": poses[0]["confidence"], "top1_rmsd": poses[0]["rmsd"],
@@ -709,6 +719,9 @@ async def run(kind: str, params: dict, client: httpx.AsyncClient | None = None) 
             raise ValueError(chk["reason"])
         if kind == "diffdock" and not target.get("receptor_pdb"):
             target = await resolve_receptor(params, target)
+    elif kind == "diffdock" and params.get("receptor_structure_key"):
+        # 목록 표적도 앞 단계에서 예측한 구조에 도킹할 수 있습니다(결정 구조 대신)
+        target = await resolve_receptor(params, target_of(target))
     body = build_for(kind, params, target, ligand)
     env = _envelope(kind, params, body, target)
     ckey = cache_key(kind, body)
@@ -744,8 +757,8 @@ async def poll(req_id: str, kind: str | None = None, params: dict | None = None)
         raise KeyError("kind unknown for this request id")
     t0 = time.monotonic()
     target = resolve_target(params)
-    if isinstance(target, dict) and kind == "diffdock" and not target.get("receptor_pdb"):
-        target = await resolve_receptor(params, target)   # 이어 받을 때도 같은 수용체를 씁니다
+    if kind == "diffdock" and (params.get("receptor_structure_key") or (isinstance(target, dict) and not target.get("receptor_pdb"))):
+        target = await resolve_receptor(params, target if isinstance(target, dict) else target_of(target))   # 이어 받을 때도 같은 수용체를 씁니다
     env = _envelope(kind, params, build_for(kind, params, target), target)
     async with httpx.AsyncClient() as client:
         try:

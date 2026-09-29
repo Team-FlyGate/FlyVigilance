@@ -54,6 +54,8 @@ export default function LiveRun({ step, drug }: { step: StepId; drug: string }) 
   const [critic, setCritic] = useState<CriticResult | null>(null)
   const [extra, setExtra] = useState('')
   const [showReq, setShowReq] = useState(false)
+  // DiffDock 수용체: 앞 단계에서 예측한 구조 / 결정 구조. 예측 구조가 없으면 결정 구조만 씁니다
+  const [usePredicted, setUsePredicted] = useState(false)
 
   useEffect(() => { getCatalog().then(setCat).catch(() => setErr(t('라이브 서버에 닿지 못했습니다 · 지난 측정만 보여 줍니다', 'Could not reach the live server · showing previous measurements only'))) }, [])
   useEffect(() => {
@@ -63,10 +65,15 @@ export default function LiveRun({ step, drug }: { step: StepId; drug: string }) 
   }, [busy])
 
   const env = kind === 'critic' ? undefined : envs[kind]
+  // 앞 단계 OpenFold3 예측 구조(같은 표적일 때만). 있으면 DiffDock 수용체로 고를 수 있습니다
+  const predKey = runs.openfold3?.structure_key && (custom || (envs.openfold3?.params?.target ?? 'parp1') === (pickT || 'parp1'))
+    ? runs.openfold3.structure_key : undefined
   // 위 표적 · 리간드 선택기(TargetPicker)에서 고른 값을 그대로 씁니다. 전에는 MSA · OpenFold3 가 PARP1 로 고정돼
   // 선택기에서 Factor Xa 를 골라도 PARP1 을 다시 불러 '바뀌는 게 없어' 보였습니다
   const target = pickT || 'parp1'
   const lig = kind === 'msa' ? undefined : pickL || (cat?.ligands[drug] ? drug : 'niraparib')
+  // 예측 구조가 생기면 기본으로 그 구조에 도킹합니다(앞 단계에서 이어지는 순서). 없어지면 결정 구조로 돌아갑니다
+  useEffect(() => { setUsePredicted(Boolean(predKey)) }, [predKey])
   const [past, setPast] = useState<unknown>(null)
   useEffect(() => {
     if (kind === 'critic' || !cat) return
@@ -108,6 +115,8 @@ export default function LiveRun({ step, drug }: { step: StepId; drug: string }) 
         else if (msaSame && runs.msa?.a3m_key) params.a3m_key = runs.msa.a3m_key
         else if (kind === 'openfold3' && !custom && target === 'parp1') params.a3m_measured = true
       }
+      // 앞 단계 OpenFold3 를 같은 표적으로 돌렸으면 그 예측 구조를 도킹 수용체로 넘깁니다(파이프라인 본래 순서)
+      if (kind === 'diffdock' && predKey && usePredicted) params.receptor_structure_key = predKey
       const out = await runStep(kind, params, (e) => saveRun(kind, e as Envelope))
       saveRun(kind, out as Envelope)
       if (out.state === 'done') setLastAt(new Date())
@@ -136,6 +145,20 @@ export default function LiveRun({ step, drug }: { step: StepId; drug: string }) 
           {kind !== 'critic' && (
             <div style={{ fontSize: 12.5 }}>{t('이번에 부를 입력', 'Input for this call')}: <b>{tLabel}</b>{kind !== 'msa' && lLabel ? <> + <b>{lLabel}</b></> : null}
               <span className="mono dim" style={{ fontSize: 11 }}>{t(' · 위 선택기에서 바꿉니다', ' · change it in the picker above')}</span></div>
+          )}
+          {kind === 'diffdock' && (
+            <div className="mono dim" style={{ fontSize: 11 }}>{t('도킹 수용체', 'Docking receptor')}:{' '}
+              {predKey ? (
+                <>
+                  <button className={`chip ${usePredicted ? 'nv' : ''}`} style={{ cursor: 'pointer', fontSize: 10.5, marginRight: 4 }} onClick={() => setUsePredicted(true)}>
+                    {t('앞 단계 예측 구조', 'Structure predicted in the previous step')}</button>
+                  <button className={`chip ${usePredicted ? '' : 'nv'}`} style={{ cursor: 'pointer', fontSize: 10.5 }} onClick={() => setUsePredicted(false)}>
+                    {t('결정 구조', 'Crystal structure')}</button>
+                  {usePredicted && <div>{t('좌표계가 결정 구조와 달라 RMSD 대신 포즈 신뢰도로만 봅니다', 'Its coordinate frame differs from the crystal structure, so we report pose confidence instead of RMSD')}</div>}
+                </>
+              ) : t('결정 구조 · OpenFold3 단계를 이 표적으로 먼저 돌리면 그 예측 구조에 도킹할 수 있습니다',
+                    'Crystal structure · run the OpenFold3 step on this target first to dock into that predicted structure')}
+            </div>
           )}
           {(kind === 'openfold3' || kind === 'boltz2') && (
             <div className="mono dim" style={{ fontSize: 11 }}>{t('MSA 입력', 'MSA input')}: {runs.msa && (custom || (envs.msa?.params?.target ?? 'parp1') === target) ? t('이번 세션의 MSA-Search 결과', 'MSA-Search result from this session')

@@ -32,6 +32,7 @@ export interface DockResult {
   criterion: string; status?: string; xtal_ligand: { atoms: [string, number, number, number][]; bonds: number[][] } | null
   seconds?: number | null
   target_label?: string; reference?: 'crystal' | 'none'; reference_note?: string | null; receptor_source?: string | null
+  receptor_predicted?: boolean
 }
 export interface BoltzResult {
   target: string; ligand: string

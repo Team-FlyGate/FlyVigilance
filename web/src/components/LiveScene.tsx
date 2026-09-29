@@ -81,13 +81,33 @@ function Structure({ ca, plddt, xtalCa, lig, height, reveal }: { ca: XYZ[]; pldd
     aria-label={t('이번 실행으로 받은 예측 구조. 드래그로 돌리고 휠로 확대, 오른쪽 드래그로 이동합니다.', 'Predicted structure from this run. Drag to rotate, scroll to zoom, right-drag to pan.')} />
 }
 
-function DockLive({ env, height, drugName }: { env: Envelope; height: number; drugName: string }) {
+function DockLive({ env, height, drugName, pred }: { env: Envelope; height: number; drugName: string; pred?: Of3Result }) {
   const r = env.result as DockResult
+  // 예측 구조에 도킹했으면 그 구조의 Cα 를 수용체로 그립니다(결정 구조 좌표를 쓰면 포즈가 엉뚱한 곳에 놓입니다)
+  const onPred = Boolean(r.receptor_predicted) && !!pred
   const [sc, setSc] = useState<Scene | null>(null)
   const [err, setErr] = useState(false)
-  useEffect(() => { let live = true; getSceneForSelection().then((s) => live && setSc(s)).catch(() => live && setErr(true)); return () => { live = false } }, [env.req_id])
+  useEffect(() => {
+    if (onPred) return
+    let live = true; getSceneForSelection().then((s) => live && setSc(s)).catch(() => live && setErr(true)); return () => { live = false }
+  }, [env.req_id, onPred])
   const scene = useMemo<RedockScene | null>(() => {
-    if (!sc || !r.poses?.length) return null
+    if (!r.poses?.length) return null
+    if (onPred && pred) {
+      // 예측 구조 + 이번 포즈. 정답 자리(흰 윤곽)는 없고, 1순위 포즈 중심을 원점으로 둡니다
+      const c = r.poses[0].centroid ?? centroid(r.poses[0].atoms.map((a) => a.slice(1) as XYZ))
+      const near = pred.ca.filter((p) => (p[0] - c[0]) ** 2 + (p[1] - c[1]) ** 2 + (p[2] - c[2]) ** 2 <= 144)
+      return {
+        drug: drugName, target: 'predicted', gene: env.target?.gene ?? pred.target_label ?? '', pdb: t('OpenFold3 예측 구조', 'OpenFold3 prediction'),
+        chain: 'A', note: '', membrane: false, top1_rmsd: null, success: null,
+        poses: r.poses.map((p) => ({ rank: p.rank, confidence: p.confidence, rmsd: null })),
+        ca: pred.ca.map((p, i) => [p[0] - c[0], p[1] - c[1], p[2] - c[2], i + 1] as [number, number, number, number]),
+        pocket: near.map((p) => [p[0] - c[0], p[1] - c[1], p[2] - c[2], 'C'] as Atom),
+        xtal: { atoms: [], bonds: [] },
+        pose: toLigand(r.poses[0].atoms, r.poses[0].bonds, c), alt_poses: r.poses.slice(1).map((p) => toLigand(p.atoms, p.bonds, c)),
+      }
+    }
+    if (!sc) return null
     // 기준 결정 구조가 없는 표적(검색으로 고른 단백질 등)은 구조에 들어 있던 다른 리간드를 '정답'처럼 그리지 않고,
     // 1순위 포즈 중심을 원점으로 둡니다. 기준이 있으면 결정 리간드 중심(결합 자리)을 원점으로
     const noRef = r.reference === 'none'
@@ -103,7 +123,7 @@ function DockLive({ env, height, drugName }: { env: Envelope; height: number; dr
       xtal: xl && xl.atoms.length ? toLigand(xl.atoms, xl.bonds, c) : { atoms: [], bonds: [] },
       pose: toLigand(r.poses[0].atoms, r.poses[0].bonds, c), alt_poses: r.poses.slice(1).map((p) => toLigand(p.atoms, p.bonds, c)),
     }
-  }, [sc, r, env.target?.gene, drugName])
+  }, [sc, r, env.target?.gene, drugName, onPred, pred])
   if (err) return <div className="note" style={{ margin: 20 }}>{t('수용체 좌표를 받지 못해 도킹 장면을 그리지 못했습니다 · 아래 표의 수치는 이번 실행 값입니다', 'Could not load the receptor coordinates, so the docking scene is not drawn · the numbers in the table below are from this run')}</div>
   return scene ? <DockingView scene={scene} height={height} playKey={env.req_id ? env.req_id.length + env.req_id.charCodeAt(0) : 1} /> : <div className="shimmer" style={{ height }} />
 }
@@ -116,7 +136,7 @@ function useLigandName() {
   return s.customLigand ? s.customLigand.name : ligandName(s.ligand, ko[s.ligand])
 }
 
-export default function LiveScene({ step, env, height = 600, pocket }: { step: StepId; env: Envelope; height?: number; pocket?: { query_len: number; residues: number[] } }) {
+export default function LiveScene({ step, env, height = 600, pocket, pred }: { step: StepId; env: Envelope; height?: number; pocket?: { query_len: number; residues: number[] }; pred?: Of3Result }) {
   const res = env.result
   const drugName = useLigandName()
   const src = env.source ? SOURCE_LABEL[env.source] : null
@@ -139,7 +159,13 @@ export default function LiveScene({ step, env, height = 600, pocket }: { step: S
   const bzLig = useMemo(() => (bz ? toLigand(bz.ligand_atoms, bz.ligand_bonds) : undefined), [bz])
   const n = (v: number | null | undefined, d = 2) => (v === null || v === undefined ? '–' : v.toFixed(d))
   const foot = of3 ? `pLDDT ${n(of3.scores.plddt ?? of3.mean_plddt, 1)} · pTM ${n(of3.scores.ptm, 3)}${of3.ca_rmsd !== null ? ` · ${t('결정 구조 대비', 'vs crystal')} Cα RMSD ${n(of3.ca_rmsd)} Å` : ''}`
-    : step === 'dd' && res ? (() => { const d = res as DockResult; return `${t('1순위 신뢰도', 'Top-1 confidence')} ${n(d.top1_confidence, 3)}${d.redock ? ` · ${t('결정 자리', 'crystal site')} ${n(d.top1_rmsd)} Å` : ` · ${t('교차 도킹(정답 자리 없음)', 'cross-docking (no crystal pose)')}`}` })()
+    : step === 'dd' && res ? (() => {
+      const d = res as DockResult
+      const where = d.redock ? ` · ${t('결정 자리', 'crystal site')} ${n(d.top1_rmsd)} Å`
+        : d.receptor_predicted ? ` · ${t('앞 단계 예측 구조에 도킹', 'docked into the structure predicted in the previous step')}`
+        : ` · ${t('교차 도킹(정답 자리 없음)', 'cross-docking (no crystal pose)')}`
+      return `${t('1순위 신뢰도', 'Top-1 confidence')} ${n(d.top1_confidence, 3)}${where}`
+    })()
     : null
 
   return (
@@ -162,7 +188,7 @@ export default function LiveScene({ step, env, height = 600, pocket }: { step: S
         </div>
       )}
       {of3 && <Structure key={env.req_id ?? 'of3'} ca={of3.ca} plddt={of3.plddt_per_residue} xtalCa={of3.xtal_ca?.length ? of3.xtal_ca : undefined} height={height} reveal />}
-      {step === 'dd' && res && <div style={{ position: 'absolute', inset: 0, borderRadius: 14, overflow: 'hidden', border: '1px solid var(--line)' }}><DockLive env={env} height={height} drugName={drugName} /></div>}
+      {step === 'dd' && res && <div style={{ position: 'absolute', inset: 0, borderRadius: 14, overflow: 'hidden', border: '1px solid var(--line)' }}><DockLive env={env} height={height} drugName={drugName} pred={pred} /></div>}
       {bz && <Structure key={env.req_id ?? 'bz'} ca={bz.ca} plddt={bz.plddt_per_residue} lig={bzLig} height={height} reveal={false} />}
       {bz && <AffinityMeter key={`live-bz-${env.req_id ?? ''}`} hero={drugName} items={[{ name: drugName, boltz_pic50: bz.affinity.pic50, boltz_p: bz.affinity.probability_binary, chembl: bz.chembl?.median_pchembl ?? null, chembl_n: bz.chembl?.n ?? null }]} />}
       <div className="hud-corners" style={{ position: 'absolute', inset: 10, pointerEvents: 'none', zIndex: 1 }} />
