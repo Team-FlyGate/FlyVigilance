@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import ConnectomePanel from './ConnectomePanel'
@@ -142,6 +142,10 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
   const D: HeroDrug = hero.drugs?.[drug] ?? { name: 'niraparib', crystal_pdb: '4R6E', poses: hero.diffdock_poses, pose_eval: hero.pose_eval, xtal: hero.xtal_ligand,
     dd_rmsd: m.diffdock_rmsd, dd_conf: m.diffdock_conf, vina: m.vina, boltz_pic50: extras.boltz?.pic50 ?? null, chembl: extras.boltz?.chembl ?? null,
     xa: { ligand: hero.critic_split.xa.niraparib, dd_conf: hero.critic_split.xa.dd_conf, vina: hero.critic_split.xa.vina } }
+  // 크리틱 오른쪽 Factor Xa 장면의 입력. 렌더마다 새 객체를 넘기면 0.5초마다 도는 tick 때문에 SplitTarget 이
+  // 장면을 통째로 다시 만들고 궤도가 처음으로 돌아가 끊겨 보였습니다. 약물이 바뀔 때만 새로 만듭니다
+  const splitXa = useMemo(() => ({ ...hero.critic_split.xa, niraparib: D.xa.ligand, dd_conf: D.xa.dd_conf, vina: D.xa.vina ?? hero.critic_split.xa.vina }),
+    [hero, drug]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // 처음에는 다섯 메뉴를 자동으로 넘기고, 메뉴를 누르면 그 메뉴 구간을 반복합니다
   const hold = useRef<StepId | null>(only ?? null)
@@ -368,7 +372,7 @@ export default function HeroDocking({ hero, extras, height = 560, only, nav }: {
           </div>}
           {step === 'critic' && (
             <div className="fade-in" style={{ position: 'absolute', top: 0, bottom: 0, right: 0, width: '50%', zIndex: 1, borderLeft: '1px solid var(--line2)', borderRadius: '0 14px 14px 0', overflow: 'hidden' }}>
-              <SplitTarget key={drug} xa={{ ...hero.critic_split.xa, niraparib: D.xa.ligand, dd_conf: D.xa.dd_conf, vina: D.xa.vina ?? hero.critic_split.xa.vina }} />
+              <SplitTarget key={drug} xa={splitXa} />
               <div style={{ position: 'absolute', left: 16, bottom: 14, pointerEvents: 'none' }}>
                 <div className="mono" style={{ fontSize: 10.5, letterSpacing: 1.4, color: '#ff7a45' }}>FACTOR XA · PDB 2P16</div>
                 <div className="num" style={{ fontSize: 15 }}>{D.xa.vina !== null ? `Vina ${D.xa.vina} · ` : ''}DiffDock {D.xa.dd_conf}</div>

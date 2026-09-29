@@ -1,6 +1,6 @@
 // STEP 1 FlyDiscovery: 라이브 NIM 호출과 단계 사이에 결과를 넘기는 작은 공용 저장소입니다.
 // 모든 실행은 /api/discovery/* 를 거쳐 NVIDIA BioNeMo NIM 을 실제로 부릅니다.
-import { useSyncExternalStore } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import { isEn, t } from './i18n'
 
 export type StepKind = 'msa' | 'openfold3' | 'diffdock' | 'boltz2'
@@ -32,6 +32,7 @@ export interface DockResult {
   criterion: string; status?: string; xtal_ligand: { atoms: [string, number, number, number][]; bonds: number[][] } | null
   seconds?: number | null
   target_label?: string; reference?: 'crystal' | 'none'; reference_note?: string | null; receptor_source?: string | null
+  receptor_predicted?: boolean
 }
 export interface BoltzResult {
   target: string; ligand: string
@@ -179,6 +180,78 @@ export function getMeasured<T = StepResult>(kind: StepKind, target: string, liga
 export const runCritic = (body: { claims?: Claim[]; runs: Record<string, unknown> }) =>
   fresh<CriticResult>('/api/discovery/critic', body)
 
+/** 한 단계를 부를 때 보낼 입력. 앞 단계에서 이어받을 것(MSA 정렬 · OpenFold3 예측 구조)을 여기서 붙입니다.
+ *  라이브 실행 카드와 '다섯 단계 이어 실행' 이 같은 규칙을 쓰도록 한 곳에 둡니다. */
+export function paramsFor(kind: StepKind, opts: { fresh?: boolean; predictedReceptor?: boolean } = {}): Record<string, unknown> {
+  const s = getStore()
+  const custom = !!(s.customTarget || s.customLigand)
+  const target = s.target || 'parp1'
+  const p: Record<string, unknown> = custom ? runParams() : kind === 'msa' ? { target } : { target, ligand: s.ligand || 'niraparib' }
+  if (opts.fresh) p.no_cache = true
+  if (kind === 'openfold3' || kind === 'boltz2') {
+    // 이번 세션 MSA 는 같은 표적일 때만 넘기고, 지난 측정 정렬은 PARP1 것이라 PARP1 일 때만 씁니다
+    const msaSame = Boolean(s.runs.msa) && (custom || (s.envs.msa?.params?.target ?? 'parp1') === target)
+    if (msaSame && s.runs.msa?.a3m) p.a3m = s.runs.msa.a3m
+    else if (msaSame && s.runs.msa?.a3m_key) p.a3m_key = s.runs.msa.a3m_key
+    else if (kind === 'openfold3' && !custom && target === 'parp1') p.a3m_measured = true
+  }
+  if (kind === 'diffdock' && opts.predictedReceptor) {
+    const key = predictedStructureKey()
+    if (key) p.receptor_structure_key = key
+  }
+  return p
+}
+
+/** 이번 세션 OpenFold3 예측 구조(같은 표적일 때만). DiffDock 수용체로 쓸 수 있습니다. */
+export function predictedStructureKey(): string | undefined {
+  const s = getStore()
+  const same = s.customTarget || s.customLigand || (s.envs.openfold3?.params?.target ?? 'parp1') === (s.target || 'parp1')
+  return same ? s.runs.openfold3?.structure_key : undefined
+}
+
+/** 고른 리간드의 화면 이름(목록 리간드는 카탈로그의 한국어 이름). 여러 화면이 같은 이름을 쓰도록 둡니다. */
+export function useLigandLabel(): string {
+  const [ko, setKo] = useState<Record<string, string>>({})
+  useEffect(() => { getCatalog().then((c) => setKo(Object.fromEntries(Object.entries(c.ligands).map(([k, v]) => [k, v.ko])))).catch(() => {}) }, [])
+  const s = useDiscovery()
+  return s.customLigand ? s.customLigand.name : ligandName(s.ligand, ko[s.ligand])
+}
+
+export const PIPELINE: StepKind[] = ['msa', 'openfold3', 'diffdock', 'boltz2']
+
+/** 다섯 단계를 차례로 부르고, 각 결과를 다음 단계 입력으로 넘깁니다.
+ *  한 단계가 실패하면 사유를 남기고 다음 단계로 넘어갑니다(앞 단계 없이 되는 단계가 있습니다). */
+export async function runPipeline(opts: {
+  fresh?: boolean
+  onStep?: (kind: StepKind | 'critic', state: 'run' | 'done' | 'fail', detail?: string) => void
+} = {}): Promise<{ failed: { kind: string; error: string }[] }> {
+  const failed: { kind: string; error: string }[] = []
+  for (const kind of PIPELINE) {
+    opts.onStep?.(kind, 'run')
+    try {
+      const env = await runStep(kind, paramsFor(kind, { fresh: opts.fresh, predictedReceptor: true }))
+      saveRun(kind, env as Envelope)
+      if (env.state !== 'done' || env.error) {
+        const why = env.error ?? '계산이 끝나지 않았습니다'
+        failed.push({ kind, error: why }); opts.onStep?.(kind, 'fail', why)
+      } else opts.onStep?.(kind, 'done')
+    } catch (e) {
+      const why = e instanceof Error ? e.message : String(e)
+      failed.push({ kind, error: why }); opts.onStep?.(kind, 'fail', why)
+    }
+  }
+  opts.onStep?.('critic', 'run')
+  try {
+    const r = await runCritic({ runs: getStore().runs as Record<string, unknown> })
+    opts.onStep?.('critic', 'done', `${r.score.caught}/${r.score.n_over}`)
+    return { failed }
+  } catch (e) {
+    const why = e instanceof Error ? e.message : String(e)
+    failed.push({ kind: 'critic', error: why }); opts.onStep?.('critic', 'fail', why)
+    return { failed }
+  }
+}
+
 // ---------------------------------------------------------------- 공용 저장소 (단계 사이 전달)
 export interface CustomTarget {
   id: string; gene: string; name: string; organism: string; sequence: string; length: number
@@ -246,7 +319,21 @@ export function setReward(value: number, label: string, source: string) {
   store = { ...store, reward: { value: Math.max(0, Math.min(1, value)), label, source, at: Date.now() } }
   emit()
 }
+/** 단계 페이지 id → NIM 종류. 크리틱은 NIM 이 아니라 없습니다. */
+export const STEP_KIND: Record<string, StepKind | undefined> = { msa: 'msa', of3: 'openfold3', dd: 'diffdock', bz: 'boltz2', critic: undefined }
 export const getStore = () => store
+/** 이 단계의 이번 세션 실행이 지금 고른 표적 · 리간드와 같은 입력일 때만 그 봉투를 돌려줍니다(라이브 실행 카드와 위 3D 장면이 같이 씁니다).
+ *  fallbackLigand 는 리간드를 아직 고르지 않았을 때 부를 기본값입니다. */
+export function liveFor(kind: StepKind, s: Store, fallbackLigand = 'niraparib'): Envelope | undefined {
+  const env = s.envs[kind]
+  if (!env) return undefined
+  const custom = !!(s.customTarget || s.customLigand)
+  const target = s.target || 'parp1'
+  const lig = kind === 'msa' ? undefined : s.ligand || fallbackLigand
+  const same = custom ? !!(env.params?.custom_target || env.params?.custom_ligand)
+    : (env.params?.target ?? 'parp1') === target && (kind === 'msa' || env.params?.ligand === lig)
+  return same ? env : undefined
+}
 export function useDiscovery(): Store {
   return useSyncExternalStore((f) => { subs.add(f); return () => subs.delete(f) }, getStore, getStore)
 }
