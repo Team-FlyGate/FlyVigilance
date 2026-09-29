@@ -247,6 +247,8 @@ export function setReward(value: number, label: string, source: string) {
   store = { ...store, reward: { value: Math.max(0, Math.min(1, value)), label, source, at: Date.now() } }
   emit()
 }
+/** 단계 페이지 id → NIM 종류. 크리틱은 NIM 이 아니라 없습니다. */
+export const STEP_KIND: Record<string, StepKind | undefined> = { msa: 'msa', of3: 'openfold3', dd: 'diffdock', bz: 'boltz2', critic: undefined }
 export const getStore = () => store
 /** 이 단계의 이번 세션 실행이 지금 고른 표적 · 리간드와 같은 입력일 때만 그 봉투를 돌려줍니다(라이브 실행 카드와 위 3D 장면이 같이 씁니다).
  *  fallbackLigand 는 리간드를 아직 고르지 않았을 때 부를 기본값입니다. */
