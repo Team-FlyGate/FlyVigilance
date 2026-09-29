@@ -27,6 +27,7 @@ UA = {"User-Agent": "Project-FlyGate/1.0 (hackathon demo; contact via repo)"}
 MSA_MAX_AA = 4096
 BOLTZ_MAX_AA = 4096
 OF3_SOFT_MAX_AA = 1800   # 이 이상은 80 GB GPU 가 필요합니다(openfold3-nim: "Sequences over roughly 1800 residues")
+MIN_STRUCTURE_AA = 60    # 이보다 짧은 체인 구간(펩타이드 조각)은 대표 구조로 고르지 않습니다(MSA 가 상동 서열을 거의 못 찾음)
 PIPELINE_MAX_AA = 4096
 
 PDB_ID = re.compile(r"^[0-9][A-Za-z0-9]{3}$")
@@ -132,13 +133,17 @@ def parse_structures(entry: dict) -> list[dict]:
 
 
 def pick_structure(structures: list[dict]) -> dict | None:
-    """실험 구조 가운데 가장 좋은 것. X-ray 해상도 우선, 없으면 EM, 그다음 NMR 순입니다."""
+    """실험 구조 가운데 가장 좋은 것. X-ray 해상도 우선, 없으면 EM, 그다음 NMR 순입니다.
+    이 단백질 체인이 MIN_STRUCTURE_AA 보다 짧은 구조(예: BRAF 8VSO 체인 P 361–369, 다른 단백질과 붙은 9잔기 펩타이드)는
+    해상도가 좋아도 도메인 구조가 아니므로, 더 긴 구조가 하나라도 있으면 고르지 않습니다."""
     def rank(s):
         method = (s.get("method") or "").upper()
         tier = 0 if "X-RAY" in method else 1 if "EM" in method else 2
         return (tier, s.get("resolution") if s.get("resolution") is not None else 99.0,
                 -(s.get("end") or 0) + (s.get("start") or 0))
+    span = lambda s: (s.get("end") or 0) - (s.get("start") or 0) + 1  # noqa: E731
     usable = [s for s in structures if s.get("chain")]
+    usable = [s for s in usable if span(s) >= MIN_STRUCTURE_AA] or usable
     return sorted(usable or structures, key=rank)[0] if (usable or structures) else None
 
 

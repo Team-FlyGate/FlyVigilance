@@ -142,6 +142,15 @@ def test_structure_pick_prefers_resolution_then_method():
     assert bio.pick_structure([]) is None
 
 
+def test_structure_pick_skips_short_peptide_chains():
+    # BRAF: 8VSO 는 해상도가 가장 좋지만 BRAF 체인이 9잔기 펩타이드(361–369)라 대표 구조로 쓰지 않습니다
+    s = [{"pdb": "8VSO", "method": "X-ray", "resolution": 1.5, "chain": "P", "start": 361, "end": 369},
+         {"pdb": "4MNE", "method": "X-ray", "resolution": 2.1, "chain": "A", "start": 432, "end": 726}]
+    assert bio.pick_structure(s)["pdb"] == "4MNE"
+    # 짧은 구조밖에 없으면 그거라도 씁니다
+    assert bio.pick_structure(s[:1])["pdb"] == "8VSO"
+
+
 # ---------------------------------------------------------------- PubChem
 def test_pubchem_properties_and_autocomplete():
     lig = bio.parse_pubchem_properties(PUBCHEM)

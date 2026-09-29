@@ -120,6 +120,26 @@ def test_diffdock_processing_marks_cross_dock_without_rmsd():
     assert r["top1_confidence"] == pytest.approx(-0.044, abs=0.001)
 
 
+def test_diffdock_can_dock_into_the_predicted_structure(monkeypatch):
+    """앞 단계 OpenFold3 예측 구조를 수용체로 씁니다(목록 표적도). 좌표계가 달라 RMSD 는 내지 않습니다."""
+    of3 = raw("openfold3_parp1_niraparib.json")
+    text = of3["outputs"][0]["structures_with_scores"][0]["structure"]
+    disc.cache_put("struct-test", {"structure": text})
+    t = run(disc.resolve_receptor({"receptor_structure_key": "struct-test"}, disc.target_of("parp1")))
+    assert t["receptor_source"] == "OpenFold3 예측 구조" and t["receptor_predicted"] is True
+    assert t["receptor_pdb"].splitlines()[0].startswith("ATOM") and "HETATM" not in t["receptor_pdb"]
+    r = disc.process_diffdock(raw("diffdock_niraparib_parp1.json"),
+                              {"target": "parp1", "ligand": "niraparib", "target_obj": t})
+    assert r["receptor_predicted"] is True and r["redock"] is False
+    assert r["top1_rmsd"] is None and r["poses"][0]["pocket_dist"] is None
+    assert "예측 구조에 도킹" in r["reference_note"]
+
+
+def test_diffdock_predicted_receptor_needs_the_saved_structure():
+    with pytest.raises(KeyError):
+        run(disc.resolve_receptor({"receptor_structure_key": "struct-없음"}, disc.target_of("parp1")))
+
+
 def test_diffdock_rejects_a_broken_response():
     with pytest.raises(RuntimeError):
         disc.process_diffdock({"status": "success"}, {"target": "parp1", "ligand": "niraparib"})
