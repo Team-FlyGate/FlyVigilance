@@ -144,9 +144,21 @@ export default function LiveScene({ step, env, height = 600, pocket }: { step: S
 
   return (
     <div style={{ position: 'relative', height }}>
-      {step === 'msa' && msa && (
+      {step === 'msa' && msa && msa.data.strip.length > 0 && (
         <div className="fade-in" style={{ position: 'absolute', inset: 0 }}>
-          <MsaAnimation key={env.req_id ?? 'msa'} msa={msa.data} query={msa.query} duration={9000} />
+          <MsaAnimation key={env.req_id ?? 'msa'} msa={msa.data} query={msa.query} duration={9000} queryLabel={targetLabel()} />
+        </div>
+      )}
+      {step === 'msa' && msa && msa.data.strip.length === 0 && (
+        // 상동 서열을 하나도 못 찾으면 빈 정렬 지도 대신 이유와 다음 행동을 알려 줍니다
+        <div className="fade-in" style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', borderRadius: 14, border: '1px solid var(--line)', background: '#070b16' }}>
+          <div className="stack" style={{ gap: 8, maxWidth: 560, textAlign: 'center' }}>
+            <div className="mono" style={{ fontSize: 11, letterSpacing: 1.6, color: 'var(--warn)' }}>MSA-SEARCH · {t('상동 서열 0개', '0 homologs')}</div>
+            <div style={{ fontFamily: 'var(--font)', fontSize: 22, fontWeight: 700 }}>{t(`${targetLabel()} 서열 ${msa.data.query_len}잔기로는 닮은 서열을 찾지 못했습니다`, `No similar sequences found for the ${msa.data.query_len}-residue ${targetLabel()} sequence`)}</div>
+            <div className="dim" style={{ fontSize: 13.5, lineHeight: 1.6 }}>{msa.data.query_len < 60
+              ? t('고른 구간이 너무 짧습니다. 아래 선택기에서 도메인이나 더 긴 구조 구간을 고른 뒤 다시 불러 주세요.', 'The selected range is too short. Pick a domain or a longer structure range in the picker below and run again.')
+              : t('데이터베이스에 가까운 서열이 없는 단백질일 수 있습니다. 이 경우 OpenFold3 는 단일 서열로 예측하고 신뢰도가 낮아집니다.', 'The database may have no close relatives of this protein. OpenFold3 will then predict from a single sequence with lower confidence.')}</div>
+          </div>
         </div>
       )}
       {of3 && <Structure key={env.req_id ?? 'of3'} ca={of3.ca} plddt={of3.plddt_per_residue} xtalCa={of3.xtal_ca?.length ? of3.xtal_ca : undefined} height={height} reveal />}
