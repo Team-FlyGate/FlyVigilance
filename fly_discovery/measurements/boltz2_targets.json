@@ -1,0 +1,665 @@
+{
+ "results": {
+  "parp1-4r6e--niraparib": {
+   "key": "parp1-4r6e--niraparib",
+   "drug": "niraparib",
+   "gene": "PARP1",
+   "pdb": "4R6E",
+   "chain": "A",
+   "seq_len": 350,
+   "msa": "none",
+   "runs": 3,
+   "seconds": 37.6,
+   "predictions": [
+    {
+     "pic50": 8.143,
+     "probability_binary": 0.641,
+     "iptm": 0.917
+    },
+    {
+     "pic50": 7.8,
+     "probability_binary": 0.602,
+     "iptm": 0.936
+    },
+    {
+     "pic50": 8.142,
+     "probability_binary": 0.68,
+     "iptm": 0.932
+    }
+   ],
+   "pic50_mean": 8.028,
+   "pic50_sd": 0.161,
+   "pic50_range": [
+    7.8,
+    8.143
+   ],
+   "chembl": {
+    "median": 7.79,
+    "n": 27,
+    "types": [
+     "EC50",
+     "IC50",
+     "Kd",
+     "Ki"
+    ]
+   },
+   "error_log": 0.238
+  },
+  "gr-1m2z--dexamethasone": {
+   "key": "gr-1m2z--dexamethasone",
+   "drug": "dexamethasone",
+   "gene": "NR3C1",
+   "pdb": "1M2Z",
+   "chain": "A",
+   "seq_len": 255,
+   "msa": "none",
+   "runs": 3,
+   "seconds": 53.2,
+   "predictions": [
+    {
+     "pic50": 6.948,
+     "probability_binary": 0.166,
+     "iptm": 0.927
+    },
+    {
+     "pic50": 6.9,
+     "probability_binary": 0.176,
+     "iptm": 0.934
+    },
+    {
+     "pic50": 7.044,
+     "probability_binary": 0.189,
+     "iptm": 0.921
+    }
+   ],
+   "pic50_mean": 6.964,
+   "pic50_sd": 0.06,
+   "pic50_range": [
+    6.9,
+    7.044
+   ],
+   "chembl": {
+    "median": 8.52,
+    "n": 116,
+    "types": [
+     "AC50",
+     "EC50",
+     "ED50",
+     "IC50",
+     "Kd",
+     "Ki"
+    ]
+   },
+   "error_log": -1.556
+  },
+  "d2-6cm4--risperidone": {
+   "key": "d2-6cm4--risperidone",
+   "drug": "risperidone",
+   "gene": "DRD2",
+   "pdb": "6CM4",
+   "chain": "A",
+   "seq_len": 423,
+   "msa": "none",
+   "runs": 3,
+   "seconds": 80.5,
+   "predictions": [
+    {
+     "pic50": 10.88,
+     "probability_binary": 0.859,
+     "iptm": 0.983
+    },
+    {
+     "pic50": 10.997,
+     "probability_binary": 0.879,
+     "iptm": 0.984
+    },
+    {
+     "pic50": 10.859,
+     "probability_binary": 0.871,
+     "iptm": 0.985
+    }
+   ],
+   "pic50_mean": 10.912,
+   "pic50_sd": 0.061,
+   "pic50_range": [
+    10.859,
+    10.997
+   ],
+   "chembl": {
+    "median": 8.22,
+    "n": 28,
+    "types": [
+     "AC50",
+     "IC50",
+     "Ki"
+    ]
+   },
+   "error_log": 2.692
+  },
+  "jak2-6vgl--ruxolitinib": {
+   "key": "jak2-6vgl--ruxolitinib",
+   "drug": "ruxolitinib",
+   "gene": "JAK2",
+   "pdb": "6VGL",
+   "chain": "D",
+   "seq_len": 288,
+   "msa": "none",
+   "runs": 3,
+   "seconds": 36.8,
+   "predictions": [
+    {
+     "pic50": 11.743,
+     "probability_binary": 0.938,
+     "iptm": 0.986
+    },
+    {
+     "pic50": 11.765,
+     "probability_binary": 0.941,
+     "iptm": 0.987
+    },
+    {
+     "pic50": 11.807,
+     "probability_binary": 0.938,
+     "iptm": 0.986
+    }
+   ],
+   "pic50_mean": 11.772,
+   "pic50_sd": 0.027,
+   "pic50_range": [
+    11.743,
+    11.807
+   ],
+   "chembl": {
+    "median": 8.54,
+    "n": 68,
+    "types": [
+     "EC50",
+     "IC50",
+     "Kd",
+     "Ki"
+    ]
+   },
+   "error_log": 3.232
+  },
+  "crbn-4ci2--lenalidomide": {
+   "key": "crbn-4ci2--lenalidomide",
+   "drug": "lenalidomide",
+   "gene": "CRBN",
+   "pdb": "4CI2",
+   "chain": "B",
+   "seq_len": 370,
+   "msa": "none",
+   "runs": 3,
+   "seconds": 82.7,
+   "predictions": [
+    {
+     "pic50": 5.669,
+     "probability_binary": 0.453,
+     "iptm": 0.598
+    },
+    {
+     "pic50": 5.829,
+     "probability_binary": 0.426,
+     "iptm": 0.504
+    },
+    {
+     "pic50": 5.733,
+     "probability_binary": 0.391,
+     "iptm": 0.594
+    }
+   ],
+   "pic50_mean": 5.744,
+   "pic50_sd": 0.066,
+   "pic50_range": [
+    5.669,
+    5.829
+   ],
+   "chembl": {
+    "median": 5.83,
+    "n": 18,
+    "types": [
+     "IC50",
+     "Kd",
+     "Ki"
+    ]
+   },
+   "error_log": -0.086
+  },
+  "mpro-7si9--nirmatrelvir": {
+   "key": "mpro-7si9--nirmatrelvir",
+   "drug": "nirmatrelvir",
+   "gene": "Mpro (nsp5)",
+   "pdb": "7SI9",
+   "chain": "A",
+   "seq_len": 306,
+   "msa": "none",
+   "runs": 3,
+   "seconds": 51.5,
+   "predictions": [
+    {
+     "pic50": 10.379,
+     "probability_binary": 1.0,
+     "iptm": 0.995
+    },
+    {
+     "pic50": 10.198,
+     "probability_binary": 1.0,
+     "iptm": 0.996
+    },
+    {
+     "pic50": 10.134,
+     "probability_binary": 1.0,
+     "iptm": 0.996
+    }
+   ],
+   "pic50_mean": 10.237,
+   "pic50_sd": 0.104,
+   "pic50_range": [
+    10.134,
+    10.379
+   ],
+   "chembl": {
+    "median": 7.96,
+    "n": 66,
+    "types": [
+     "EC50",
+     "IC50",
+     "Kd",
+     "Ki"
+    ]
+   },
+   "error_log": 2.277
+  },
+  "parp1-7kk3--talazoparib": {
+   "key": "parp1-7kk3--talazoparib",
+   "drug": "talazoparib",
+   "gene": "PARP1",
+   "pdb": "7KK3",
+   "chain": "A",
+   "seq_len": 336,
+   "msa": "none",
+   "runs": 3,
+   "seconds": 40.1,
+   "predictions": [
+    {
+     "pic50": 6.159,
+     "probability_binary": 0.418,
+     "iptm": 0.926
+    },
+    {
+     "pic50": 6.159,
+     "probability_binary": 0.422,
+     "iptm": 0.953
+    },
+    {
+     "pic50": 6.234,
+     "probability_binary": 0.326,
+     "iptm": 0.963
+    }
+   ],
+   "pic50_mean": 6.184,
+   "pic50_sd": 0.035,
+   "pic50_range": [
+    6.159,
+    6.234
+   ],
+   "chembl": {
+    "median": 9.15,
+    "n": 25,
+    "types": [
+     "EC50",
+     "IC50",
+     "Kd",
+     "Ki"
+    ]
+   },
+   "error_log": -2.966
+  },
+  "5ht2a-8zmg--pimavanserin": {
+   "key": "5ht2a-8zmg--pimavanserin",
+   "drug": "pimavanserin",
+   "gene": "HTR2A",
+   "pdb": "8ZMG",
+   "chain": "A",
+   "seq_len": 365,
+   "msa": "none",
+   "runs": 3,
+   "seconds": 74.9,
+   "predictions": [
+    {
+     "pic50": 10.166,
+     "probability_binary": 0.891,
+     "iptm": 0.986
+    },
+    {
+     "pic50": 10.315,
+     "probability_binary": 0.895,
+     "iptm": 0.985
+    },
+    {
+     "pic50": 10.369,
+     "probability_binary": 0.883,
+     "iptm": 0.986
+    }
+   ],
+   "pic50_mean": 10.283,
+   "pic50_sd": 0.086,
+   "pic50_range": [
+    10.166,
+    10.369
+   ],
+   "chembl": {
+    "median": 8.05,
+    "n": 15,
+    "types": [
+     "IC50",
+     "Ki"
+    ]
+   },
+   "error_log": 2.233
+  },
+  "5ht2a-7voe--aripiprazole": {
+   "key": "5ht2a-7voe--aripiprazole",
+   "drug": "aripiprazole",
+   "gene": "HTR2A",
+   "pdb": "7VOE",
+   "chain": "A",
+   "seq_len": 356,
+   "msa": "none",
+   "runs": 3,
+   "seconds": 63.1,
+   "predictions": [
+    {
+     "pic50": 10.784,
+     "probability_binary": 0.961,
+     "iptm": 0.981
+    },
+    {
+     "pic50": 10.848,
+     "probability_binary": 0.961,
+     "iptm": 0.981
+    },
+    {
+     "pic50": 10.731,
+     "probability_binary": 0.953,
+     "iptm": 0.978
+    }
+   ],
+   "pic50_mean": 10.788,
+   "pic50_sd": 0.048,
+   "pic50_range": [
+    10.731,
+    10.848
+   ],
+   "chembl": {
+    "median": 8.0,
+    "n": 37,
+    "types": [
+     "AC50",
+     "IC50",
+     "Ki"
+    ]
+   },
+   "error_log": 2.788
+  },
+  "sglt2-7vsi--empagliflozin": {
+   "key": "sglt2-7vsi--empagliflozin",
+   "drug": "empagliflozin",
+   "gene": "SLC5A2",
+   "pdb": "7VSI",
+   "chain": "A",
+   "seq_len": 586,
+   "msa": "none",
+   "runs": 3,
+   "seconds": 35.9,
+   "predictions": [
+    {
+     "pic50": 8.368,
+     "probability_binary": 0.484,
+     "iptm": 0.561
+    },
+    {
+     "pic50": 8.292,
+     "probability_binary": 0.396,
+     "iptm": 0.431
+    },
+    {
+     "pic50": 8.382,
+     "probability_binary": 0.445,
+     "iptm": 0.604
+    }
+   ],
+   "pic50_mean": 8.347,
+   "pic50_sd": 0.04,
+   "pic50_range": [
+    8.292,
+    8.382
+   ],
+   "chembl": {
+    "median": 8.51,
+    "n": 8,
+    "types": [
+     "EC50",
+     "IC50"
+    ]
+   },
+   "error_log": -0.163
+  },
+  "fxa-2p16--apixaban": {
+   "key": "fxa-2p16--apixaban",
+   "drug": "apixaban",
+   "gene": "F10",
+   "pdb": "2P16",
+   "chain": "A",
+   "seq_len": 227,
+   "msa": "none",
+   "runs": 3,
+   "seconds": 35.0,
+   "predictions": [
+    {
+     "pic50": 11.36,
+     "probability_binary": 0.926,
+     "iptm": 0.982
+    },
+    {
+     "pic50": 11.296,
+     "probability_binary": 0.922,
+     "iptm": 0.983
+    },
+    {
+     "pic50": 11.424,
+     "probability_binary": 0.93,
+     "iptm": 0.982
+    }
+   ],
+   "pic50_mean": 11.36,
+   "pic50_sd": 0.052,
+   "pic50_range": [
+    11.296,
+    11.424
+   ],
+   "chembl": {
+    "median": 10.1,
+    "n": 13,
+    "types": [
+     "IC50",
+     "Ki"
+    ]
+   },
+   "error_log": 1.26
+  },
+  "mor-8ef5--fentanyl": {
+   "key": "mor-8ef5--fentanyl",
+   "drug": "fentanyl",
+   "gene": "OPRM1",
+   "pdb": "8EF5",
+   "chain": "R",
+   "seq_len": 287,
+   "msa": "none",
+   "runs": 3,
+   "seconds": 47.5,
+   "predictions": [
+    {
+     "pic50": 8.637,
+     "probability_binary": 0.867,
+     "iptm": 0.952
+    },
+    {
+     "pic50": 8.352,
+     "probability_binary": 0.859,
+     "iptm": 0.954
+    },
+    {
+     "pic50": 8.741,
+     "probability_binary": 0.891,
+     "iptm": 0.954
+    }
+   ],
+   "pic50_mean": 8.577,
+   "pic50_sd": 0.164,
+   "pic50_range": [
+    8.352,
+    8.741
+   ],
+   "chembl": {
+    "median": 8.48,
+    "n": 29,
+    "types": [
+     "AC50",
+     "EC50",
+     "IC50",
+     "Ki"
+    ]
+   },
+   "error_log": 0.097
+  },
+  "pde5-1tbf--sildenafil": {
+   "key": "pde5-1tbf--sildenafil",
+   "drug": "sildenafil",
+   "gene": "PDE5A",
+   "pdb": "1TBF",
+   "chain": "A",
+   "seq_len": 325,
+   "msa": "none",
+   "runs": 3,
+   "seconds": 46.1,
+   "predictions": [
+    {
+     "pic50": 8.52,
+     "probability_binary": 0.398,
+     "iptm": 0.87
+    },
+    {
+     "pic50": 8.735,
+     "probability_binary": 0.406,
+     "iptm": 0.917
+    },
+    {
+     "pic50": 8.925,
+     "probability_binary": 0.406,
+     "iptm": 0.831
+    }
+   ],
+   "pic50_mean": 8.727,
+   "pic50_sd": 0.165,
+   "pic50_range": [
+    8.52,
+    8.925
+   ],
+   "chembl": {
+    "median": 8.44,
+    "n": 68,
+    "types": [
+     "EC50",
+     "IC50",
+     "Ki"
+    ]
+   },
+   "error_log": 0.287
+  },
+  "dhfr-1u72--methotrexate": {
+   "key": "dhfr-1u72--methotrexate",
+   "drug": "methotrexate",
+   "gene": "DHFR",
+   "pdb": "1U72",
+   "chain": "A",
+   "seq_len": 186,
+   "msa": "none",
+   "runs": 3,
+   "seconds": 40.8,
+   "predictions": [
+    {
+     "pic50": 10.912,
+     "probability_binary": 0.992,
+     "iptm": 0.984
+    },
+    {
+     "pic50": 11.381,
+     "probability_binary": 0.996,
+     "iptm": 0.982
+    },
+    {
+     "pic50": 11.04,
+     "probability_binary": 0.992,
+     "iptm": 0.983
+    }
+   ],
+   "pic50_mean": 11.111,
+   "pic50_sd": 0.198,
+   "pic50_range": [
+    10.912,
+    11.381
+   ],
+   "chembl": {
+    "median": 8.05,
+    "n": 87,
+    "types": [
+     "IC50",
+     "Ki"
+    ]
+   },
+   "error_log": 3.061
+  }
+ },
+ "summary": {
+  "n_pairs": 14,
+  "mae": 1.638,
+  "within_1_log": 5,
+  "sd_median": 0.064,
+  "sd_max": 0.198
+ },
+ "endpoint": "https://health.api.nvidia.com/v1/biology/mit/boltz2/predict",
+ "runs": 3,
+ "msa": "none (single sequence)",
+ "strong_pchembl": 6.0,
+ "updated": "2026-09-29 18:23 KST",
+ "msa_control": {
+  "why": "이 벤치마크는 MSA 없이(단일 서열) 돌렸습니다. 기존 PARP1 39종 벤치마크(Spearman 0.767)가 같은 조건이었는지 확인하려고 대조했습니다.",
+  "runs_each": 3,
+  "talazoparib_parp1": {
+   "no_msa": [
+    6.234,
+    6.117,
+    6.479
+   ],
+   "no_msa_mean": 6.277,
+   "with_msa": [
+    7.46,
+    9.06,
+    7.47
+   ],
+   "with_msa_mean": 8.0,
+   "with_msa_sd": 0.752,
+   "benchmark39_with_msa": 8.898,
+   "chembl_median": 9.15,
+   "structure_control": "4R6E chain A(350잔기)와 7KK3 chain A(336잔기) 서열 모두 6.2 부근 → 구조 차이가 아니라 MSA 유무가 원인"
+  },
+  "finding": [
+   "MSA 를 넣으면 예측값이 크게 달라집니다(탈라조파립 6.28 → 8.00, 실측 9.15).",
+   "따라서 아래 14쌍(MSA 없음) 결과를 기존 PARP1 39종 벤치마크(MSA 사용) 와 직접 비교하면 안 됩니다.",
+   "MSA 를 넣었을 때 같은 입력 3회가 7.46 · 9.06 · 7.47 로 1.6 log 벌어졌습니다. MSA 없을 때(sd 0.03~0.20)보다 훨씬 큽니다."
+  ],
+  "not_done": "14쌍을 MSA 를 넣어 다시 돌리지 못했습니다. 표적마다 MSA-Search 를 먼저 돌려야 하고, 측정 중 NVIDIA 호출 제한(429)에 걸렸습니다."
+ },
+ "warning": "아래 결과는 MSA 없이(단일 서열) 잰 값입니다. msa_control 을 함께 읽으십시오."
+}
