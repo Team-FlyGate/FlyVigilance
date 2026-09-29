@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { Card } from './ui'
 import { useBrain } from '../lib/brain'
 import {
-  SOURCE_LABEL, claimText, fmtS, ligandName, liveFor, getCatalog, getMeasured, runCritic, runParams, runStep, saveRun, useDiscovery,
+  SOURCE_LABEL, claimText, fmtS, ligandName, liveFor, getCatalog, paramsFor, predictedStructureKey, getMeasured, runCritic, runStep, saveRun, useDiscovery,
   type BoltzResult, type Catalog, type Claim, type CriticResult, type DockResult, type Envelope, type MsaResult, type Of3Result, type StepKind,
 } from '../lib/discovery'
 import type { StepId } from './HeroDocking'
@@ -66,8 +66,7 @@ export default function LiveRun({ step, drug }: { step: StepId; drug: string }) 
 
   const env = kind === 'critic' ? undefined : envs[kind]
   // 앞 단계 OpenFold3 예측 구조(같은 표적일 때만). 있으면 DiffDock 수용체로 고를 수 있습니다
-  const predKey = runs.openfold3?.structure_key && (custom || (envs.openfold3?.params?.target ?? 'parp1') === (pickT || 'parp1'))
-    ? runs.openfold3.structure_key : undefined
+  const predKey = predictedStructureKey()
   // 위 표적 · 리간드 선택기(TargetPicker)에서 고른 값을 그대로 씁니다. 전에는 MSA · OpenFold3 가 PARP1 로 고정돼
   // 선택기에서 Factor Xa 를 골라도 PARP1 을 다시 불러 '바뀌는 게 없어' 보였습니다
   const target = pickT || 'parp1'
@@ -104,19 +103,8 @@ export default function LiveRun({ step, drug }: { step: StepId; drug: string }) 
         sim?.stimulate('layer', 'critic', r.issues.length ? 1.4 : 0.6, 16)
         return
       }
-      const params: Record<string, unknown> = custom ? runParams() : kind === 'msa' ? { target } : { target, ligand: lig }
-      params.no_cache = fresh
-      // 앞 단계 MSA 를 이번 세션에서 돌렸으면 그 정렬을 넘기고, 아니면 지난 측정 정렬을 씁니다(OpenFold3 · Boltz-2)
-      if (kind === 'openfold3' || kind === 'boltz2') {
-        // 이번 세션 MSA 는 같은 표적일 때만 넘기고, 지난 측정 정렬은 PARP1 것이라 PARP1 일 때만 씁니다(다른 표적에 PARP1 정렬을 붙이지 않게)
-        // 표적을 바꾸면 저장소가 앞 단계 결과를 비우므로(selectTarget), 남아 있는 MSA 는 지금 표적(직접 찾은 단백질 포함)의 것입니다
-        const msaSame = Boolean(runs.msa) && (custom || (envs.msa?.params?.target ?? 'parp1') === target)
-        if (msaSame && runs.msa?.a3m) params.a3m = runs.msa.a3m
-        else if (msaSame && runs.msa?.a3m_key) params.a3m_key = runs.msa.a3m_key
-        else if (kind === 'openfold3' && !custom && target === 'parp1') params.a3m_measured = true
-      }
-      // 앞 단계 OpenFold3 를 같은 표적으로 돌렸으면 그 예측 구조를 도킹 수용체로 넘깁니다(파이프라인 본래 순서)
-      if (kind === 'diffdock' && predKey && usePredicted) params.receptor_structure_key = predKey
+      // 앞 단계에서 이어받을 것(MSA 정렬 · OpenFold3 예측 구조)은 paramsFor 가 붙입니다('다섯 단계 이어 실행' 과 같은 규칙)
+      const params = paramsFor(kind, { fresh, predictedReceptor: usePredicted })
       const out = await runStep(kind, params, (e) => saveRun(kind, e as Envelope))
       saveRun(kind, out as Envelope)
       if (out.state === 'done') setLastAt(new Date())

@@ -180,6 +180,70 @@ export function getMeasured<T = StepResult>(kind: StepKind, target: string, liga
 export const runCritic = (body: { claims?: Claim[]; runs: Record<string, unknown> }) =>
   fresh<CriticResult>('/api/discovery/critic', body)
 
+/** 한 단계를 부를 때 보낼 입력. 앞 단계에서 이어받을 것(MSA 정렬 · OpenFold3 예측 구조)을 여기서 붙입니다.
+ *  라이브 실행 카드와 '다섯 단계 이어 실행' 이 같은 규칙을 쓰도록 한 곳에 둡니다. */
+export function paramsFor(kind: StepKind, opts: { fresh?: boolean; predictedReceptor?: boolean } = {}): Record<string, unknown> {
+  const s = getStore()
+  const custom = !!(s.customTarget || s.customLigand)
+  const target = s.target || 'parp1'
+  const p: Record<string, unknown> = custom ? runParams() : kind === 'msa' ? { target } : { target, ligand: s.ligand || 'niraparib' }
+  if (opts.fresh) p.no_cache = true
+  if (kind === 'openfold3' || kind === 'boltz2') {
+    // 이번 세션 MSA 는 같은 표적일 때만 넘기고, 지난 측정 정렬은 PARP1 것이라 PARP1 일 때만 씁니다
+    const msaSame = Boolean(s.runs.msa) && (custom || (s.envs.msa?.params?.target ?? 'parp1') === target)
+    if (msaSame && s.runs.msa?.a3m) p.a3m = s.runs.msa.a3m
+    else if (msaSame && s.runs.msa?.a3m_key) p.a3m_key = s.runs.msa.a3m_key
+    else if (kind === 'openfold3' && !custom && target === 'parp1') p.a3m_measured = true
+  }
+  if (kind === 'diffdock' && opts.predictedReceptor) {
+    const key = predictedStructureKey()
+    if (key) p.receptor_structure_key = key
+  }
+  return p
+}
+
+/** 이번 세션 OpenFold3 예측 구조(같은 표적일 때만). DiffDock 수용체로 쓸 수 있습니다. */
+export function predictedStructureKey(): string | undefined {
+  const s = getStore()
+  const same = s.customTarget || s.customLigand || (s.envs.openfold3?.params?.target ?? 'parp1') === (s.target || 'parp1')
+  return same ? s.runs.openfold3?.structure_key : undefined
+}
+
+export const PIPELINE: StepKind[] = ['msa', 'openfold3', 'diffdock', 'boltz2']
+
+/** 다섯 단계를 차례로 부르고, 각 결과를 다음 단계 입력으로 넘깁니다.
+ *  한 단계가 실패하면 사유를 남기고 다음 단계로 넘어갑니다(앞 단계 없이 되는 단계가 있습니다). */
+export async function runPipeline(opts: {
+  fresh?: boolean
+  onStep?: (kind: StepKind | 'critic', state: 'run' | 'done' | 'fail', detail?: string) => void
+} = {}): Promise<{ failed: { kind: string; error: string }[] }> {
+  const failed: { kind: string; error: string }[] = []
+  for (const kind of PIPELINE) {
+    opts.onStep?.(kind, 'run')
+    try {
+      const env = await runStep(kind, paramsFor(kind, { fresh: opts.fresh, predictedReceptor: true }))
+      saveRun(kind, env as Envelope)
+      if (env.state !== 'done' || env.error) {
+        const why = env.error ?? '계산이 끝나지 않았습니다'
+        failed.push({ kind, error: why }); opts.onStep?.(kind, 'fail', why)
+      } else opts.onStep?.(kind, 'done')
+    } catch (e) {
+      const why = e instanceof Error ? e.message : String(e)
+      failed.push({ kind, error: why }); opts.onStep?.(kind, 'fail', why)
+    }
+  }
+  opts.onStep?.('critic', 'run')
+  try {
+    const r = await runCritic({ runs: getStore().runs as Record<string, unknown> })
+    opts.onStep?.('critic', 'done', `${r.score.caught}/${r.score.n_over}`)
+    return { failed }
+  } catch (e) {
+    const why = e instanceof Error ? e.message : String(e)
+    failed.push({ kind: 'critic', error: why }); opts.onStep?.('critic', 'fail', why)
+    return { failed }
+  }
+}
+
 // ---------------------------------------------------------------- 공용 저장소 (단계 사이 전달)
 export interface CustomTarget {
   id: string; gene: string; name: string; organism: string; sequence: string; length: number
