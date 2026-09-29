@@ -92,7 +92,8 @@ export default function DiscoveryStep({ step }: { step: StepId }) {
             )}
             {/* 두 장면을 동시에 띄우지 않고 바꿔 끼웁니다(WebGL 컨텍스트 수를 늘리지 않게) */}
             {live && view === 'live'
-              ? <LiveScene key={`${step}-${stamp}`} step={step} env={live} height={600} pocket={hero.msa ? { query_len: hero.msa.query_len, residues: hero.msa.pocket_residues } : undefined} />
+              ? <LiveScene key={`${step}-${stamp}`} step={step} env={live} height={600} pred={store.runs.openfold3}
+                  pocket={hero.msa ? { query_len: hero.msa.query_len, residues: hero.msa.pocket_residues } : undefined} />
               : <HeroDocking key={step} hero={hero} extras={extras} only={step} nav={STEP_PAGES} height={600} />}
           </Card>
 
