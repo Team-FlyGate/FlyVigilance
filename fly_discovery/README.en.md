@@ -160,8 +160,21 @@ so the Super model is used for critic verdicts.
 - The 0.71 Å redocking RMSD is a **control**: the co-crystal ligand put back into its own structure. It shows the
   docking setup works; it does not mean the binding of a new candidate was predicted (D5).
 - 4R6E is a public structure and may have been in the OpenFold3 training data (D9).
-- **The affinity benchmark is n = 39 on a single target, PARP1.** Accuracy on the other targets was not measured.
-  Boltz-2 also returns slightly different values run to run for the same input (7.98 and 7.686 observed on the same day).
+- **The affinity benchmark is n = 39 on a single target, PARP1.** Accuracy on the other targets is not established yet.
+  We tried to widen it to 14 targets (`pipeline/discovery/benchmark_boltz2_targets.py`, results in
+  `measurements/boltz2_targets.json`), but that run used a single sequence without an MSA, so it **cannot be compared
+  directly** with the 39-compound benchmark, which used one. Those numbers are kept for reference only.
+- **Boltz-2 predictions swing widely with the conditions and between runs.** A control on talazoparib@PARP1:
+
+  | Condition | Predicted pIC50 | Measured (ChEMBL median) |
+  | --- | --- | --- |
+  | No MSA (single sequence), 3 runs | 6.23 · 6.12 · 6.48 (mean **6.28**) | 9.15 |
+  | With MSA, 3 runs | 7.46 · 9.06 · 7.47 (mean **8.00**) | 9.15 |
+  | 39-compound benchmark (with MSA) | 8.90 | 9.22 |
+
+  An MSA brings the prediction closer to the measurement, but **three identical runs spread over 1.6 log units.**
+  Both the 4R6E and 7KK3 sequences land near 6.2 without an MSA, so the cause is the missing MSA, not the structure.
+  Do not pull a single predicted value and quote it (D3).
 - The critic numbers come from 8 evaluated claims.
 - COX-2 3LN1 is a **mouse** protein and does not transfer to humans (D7).
 - Nirmatrelvir is a covalent inhibitor while DiffDock models only non-covalent binding, so that result is for reference only.
