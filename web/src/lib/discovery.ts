@@ -1,6 +1,6 @@
 // STEP 1 FlyDiscovery: 라이브 NIM 호출과 단계 사이에 결과를 넘기는 작은 공용 저장소입니다.
 // 모든 실행은 /api/discovery/* 를 거쳐 NVIDIA BioNeMo NIM 을 실제로 부릅니다.
-import { useSyncExternalStore } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import { isEn, t } from './i18n'
 
 export type StepKind = 'msa' | 'openfold3' | 'diffdock' | 'boltz2'
@@ -207,6 +207,14 @@ export function predictedStructureKey(): string | undefined {
   const s = getStore()
   const same = s.customTarget || s.customLigand || (s.envs.openfold3?.params?.target ?? 'parp1') === (s.target || 'parp1')
   return same ? s.runs.openfold3?.structure_key : undefined
+}
+
+/** 고른 리간드의 화면 이름(목록 리간드는 카탈로그의 한국어 이름). 여러 화면이 같은 이름을 쓰도록 둡니다. */
+export function useLigandLabel(): string {
+  const [ko, setKo] = useState<Record<string, string>>({})
+  useEffect(() => { getCatalog().then((c) => setKo(Object.fromEntries(Object.entries(c.ligands).map(([k, v]) => [k, v.ko])))).catch(() => {}) }, [])
+  const s = useDiscovery()
+  return s.customLigand ? s.customLigand.name : ligandName(s.ligand, ko[s.ligand])
 }
 
 export const PIPELINE: StepKind[] = ['msa', 'openfold3', 'diffdock', 'boltz2']

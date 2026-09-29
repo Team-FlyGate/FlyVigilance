@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { STEP_KIND, liveFor, fmtS, runPipeline, useDiscovery, type BoltzResult, type DockResult, type MsaResult, type Of3Result } from '../lib/discovery'
+import { STEP_KIND, liveFor, fmtS, runPipeline, targetLabel, useDiscovery, useLigandLabel, type BoltzResult, type DockResult, type MsaResult, type Of3Result } from '../lib/discovery'
 import { useBrain } from '../lib/brain'
 import { STEP_PAGES } from '../pages/Discovery'
 import { t } from '../lib/i18n'
@@ -17,6 +17,7 @@ const KIND_NAME: Record<string, string> = { msa: 'MSA-Search', openfold3: 'OpenF
 export default function StepFlow({ step }: { step: StepId }) {
   const store = useDiscovery()
   const { sim } = useBrain()
+  const drugName = useLigandLabel()
   // 다섯 단계 이어 실행: 앞 단계 결과를 다음 단계 입력으로 넘기며 차례로 NIM 을 부릅니다
   const [busy, setBusy] = useState(false)
   const [at, setAt] = useState<string | null>(null)
@@ -32,7 +33,9 @@ export default function StepFlow({ step }: { step: StepId }) {
     })
     setFails(failed); setAt(null); setBusy(false)
   }
-  const cell = (id: StepId): { out: string; gave?: string } | null => {
+  // 표적 · 약물은 모든 단계가 같은 선택을 씁니다(한 단계에서 바꾸면 앞 결과는 비웁니다)
+  const pair = t(`표적 · 약물 (${targetLabel()} + ${drugName})`, `target · drug (${targetLabel()} + ${drugName})`)
+  const cell = (id: StepId): { out: string; note?: string; gave?: string } | null => {
     const kind = STEP_KIND[id]
     if (!kind) {
       // 크리틱은 앞 네 단계 결과를 그대로 받습니다
@@ -44,19 +47,25 @@ export default function StepFlow({ step }: { step: StepId }) {
     if (!r) return null
     // 소요 시간이 결과에 없으면 서버가 잰 왕복 시간(elapsed_s)으로 채웁니다
     const secs = (r as { seconds?: number | null }).seconds ?? env?.elapsed_s
-    if (kind === 'msa') { const m = r as MsaResult; return { out: t(`상동 서열 ${m.homologs}개 · ${fmtS(secs)}`, `${m.homologs} homologs · ${fmtS(secs)}`), gave: t('정렬(a3m)', 'alignment (a3m)') } }
+    const cached = env?.source === 'cache' ? t(' · 캐시', ' · cached') : ''
+    if (kind === 'msa') { const m = r as MsaResult; return { out: t(`상동 서열 ${m.homologs}개 · ${fmtS(secs)}${cached}`, `${m.homologs} homologs · ${fmtS(secs)}${cached}`), gave: t('정렬(a3m)', 'alignment (a3m)') } }
     if (kind === 'openfold3') {
       const o = r as Of3Result
-      return { out: `pLDDT ${n(o.scores.plddt ?? o.mean_plddt, 1)}${o.ca_rmsd !== null ? ` · Cα RMSD ${n(o.ca_rmsd)} Å` : ''}`,
+      return { out: `pLDDT ${n(o.scores.plddt ?? o.mean_plddt, 1)}${o.ca_rmsd !== null ? ` · Cα RMSD ${n(o.ca_rmsd)} Å` : ''}${cached}`,
+        note: o.msa_source === 'a3m' ? t('MSA 정렬로 예측', 'predicted with the MSA alignment') : t('단일 서열로 예측', 'predicted from a single sequence'),
         gave: o.structure_key ? t('예측 구조', 'predicted structure') : undefined }
     }
     if (kind === 'diffdock') {
       const d = r as DockResult
-      return { out: `${t('신뢰도', 'confidence')} ${n(d.top1_confidence, 3)}${d.redock ? ` · RMSD ${n(d.top1_rmsd)} Å` : ''}`,
-        gave: d.receptor_predicted ? t('예측 구조에 도킹함', 'docked into the prediction') : undefined }
+      return { out: `${t('신뢰도', 'confidence')} ${n(d.top1_confidence, 3)}${d.redock ? ` · RMSD ${n(d.top1_rmsd)} Å` : ''}${cached}`,
+        note: d.receptor_predicted ? t('수용체: 앞 단계 예측 구조', 'receptor: the structure predicted above') : t('수용체: 결정 구조', 'receptor: the crystal structure'),
+        // Boltz-2 는 도킹 포즈를 입력으로 받지 않습니다(단백질과 약물을 스스로 함께 접습니다). 넘어가는 것은 표적 · 약물 선택입니다
+        gave: `${pair}\n${t('포즈는 넘기지 않음', 'the pose is not passed on')}` }
     }
     const b = r as BoltzResult
-    return { out: `pIC50 ${n(b.affinity.pic50)}${b.chembl ? ` · ${t('실측', 'measured')} ${b.chembl.median_pchembl}` : ''}` }
+    return { out: `pIC50 ${n(b.affinity.pic50)}${b.chembl ? ` · ${t('실측', 'measured')} ${b.chembl.median_pchembl}` : ''}${cached}`,
+      note: b.metrics && (r as { msa_source?: string }).msa_source === 'a3m' ? t('MSA 정렬로 예측', 'predicted with the MSA alignment') : undefined,
+      gave: t('예측값 · 실측값', 'prediction · measurement') }
   }
   const cells = ORDER.map(cell)
   return (
@@ -84,10 +93,11 @@ export default function StepFlow({ step }: { step: StepId }) {
                 border: `1px solid ${on ? 'rgba(55,230,255,0.5)' : c ? 'var(--line)' : 'var(--line2, rgba(120,170,255,0.12))'}`, opacity: c ? 1 : 0.45 }}>
                 <div className="mono" style={{ fontSize: 9.5, letterSpacing: 1.1, color: on ? 'var(--c-sense)' : 'var(--text-3)' }}>{`0${i + 1} ${NAME[id]}`}</div>
                 <div className="num" style={{ fontSize: 11.5, marginTop: 2, color: c ? 'var(--text)' : 'var(--text-3)' }}>{c ? c.out : t('대기', 'not run')}</div>
+                {c?.note && <div className="mono dim" style={{ fontSize: 9, marginTop: 1 }}>{c.note}</div>}
               </a>
               {i < ORDER.length - 1 && (
                 <span className="mono dim" style={{ fontSize: 9.5, textAlign: 'center', minWidth: 54, lineHeight: 1.25 }}>
-                  →{c?.gave ? <div style={{ color: 'var(--nvidia)' }}>{c.gave}</div> : null}
+                  →{c?.gave ? <div style={{ color: 'var(--nvidia)', whiteSpace: 'pre-line' }}>{c.gave}</div> : null}
                 </span>
               )}
             </div>
