@@ -247,6 +247,18 @@ export function setReward(value: number, label: string, source: string) {
   emit()
 }
 export const getStore = () => store
+/** 이 단계의 이번 세션 실행이 지금 고른 표적 · 리간드와 같은 입력일 때만 그 봉투를 돌려줍니다(라이브 실행 카드와 위 3D 장면이 같이 씁니다).
+ *  fallbackLigand 는 리간드를 아직 고르지 않았을 때 부를 기본값입니다. */
+export function liveFor(kind: StepKind, s: Store, fallbackLigand = 'niraparib'): Envelope | undefined {
+  const env = s.envs[kind]
+  if (!env) return undefined
+  const custom = !!(s.customTarget || s.customLigand)
+  const target = s.target || 'parp1'
+  const lig = kind === 'msa' ? undefined : s.ligand || fallbackLigand
+  const same = custom ? !!(env.params?.custom_target || env.params?.custom_ligand)
+    : (env.params?.target ?? 'parp1') === target && (kind === 'msa' || env.params?.ligand === lig)
+  return same ? env : undefined
+}
 export function useDiscovery(): Store {
   return useSyncExternalStore((f) => { subs.add(f); return () => subs.delete(f) }, getStore, getStore)
 }

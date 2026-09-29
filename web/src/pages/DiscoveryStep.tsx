@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import HeroDocking, { DRUG_LABEL, useHeroDrug, type StepId } from '../components/HeroDocking'
 import DockPlayground from '../components/DockPlayground'
 import Step2Handoff from '../components/Step2Handoff'
@@ -6,8 +6,9 @@ import { Card, Loading, PageHead } from '../components/ui'
 import { CriticStream, MissingCard, RedockBench, STEP_PAGES, Tile, title, useDiscoveryData } from './Discovery'
 import Term from '../components/Term'
 import LiveRun from '../components/LiveRun'
+import LiveScene from '../components/LiveScene'
 import { t } from '../lib/i18n'
-import { dataText, ligandName } from '../lib/discovery'
+import { dataText, ligandName, liveFor, useDiscovery, type StepKind } from '../lib/discovery'
 
 // STEP 1 FlyDiscovery 의 다섯 단계 페이지. 가운데 3D 장면(HeroDocking)은 그 단계에 고정되고,
 // 위 단계 표시를 누르면 다른 단계 페이지로 갑니다. 왼쪽 위 초파리 커넥텀은 단계마다 다른 층을 자극합니다.
@@ -57,6 +58,18 @@ export default function DiscoveryStep({ step }: { step: StepId }) {
   const [drug] = useHeroDrug()
   const of3 = m?.openfold3_msa, bm = m?.parp1_affinity_benchmark, hm = hero?.metrics
   const combos = m?.diffdock_boltz2_chembl ?? []
+  // 아래 라이브 실행 카드에서 이 단계를 새로 부르면 위 장면을 그 결과로 바꾸고, 칩으로 대표 장면에 되돌아갈 수 있게 합니다
+  const store = useDiscovery()
+  const kind = ({ msa: 'msa', of3: 'openfold3', dd: 'diffdock', bz: 'boltz2' } as Partial<Record<StepId, StepKind>>)[step]
+  const env = kind ? liveFor(kind, store) : undefined
+  const live = env && env.state === 'done' && env.result ? env : undefined
+  const stamp = live ? `${live.req_id ?? ''}|${live.elapsed_s ?? ''}|${live.source ?? ''}` : ''
+  const [view, setView] = useState<'hero' | 'live'>('hero')
+  const seen = useRef('')
+  useEffect(() => {
+    if (!live) { setView('hero'); return }
+    if (stamp !== seen.current) { seen.current = stamp; setView('live') }
+  }, [live, stamp])
   const combo = (k: string) => { const [l, t] = k.split('@'); return `${title(l)} @ ${({ parp1: 'PARP1', cox2: 'COX-2', xa: 'Factor Xa' } as Record<string, string>)[t] ?? t}` }
 
   return (
@@ -70,7 +83,17 @@ export default function DiscoveryStep({ step }: { step: StepId }) {
       {missing ? <MissingCard /> : !m || !hero || !extras ? <Loading /> : (
         <>
           <Card className="" style={{ marginBottom: 16 }}>
-            <HeroDocking key={step} hero={hero} extras={extras} only={step} nav={STEP_PAGES} height={600} />
+            {live && (
+              <div className="row" style={{ gap: 8, marginBottom: 10, alignItems: 'center' }}>
+                <span className="mono dim" style={{ fontSize: 10.5, letterSpacing: 1.2 }}>{t('장면', 'Scene')}</span>
+                <button className={`chip ${view === 'live' ? 'nv' : ''}`} style={{ cursor: 'pointer' }} onClick={() => setView('live')}>{t('이번 실행 결과', 'This run')}</button>
+                <button className={`chip ${view === 'hero' ? 'jev' : ''}`} style={{ cursor: 'pointer' }} onClick={() => setView('hero')}>{t('대표 장면', 'Reference scene')} · {ligandName(drug, DRUG_LABEL[drug])} × PARP1</button>
+              </div>
+            )}
+            {/* 두 장면을 동시에 띄우지 않고 바꿔 끼웁니다(WebGL 컨텍스트 수를 늘리지 않게) */}
+            {live && view === 'live'
+              ? <LiveScene key={`${step}-${stamp}`} step={step} env={live} height={600} pocket={hero.msa ? { query_len: hero.msa.query_len, residues: hero.msa.pocket_residues } : undefined} />
+              : <HeroDocking key={step} hero={hero} extras={extras} only={step} nav={STEP_PAGES} height={600} />}
           </Card>
 
           {/* 3D 장면과 아래 분석은 그대로 두고, 이 단계의 NIM 을 지금 다시 부르는 카드만 더합니다 */}

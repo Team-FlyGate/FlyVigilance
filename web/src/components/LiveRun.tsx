@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { Card } from './ui'
 import { useBrain } from '../lib/brain'
 import {
-  SOURCE_LABEL, claimText, fmtS, ligandName, getCatalog, getMeasured, runCritic, runParams, runStep, saveRun, useDiscovery,
+  SOURCE_LABEL, claimText, fmtS, ligandName, liveFor, getCatalog, getMeasured, runCritic, runParams, runStep, saveRun, useDiscovery,
   type BoltzResult, type Catalog, type Claim, type CriticResult, type DockResult, type Envelope, type MsaResult, type Of3Result, type StepKind,
 } from '../lib/discovery'
 import type { StepId } from './HeroDocking'
@@ -40,7 +40,8 @@ const ROW_EN: Record<string, string> = {
 export default function LiveRun({ step, drug }: { step: StepId; drug: string }) {
   const kind = KIND[step]
   const { sim } = useBrain()
-  const { runs, envs, customTarget, customLigand, target: pickT, ligand: pickL } = useDiscovery()
+  const store = useDiscovery()
+  const { runs, envs, customTarget, customLigand, target: pickT, ligand: pickL } = store
   // 화면에서 단백질이나 약물을 찾아 골랐으면(검색) 그 값으로 부르고, 지난 측정 비교는 두지 않습니다
   const custom = !!(customTarget || customLigand)
   const [cat, setCat] = useState<Catalog | null>(null)
@@ -76,7 +77,7 @@ export default function LiveRun({ step, drug }: { step: StepId; drug: string }) 
     return () => { live = false }
   }, [kind, cat, target, lig, custom])
   // 이번 실행 결과는 지금 고른 쌍과 같을 때만 보여 줍니다(다른 쌍을 고르면 비웁니다)
-  const sameParams = env && (custom ? !!(env.params?.custom_target || env.params?.custom_ligand) : (env.params?.target ?? 'parp1') === target && (kind === 'msa' || env.params?.ligand === lig))
+  const sameParams = kind !== 'critic' && !!liveFor(kind, store, cat?.ligands[drug] ? drug : 'niraparib')
   // 소요 시간은 결과 안에 없으면 봉투의 elapsed_s(서버가 잰 왕복 시간)로 채웁니다
   const liveRes = sameParams && env?.result ? { ...env.result, seconds: (env.result as { seconds?: number | null }).seconds ?? env.elapsed_s } : undefined
   const pastRes = (sameParams ? env?.measured : null) ?? past
