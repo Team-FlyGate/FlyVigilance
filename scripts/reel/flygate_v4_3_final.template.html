@@ -675,12 +675,14 @@
     // 결과 한 줄
     const aR = seg(lt, b(5), b(5) + 0.5)
     if (aR > 0) withA(aR, () => {
-      panel(gx, 740, gw, 118, { r: 16, fill: 'rgba(10,26,20,0.6)', stroke: 'rgba(61,220,151,0.5)' })
-      const cols = [[`${BL.n}`, tr('건 검증 · 결과 코드를 가림', 'cases · outcomes hidden')], [`${reach}/${BL.serious}`, tr('검토 대상으로 올린 중대 사례', 'serious cases sent to review')], [`${BL.base.human} → ${BL.fv.human}`, tr(`사람이 먼저 볼 일 −${cut}%`, `human-first workload −${cut}%`)]]
+      panel(gx, 736, gw, 132, { r: 16, fill: 'rgba(10,26,20,0.6)', stroke: 'rgba(61,220,151,0.5)' })
+      // 잘 거른다 = 놓치지 않고(중대 사례를 자동 큐로 흘리지 않음), 괜히 올리지도 않는다(중대하지 않은 사례를 사람에게 떠넘기지 않음)
+      const cols = [[`${BL.base.auto} → ${BL.fv.auto}`, tr('놓친 중대 사례', 'missed serious cases')], [`${BL.base.over} → ${BL.fv.over}`, tr('사람에게 괜히 올린 사례', 'needless escalations')], [`${BL.base.human} → ${BL.fv.human}`, tr(`사람이 먼저 볼 몫 −${cut}%`, `human-first workload −${cut}%`)]]
       cols.forEach(([v, l], i) => {
         const x = gx + 36 + i * 370, p = count(lt, b(5) + 0.2 + i * 0.3)
-        withA(p, () => { text(v, x, 800, { size: 44, weight: 800, color: i === 1 ? C.ok : C.white }); text(l, x, 836, { size: 17, weight: 500, color: C.t2, maxW: 340 }) })
+        withA(p, () => { text(v, x, 814, { size: 44, weight: 800, color: i < 2 ? C.ok : C.white }); text(l, x, 848, { size: 17, weight: 500, color: C.t2, maxW: 340 }) })
       })
+      text(tr(`질문 하나 → FlyGate · 실제 사례 ${BL.n}건 · 결과 코드를 가림`, `One question → FlyGate · ${BL.n} real cases · outcomes hidden`), gx + 36, 762, { size: 14, weight: 600, fam: MONO, color: C.t3 })
     })
     const chipsA = seg(lt, b(5) + 0.8, b(5) + 1.3)
     if (chipsA > 0) {
@@ -1098,7 +1100,7 @@
         [['Niraparib alone has ', C.white], [`over ${fmtInt(n * 10000)}`, C.magenta], [' reports since launch.', C.white]])
       rich(L1, 960, by + 48, { size: 30, weight: 700, align: 'center', maxW: 1560 })
       rich(L2, 960, by + 92, { size: 30, weight: 700, align: 'center', maxW: 1560 })
-      const b1 = tr('그중 사람이 먼저 봐야 할 중대 사례를 골라냅니다', 'picks the serious cases people must see first')
+      const b1 = tr('그중 사망·입원처럼 중대해서 사람이 먼저 봐야 할 부작용 사례를 골라냅니다', 'picks the serious cases, like deaths, people must see first')
       const wb = measure(b1, 26, 700, SANS), wc = chipW('STEP 2 · FlyVigilance', 17, MONO, 36), gap = 18, aw = 40
       let x0 = 960 - (aw + gap + wc + gap + wb) / 2
       arrow(x0, by + 132, x0 + aw, by + 132, C.cyan, 1, 3, 11); x0 += aw + gap
@@ -1265,8 +1267,8 @@
       const x = 120, y = 364
       X.save(); X.translate(0, (1 - ka) * 24)
       panel(x, y, 1680, 282, { r: 20 })
-      text(tr('검토 대상으로 올라간 중대 사례', 'Serious cases sent to review'), x + 30, y + 56, { size: 30, weight: 800, color: C.white })
-      text(tr(`중대 ${S}건이 사람 우선 검토나 System-2 검토·추가정보 요청까지 간 수`, `How many of ${S} serious cases got human-first review, System-2 review or a follow-up request`), x + 30, y + 92, { size: 17, weight: 500, color: C.t3 })
+      text(tr('놓친 중대 사례', 'Missed serious cases'), x + 30, y + 56, { size: 30, weight: 800, color: C.white })
+      text(tr(`중대 ${S}건 가운데 사람도 System-2도 보지 않는 자동 큐(모니터링·종결)로 간 수 · 막대는 중대 ${S}건이 간 곳`, `Of ${S} serious cases, how many fell into the auto queue (monitor · close) that no human or System-2 sees · bars show where all ${S} went`), x + 30, y + 92, { size: 17, weight: 500, color: C.t3 })
       pChip(x + 1650, y + 26, B.p.unreviewed, seg(lt, 3.3, 3.8))
       const bx = x + 330, bw = 1000
       const g1 = seg(lt, 1.9, 3.1, E.inOut3), g2 = seg(lt, 2.2, 3.3, E.inOut3)
@@ -1277,8 +1279,8 @@
       stackBar(bx, y + 194, bw, 34, [[baseReach, '#8f9cc4', String(baseReach)], [B.base.auto, C.red, String(B.base.auto)]], S, g2)
       withA(seg(lt, 2.6, 3.2), () => {
         const nx = bx + bw + 36
-        rich([[String(fvReach), C.cyan, 800], [` / ${S}`, C.t2, 600]], nx, y + 166, { size: 40, fam: SANS })
-        rich([[String(baseReach), C.text, 800], [` / ${S}`, C.t3, 600]], nx, y + 224, { size: 40, fam: SANS })
+        rich([[String(B.fv.auto), C.cyan, 800], [tr('건 놓침', ' missed'), C.t2, 600]], nx, y + 166, { size: 40, fam: SANS })
+        rich([[String(B.base.auto), C.red, 800], [tr('건 놓침', ' missed'), C.t3, 600]], nx, y + 224, { size: 40, fam: SANS })
       })
       withA(seg(lt, 3.0, 3.5), () => {
         const lg = [[tr('사람 우선', 'Human first'), C.cyan], [tr('System-2 검토', 'System-2 review'), C.blue], [tr('추가정보 요청', 'Follow-up request'), C.violet], [tr('자동 큐 (모니터링·종결)', 'Auto queue (monitor · close)'), C.red]]
@@ -1289,8 +1291,8 @@
     })
     // B, C. 사람에게 가는 양
     const cards = [
-      [tr('사람에게 바로 올라간 비중대 사례', 'Non-serious cases sent straight to humans'), tr(`비중대 ${B.n - S}건 중 사람 우선 검토로 간 수`, `Of ${B.n - S} non-serious cases, how many went human-first`), B.base.over, B.fv.over, B.p.over, 4.4],
-      [tr('사람 우선 검토 업무량', 'Human-first review workload'), tr(`${B.n}건 중 사람이 먼저 봐야 하는 건수`, `Of ${B.n} cases, how many a human must see first`), B.base.human, B.fv.human, B.p.workload, 5.4],
+      [tr('사람에게 괜히 올린 사례', 'Needless escalations'), tr(`중대하지 않은 ${B.n - S}건 가운데 사람 우선 검토로 간 수`, `Of ${B.n - S} non-serious cases, how many went human-first`), B.base.over, B.fv.over, B.p.over, 4.4],
+      [tr('결과 · 사람이 먼저 볼 사례', 'Result · human-first workload'), tr(`${B.n}건 중 사람이 먼저 봐야 하는 건수`, `Of ${B.n} cases, how many a human must see first`), B.base.human, B.fv.human, B.p.workload, 5.4],
     ]
     cards.forEach(([h, s, a, b, p, t0], i) => {
       const k = seg(lt, t0, t0 + 0.5)
@@ -1312,9 +1314,10 @@
       })
     })
     withA(seg(lt, 7.6, 8.2), () => {
-      rich(tr([['사람이 먼저 볼 양은 ', C.t2, 600], [`${fmtInt(B.base.human)} → ${fmtInt(B.fv.human)}건`, C.white, 800], ['으로 줄고, 검토 대상으로 올라간 중대 사례는 ', C.t2, 600],
-        [`${baseReach} → ${fvReach}건`, C.cyan, 800], ['으로 늘었습니다', C.t2, 600]],
-        [['Human-first workload fell ', C.t2, 600], [`${fmtInt(B.base.human)} → ${fmtInt(B.fv.human)}`, C.white, 800], [', while serious cases sent to review rose ', C.t2, 600], [`${baseReach} → ${fvReach}`, C.cyan, 800]]), 120, 950, { size: 22, maxW: 1680 })
+      rich(tr([['두 실수를 모두 줄였습니다 · 놓친 중대 사례 ', C.t2, 600], [`${B.base.auto} → ${B.fv.auto}건`, C.cyan, 800], [', 괜히 올린 사례 ', C.t2, 600],
+        [`${B.base.over} → ${B.fv.over}건`, C.cyan, 800], [' · 사람이 먼저 볼 사례 ', C.t2, 600], [`${fmtInt(B.base.human)} → ${fmtInt(B.fv.human)}건`, C.white, 800]],
+        [['Both mistakes shrank · missed serious ', C.t2, 600], [`${B.base.auto} → ${B.fv.auto}`, C.cyan, 800], [', needless escalations ', C.t2, 600],
+        [`${B.base.over} → ${B.fv.over}`, C.cyan, 800], [' · human-first workload ', C.t2, 600], [`${fmtInt(B.base.human)} → ${fmtInt(B.fv.human)}`, C.white, 800]]), 120, 950, { size: 22, maxW: 1680 })
     })
   }
   { const t = S0.measure; cue(t, 'whoosh', { d: 0.9 }); cue(t + 0.3, 'pad', { d: 7, note: 3 }); cue(t + 1.5, 'hit', { g: 0.6 }); cue(t + 1.9, 'sweep', { d: 1.3 }); cue(t + 3.3, 'lock')
