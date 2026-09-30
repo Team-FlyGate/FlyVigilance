@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import HeroDocking, { DRUG_LABEL, useHeroDrug, type StepId } from '../components/HeroDocking'
 import DockPlayground from '../components/DockPlayground'
 import Step2Handoff from '../components/Step2Handoff'
@@ -64,13 +64,14 @@ export default function DiscoveryStep({ step }: { step: StepId }) {
   const kind = STEP_KIND[step]
   const env = kind ? liveFor(kind, store) : undefined
   const live = env && env.state === 'done' && env.result ? env : undefined
-  const stamp = live ? `${live.req_id ?? ''}|${live.elapsed_s ?? ''}|${live.source ?? ''}` : ''
-  const [view, setView] = useState<'hero' | 'live'>('hero')
-  const seen = useRef('')
-  useEffect(() => {
-    if (!live) { setView('hero'); return }
-    if (stamp !== seen.current) { seen.current = stamp; setView('live') }
-  }, [live, stamp])
+  // 이번 실행을 가리키는 값. 고른 표적 · 리간드를 함께 넣어, 캐시에서 나온 같은 응답이라도 선택이 바뀌면 다른 실행으로 봅니다
+  const stamp = live ? [store.customTarget?.id ?? store.target, store.customLigand?.smiles ?? store.ligand,
+    live.req_id ?? '', live.source ?? '', live.elapsed_s ?? ''].join('|') : ''
+  // 라이브 결과가 있으면 그 결과를 보여 주는 것이 기본입니다. 사용자가 '대표 장면' 을 고른 그 응답에 한해서만 대표 장면을 둡니다.
+  // 응답 객체로 비교하므로 다시 실행하면(캐시에서 같은 값이 와도 새 응답 객체입니다) 이번 실행 결과로 돌아옵니다.
+  // (예전에는 효과와 ref 로 전환했는데, 값이 같으면 전환이 일어나지 않았습니다)
+  const [heroFor, setHeroFor] = useState<unknown>(null)
+  const view: 'hero' | 'live' = live && heroFor !== live ? 'live' : 'hero'
   const combo = (k: string) => { const [l, t] = k.split('@'); return `${title(l)} @ ${({ parp1: 'PARP1', cox2: 'COX-2', xa: 'Factor Xa' } as Record<string, string>)[t] ?? t}` }
 
   return (
@@ -88,8 +89,8 @@ export default function DiscoveryStep({ step }: { step: StepId }) {
             {live && (
               <div className="row" style={{ gap: 8, marginBottom: 10, alignItems: 'center' }}>
                 <span className="mono dim" style={{ fontSize: 10.5, letterSpacing: 1.2 }}>{t('장면', 'Scene')}</span>
-                <button className={`chip ${view === 'live' ? 'nv' : ''}`} style={{ cursor: 'pointer' }} onClick={() => setView('live')}>{t('이번 실행 결과', 'This run')}</button>
-                <button className={`chip ${view === 'hero' ? 'jev' : ''}`} style={{ cursor: 'pointer' }} onClick={() => setView('hero')}>{t('대표 장면', 'Reference scene')} · {ligandName(drug, DRUG_LABEL[drug])} × PARP1</button>
+                <button className={`chip ${view === 'live' ? 'nv' : ''}`} style={{ cursor: 'pointer' }} onClick={() => setHeroFor(null)}>{t('이번 실행 결과', 'This run')}</button>
+                <button className={`chip ${view === 'hero' ? 'jev' : ''}`} style={{ cursor: 'pointer' }} onClick={() => setHeroFor(live)}>{t('대표 장면', 'Reference scene')} · {ligandName(drug, DRUG_LABEL[drug])} × PARP1</button>
               </div>
             )}
             {/* 두 장면을 동시에 띄우지 않고 바꿔 끼웁니다(WebGL 컨텍스트 수를 늘리지 않게) */}
