@@ -632,9 +632,9 @@
     if (arr > 0) {
       const m = drawMol(OF3L, PIVOT, 700, 640, 9.4, yaw, pitch, { reveal: 1, off: [(1 - arr) * 34, (1 - arr) * 22, (1 - arr) * 8], tint: '#ffb547', rAtom: 0.42, bw: 0.2, glow: 12, a: arr })
       const shock = inv(3.6, 4.5, L)
-      if (shock > 0 && shock < 1) ring(m.x, m.y, 12 + E.out3(shock) * 120, C.amber, (1 - shock) * 0.9, 2)
+      if (m && shock > 0 && shock < 1) ring(m.x, m.y, 12 + E.out3(shock) * 120, C.amber, (1 - shock) * 0.9, 2)
       const lk = seg(L, 3.8, 4.3, E.expoOut)
-      if (lk > 0) {
+      if (m && lk > 0) {
         brackets(m.x - 56, m.y - 56, 112, 112, 14, C.amber, 0.85 * lk, 1.6)
         const lx = 962, ly = clamp(m.y - 150, 440, 700)
         line(m.x + 40, m.y - 40, lerp(m.x + 40, lx, lk), lerp(m.y - 40, ly, lk), '#ffffff', 0.6 * lk, 1.2)
@@ -2661,7 +2661,8 @@
     const dt = (now - last) / 1000; last = now
     if (!manual) {
       if (playing) T = Math.min(DUR, T + dt)
-      render(T)
+      // 한 프레임에서 오류가 나도 재생 반복(requestAnimationFrame)이 끊기지 않게 합니다
+      try { render(T) } catch (e) { console.error(e) }
       clock.textContent = `${mmss(T)} / ${mmss(DUR)}`; scrub.value = T
       if (T >= DUR && playing) { playing = false; pp.textContent = '▶' }
     }

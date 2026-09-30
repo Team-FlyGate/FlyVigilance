@@ -8,11 +8,19 @@
 <p align="center">NVIDIA Korea Agentic AI Hackathon 2026 · Team FlyGate</p>
 <p align="center">
   <a href="https://flygate.kr"><strong>라이브 대시보드 ↗</strong></a> &nbsp; · &nbsp;
-  <a href="https://flygate.kr/showreel/FlyGate_showreel_v4.3.0.html">쇼릴 ↗</a> &nbsp; · &nbsp;
+  <a href="https://flygate.kr/showreel/FlyGate_showreel_v4.3.0.html">5분 소개 영상 ↗</a> &nbsp; · &nbsp;
   <a href="docs/EVALUATION.md">평가 보고서</a> &nbsp; · &nbsp;
   <a href="https://flygate.kr/#/glossary">용어 풀이 ↗</a> &nbsp; · &nbsp;
   <a href="#06--meet-the-team">Team</a> &nbsp; · &nbsp;
   <a href="#07--build--run">Quickstart</a>
+</p>
+
+<p align="center">
+  <a href="https://flygate.kr/showreel/FlyGate_showreel_v4.3.0.mp4"><img src="docs/images/flygate-showreel-preview_v1.0.0.webp" width="100%" alt="FlyGate 5분 소개 영상 미리보기 — 누르면 내레이션 영상(5분 53초)이 재생됩니다"></a>
+</p>
+<p align="center">
+  <a href="https://flygate.kr/showreel/FlyGate_showreel_v4.3.0.mp4"><strong>▶ 5분 소개 영상 보기 (내레이션)</strong></a> &nbsp; · &nbsp;
+  <a href="https://github.com/Team-FlyGate/Project-FlyGate/releases/download/v4.3/FlyGate_showreel_v4.3.0.mp4">1080p MP4 내려받기</a>
 </p>
 
 ---
@@ -26,7 +34,7 @@
 | | |
 | --- | --- |
 | 라이브 대시보드 | https://flygate.kr |
-| 쇼릴 v4.3 (전체판, 4분 10초 · FlyGate Agent CLI를 실제 터미널 화면으로 강조) | [웹](https://flygate.kr/showreel/FlyGate_showreel_v4.3.0.html) · [MP4](https://github.com/Team-FlyGate/Project-FlyGate/releases/download/v4.3/FlyGate_showreel_v4.3.0.mp4) · [내레이션 대본](docs/SHOWREEL_SCRIPT_v4.3.0.md) |
+| 5분 소개 영상 v4.3 (내레이션, 5분 53초 · FlyGate Agent CLI를 실제 터미널 화면으로 강조) | [영상](https://flygate.kr/showreel/FlyGate_showreel_v4.3.0.mp4) · [웹(자막 · 용어 풀이)](https://flygate.kr/showreel/FlyGate_showreel_v4.3.0.html) · [1080p MP4](https://github.com/Team-FlyGate/Project-FlyGate/releases/download/v4.3/FlyGate_showreel_v4.3.0.mp4) · [내레이션 대본](docs/SHOWREEL_SCRIPT_v4.3.0.md) |
 | 쇼릴 v3 (이전 판, 2분 9초) | [웹](https://flygate.kr/showreel/FlyGate_showreel_v3.0.0.html) · [MP4](https://github.com/Team-FlyGate/Project-FlyGate/releases/download/v3.0/FlyGate_showreel_v3.0.0.mp4) |
 | 티저 (15초) | [웹](https://flygate.kr/showreel/FlyGate_teaser_15s_v1.1.0.html) · [MP4 가로 · 세로](https://github.com/Team-FlyGate/Project-FlyGate/releases/tag/teaser-v1.1) |
 | 에이전트 구성 (NemoClaw · OpenShell · OpenClaw: NVIDIA의 에이전트 배포 구성 · 정책 샌드박스 · 에이전트 실행 틀) | [docs/AGENT.md](docs/AGENT.md) · [agent/](agent/) |
