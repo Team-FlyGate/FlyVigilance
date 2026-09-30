@@ -15,6 +15,15 @@
   <a href="#07--build--run">Quickstart</a>
 </p>
 
+<p align="center"><strong>▶ 1분 소개 영상</strong> (1분 10초 · 소리를 켜고 보세요)</p>
+
+https://github.com/user-attachments/assets/78e8f4c9-f1d6-4576-8374-70f52cc3271e
+
+<p align="center">
+  <a href="https://github.com/Team-FlyGate/Project-FlyGate/releases/download/v4.3/FlyGate_intro_1min_v1.0.0.mp4">1080p MP4 내려받기</a> &nbsp; · &nbsp;
+  <a href="https://flygate.kr/showreel/FlyGate_intro_1min_vertical_v1.0.0.html">세로형(쇼츠 · 릴스) ↗</a>
+</p>
+
 <p align="center">
   <a href="https://flygate.kr/showreel/FlyGate_showreel_v4.3.0.mp4"><img src="docs/images/flygate-showreel-preview_v1.1.0.webp" width="100%" alt="FlyGate 5분 소개 영상 미리보기 — 누르면 내레이션 영상(5분 56초)이 재생됩니다"></a>
 </p>
