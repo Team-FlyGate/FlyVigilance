@@ -6,6 +6,7 @@
   "functions": {
     "api/index.py": {
       "includeFiles": "api/{_data,_fv}/**",
+      "excludeFiles": "{web,scripts,docs,tests}/**",
       "maxDuration": 120
     }
   },
