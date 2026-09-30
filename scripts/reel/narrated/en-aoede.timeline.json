@@ -1,8 +1,8 @@
 {
  "version": "4.3.0",
  "lang": "en",
- "built": "2026-09-30 00:10",
- "dur": 282.7,
+ "built": "2026-09-30 11:55",
+ "dur": 282.4,
  "rate": 6.3,
  "captures": {
   "cli_install": "web/public/cli/captures/install.png",
@@ -124,7 +124,7 @@
   {
    "id": "solution",
    "t0": 25.9,
-   "t1": 57.2,
+   "t1": 55.4,
    "name": "Agent",
    "label": "The FlyGate agent · two gates",
    "step": 0,
@@ -137,8 +137,8 @@
      0.0
     ],
     [
-     31.3,
-     31.3
+     29.5,
+     29.5
     ]
    ],
    "beats": [
@@ -179,14 +179,14 @@
     },
     {
      "a": 21.6,
-     "b": 28.5,
-     "vis": "결과 줄: 검증 건수 · 검토 대상으로 올린 중대 사례 · 사람이 먼저 볼 일 감소 · flygate CLI · NemoClaw · OpenShell",
-     "vo": "In 440 blinded cases, 247 of 250 serious cases went to review; workload fell 54%.",
-     "vo_ko": "440건 검증에서 중대 사례 250건 중 247건을 검토 대상으로 올렸고, 사람이 먼저 볼 일은 54% 줄었습니다."
+     "b": 26.7,
+     "vis": "결과 줄(질문 하나 → FlyGate): 놓친 중대 사례 · 사람에게 괜히 올린 사례 · 사람이 먼저 볼 몫 감소 · flygate CLI · NemoClaw · OpenShell",
+     "vo": "Versus one question: missed serious cases 16 → 3, needless escalations 68 → 3.",
+     "vo_ko": "질문 하나로 거를 때와 비교해, 놓친 중대 사례는 16건에서 3건으로, 사람에게 괜히 올린 사례는 68건에서 3건으로 줄었습니다."
     },
     {
-     "a": 28.5,
-     "b": 30.8,
+     "a": 26.7,
+     "b": 29.0,
      "vis": "GATE 1 둘레에 괄호가 잡히고 '다음 · STEP 1 FlyDiscovery →'",
      "vo": "First, STEP 1: pre-market candidates.",
      "vo_ko": "먼저 STEP 1, 시판 전 후보부터 보겠습니다."
@@ -195,8 +195,8 @@
   },
   {
    "id": "target",
-   "t0": 57.2,
-   "t1": 77.8,
+   "t0": 55.4,
+   "t1": 76.0,
    "name": "Target",
    "label": "STEP 1 · Demo target PARP1 · niraparib",
    "step": 1,
@@ -253,8 +253,8 @@
   },
   {
    "id": "disc",
-   "t0": 77.8,
-   "t1": 96.6,
+   "t0": 76.0,
+   "t1": 94.8,
    "name": "STEP 1",
    "label": "STEP 1 · FlyDiscovery · pre-market candidates",
    "step": 1,
@@ -335,8 +335,8 @@
   },
   {
    "id": "panel",
-   "t0": 96.6,
-   "t1": 104.9,
+   "t0": 94.8,
+   "t1": 103.1,
    "name": "Panel",
    "label": "STEP 1 · Drug panel · redocking",
    "step": 1,
@@ -384,8 +384,8 @@
   },
   {
    "id": "bridge",
-   "t0": 104.9,
-   "t1": 113.3,
+   "t0": 103.1,
+   "t1": 112.4,
    "name": "Bridge",
    "label": "Demo · niraparib, post-market",
    "step": 1.5,
@@ -407,11 +407,11 @@
     ],
     [
      7.8,
-     7.9
+     8.8
     ],
     [
      8.0,
-     8.4
+     9.3
     ]
    ],
    "beats": [
@@ -424,17 +424,17 @@
     },
     {
      "a": 4.5,
-     "b": 7.9,
+     "b": 8.8,
      "vis": "FAERS 니라파립 의심 사례 21,987건 · 혈소판감소증 1,061건 · SDR 칩 · '누가, 얼마나 빨리' 질문",
-     "vo": "STEP 2, FlyVigilance, picks the serious cases people must see first.",
-     "vo_ko": "그중 사람이 먼저 봐야 할 중대 사례를 골라내는 것이 STEP 2 플라이비질런스입니다."
+     "vo": "STEP 2, FlyVigilance, picks the serious cases, like deaths, people must see first.",
+     "vo_ko": "그중 사망·입원처럼 중대해서 사람이 먼저 봐야 할 부작용 사례를 골라내는 것이 STEP 2 플라이비질런스입니다."
     }
    ]
   },
   {
    "id": "warehouse",
-   "t0": 113.3,
-   "t1": 121.7,
+   "t0": 112.4,
+   "t1": 120.8,
    "name": "Warehouse",
    "label": "STEP 2 · FAERS warehouse",
    "step": 2,
@@ -482,8 +482,8 @@
   },
   {
    "id": "flow",
-   "t0": 121.7,
-   "t1": 133.0,
+   "t0": 120.8,
+   "t1": 132.1,
    "name": "Workflow",
    "label": "STEP 2 · FlyVigilance workflow",
    "step": 2,
@@ -542,8 +542,8 @@
   },
   {
    "id": "triage",
-   "t0": 133.0,
-   "t1": 144.9,
+   "t0": 132.1,
+   "t1": 144.0,
    "name": "Live triage",
    "label": "STEP 2 · One real case",
    "step": 2,
@@ -602,8 +602,8 @@
   },
   {
    "id": "korean",
-   "t0": 144.9,
-   "t1": 157.8,
+   "t0": 144.0,
+   "t1": 156.9,
    "name": "Korean PV",
    "label": "Korean PV mode · Korean causality",
    "step": 2,
@@ -662,8 +662,8 @@
   },
   {
    "id": "signals",
-   "t0": 157.8,
-   "t1": 169.6,
+   "t0": 156.9,
+   "t1": 168.7,
    "name": "PV class",
    "label": "SDR · PV classes · safety net",
    "step": 2,
@@ -722,8 +722,8 @@
   },
   {
    "id": "timemachine",
-   "t0": 169.6,
-   "t1": 178.7,
+   "t0": 168.7,
+   "t1": 177.8,
    "name": "Time machine",
    "label": "Signal time machine · quarterly recompute",
    "step": 2,
@@ -771,8 +771,8 @@
   },
   {
    "id": "measure",
-   "t0": 178.7,
-   "t1": 192.0,
+   "t0": 177.8,
+   "t1": 191.7,
    "name": "Measured",
    "label": "Outcome-blinded measurement",
    "step": 2,
@@ -794,15 +794,15 @@
     ],
     [
      12.4,
-     10.5
+     9.6
     ],
     [
      14.8,
-     12.8
+     13.4
     ],
     [
      15.0,
-     13.3
+     13.9
     ]
    ],
    "beats": [
@@ -815,24 +815,24 @@
     },
     {
      "a": 4.8,
-     "b": 10.5,
-     "vis": "검토 대상으로 올라간 중대 사례 247/250 대 234 · 사람 우선 302 → 138건 · 비중대 과승격 68 → 3",
-     "vo": "FlyGate sent 247 serious cases to review; human-first cases fell from 302 to 138.",
-     "vo_ko": "플라이게이트는 중대 사례 247건을 검토 대상으로 올렸고, 사람이 먼저 볼 사례는 302건에서 138건으로 줄었습니다."
+     "b": 9.6,
+     "vis": "놓친 중대 사례(자동 큐로 간 중대 사례) 16 → 3 · 사람에게 괜히 올린 사례 68 → 3 · 사람이 먼저 볼 사례 302 → 138건",
+     "vo": "One question missed 16 serious cases and escalated 68 needlessly; FlyGate: 3 and 3.",
+     "vo_ko": "질문 하나는 중대 사례 16건을 놓치고 68건을 괜히 사람에게 올렸지만, 플라이게이트는 둘 다 3건이었습니다."
     },
     {
-     "a": 10.5,
-     "b": 12.8,
+     "a": 9.6,
+     "b": 13.4,
      "vis": "McNemar 정확 검정 p 값 칩 세 개",
-     "vo": "All three differences are statistically significant.",
-     "vo_ko": "세 지표 모두 통계적으로 유의한 차이입니다."
+     "vo": "Human-first cases fell from 302 to 138; all three gaps are significant.",
+     "vo_ko": "사람이 먼저 볼 사례도 302건에서 138건으로 줄었고, 세 차이 모두 통계적으로 유의합니다."
     }
    ]
   },
   {
    "id": "validated",
-   "t0": 192.0,
-   "t1": 202.0,
+   "t0": 191.7,
+   "t1": 201.7,
    "name": "Validated",
    "label": "Public reference-set validation",
    "step": 2,
@@ -880,8 +880,8 @@
   },
   {
    "id": "nvskills",
-   "t0": 202.0,
-   "t1": 213.5,
+   "t0": 201.7,
+   "t1": 213.2,
    "name": "NVIDIA Skills",
    "label": "Official NVIDIA Agent Skills, applied",
    "step": 3,
@@ -940,8 +940,8 @@
   },
   {
    "id": "reviewed",
-   "t0": 213.5,
-   "t1": 221.0,
+   "t0": 213.2,
+   "t1": 220.7,
    "name": "Reviewed",
    "label": "Licensed pharmacist review, applied",
    "step": 2,
@@ -989,8 +989,8 @@
   },
   {
    "id": "arch",
-   "t0": 221.0,
-   "t1": 228.3,
+   "t0": 220.7,
+   "t1": 228.0,
    "name": "Architecture",
    "label": "Connectome-routed architecture",
    "step": 3,
@@ -1038,8 +1038,8 @@
   },
   {
    "id": "agent",
-   "t0": 228.3,
-   "t1": 235.5,
+   "t0": 228.0,
+   "t1": 235.2,
    "name": "Agent",
    "label": "NemoClaw · OpenShell · OpenClaw",
    "step": 3,
@@ -1087,8 +1087,8 @@
   },
   {
    "id": "cli_open",
-   "t0": 235.5,
-   "t1": 239.5,
+   "t0": 235.2,
+   "t1": 239.2,
    "name": "CLI",
    "label": "FlyGate Agent CLI",
    "step": 3,
@@ -1117,8 +1117,8 @@
   },
   {
    "id": "cli_install",
-   "t0": 239.5,
-   "t1": 242.9,
+   "t0": 239.2,
+   "t1": 242.6,
    "name": "INSTALL",
    "label": "CLI · INSTALL · one-line install",
    "step": 3,
@@ -1147,8 +1147,8 @@
   },
   {
    "id": "cli_triage",
-   "t0": 242.9,
-   "t1": 246.7,
+   "t0": 242.6,
+   "t1": 246.4,
    "name": "TRIAGE",
    "label": "CLI · TRIAGE · case triage",
    "step": 3,
@@ -1177,8 +1177,8 @@
   },
   {
    "id": "cli_grade",
-   "t0": 246.7,
-   "t1": 250.7,
+   "t0": 246.4,
+   "t1": 250.4,
    "name": "GRADE",
    "label": "CLI · GRADE · label · signal · literature",
    "step": 3,
@@ -1207,8 +1207,8 @@
   },
   {
    "id": "cli_critic",
-   "t0": 250.7,
-   "t1": 254.1,
+   "t0": 250.4,
+   "t1": 253.8,
    "name": "CRITIC",
    "label": "CLI · CRITIC · unsupported, rejected",
    "step": 3,
@@ -1237,8 +1237,8 @@
   },
   {
    "id": "cli_dock",
-   "t0": 254.1,
-   "t1": 257.7,
+   "t0": 253.8,
+   "t1": 257.4,
    "name": "DOCK",
    "label": "CLI · DOCK · DiffDock NIM, live",
    "step": 3,
@@ -1267,8 +1267,8 @@
   },
   {
    "id": "cli_kr",
-   "t0": 257.7,
-   "t1": 262.8,
+   "t0": 257.4,
+   "t1": 262.5,
    "name": "KR",
    "label": "CLI · KR · Korea's 15-day rule",
    "step": 3,
@@ -1297,8 +1297,8 @@
   },
   {
    "id": "cli_watch",
-   "t0": 262.8,
-   "t1": 267.6,
+   "t0": 262.5,
+   "t1": 267.3,
    "name": "WATCH",
    "label": "CLI · WATCH · always on · 0 submitted",
    "step": 3,
@@ -1327,8 +1327,8 @@
   },
   {
    "id": "cli_same",
-   "t0": 267.6,
-   "t1": 273.5,
+   "t0": 267.3,
+   "t1": 273.2,
    "name": "Same command",
    "label": "CLI · same commands for humans and agents",
    "step": 3,
@@ -1364,8 +1364,8 @@
   },
   {
    "id": "cli_line",
-   "t0": 273.5,
-   "t1": 277.6,
+   "t0": 273.2,
+   "t1": 277.3,
    "name": "One line",
    "label": "CLI · one install line",
    "step": 3,
@@ -1394,8 +1394,8 @@
   },
   {
    "id": "close",
-   "t0": 277.6,
-   "t1": 282.7,
+   "t0": 277.3,
+   "t1": 282.4,
    "name": "Close",
    "label": "From molecule to patient · evidence first",
    "step": 3,

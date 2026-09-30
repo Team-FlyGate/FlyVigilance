@@ -456,8 +456,9 @@ def main():
     assert lang in ("ko", "en")
     tag = f"{'-en' if lang == 'en' else ''}-narrated-{voice.lower()}"
     out_html = B.PUB / f"showreel/FlyGate_showreel_v{B.VERSION}{tag}.html"
-    if (lang, voice) == ("ko", "Puck"):
-        out_html = B.PUB / f"showreel/FlyGate_showreel_v{B.VERSION}.html"   # 사용자 지정: 한국어 Puck 판이 정식 파일입니다
+    if voice == "Puck":
+        # 사용자 지정: Puck 판이 정식 파일입니다(한국어 v4.3.0.html · 영어 v4.3.0-en.html, 대시보드 버튼이 가리키는 파일)
+        out_html = B.PUB / f"showreel/FlyGate_showreel_v{B.VERSION}{'-en' if lang == 'en' else ''}.html"
     NARR_DIR.mkdir(parents=True, exist_ok=True)
 
     # 1) 대본(박자별 문장)

@@ -8,11 +8,19 @@
 <p align="center">NVIDIA Korea Agentic AI Hackathon 2026 · Team FlyGate</p>
 <p align="center">
   <a href="https://flygate.kr"><strong>Live dashboard ↗</strong></a> &nbsp; · &nbsp;
-  <a href="https://flygate.kr/showreel/FlyGate_showreel_v4.3.0-en.html">Showreel ↗</a> &nbsp; · &nbsp;
+  <a href="https://flygate.kr/showreel/FlyGate_showreel_v4.3.0-en.html">5-minute intro video ↗</a> &nbsp; · &nbsp;
   <a href="docs/EVALUATION.md">Evaluation report (Korean)</a> &nbsp; · &nbsp;
   <a href="https://flygate.kr/#/glossary">Glossary ↗</a> &nbsp; · &nbsp;
   <a href="#06--meet-the-team">Team</a> &nbsp; · &nbsp;
   <a href="#07--build--run">Quickstart</a>
+</p>
+
+<p align="center">
+  <a href="https://flygate.kr/showreel/FlyGate_showreel_v4.3.0-en.mp4"><img src="docs/images/flygate-showreel-preview-en_v1.0.0.webp" width="100%" alt="FlyGate 5-minute intro video preview — click to play the narrated video (4 min 47 s)"></a>
+</p>
+<p align="center">
+  <a href="https://flygate.kr/showreel/FlyGate_showreel_v4.3.0-en.mp4"><strong>▶ Watch the 5-minute intro video (narrated)</strong></a> &nbsp; · &nbsp;
+  <a href="https://github.com/Team-FlyGate/Project-FlyGate/releases/download/v4.3/FlyGate_showreel_v4.3.0-en.mp4">Download 1080p MP4</a>
 </p>
 
 ---
@@ -26,7 +34,7 @@ The demo uses niraparib, an already-approved inhibitor of PARP1 (a protein that 
 | | |
 | --- | --- |
 | Live dashboard | https://flygate.kr |
-| Showreel v4.3 (full cut, 4 min 10 s · features the FlyGate Agent CLI on a real terminal) | [Web (English)](https://flygate.kr/showreel/FlyGate_showreel_v4.3.0-en.html) · [Web (Korean)](https://flygate.kr/showreel/FlyGate_showreel_v4.3.0.html) · [MP4 (Korean)](https://github.com/Team-FlyGate/Project-FlyGate/releases/download/v4.3/FlyGate_showreel_v4.3.0.mp4) · [Narration script (Korean)](docs/SHOWREEL_SCRIPT_v4.3.0.md) |
+| 5-minute intro video v4.3 (narrated, English 4 min 47 s · Korean 5 min 56 s · features the FlyGate Agent CLI on a real terminal) | [Video (English)](https://flygate.kr/showreel/FlyGate_showreel_v4.3.0-en.mp4) · [Web (English, captions · glossary)](https://flygate.kr/showreel/FlyGate_showreel_v4.3.0-en.html) · [Web (Korean)](https://flygate.kr/showreel/FlyGate_showreel_v4.3.0.html) · [1080p MP4 (English)](https://github.com/Team-FlyGate/Project-FlyGate/releases/download/v4.3/FlyGate_showreel_v4.3.0-en.mp4) · [1080p MP4 (Korean)](https://github.com/Team-FlyGate/Project-FlyGate/releases/download/v4.3/FlyGate_showreel_v4.3.0.mp4) · [Narration script (English)](docs/SHOWREEL_SCRIPT_v4.3.0-en.md) |
 | Showreel v3 (earlier cut, 2 min 9 s, Korean) | [Web](https://flygate.kr/showreel/FlyGate_showreel_v3.0.0.html) · [MP4](https://github.com/Team-FlyGate/Project-FlyGate/releases/download/v3.0/FlyGate_showreel_v3.0.0.mp4) |
 | Teaser (15 s) | [Web](https://flygate.kr/showreel/FlyGate_teaser_15s_v1.1.0.html) · [MP4 landscape · portrait](https://github.com/Team-FlyGate/Project-FlyGate/releases/tag/teaser-v1.1) |
 | Agent setup (NemoClaw · OpenShell · OpenClaw: NVIDIA's agent deployment stack · policy sandbox · agent harness) | [docs/AGENT.md](docs/AGENT.md) · [agent/](agent/) |

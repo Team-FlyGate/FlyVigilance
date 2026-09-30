@@ -120,8 +120,12 @@ def transcribe_many(pcms: list[bytes], model: str = MULTI_STT_MODEL, retries: in
         except urllib.error.HTTPError as e:
             if e.code not in (429, 500, 503) or i + 1 == retries:
                 raise SystemExit(f"받아쓰기 실패 {e.code}: {e.read().decode(errors='ignore')[:300]}")
-        except (KeyError, ValueError, TimeoutError, urllib.error.URLError):
-            pass
+            why = f"HTTP {e.code}"
+        except (KeyError, ValueError, TimeoutError, urllib.error.URLError) as e:
+            why = f"{type(e).__name__} {str(e)[:80]}"
+        else:
+            why = f"조각 번호가 맞지 않음({sorted(out)[:12]} / {len(pcms)}개)"
+        print(f"  · 받아쓰기 다시 부름 {i + 1}/{retries}: {why}", flush=True)
         time.sleep(4 * (i + 1))
     raise SystemExit("받아쓰기 재시도 초과")
 
