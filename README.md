@@ -15,7 +15,7 @@
   <a href="#07--build--run">Quickstart</a>
 </p>
 
-<p align="center"><strong>▶ 1분 소개 영상</strong> (1분 10초 · 소리를 켜고 보세요)</p>
+<p align="center"><strong>▶ 1분 소개 영상</strong> (약 1분 · 소리를 켜고 보세요)</p>
 
 https://github.com/user-attachments/assets/78e8f4c9-f1d6-4576-8374-70f52cc3271e
 
