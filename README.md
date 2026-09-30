@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-  <a href="https://flygate.kr/showreel/FlyGate_showreel_v4.3.0.mp4"><img src="docs/images/flygate-showreel-preview_v1.0.0.webp" width="100%" alt="FlyGate 5분 소개 영상 미리보기 — 누르면 내레이션 영상(5분 56초)이 재생됩니다"></a>
+  <a href="https://flygate.kr/showreel/FlyGate_showreel_v4.3.0.mp4"><img src="docs/images/flygate-showreel-preview_v1.1.0.webp" width="100%" alt="FlyGate 5분 소개 영상 미리보기 — 누르면 내레이션 영상(5분 56초)이 재생됩니다"></a>
 </p>
 <p align="center">
   <a href="https://flygate.kr/showreel/FlyGate_showreel_v4.3.0.mp4"><strong>▶ 5분 소개 영상 보기 (내레이션)</strong></a> &nbsp; · &nbsp;
