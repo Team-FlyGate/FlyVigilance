@@ -5,6 +5,7 @@
 page_url 기본값은 개발 서버의 v3 쇼릴입니다. 쇼릴은 파일 하나로 완결되므로 file:// 주소를 그대로 줄 수 있습니다.
 """
 import asyncio
+import os
 import subprocess
 import sys
 
@@ -27,10 +28,13 @@ async def main():
         await pg.add_style_tag(content="#hud{display:none!important}")
         dur = await pg.evaluate("window.__reel.DUR")
         n = int(dur * FPS)
+        # 나눠 렌더링: REEL_PART=k/W 이면 k번째 구간만 뽑습니다(여러 개를 동시에 돌린 뒤 ffmpeg concat 으로 잇습니다)
+        k, w = map(int, os.environ.get("REEL_PART", "0/1").split("/"))
+        f0, f1 = n * k // w, (n * (k + 1) // w if k + 1 < w else n + 1)
         ff = subprocess.Popen(["ffmpeg", "-y", "-loglevel", "error", "-f", "image2pipe", "-framerate", str(FPS), "-i", "-",
                                "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "18", "-preset", "medium", "-movflags", "+faststart", OUT],
                               stdin=subprocess.PIPE)
-        for i in range(n + 1):
+        for i in range(f0, f1):
             await pg.evaluate(f"window.__reel.renderAt({i / FPS})")
             buf = await pg.screenshot(type="jpeg", quality=92)
             ff.stdin.write(buf)

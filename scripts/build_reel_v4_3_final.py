@@ -72,12 +72,14 @@ ceil1 = v41.ceil1
 SLOGAN_PARTS, SIGN_OFF, slogan_read = v42.SLOGAN_PARTS, v42.SIGN_OFF, v42.slogan_read
 # 장면별 용어 풀이. 화면 오른쪽 아래 고정 자리에 뜨고, 대본의 '장면별 용어 풀이' 표도 이 값으로 만듭니다
 GLOSS = {
-    "problem": "약물감시(PV) = 시판된 약의 부작용 보고를 모아 새 위험 신호를 찾는 일",
+    "problem": "결합 예측 = 약물이 표적 단백질에 붙는 세기를 계산으로 추정 · FDA FAERS = 미국 FDA 부작용 보고 데이터베이스",
+    "solution": "게이팅 = 빠르게 걸러 필요한 것만 올리는 방식 · 비자기회귀 판단 모델 = 정해진 질문의 확률을 한 번에 답하는 모델",
+    "target": "PARP 억제제 = PARP1을 막아 DNA를 고치지 못한 암세포를 죽이는 항암제 · 결정 구조 = 실험으로 원자 위치를 푼 단백질 구조",
     "disc": "NIM = NVIDIA가 API로 제공하는 AI 모델 · RMSD = 예측 자리와 실제 결합 자리의 거리(2 Å 이하면 재현)",
     "panel": "재도킹 = 이미 아는 결합 자리를 모델이 다시 찾아내는지 보는 검증 · Å(옹스트롬) = 100억분의 1 m",
     "bridge": "시판 전 = 허가 전 후보 물질 · 시판 후 = 환자가 실제로 복용하는 약",
     "warehouse": "FAERS = 미국 FDA 부작용 자발 보고 데이터베이스 · SDR = 다른 약보다 유독 많이 보고되는 약물–부작용 쌍",
-    "flow": "System-1 = 빠른 규칙 · 판단 모델 · System-2 = Nemotron의 숙고 · 크리틱 = 근거를 넘는 주장을 되돌리는 검사",
+    "flow": "System-1 = 빠른 규칙 · 판단 모델 · System-2 = Nemotron의 숙고 · 크리틱 = 근거 없는 주장을 되돌리는 검사",
     "triage": "트리아지 = 사례를 급한 순서로 나누는 분류 · 신속보고 = 중대하고 예상하지 못한 사례를 15일 안에 당국에 보고",
     "korean": "WHO-UMC = 세계보건기구 인과성 평가 기준 · 15일 규칙 = 중대하고 예상하지 못한 이상사례의 보고 기한",
     "signals": "SDR = 통계적으로 튀는 약물–부작용 쌍 · PRR = 다른 약 대비 보고 비율 · DME = 유럽 EMA가 지정한 특별 주의 이상사례",
@@ -100,10 +102,10 @@ GLOSS = {
 }
 # 강조 틀을 쓰는 순간(템플릿 buildFocus 의 KEEP, CLI_EMPH 와 같은 목록). 대본의 '강조 사용 위치' 표를 만듭니다
 EMPHASIS = [
-    ("disc", "재도킹 3/3 기준 통과(RMSD 2 Å 이하)"), ("disc", "크리틱이 근거를 넘는 주장을 되돌림"),
+    ("disc", "재도킹 3/3 기준 통과(RMSD 2 Å 이하)"), ("disc", "크리틱이 근거 없는 주장을 되돌림"),
     ("triage", "결정 · 사람 우선 신속보고 후보"), ("triage", "크리틱 1단이 주장 하나를 되돌림"),
     ("korean", "국내 식약처 15일 보고 규칙"), ("timemachine", "FDA 조치보다 SDR이 먼저 선 기간(+592일)"),
-    ("measure", "검토에 닿은 중대 사례 247/250"), ("measure", "사람 우선 검토 업무량 302 → 138"),
+    ("measure", "검토 대상으로 올린 중대 사례 247/250"), ("measure", "사람 우선 검토 업무량 302 → 138"),
     ("validated", "공개 참조 세트 AUC"), ("validated", "2013년 라벨 변경 21/57을 미리 포착"),
     ("nvskills", "평가 문장 정확도 향상(Nemotron Content Safety custom_policy)"),
     ("cli_grade", "grade 출력 확대 줄"), ("cli_critic", "critic 의 safe / flagged 줄"), ("cli_dock", "DiffDock status · run 줄"),
@@ -439,7 +441,7 @@ NEW = [("cli_open", "CLI", "FlyGate Agent CLI"),
        ("cli_install", "INSTALL", "CLI · INSTALL · 한 줄 설치"),
        ("cli_triage", "TRIAGE", "CLI · TRIAGE · 사례 분류"),
        ("cli_grade", "GRADE", "CLI · GRADE · 라벨 · 신호 · 문헌"),
-       ("cli_critic", "CRITIC", "CLI · CRITIC · 근거를 넘으면 반려"),
+       ("cli_critic", "CRITIC", "CLI · CRITIC · 근거 없으면 반려"),
        ("cli_dock", "DOCK", "CLI · DOCK · DiffDock NIM 실시간"),
        ("cli_kr", "KR", "CLI · KR · 국내 15일 규칙"),
        ("cli_watch", "WATCH", "CLI · WATCH · 상시 실행 · 제출 0건"),
@@ -447,21 +449,189 @@ NEW = [("cli_open", "CLI", "FlyGate Agent CLI"),
        ("cli_line", "한 줄", "CLI · 설치 한 줄")]
 
 
+# 02 문제 · 03 에이전트: 옛 '문제' 장면(도킹 점수 · PRR 반려 카드)을 제출 문서의 '해결하고자 했던 문제' · '서비스 소개 및 주요 기능' 두 장면으로 바꿉니다
+PROB_NEW = [("problem", "Problem", "문제 · 신약 안전성은 전주기 근거가 필요합니다", 0),
+            ("solution", "Agent", "FlyGate 에이전트 · 두 개의 게이트", 0),
+            ("target", "Target", "STEP 1 · 데모 표적 PARP1 · 니라파립", 1)]
+
+
+# 옛 판(v4.0 · v4.1)에서 이어 온 문장 · 화면 설명 가운데 어색한 표현을 고칩니다(옛 빌더 파일은 그대로 둡니다).
+# '결론이 근거를 넘는다' → '근거 없는 결론', '검토에 닿았다 · 도달' → '검토 대상으로 올렸다'
+FIX = [(r"결론이 근거를 넘으면,? ", "근거 없는 결론은 "), (r"근거를 넘는 (결론|주장)", r"근거 없는 \1"),
+       (r"중대 사례(는)? (\d+)건이 검토에 닿았고", r"중대 사례 \2건을 검토 대상으로 올렸고"), (r"검토에 (닿은|도달한) 중대 사례", "검토 대상으로 올라간 중대 사례")]
+
+
+def fix_text(line: str) -> str:
+    for a, b in FIX:
+        line = re.sub(a, b, line)
+    return line
+
+
+# STEP 1 이후 옛 대본(v4.0 · v4.1 · CLI)을 일반적인 발표 문장으로 바꿉니다. (장면, 박자): (지금 문장, 새 문장)
+# 지금 문장이 데이터와 함께 바뀌면(숫자가 달라지면) 빌드를 멈춰, 새 문장의 숫자도 함께 고치게 합니다
+REWRITE_KO = {
+    ('disc', 0): ('STEP 1 플라이디스커버리. MSA-Search가 PARP1 상동 서열 101개를 모읍니다.',
+                 '먼저 MSA-Search로 PARP1과 닮은 서열 101개를 찾아 정렬합니다.'),
+    ('disc', 1): ('OpenFold3 복합체 예측은 결정 구조와 1.0 옹스트롬 차이입니다.',
+                 'OpenFold3로 약물과 단백질의 복합체 구조를 예측했고, 실제 결정 구조와의 차이는 1.0 옹스트롬입니다.'),
+    ('disc', 2): ('DiffDock은 결합 자리를 0.71 옹스트롬 안으로 재현했습니다.',
+                 'DiffDock은 약물이 붙는 자리를 0.71 옹스트롬 오차로 다시 찾아냈습니다.'),
+    ('disc', 3): ('Boltz-2 친화도 예측은 ChEMBL 실측과 순위 상관 0.767입니다.',
+                 'Boltz-2로 예측한 결합 세기는 ChEMBL 실측값과 순위 상관 0.767을 보였습니다.'),
+    ('disc', 4): ('근거 없는 결론은 Nemotron 크리틱이 반려합니다.',
+                 '마지막으로 Nemotron 크리틱이 근거 없는 결론 4건을 모두 반려했습니다.'),
+    ('panel', 0): ('실제 사례의 의심약물 29종으로 패널을 넓힙니다.',
+                  '같은 검증을 실제 부작용 사례에 나온 의심 약물 29종으로 넓혔습니다.'),
+    ('panel', 1): ('소분자는 DiffDock 재도킹으로 16개 중 10개가 2옹스트롬 기준을 통과했습니다.',
+                  '소분자 16종을 재도킹한 결과, 10종이 2 옹스트롬 기준을 통과했습니다.'),
+    ('bridge', 0): ('데모는 같은 약으로 시판 후를 잇습니다.',
+                   'FDA에는 하루 평균 약 4,600건의 부작용 보고가 들어오고, 니라파립 한 약에만 출시 후 2만 건이 넘게 쌓였습니다.'),
+    ('bridge', 1): ('이제 질문은, 누가 얼마나 빨리 봐야 하는가입니다.',
+                   '그중 사람이 먼저 봐야 할 중대 사례를 골라내는 것이 STEP 2 플라이비질런스입니다.'),
+    ('warehouse', 0): ('STEP 2, 플라이비질런스입니다.',
+                      'STEP 2는 먼저 FAERS 보고 전체를 한 데이터베이스로 모읍니다.'),
+    ('warehouse', 1): ('미국 FDA 이상사례 보고, 즉 FAERS 55개 분기 1,759만 건을 집계합니다.',
+                      '미국 FDA 부작용 보고 시스템 FAERS의 55개 분기, 1,759만 건입니다.'),
+    ('flow', 0): ('규칙으로 되는 일은 규칙으로, 판단은 모델로 나눕니다.',
+                 '규칙으로 판단할 수 있는 일은 규칙이 처리하고, 판단이 필요한 일만 모델에 맡깁니다.'),
+    ('flow', 1): ('라벨 원문, 보고 통계, 문헌을 모아 약물감시, 즉 PV 분류를 매깁니다.',
+                 '허가 라벨, 보고 통계, 문헌 근거를 모아 약물감시 분류, 즉 PV 분류를 정합니다.'),
+    ('flow', 2): ('글은 Nemotron이, 확률은 비자기회귀 모델이 맡아 7문항을 0.3초에 답합니다.',
+                 '설명문은 Nemotron이 쓰고, 7개 문항의 확률 판단은 비자기회귀 모델이 0.3초에 끝냅니다.'),
+    ('triage', 0): ('실제 사례 한 건, 7문항 판단이 0.4초에 끝납니다.',
+                   '실제 FAERS 사례 한 건을 넣으면, 7개 문항 판단이 0.4초 만에 끝납니다.'),
+    ('triage', 1): ('중대하고 예상하지 못해 15일 신속보고 후보입니다.',
+                   '이 사례는 중대하고 예상하지 못한 반응이라 15일 신속보고 후보로 분류됩니다.'),
+    ('triage', 2): ('Nemotron 메모는 크리틱이 한 번 되돌렸고, 고친 뒤 통과했습니다.',
+                   'Nemotron이 쓴 평가 메모는 크리틱이 한 번 반려했고, 수정한 뒤 통과했습니다.'),
+    ('korean', 0): ('국내 보고는 Nemotron이 식약처 서식 여섯 절로 구조화합니다.',
+                   '국내 보고서는 Nemotron이 식약처 보고 서식의 여섯 항목으로 정리합니다.'),
+    ('korean', 1): ('한국형 인과성 평가 8개 항목을 채점해 11점, 가능성 높음입니다.',
+                   "한국형 인과성 평가 8개 항목을 채점한 결과는 11점, '가능성 높음'입니다."),
+    ('korean', 2): ('국내 규정은 예상 여부와 무관하게 중대하면 15일 보고입니다.',
+                   '국내 규정에서는 예상 여부와 관계없이, 중대한 이상사례면 15일 안에 보고해야 합니다.'),
+    ('signals', 0): ('불균형 보고 신호, 즉 SDR은 인과가 아니라 검토의 출발점입니다.',
+                    '불균형 보고 신호, 즉 SDR은 인과관계의 증거가 아니라 검토를 시작할 이유입니다.'),
+    ('signals', 1): ('특별 주의 이상사례 62개는 점수와 관계없이 사람이 봅니다.',
+                    '유럽 EMA가 지정한 특별 주의 이상사례 62개는 점수와 관계없이 항상 사람이 검토합니다.'),
+    ('signals', 2): ('변호사 보고가 몰린 쌍에는 편향 표시를 붙입니다.',
+                    '변호사 보고가 몰린 약물과 부작용 조합에는 보고 편향 표시를 붙입니다.'),
+    ('timemachine', 0): ('타임머신은 분기마다 그 시점 데이터로 신호를 다시 계산합니다.',
+                        '신호 타임머신은 분기마다 그 시점까지의 데이터만으로 신호를 다시 계산합니다.'),
+    ('timemachine', 1): ('카나글리플로진 케톤산증은 FDA 조치보다 592일 먼저 신호가 섰습니다.',
+                        '그 결과, 카나글리플로진의 케톤산증 신호는 FDA 조치보다 592일 먼저 나타났습니다.'),
+    ('measure', 0): ('결과 코드를 가린 440건에서 모델 단독 질문 하나와 비교했습니다.',
+                    '결과 코드를 가린 실제 사례 440건으로, 질문 하나만 쓰는 모델 단독 방식과 비교했습니다.'),
+    ('measure', 1): ('중대 사례 247건을 검토 대상으로 올렸고, 사람이 먼저 볼 양은 302건에서 138건으로 줄었습니다.',
+                    '플라이게이트는 중대 사례 247건을 검토 대상으로 올렸고, 사람이 먼저 볼 사례는 302건에서 138건으로 줄었습니다.'),
+    ('measure', 2): ('모두 유의한 차이입니다.',
+                    '세 지표 모두 통계적으로 유의한 차이입니다.'),
+    ('validated', 0): ('지식 기반 방식은 판별 정확도, 즉 AUC 0.96, 0.98로 통계 지표를 앞섰습니다.',
+                      '공개 참조 세트에서 지식 기반 판별은 AUC 0.96과 0.98로, 기존 통계 지표보다 정확했습니다.'),
+    ('validated', 1): ('2013년 이전 보고만으로 라벨 변경 21건을 미리 잡았고, 오경보는 1건입니다.',
+                      '2013년 이전 보고만으로 이후의 라벨 변경 21건을 미리 찾았고, 오경보는 1건이었습니다.'),
+    ('nvskills', 0): ('NVIDIA 공식 Agent Skills 네 개를 적용했습니다.',
+                     'NVIDIA 공식 Agent Skills 네 개를 실제 파이프라인에 적용했습니다.'),
+    ('nvskills', 1): ('정책 생성 스킬로 만든 약물감시 가드는 인과 단정과 없는 발생률을 잡습니다.',
+                     '정책 생성 스킬로 만든 약물감시 가드는 인과관계 단정과 근거 없는 발생률 표현을 걸러냅니다.'),
+    ('nvskills', 2): ('Nemotron 리랭커는 관련 문헌 비율을 0.65에서 0.85로 올렸습니다.',
+                     'Nemotron 리랭커를 적용하자, 읽는 문헌 중 관련 문헌 비율이 0.65에서 0.85로 올랐습니다.'),
+    ('reviewed', 0): ('현업 약사 검토 의견 15개를 코드와 데이터에 반영했습니다.',
+                     '현직 약사의 검토 의견 15개를 코드와 데이터에 반영했습니다.'),
+    ('reviewed', 1): ('신호 용어, 약물감시 분류, 결과 코드를 가린 평가가 그 결과입니다.',
+                     '신호 용어, 약물감시 분류, 결과 코드를 가린 평가 방식이 이 검토를 통해 정해졌습니다.'),
+    ('arch', 0): ('에이전트 경로는 초파리 커넥톰의 아홉 기능 층에 대응시켰습니다.',
+                 '에이전트의 처리 경로는 초파리 뇌 커넥톰의 9개 기능 층에 맞춰 설계했습니다.'),
+    ('arch', 1): ('반사는 싸게, 숙고는 드물게, 억제는 늘 켜 둡니다.',
+                 '빠른 판단은 모든 사례에, 비용이 큰 숙고는 필요한 사례에만 쓰고, 크리틱 검사는 항상 거칩니다.'),
+    ('agent', 0): ('에이전트는 NemoClaw로 OpenShell 샌드박스 안에서 늘 켜져 있습니다.',
+                  '에이전트는 NemoClaw로 OpenShell 샌드박스 안에서 항상 실행됩니다.'),
+    ('agent', 1): ('허용한 호스트만 나가고, 샌드박스 점검 20개를 모두 통과했습니다.',
+                  '허용된 호스트로만 통신하고, 샌드박스 점검 20개를 모두 통과했습니다.'),
+    ('cli_open', 0): ('플라이게이트 에이전트 CLI, 명령줄 도구입니다.',
+                     '이 기능은 모두 플라이게이트 에이전트 CLI, 명령줄 도구로 쓸 수 있습니다.'),
+    ('cli_install', 0): ('설치는 한 줄이면 되고, 명령 9개가 바로 생깁니다.',
+                        '설치는 명령 한 줄이면 되고, 바로 9개 명령을 쓸 수 있습니다.'),
+    ('cli_triage', 0): ('triage는 실제 사례 한 건을 0.6초 만에 분류합니다.',
+                       'triage 명령은 실제 사례 한 건을 0.6초 만에 분류합니다.'),
+    ('cli_grade', 0): ('grade는 라벨, 신호, 문헌을 함께 읽고 등급을 매깁니다.',
+                      'grade 명령은 라벨, 신호, 문헌을 함께 보고 근거 등급을 매깁니다.'),
+    ('cli_critic', 0): ('critic은 근거 없는 주장 3개를 반려합니다.',
+                       'critic 명령은 근거 없는 주장 3개를 찾아 반려합니다.'),
+    ('cli_dock', 0): ('discover는 DiffDock NIM에 실시간으로 도킹을 맡깁니다.',
+                     'discover 명령은 DiffDock NIM을 호출해 실시간으로 도킹을 실행합니다.'),
+    ('cli_kr', 0): ('kr-causality는 국내 보고를 15일 보고 후보로 보냅니다.',
+                   'kr-causality 명령은 국내 보고를 분석해 15일 보고 대상으로 분류합니다.'),
+    ('cli_watch', 0): ('watch는 매일 아침 검토 대기열을 만들고, 아무것도 제출하지 않습니다.',
+                      'watch 명령은 매일 아침 검토 대기열을 만들고, 보고서를 직접 제출하지는 않습니다.'),
+    ('cli_same', 0): ('사람도 에이전트도 같은 명령을 씁니다.',
+                     '사람과 에이전트가 같은 명령을 사용합니다.'),
+    ('cli_same', 1): ('OpenClaw도 샌드박스 안에서 같은 CLI를 부릅니다.',
+                     'OpenClaw 에이전트도 샌드박스 안에서 같은 CLI를 호출합니다.'),
+    ('cli_line', 0): ('저장소에서 한 줄로 설치해 바로 쓰실 수 있습니다.',
+                     'GitHub 저장소에서 한 줄로 설치해 바로 사용하실 수 있습니다.'),
+    ('close', 1): ('플라이게이트였습니다. 감사합니다.',
+                  '지금까지 플라이게이트였습니다. 감사합니다.'),
+}
+
+
+def rewrite_ko(vo: dict) -> dict:
+    for (sid, i), (old, new) in REWRITE_KO.items():
+        if vo[sid][i] != old:
+            raise SystemExit(f"REWRITE_KO {sid}#{i}: 원문이 바뀌었습니다 · 표 {old!r} · 지금 {vo[sid][i]!r}")
+        vo[sid][i] = new
+    return vo
+
+
+def problem_vo(d: dict) -> dict:
+    fv, bl = d["fv"], d["fv"]["blind"]
+    reach, cut = bl["serious"] - bl["fv"]["auto"], round((1 - bl["fv"]["human"] / bl["base"]["human"]) * 100)
+    return {
+        "problem": [
+            "신약 안전성은 개발 단계의 결합 예측부터 출시 후 부작용 보고까지, 전주기 근거를 봐야 합니다.",
+            "개발 단계에서는 결합 점수 하나로, 특정 표적에만 잘 붙는다고 과신하기 쉽습니다.",
+            f"출시 후에는 FDA에만 한 분기 {fv['ov']['q_reports'] // 10000}만 건이 넘는 부작용 보고가 쏟아집니다.",
+            "사람이나 기존 LLM이 모두 읽기엔 시간과 비용이 너무 큽니다.",
+            "질문 하나로 거르면 위험 신호를 놓치고, 보고 건수를 인과로 비약하는 왜곡도 못 막습니다.",
+        ],
+        "solution": [
+            "플라이게이트는 초파리 뇌 커넥톰의 게이팅 원리로, 근거 없는 결론을 걸러내는 AI 신약 안전성 에이전트입니다.",
+            "STEP 1 플라이디스커버리는 BioNeMo NIM으로 표적 결합을 시뮬레이션하고, 근거 없는 과장 결론을 반려합니다.",
+            "STEP 2 플라이비질런스는 규칙 게이트와 공식 허가 라벨로 먼저 거릅니다.",
+            f"이어 비자기회귀 판단 모델이 핵심 {fv['questions']}문항을 {fv['jev_p50'] / 1000:.1f}초 만에 판별합니다.",
+            "정밀 검토가 필요한 사례만 Nemotron이 근거 번호를 붙여 평가하고, Safety Guard가 인과 왜곡을 막습니다.",
+            f"{bl['n']}건 검증에서 중대 사례 {bl['serious']}건 중 {reach}건을 검토 대상으로 올렸고, 사람이 먼저 볼 일은 {cut}% 줄었습니다.",
+            "먼저 STEP 1, 시판 전 후보부터 보겠습니다.",
+        ],
+        # 04 데모 표적: PARP1 은 예시 하나라는 점을 STEP 1 앞에서 말합니다
+        "target": [
+            "STEP 1 플라이디스커버리의 데모 표적은 PARP1, 데모 약물은 니라파립입니다.",
+            "PARP1은 DNA 손상을 고치는 효소로, 난소암과 유방암 치료제인 PARP 억제제의 표적입니다.",
+            f"결정 구조와 실측 활성값 {d['disc']['bench']['n']}종이 공개되어 있어, 예측이 맞는지 실제 값과 비교할 수 있습니다.",
+            "니라파립은 이미 시판된 약이라, 시판 후 부작용 보고까지 한 흐름으로 이어서 볼 수 있습니다.",
+            f"PARP1 전용이 아니라, 다른 표적과 약물 패널 {d['panel']['small'] + d['panel']['bio']}종에도 같은 방식으로 적용합니다.",
+        ],
+    }
+
+
 def narration(d: dict) -> dict:
     vo = v42.gloss_narration(v41.new_narration(d), d)
+    vo.update(problem_vo(d))
+    for k in vo:
+        vo[k] = [fix_text(line) for line in vo[k]]
     vo["close"] = [slogan_read(), SIGN_OFF]
     c = d["cli3"]
     vo["cli_open"] = ["플라이게이트 에이전트 CLI, 명령줄 도구입니다."]
     vo["cli_install"] = [f"설치는 한 줄이면 되고, 명령 {c['n_cmd']}개가 바로 생깁니다."]
     vo["cli_triage"] = [f"triage는 실제 사례 한 건을 {c['tri_s']:.1f}초 만에 분류합니다."]
     vo["cli_grade"] = ["grade는 라벨, 신호, 문헌을 함께 읽고 등급을 매깁니다."]
-    vo["cli_critic"] = [f"critic은 근거를 넘는 주장 {len(c['flagged'])}개를 반려합니다."]
+    vo["cli_critic"] = [f"critic은 근거 없는 주장 {len(c['flagged'])}개를 반려합니다."]
     vo["cli_dock"] = ["discover는 DiffDock NIM에 실시간으로 도킹을 맡깁니다."]
     vo["cli_kr"] = ["kr-causality는 국내 보고를 15일 보고 후보로 보냅니다." if c["kr15"] else "kr-causality는 국내 보고를 서식과 점수로 정리합니다."]
     vo["cli_watch"] = ["watch는 매일 아침 검토 대기열을 만들고, 아무것도 제출하지 않습니다."]
     vo["cli_same"] = ["사람도 에이전트도 같은 명령을 씁니다.", "OpenClaw도 샌드박스 안에서 같은 CLI를 부릅니다."]
     vo["cli_line"] = ["저장소에서 한 줄로 설치해 바로 쓰실 수 있습니다."]
-    return vo
+    return rewrite_ko(vo)
 
 
 def vis_new(d: dict) -> dict:
@@ -472,25 +642,50 @@ def vis_new(d: dict) -> dict:
         ("cli_install", 0): f"색 화면 위 거대한 INSTALL → 왼쪽 '한 줄 설치' · 오른쪽 3D 터미널 창({cap('cli_install')}) → flygate --help 의 명령 {c['n_cmd']}개 줄로 확대",
         ("cli_triage", 0): f"TRIAGE · '사례 분류 {c['tri_s']:.1f}초' · {cap('cli_triage')} → \"action\": \"{c['action']}\" · \"tier\": \"{c['tier']}\" 줄로 확대",
         ("cli_grade", 0): f"GRADE · '라벨 · 신호 · 문헌' · {cap('cli_grade')} → 등급 {c['grade']}({c['grade_name']}) · {c['pv_class']} 줄로 확대",
-        ("cli_critic", 0): f"CRITIC · '근거를 넘으면 반려' · {cap('cli_critic')} → \"safe\": false · \"flagged\": {', '.join(c['flagged'])} 줄로 확대",
+        ("cli_critic", 0): f"CRITIC · '근거 없으면 반려' · {cap('cli_critic')} → \"safe\": false · \"flagged\": {', '.join(c['flagged'])} 줄로 확대",
         ("cli_dock", 0): f"DOCK · 'DiffDock NIM 실시간' · {cap('cli_dock')} → \"status\": \"{c['dock_status']}\" · run_id {c['dock_run']} 줄로 확대",
         ("cli_kr", 0): f"KR · '국내 15일 규칙' · {cap('cli_kr')} → \"action\": \"{c['kr_action']}\" · \"deadline\": \"15일 이내 …\" 줄로 확대",
         ("cli_watch", 0): f"WATCH · '상시 실행 · 제출 {c['submitted']}건' · {cap('cli_watch')} → \"review_queue\": {c['queue']} · \"submitted\": [] 줄로 확대",
         ("cli_same", 0): "왼쪽 '사람' 터미널 창(triage 캡처)과 오른쪽 '에이전트' 창(OpenShell 샌드박스 안 OpenClaw exec)이 같은 flygate 명령을 부릅니다",
         ("cli_same", 1): f"샌드박스 실행 기록(RESULT PASS flygate … in sandbox)이 차례로 빛나고 스모크 {c['smoke'][0]}/{c['smoke'][1]} 통과가 찍힙니다",
         ("cli_line", 0): f"'One line.' · 설치 한 줄(`{c['install']}`) · {c['repo']}",
+        ("problem", 0): "전주기 띠가 왼쪽 '개발 단계 · 결합 예측' 에서 '출시' 를 지나 오른쪽 '시판 후 · 부작용 보고' 까지 그어집니다",
+        ("problem", 1): "왼쪽 카드 '결합 점수 하나로 과신합니다' · PARP1 · Factor Xa 의 Vina 점수 막대 · ✕ '이 표적에만 잘 붙는다'는 점수 하나로 말할 수 없습니다",
+        ("problem", 2): f"오른쪽 카드 · FDA FAERS 한 분기 {d['fv']['ov']['q_reports']:,}건이 올라갑니다",
+        ("problem", 3): "✕ 사람이 전부 읽기 · ✕ 기존 LLM에 전부 맡기기",
+        ("problem", 4): "아래 빨간 띠 '질문 하나로 기계적으로 거르면' · ✕ 위험 신호를 놓칩니다 · ✕ 보고 건수를 인과로 비약합니다",
+        ("solution", 0): "왼쪽에 초파리 뇌 커넥톰 점구름 · '게이팅: 감각 신호를 초고속으로 걸러 필요한 것만 올려 보냅니다'",
+        ("solution", 1): "GATE 1 · FlyDiscovery 카드: MSA-Search → OpenFold3 → DiffDock → Boltz-2 → 크리틱 · 반려",
+        ("solution", 2): "GATE 2 · FlyVigilance 카드가 열리고 '규칙 게이트 · 허가 라벨' 이 켜집니다",
+        ("solution", 3): f"'판단 모델 {d['fv']['questions']}문항 · {d['fv']['jev_p50'] / 1000:.1f}초' 가 켜집니다",
+        ("solution", 4): "'Nemotron 심층 평가' → 'Safety Guard' → '사람 검토'",
+        ("solution", 5): "결과 줄: 검증 건수 · 검토 대상으로 올린 중대 사례 · 사람이 먼저 볼 일 감소 · flygate CLI · NemoClaw · OpenShell",
+        ("solution", 6): "GATE 1 둘레에 괄호가 잡히고 '다음 · STEP 1 FlyDiscovery →'",
+        ("target", 0): "제목 '데모 표적: PARP1 · 약물 니라파립' · 왼쪽 카드에 OpenFold3 가 예측한 PARP1 뼈대가 그려집니다",
+        ("target", 1): "PARP1 카드 아래 '하는 일 · 억제하면 · 치료제' 세 줄과 니라파립 분자",
+        ("target", 2): "오른쪽 '왜 PARP1 인가' ① 정답이 있는 표적입니다 · 결정 구조 4R6E · ChEMBL 실측",
+        ("target", 3): "② 시판 후까지 이어집니다 · 시판 약 니라파립의 FAERS 의심 사례 → STEP 2",
+        ("target", 4): "③ PARP1 전용이 아닙니다 · 약물 패널 · 대시보드에서 아무 단백질이나 검색",
         ("close", 0): "초파리 뇌 점구름 위로 구호가 솟아오릅니다: " + "".join(p[0] for p in SLOGAN_PARTS).replace("\n", " / "),
     }
+
+
+# 내레이션판(build_reel_v4_3_narrated.py)이 채웁니다. (장면 id, 박자 번호) → 실제 음성 길이(초). 비어 있으면 음절 수로 추정합니다
+NARR_DUR: dict = {}
+# 내레이션판이 페이지 데이터에 더할 값(음원 등)
+EXTRA: dict = {}
 
 
 def timeline(d: dict) -> list[dict]:
     old = v4.timeline(d)
     vo, vis = narration(d), {**v41.new_vis(d), **vis_new(d)}
-    labels = {"validated": "공개 참조 세트 검증", "close": "분자에서 환자까지 · 근거가 먼저"}
+    labels = {"bridge": "데모 · 니라파립을 시판 후로", "validated": "공개 참조 세트 검증", "close": "분자에서 환자까지 · 근거가 먼저"}
     seq = []
     for s in old:
         if s["id"] == "cli":
             seq += [{"id": i, "name": n, "label": lab, "step": 3, "fresh": True} for i, n, lab in NEW]
+        elif s["id"] == "problem":
+            seq += [{"id": i, "name": n, "label": lab, "step": st, "fresh": True} for i, n, lab, st in PROB_NEW]
         else:
             seq.append({**s, "fresh": False})
     out, t = [], 0.0
@@ -502,14 +697,15 @@ def timeline(d: dict) -> list[dict]:
         a = LEAD.get(sid, 0.3)
         beats, knots = [], [[0.0, 0.0]]
         for i, (bo, line) in enumerate(zip(ob, lines)):
-            w = ceil1(syllables(line) / RATE + (GAP if i < len(lines) - 1 else 0))
+            sec = NARR_DUR.get((sid, i), syllables(line) / RATE)
+            w = ceil1(sec + (GAP if i < len(lines) - 1 else 0))
             bb = round(a + w, 2)
-            beats.append({"a": round(a, 2), "b": bb, "vis": vis.get((sid, i), bo["vis"] if bo else ""), "vo": line})
+            beats.append({"a": round(a, 2), "b": bb, "vis": fix_text(vis.get((sid, i), bo["vis"] if bo else "")), "vo": line})
             if bo:
                 knots += [[bo["a"], a], [bo["b"], bb]]
             a = bb
         dur = round(a + TAIL.get(sid, 0.5), 1)
-        if sid == "close":
+        if sid == "close" and not NARR_DUR:
             dur = min(dur, CLOSE_MAX)
         if s["fresh"]:
             kn, ot0, ot1 = [[0.0, 0.0], [dur, dur]], None, None
@@ -593,6 +789,7 @@ def build_en(data: dict, tl: list[dict], dur: float, out: pathlib.Path):
     if missing:
         raise SystemExit("영어로 바꾸지 못한 데이터 문자열(reel_v4_3_en.DATA_EN 에 더하세요):\n  " + "\n  ".join(missing))
     page["lang"] = "en"
+    page.update(EXTRA)
     page["gloss"], page["slogan"] = en.GLOSS_EN, en.SLOGAN_PARTS_EN
     page["subs"] = en.subtitles_en(tl, SUB_LEAD, SUB_HOLD)
     page["tl"] = {**data["tl"], "scenes": [{**s, "label": en.label_en(s), "name": en.NAME_EN.get(s["name"], s["name"])} for s in data["tl"]["scenes"]]}
@@ -624,6 +821,18 @@ def main():
     EN = "--en" in sys.argv[1:]
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     out = pathlib.Path(args[0]) if args else (DEFAULT_OUT_EN if EN else DEFAULT_OUT)
+    data = make_data()
+    tl = timeline(data)
+    dur = tl[-1]["t1"]
+    for s in data["fv"]["val"]["sets"]:
+        s.pop("stat", None)
+    data["subs"] = subtitles(tl)
+    data["tl"] = {"dur": dur, "scenes": [{k: s[k] for k in ("id", "t0", "t1", "name", "label", "step", "fresh", "old_t0", "old_t1", "warp")} for s in tl],
+                  "beats": {s["id"]: [[bt["a"], bt["b"]] for bt in s["beats"]] for s in tl}}
+    _write(data, tl, dur, out, EN)
+
+
+def make_data() -> dict:
     fv = v3.fv_part()
     disc = v3.disc_part()
     val = v4.jload_opt(PUB / "data/validation.json")
@@ -641,13 +850,10 @@ def main():
     data["mainui"] = mainui_part()
     for pr in data["triage"]["probs"]:
         pr[0] = pr[0].replace("WHO-UMC", "WHO-UMC(세계보건기구 기준)")
-    tl = timeline(data)
-    dur = tl[-1]["t1"]
-    for s in data["fv"]["val"]["sets"]:
-        s.pop("stat", None)
-    data["subs"] = subtitles(tl)
-    data["tl"] = {"dur": dur, "scenes": [{k: s[k] for k in ("id", "t0", "t1", "name", "label", "step", "fresh", "old_t0", "old_t1", "warp")} for s in tl],
-                  "beats": {s["id"]: [[bt["a"], bt["b"]] for bt in s["beats"]] for s in tl}}
+    return data
+
+
+def _write(data: dict, tl: list[dict], dur: float, out: pathlib.Path, EN: bool):
     if EN:
         build_en(data, tl, dur, out)
         return
@@ -655,6 +861,7 @@ def main():
     marker = "/*__DATA__*/null"
     assert html.count(marker) == 1, "template data marker missing"
     page = dict(data)
+    page.update(EXTRA)
     page["caps"] = {k: {kk: vv for kk, vv in v.items() if kk not in ("text", "vals")} for k, v in data["caps"].items()}
     blob = json.dumps(page, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
     out.parent.mkdir(parents=True, exist_ok=True)

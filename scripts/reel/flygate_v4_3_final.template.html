@@ -551,35 +551,225 @@
     })
     X.restore()
   }
+  // ---------------- 02 문제: 신약 안전성은 전주기 근거를 봐야 합니다 ----------------
+  // 제출 문서(docs/SUBMISSION_v1.1.0.md)의 '해결하고자 했던 문제' 를 그대로 화면으로 옮깁니다. 요소는 내레이션 박자(D.tl.beats)에 맞춰 나타납니다
+  const BT0 = (sid, k) => { const b = ((D.tl.beats || {})[sid] || [])[k]; return b ? b[0] : 0.4 + k * 5 }
   function sProblem(lt) {
+    const b = (k) => BT0('problem', k)
     eyebrow(`${NUM.problem} · THE PROBLEM`, C.red, lt)
-    headline(tr([['근거는 맞는데, ', C.white], ['결론이 근거를 넘습니다', C.red]], [['The evidence holds, ', C.white], ['but the conclusion outruns it', C.red]]), lt)
-    const V = DS.vina
-    problemCard(120, 290, lt, 0.9, {
-      col: C.cyan, head: tr('시판 전 · FLYDISCOVERY · 도킹 점수', 'PRE-MARKET · FLYDISCOVERY · DOCKING SCORES'),
-      nums: [{ label: 'PARP1', v: -V[2][1], dec: 3, sign: '−' }, { label: 'Factor Xa', v: -DS.vina_xa, dec: 3, sign: '−' }],
-      unit: tr('kcal/mol(결합 에너지, 낮을수록 강함) · AutoDock Vina · 두 값 모두 실측', 'kcal/mol (binding energy; lower = stronger) · AutoDock Vina · both measured'),
-      claim: tr(['그러므로 니라파립은', 'PARP1에 선택적입니다'], ['So niraparib is', 'selective for PARP1']),
-      reason: tr('다른 단백질의 도킹 점수는 서로 비교할 수 없습니다', 'Docking scores for different proteins are not comparable'),
+    headline(tr([['신약 안전성은 ', C.white], ['전주기 근거', C.cyan], ['를 봐야 합니다', C.white]], [['Drug safety needs evidence across ', C.white], ['the whole lifecycle', C.cyan]]), lt)
+    // 전주기 띠: 개발 단계(결합 예측) → 출시 → 시판 후(부작용 보고)
+    const y = 330, x0 = 160, x1 = 1760, xm = 960, d = seg(lt, b(0) + 0.2, b(0) + 2.4, E.inOut3)
+    withA(seg(lt, b(0), b(0) + 0.4), () => {
+      line(x0, y, x1, y, C.line, 1, 2)
+      line(x0, y, lerp(x0, x1, d), y, C.cyan, 0.9, 3)
+      dot(x0, y, 8, C.cyan, 1, 16)
+      text(tr('개발 단계 · 결합 예측', 'Development · binding prediction'), x0, y - 22, { size: 20, weight: 600, color: C.cyan })
+      withA(seg(lt, b(0) + 1.1, b(0) + 1.5), () => { line(xm, y - 16, xm, y + 16, C.white, 0.9, 3); text(tr('출시', 'Launch'), xm, y - 26, { size: 20, weight: 700, color: C.white, align: 'center' }) })
+      withA(seg(lt, b(0) + 2.0, b(0) + 2.4), () => { dot(x1, y, 8, C.magenta, 1, 16); text(tr('시판 후 · 부작용 보고', 'Post-market · adverse-event reports'), x1, y - 22, { size: 20, weight: 600, color: C.magenta, align: 'right' }) })
     })
-    problemCard(990, 290, lt, 5.0, {
-      col: C.magenta, head: tr('시판 후 · FLYVIGILANCE · 불균형 보고 통계', 'POST-MARKET · FLYVIGILANCE · DISPROPORTIONALITY'),
-      nums: [{ label: tr('PRR(비례 보고 비)', 'PRR (proportional reporting ratio)'), v: NIR.prr, dec: 2 }, { label: tr('FAERS 보고', 'FAERS reports'), v: NIR.a }],
-      unit: tr(`니라파립 × 혈소판감소증 · FDA FAERS ${FV.ov.first}–${NIR.asof} · 의심약 기준 · 실측`, `Niraparib × thrombocytopenia · FDA FAERS ${FV.ov.first}–${NIR.asof} · as suspect drug · measured`),
-      claim: tr(['그러므로 니라파립이', '이 환자의 혈소판감소증을 일으켰습니다'], ['So niraparib caused', "this patient's thrombocytopenia"]), claimSize: 28,
-      reason: tr('PRR은 불균형 보고 신호(SDR)입니다. 인과의 증거가 아닙니다', 'PRR flags disproportionate reporting (SDR). It is not proof of causation'),
+    const ya = 396, h = 410
+    // A. 개발 단계: 결합 점수 하나로 과신
+    const aA = seg(lt, b(1), b(1) + 0.5)
+    if (aA > 0) withA(aA, () => {
+      X.save(); X.translate(0, (1 - aA) * 24)
+      panel(120, ya, 820, h, { top: C.cyan })
+      text(tr('개발 단계 · 시판 전', 'DEVELOPMENT · PRE-MARKET'), 156, ya + 50, { size: 16, weight: 600, fam: MONO, color: C.cyan, track: 3 })
+      text(tr('결합 점수 하나로 과신합니다', 'Over-trusting a single binding score'), 156, ya + 108, { size: 38, weight: 800, color: C.white, maxW: 750 })
+      const rows = [['PARP1', Math.abs(DS.vina[2][1])], ['Factor Xa', Math.abs(DS.vina_xa)]], mx = Math.max(...rows.map((r) => r[1]))
+      rows.forEach(([nm, v], i) => {
+        const ry = ya + 180 + i * 62, p = count(lt, b(1) + 0.5 + i * 0.3)
+        text(nm, 156, ry + 8, { size: 22, weight: 600, color: C.t2 })
+        bar(320, ry - 10, 440, 20, p * v / mx, i === 0 ? C.cyan : C.amber)
+        text(`−${(v * p).toFixed(2)}`, 780, ry + 8, { size: 24, weight: 700, fam: MONO, color: C.white })
+      })
+      text(tr('kcal/mol · AutoDock Vina 결합 에너지(낮을수록 강함) · 실측', 'kcal/mol · AutoDock Vina binding energy (lower = stronger) · measured'), 156, ya + 322, { size: 15, weight: 500, fam: MONO, color: C.t3, maxW: 760 })
+      withA(seg(lt, b(1) + 1.6, b(1) + 2.1), () => {
+        cross(170, ya + 368, 14, C.red, 1, 3)
+        text(tr('"이 표적에만 잘 붙는다"는 점수 하나로 말할 수 없습니다', '"It binds only this target" cannot rest on one score'), 196, ya + 375, { size: 21, weight: 600, color: C.text, maxW: 720 })
+      })
+      X.restore()
     })
-    const a = seg(lt, 9.0, 9.6)
-    withA(a, () => {
-      const w = odometer(FV.ov.q_reports * count(lt, 9.1, 1.3), 120, 872, { size: 84, weight: 700, color: C.white, final: FV.ov.q_reports })
-      text(tr(`FAERS 한 분기(${FV.ov.asof})에 들어온 이상사례 보고`, `adverse event reports reaching FAERS in one quarter (${FV.ov.asof})`), 120 + w + 40, 834, { size: 28, weight: 600, color: C.text })
-      text(tr('사람이 모두 읽을 수 없고, 모델 하나에 통째로 맡길 수도 없습니다', 'Too many for people to read, and too many to hand wholesale to one model'), 120 + w + 40, 872, { size: 22, weight: 500, color: C.t2 })
+    // B. 출시 후: 한 분기 42만 건
+    const aB = seg(lt, b(2), b(2) + 0.5)
+    if (aB > 0) withA(aB, () => {
+      X.save(); X.translate(0, (1 - aB) * 24)
+      panel(980, ya, 820, h, { top: C.magenta })
+      text(tr('출시 후 · 시판 후', 'AFTER LAUNCH · POST-MARKET'), 1016, ya + 50, { size: 16, weight: 600, fam: MONO, color: C.magenta, track: 3 })
+      const w = odometer(FV.ov.q_reports * count(lt, b(2) + 0.3, 1.3), 1016, ya + 172, { size: 96, weight: 800, color: C.white, final: FV.ov.q_reports })
+      text(tr('건', ''), 1016 + w + 12, ya + 172, { size: 36, weight: 700, color: C.white })
+      text(tr(`FDA FAERS 한 분기(${FV.ov.asof})에 들어온 부작용 보고`, `adverse-event reports to FDA FAERS in one quarter (${FV.ov.asof})`), 1016, ya + 218, { size: 22, weight: 600, color: C.t2, maxW: 750 })
+      withA(seg(lt, b(3), b(3) + 0.5), () => {
+        const rows = tr([['사람이 전부 읽기', '너무 느립니다'], ['기존 LLM에 전부 맡기기', '시간 · 비용이 너무 큽니다']], [['People reading every one', 'far too slow'], ['Handing all of it to an LLM', 'too slow and costly']])
+        rows.forEach(([p, q], i) => {
+          const ry = ya + 300 + i * 52
+          cross(1030, ry - 7, 12, C.red, 1, 3)
+          text(p, 1056, ry, { size: 22, weight: 600, color: C.text })
+          text(q, 1764, ry, { size: 22, weight: 700, color: C.red, align: 'right' })
+        })
+      })
+      X.restore()
     })
-    text(tr('숫자는 모두 실측입니다 · 왼쪽 주장은 FlyDiscovery 크리틱 평가 문항, 오른쪽 주장은 FlyVigilance 크리틱 주입 시험(p1)과 같은 유형입니다', 'All numbers are measured · The left claim is a FlyDiscovery critic eval item; the right one matches the FlyVigilance critic injection test (p1)'),
-      120, 936, { size: 14, weight: 500, fam: MONO, color: C.t3, a: seg(lt, 9.8, 10.4), maxW: 1680 })
+    // C. 질문 하나로 거르면
+    const aC = seg(lt, b(4), b(4) + 0.5)
+    if (aC > 0) withA(aC, () => {
+      panel(120, 836, 1680, 100, { r: 16, fill: 'rgba(40,10,18,0.55)', stroke: 'rgba(255,93,108,0.55)' })
+      const lead = tr('질문 하나로 기계적으로 거르면', 'Filter with one question, and'), items = tr(['위험 신호를 놓칩니다', '보고 건수를 인과로 비약합니다'], ['risk signals are missed', 'report counts pass as causation'])
+      // 띠 안에서 가운데 맞춤: 나중에 나타날 항목까지 포함한 전체 폭으로 시작점을 정해, 항목이 켜져도 자리가 움직이지 않습니다
+      const fs = 27, gap = 70, ws = items.map((it) => measure(it, fs, 700, SANS) + 38)
+      const lw0 = measure(lead, fs, 700, SANS), total = lw0 + ws.reduce((q, w) => q + gap + w, 0)
+      text(lead, 960 - total / 2, 897, { size: fs, weight: 700, color: C.white })
+      let x = 960 - total / 2 + lw0 + gap
+      items.forEach((it, i) => {
+        withA(seg(lt, b(4) + 0.5 + i * 0.6, b(4) + 0.9 + i * 0.6), () => { cross(x + 12, 888, 14, C.red, 1, 3); text(it, x + 38, 897, { size: fs, weight: 700, color: C.red }) })
+        x += ws[i] + gap
+      })
+    })
   }
-  { const t = S0.problem; cue(t, 'whoosh', { d: 0.8 }); cue(t + 1.3, 'count', { d: 1.1 }); cue(t + 3.9, 'hit', { g: 1 }); cue(t + 4.1, 'boom', { g: 0.5 })
-    cue(t + 5.4, 'count', { d: 1.1 }); cue(t + 8.2, 'hit', { g: 1 }); cue(t + 8.4, 'boom', { g: 0.5 }); cue(t + 9.1, 'count', { d: 1.3 }); cue(t + 10.4, 'lock') }
+
+  // ---------------- 03 에이전트: 무엇이고, 어떻게 푸는가 ----------------
+  // 제출 문서의 '서비스 소개 및 주요 기능' 을 두 개의 게이트로 보여 주고, 마지막 박자에서 STEP 1 로 넘어갑니다
+  function sSolution(lt) {
+    const b = (k) => BT0('solution', k)
+    const BL = FV.blind, reach = BL.serious - BL.fv.auto, cut = Math.round((1 - BL.fv.human / BL.base.human) * 100), sec = (FV.jev_p50 / 1000).toFixed(1)
+    eyebrow(`${NUM.solution} · OUR AGENT`, C.cyan, lt)
+    headline(tr([['FlyGate', C.cyan], ['는 근거 없는 결론을 걸러냅니다', C.white]], [['FlyGate', C.cyan], [' filters out unsupported conclusions', C.white]]), lt, 120, 226, 52)
+    // 왼쪽: 초파리 뇌 커넥톰의 게이팅
+    const aL = seg(lt, b(0), b(0) + 0.8)
+    if (aL > 0) {
+      glowBlob(360, 560, 300, 'rgba(55,230,255,0.08)', aL)
+      drawBrainL(360, 560, 420, aL, (k) => 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(lt * 1.6 + k.length)), 0.3 * Math.sin(lt * 0.3))
+      withA(aL, () => {
+        text(tr('초파리 뇌 커넥톰 · 게이팅', 'Fruit-fly connectome · gating'), 360, 792, { size: 23, weight: 700, color: C.white, align: 'center' })
+        text(tr('감각 신호를 초고속으로 걸러', 'Filters sensory signals at speed,'), 360, 830, { size: 19, weight: 500, color: C.t2, align: 'center' })
+        text(tr('필요한 것만 올려 보냅니다', 'passing on only what matters'), 360, 860, { size: 19, weight: 500, color: C.t2, align: 'center' })
+      })
+    }
+    // 오른쪽: 두 개의 게이트
+    const gx = 660, gw = 1140
+    const gate = (y, k, col, tag, title, sub, stages, note) => {
+      const a = seg(lt, b(k), b(k) + 0.5)
+      if (a <= 0) return
+      withA(a, () => {
+        panel(gx, y, gw, 196, { r: 16, top: col })
+        text(tag, gx + 28, y + 40, { size: 15, weight: 700, fam: MONO, color: col, track: 3 })
+        text(title, gx + 28, y + 80, { size: 30, weight: 800, color: C.white })
+        text(sub, gx + gw - 28, y + 80, { size: 18, weight: 500, color: C.t2, align: 'right', maxW: 600 })
+        const n = stages.length, sw = (gw - 56 - 28 * (n - 1)) / n
+        stages.forEach(([label, c, t], i) => withA(seg(lt, t, t + 0.4), () => {
+          const x = gx + 28 + i * (sw + 28), sy = y + 106
+          panel(x, sy, sw, 56, { r: 12, fill: 'rgba(14,22,40,0.9)', stroke: c, lw: 1.5 })
+          text(label, x + sw / 2, sy + 35, { size: 18, weight: 700, color: C.white, align: 'center', maxW: sw - 20 })
+          if (i < n - 1) arrow(x + sw + 4, sy + 28, x + sw + 24, sy + 28, C.t3, 0.9, 1.6, 8)
+        }))
+        if (note) text(note, gx + 28, y + 186, { size: 14, weight: 500, fam: MONO, color: C.t3 })
+      })
+    }
+    gate(300, 1, C.cyan, tr('GATE 1 · STEP 1 · 시판 전', 'GATE 1 · STEP 1 · PRE-MARKET'), 'FlyDiscovery', tr('표적 결합 시뮬레이션 · 과장 결론 반려', 'Simulates target binding · rejects overreach'),
+      [['MSA-Search', C.nvl, b(1) + 0.4], ['OpenFold3', C.nvl, b(1) + 0.6], ['DiffDock', C.nvl, b(1) + 0.8], ['Boltz-2', C.nvl, b(1) + 1.0], [tr('크리틱 · 반려', 'Critic · reject'), C.red, b(1) + 1.6]],
+      tr('NVIDIA BioNeMo NIM 4종 → Nemotron 크리틱', 'Four NVIDIA BioNeMo NIMs → Nemotron critic'))
+    gate(520, 2, C.magenta, tr('GATE 2 · STEP 2 · 시판 후', 'GATE 2 · STEP 2 · POST-MARKET'), 'FlyVigilance', tr('부작용 보고 선별 · 인과 왜곡 차단', 'Sorts adverse-event reports · blocks causal distortion'),
+      [[tr('규칙 게이트 · 허가 라벨', 'Rule gates · labels'), C.cyan, b(2) + 0.6], [tr(`판단 모델 ${FV.questions}문항 · ${sec}초`, `Judgment model · ${FV.questions} Qs · ${sec} s`), C.amber, b(3) + 0.3],
+        [tr('Nemotron 심층 평가', 'Nemotron deep review'), C.nvl, b(4) + 0.3], ['Safety Guard', C.red, b(4) + 1.2], [tr('사람 검토', 'Human review'), C.white, b(4) + 2.0]],
+      tr('비자기회귀 판단 모델 = 글을 만들지 않고 정해진 질문의 확률을 한 번에 답합니다', 'Non-autoregressive judgment model = answers fixed questions in one pass, no text generation'))
+    // 결과 한 줄
+    const aR = seg(lt, b(5), b(5) + 0.5)
+    if (aR > 0) withA(aR, () => {
+      panel(gx, 740, gw, 118, { r: 16, fill: 'rgba(10,26,20,0.6)', stroke: 'rgba(61,220,151,0.5)' })
+      const cols = [[`${BL.n}`, tr('건 검증 · 결과 코드를 가림', 'cases · outcomes hidden')], [`${reach}/${BL.serious}`, tr('검토 대상으로 올린 중대 사례', 'serious cases sent to review')], [`${BL.base.human} → ${BL.fv.human}`, tr(`사람이 먼저 볼 일 −${cut}%`, `human-first workload −${cut}%`)]]
+      cols.forEach(([v, l], i) => {
+        const x = gx + 36 + i * 370, p = count(lt, b(5) + 0.2 + i * 0.3)
+        withA(p, () => { text(v, x, 800, { size: 44, weight: 800, color: i === 1 ? C.ok : C.white }); text(l, x, 836, { size: 17, weight: 500, color: C.t2, maxW: 340 }) })
+      })
+    })
+    const chipsA = seg(lt, b(5) + 0.8, b(5) + 1.3)
+    if (chipsA > 0) {
+      const cs = ['flygate CLI', 'NemoClaw', 'OpenShell'], ws = cs.map((c) => chipW(c, 17, MONO, 38))
+      let x = gx
+      cs.forEach((c, i) => { chip(x, 884, c, { kind: 'nv', size: 17, h: 38, a: chipsA }); x += ws[i] + 12 })
+      text(tr('모든 기능은 flygate CLI 와 OpenShell 샌드박스의 NemoClaw 로 부릅니다', 'Every function runs through the flygate CLI and NemoClaw in an OpenShell sandbox'), x + 10, 910, { size: 17, weight: 500, color: C.t2, a: chipsA, maxW: gx + gw - x - 10 })
+    }
+    // 다음: STEP 1 로
+    const nx = seg(lt, b(6), b(6) + 0.5)
+    if (nx > 0) {
+      brackets(gx - 12, 288, gw + 24, 220, 26, C.cyan, 0.95 * nx, 3)
+      chip(gx + gw, 262, tr('다음 · STEP 1 FlyDiscovery →', 'NEXT · STEP 1 FlyDiscovery →'), { kind: 'cyan', size: 16, h: 34, align: 'right', a: nx })
+    }
+  }
+
+  // ---------------- 04 데모 표적: PARP1 은 예시 하나입니다 ----------------
+  // PARP1 이 무엇인지, 왜 데모로 골랐는지, PARP1 전용이 아니라는 점을 STEP 1 앞에서 말합니다
+  let CA3 = null
+  function drawCA(cx, cy, s, yaw, pitch, a, p = 1) {
+    const P = DS.of3.ca
+    if (!P || !P.length) return
+    if (!CA3) { const n = P.length / 3; let mx = 0, my = 0, mz = 0; for (let i = 0; i < n; i++) { mx += P[i * 3]; my += P[i * 3 + 1]; mz += P[i * 3 + 2] } CA3 = { n, c: [mx / n, my / n, mz / n] } }
+    const cyw = Math.cos(yaw), syw = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch), m = Math.floor(CA3.n * p)
+    let prev = null
+    X.save(); alpha(a); X.lineWidth = 3; X.lineCap = 'round'
+    for (let i = 0; i < m; i++) {
+      const px = P[i * 3] - CA3.c[0], py = P[i * 3 + 1] - CA3.c[1], pz = P[i * 3 + 2] - CA3.c[2]
+      const x1 = px * cyw + pz * syw, z1 = -px * syw + pz * cyw, y1 = py * cp - z1 * sp, z2 = py * sp + z1 * cp
+      const k = 60 / (60 + z2), q = [cx + x1 * s * k, cy - y1 * s * k]
+      if (prev) { const u = i / CA3.n; X.strokeStyle = `rgba(${Math.round(lerp(55, 165, u))},${Math.round(lerp(230, 139, u))},255,${0.55 + 0.4 * k})`; X.beginPath(); X.moveTo(prev[0], prev[1]); X.lineTo(q[0], q[1]); X.stroke() }
+      prev = q
+    }
+    X.restore()
+  }
+  function sTarget(lt) {
+    const b = (k) => BT0('target', k)
+    eyebrow(`${NUM.target} · STEP 1 · ${tr('데모 표적', 'DEMO TARGET')}`, C.cyan, lt)
+    headline(tr([['데모 표적: ', C.white], ['PARP1', C.cyan], [' · 약물 ', C.white], ['니라파립', C.amber]], [['Demo target: ', C.white], ['PARP1', C.cyan], [' · drug: ', C.white], ['niraparib', C.amber]]), lt, 120, 226, 54)
+    // 왼쪽: PARP1 은 무엇인가
+    const aL = seg(lt, b(0), b(0) + 0.6)
+    if (aL > 0) withA(aL, () => {
+      panel(120, 290, 800, 640, { top: C.cyan })
+      // 뼈대는 카드 안(제목 아래 ~ 설명 줄 위)에만 그립니다
+      X.save(); X.beginPath(); X.rect(122, 400, 796, 350); X.clip()
+      glowBlob(450, 575, 220, 'rgba(55,230,255,0.08)')
+      drawCA(450, 575, 4.6, 0.5 + lt * 0.25, -0.35, 1, seg(lt, b(0), b(0) + 2.2, E.inOut3))
+      X.restore()
+      withA(seg(lt, b(0) + 1.0, b(0) + 1.6), () => {
+        drawMol(MOL, MOL.c, 780, 560, 12, 0.6 + lt * 0.4, -0.3, {})
+        text(tr('니라파립', 'niraparib'), 780, 660, { size: 18, weight: 700, color: C.amber, align: 'center' })
+      })
+      text('PARP1', 156, 346, { size: 40, weight: 800, color: C.white })
+      text(tr('폴리(ADP-리보스) 중합효소 1 · OpenFold3 예측 구조', 'Poly(ADP-ribose) polymerase 1 · OpenFold3 structure'), 156, 380, { size: 17, weight: 500, fam: MONO, color: C.t3, maxW: 720 })
+      withA(seg(lt, b(1), b(1) + 0.5), () => {
+        const rows = tr([['하는 일', 'DNA 손상을 고치는 효소'], ['억제하면', 'BRCA 변이 암세포가 DNA를 고치지 못해 죽습니다'], ['치료제', 'PARP 억제제 · 난소암 · 유방암 · 전립선암']],
+          [['Role', 'An enzyme that repairs DNA damage'], ['If blocked', 'BRCA-mutant cancer cells cannot repair DNA and die'], ['Drugs', 'PARP inhibitors · ovarian, breast, prostate cancer']])
+        rows.forEach(([k, v], i) => {
+          const y = 790 + i * 40
+          text(k, 156, y, { size: 18, weight: 700, fam: MONO, color: C.cyan })
+          text(v, 290, y, { size: 21, weight: 600, color: C.text, maxW: 600 })
+        })
+      })
+    })
+    // 오른쪽: 왜 PARP1 을 골랐나 · PARP1 전용이 아닙니다
+    text(tr('왜 PARP1 인가', 'Why PARP1'), 980, 330, { size: 18, weight: 700, fam: MONO, color: C.t2, track: 3, a: seg(lt, b(2), b(2) + 0.4) })
+    const reasons = tr([
+      ['정답이 있는 표적입니다', `결정 구조 4R6E · ChEMBL 실측 ${DS.bench.n}종으로 예측을 채점합니다`, C.ok, 2],
+      ['시판 후까지 이어집니다', `시판 약 니라파립의 FAERS 의심 사례 ${fmtInt(NIR.cases)}건 → STEP 2`, C.magenta, 3],
+      ['PARP1 전용이 아닙니다', `약물 패널 ${PN.small + PN.bio}종으로 넓히고, 대시보드에서 아무 단백질이나 검색해 돌립니다`, C.nvl, 4],
+    ], [
+      ['It has ground truth', `Crystal structure 4R6E · ${DS.bench.n} ChEMBL compounds to score predictions`, C.ok, 2],
+      ['It continues after launch', `Niraparib is marketed: ${fmtInt(NIR.cases)} FAERS suspect cases → STEP 2`, C.magenta, 3],
+      ['It is not PARP1-only', `Extended to a ${PN.small + PN.bio}-drug panel; search any protein on the dashboard`, C.nvl, 4],
+    ])
+    reasons.forEach(([title, detail, col, k], i) => {
+      const a = seg(lt, b(k), b(k) + 0.5)
+      if (a <= 0) return
+      withA(a, () => {
+        const y = 370 + i * 190
+        X.save(); X.translate((1 - a) * 30, 0)
+        panel(980, y, 820, 164, { r: 16, stroke: col, lw: 1.5 })
+        dot(1022, y + 52, 16, col, 1, 16); text(String(i + 1), 1022, y + 59, { size: 20, weight: 800, color: '#04060c', align: 'center' })
+        text(title, 1060, y + 62, { size: 30, weight: 800, color: C.white, maxW: 710 })
+        text(detail, 1060, y + 112, { size: 20, weight: 500, color: C.t2, maxW: 710 })
+        X.restore()
+      })
+    })
+  }
 
   // ---------------- 03 STEP 1 · FlyDiscovery ----------------
   const BEATS = [[0.4, 6.4], [6.4, 13.2], [13.2, 19.2], [19.2, 25.2], [25.2, 32.4]]
@@ -770,7 +960,7 @@
   }
   function beatCritic(lt) {
     const L = lt - 25.2
-    text(tr('숫자가 다 맞아도, 결론이 근거를 넘으면 반려합니다', 'Even when every number is right, conclusions beyond the evidence are rejected'), 120, 410, { size: 34, weight: 800, color: C.white, a: seg(L, 0.1, 0.6), maxW: tr(0, 1240) })
+    text(tr('숫자가 다 맞아도, 근거 없는 결론은 반려합니다', 'Even when every number is right, unsupported conclusions are rejected'), 120, 410, { size: 34, weight: 800, color: C.white, a: seg(L, 0.1, 0.6), maxW: tr(0, 1240) })
     CLAIMS().forEach((c, i) => {
       const y = 448 + i * 110, t0 = 0.6 + i * 0.9, a = seg(L, t0, t0 + 0.5)
       if (a <= 0) return
@@ -788,8 +978,8 @@
     withA(seg(L, 0.4, 0.9), () => {
       panel(x, 448, 400, 424, { r: 18 })
       text(tr('크리틱 3단', '3-TIER CRITIC'), x + 26, 490, { size: 15, weight: 700, fam: MONO, color: C.cyan, track: 3 })
-      ;tr([['1단', '근거 ID가 붙었는가 · 규칙'], ['2단', '숫자가 원본 로그와 맞는가'], ['3단', '추론이 근거를 넘는가 · Nemotron']],
-        [['T1', 'Evidence IDs attached? · rules'], ['T2', 'Numbers match the raw logs?'], ['T3', 'Inference beyond evidence? · Nemotron']]).forEach(([a, b], i) => {
+      ;tr([['1단', '근거 ID가 붙었는가 · 규칙'], ['2단', '숫자가 원본 로그와 맞는가'], ['3단', '근거가 결론을 받쳐 주는가 · Nemotron']],
+        [['T1', 'Evidence IDs attached? · rules'], ['T2', 'Numbers match the raw logs?'], ['T3', 'Does evidence support the claim? · Nemotron']]).forEach(([a, b], i) => {
         text(a, x + 26, 530 + i * 34, { size: 17, weight: 700, color: i === 2 ? C.nvl : C.text })
         text(b, x + 74, 530 + i * 34, { size: 17, weight: 500, color: C.t2, maxW: 300 })
       })
@@ -825,8 +1015,8 @@
   // ---------------- 04 다리: 같은 분자가 시판됩니다 ----------------
   function sBridge(lt, T) {
     eyebrow(`${NUM.bridge} · THE BRIDGE`, C.amber, lt)
-    headline(tr([['데모: 같은 니라파립을 ', C.white], ['시판 후', C.amber], ['로 이어 봅니다', C.white]], [['Demo: the same niraparib, followed ', C.white], ['post-market', C.amber]]), lt)
-    const gx = 860, gy0 = 320, gy1 = 900
+    headline(tr([['데모: STEP 1의 니라파립을 ', C.white], ['시판 후', C.amber], ['로 이어 봅니다', C.white]], [['Demo: niraparib from STEP 1, followed ', C.white], ['post-market', C.amber]]), lt)
+    const gx = 860, gy0 = 300, gy1 = 760
     withA(seg(lt, 0.4, 1.0), () => {
       const pulse = 0.6 + 0.4 * Math.sin(lt * 5)
       ;[-14, 14].forEach((dx) => { line(gx + dx, gy0, gx + dx, gy1, C.cyan, 0.9, 3); line(gx + dx, gy0, gx + dx, gy1, C.cyan, 0.15 * pulse, 14) })
@@ -857,12 +1047,12 @@
     // 문 왼쪽: 시판 전에 확인한 것(STEP 1 요약)이 남습니다
     const ka = seg(lt, 3.6, 4.2)
     if (ka > 0) withA(ka, () => {
-      const cx = 150, cy = 420, cw = 600
+      const cx = 150, cy = 360, cw = 600
       panel(cx, cy, cw, 380, { r: 20, top: C.cyan, fill: 'rgba(10,16,32,0.6)' })
       text(tr('STEP 1 · FLYDISCOVERY · 시판 전', 'STEP 1 · FLYDISCOVERY · PRE-MARKET'), cx + 30, cy + 48, { size: 15, weight: 700, fam: MONO, color: C.cyan, track: 2 })
       text(tr('PARP1 결합을 확인하고 왔습니다', 'PARP1 binding, already checked'), cx + 30, cy + 94, { size: 28, weight: 800, color: C.white })
       const lines = [[tr(`재도킹 RMSD ${DS.dd.redock[0][1]} Å`, `Redocking RMSD ${DS.dd.redock[0][1]} Å`), tr('DiffDock NIM · 결정 구조 4R6E', 'DiffDock NIM · crystal 4R6E')], [`Spearman ${DS.bench.spearman.toFixed(3)}`, tr(`Boltz-2 NIM · PARP1 화합물 ${DS.bench.n}종`, `Boltz-2 NIM · ${DS.bench.n} PARP1 compounds`)],
-        [tr(`과잉해석 ${DS.critic.caught}/${DS.critic.n_over} 반려`, `${DS.critic.caught}/${DS.critic.n_over} overreach rejected`), tr('Nemotron 크리틱 · 근거를 넘는 결론', 'Nemotron critic · conclusions beyond evidence')]]
+        [tr(`과잉해석 ${DS.critic.caught}/${DS.critic.n_over} 반려`, `${DS.critic.caught}/${DS.critic.n_over} overreach rejected`), tr('Nemotron 크리틱 · 근거 없는 결론', 'Nemotron critic · unsupported conclusions')]]
       lines.forEach(([a, b], i) => withA(seg(lt, 4.0 + i * 0.25, 4.4 + i * 0.25), () => {
         const y = cy + 164 + i * 72
         check(cx + 44, y - 8, 18, C.ok, 1, 3.2)
@@ -871,31 +1061,56 @@
       }))
     })
     const x = 980
-    withA(seg(lt, 3.4, 4.0), () => {
-      text(tr(`FDA FAERS · ${FV.ov.first}–${NIR.asof} · 중복 제거 사례`, `FDA FAERS · ${FV.ov.first}–${NIR.asof} · DEDUPLICATED CASES`), x, 372, { size: 16, weight: 600, fam: MONO, color: C.magenta, track: 1 })
-      const w = odometer(NIR.cases * count(lt, 3.5, 1.3), x, 478, { size: 100, weight: 800, color: C.white, final: NIR.cases })
-      text(tr('니라파립 의심 사례', 'niraparib-suspect cases'), x + w + 20, 478, { size: 30, weight: 700, color: C.t2 })
+    // 오른쪽: 첫 문장(FDA 하루 평균 · 니라파립 누적)에 맞춰 숫자가 먼저 나옵니다. 모든 약 → 니라파립 순서입니다
+    withA(seg(lt, 0.9, 1.4), () => {
+      text(tr(`FDA FAERS · 모든 약 · ${FV.ov.asof} 한 분기`, `FDA FAERS · ALL DRUGS · ONE QUARTER (${FV.ov.asof})`), x, 356, { size: 16, weight: 600, fam: MONO, color: C.cyan, track: 1 })
+      const w = odometer(FV.ov.q_reports * count(lt, 1.0, 1.2), x, 436, { size: 80, weight: 800, color: C.white, final: FV.ov.q_reports })
+      text(tr('건', 'reports'), x + w + 12, 436, { size: 30, weight: 700, color: C.t2 })
+      const perDay = Math.round(FV.ov.q_reports / 91 / 100) * 100
+      withA(seg(lt, 1.6, 2.0), () => rich(tr([['= 하루 평균 ', C.t2, 600], [`약 ${fmtInt(perDay)}건`, C.cyan, 800]], [['= about ', C.t2, 600], [`${fmtInt(perDay)} a day`, C.cyan, 800]]), x + w + 12 + measure(tr('건', 'reports'), 30, 700, SANS) + 24, 436, { size: 30 }))
+    })
+    withA(seg(lt, 2.3, 2.8), () => {
+      text(tr(`니라파립 · 출시 후 누적 · 중복 제거 사례`, `NIRAPARIB · CUMULATIVE SINCE LAUNCH · DEDUPLICATED`), x, 500, { size: 16, weight: 600, fam: MONO, color: C.magenta, track: 1 })
+      const w = odometer(NIR.cases * count(lt, 2.4, 1.2), x, 576, { size: 80, weight: 800, color: C.white, final: NIR.cases })
+      text(tr('건 · 니라파립 의심 사례', 'niraparib-suspect cases'), x + w + 12, 576, { size: 28, weight: 700, color: C.t2 })
     })
     withA(seg(lt, 4.6, 5.1), () => {
-      text(tr('혈소판감소증', 'Thrombocytopenia'), x, 548, { size: 30, weight: 700, color: C.white })
-      const w = odometer(NIR.a * count(lt, 4.7, 1.0), x, 622, { size: 72, weight: 800, color: C.white, final: NIR.a })
-      text(tr('건', 'reports'), x + w + 10, 622, { size: 30, weight: 700, color: C.t2 })
-      text(`PRR ${NIR.prr.toFixed(2)} [${NIR.prr_lo.toFixed(2)}–${NIR.prr_hi.toFixed(2)}] · ROR₀₂₅ ${NIR.ror_lo.toFixed(2)} · IC₀₂₅ ${NIR.ic025.toFixed(2)}`, x, 668, { size: 22, weight: 600, fam: MONO, color: C.text, maxW: 820 })
-      text(tr('ROR₀₂₅ = 보고 오즈비(ROR) 하한, 1보다 크면 불균형 · IC₀₂₅ = 정보 성분(IC) 하한, 0보다 크면 불균형', 'ROR₀₂₅ = reporting odds ratio lower bound (> 1: disproportionate) · IC₀₂₅ = information component lower bound (> 0)'), x, 700, { size: 15, weight: 500, color: C.t3, maxW: 820 })
+      rich(tr([['혈소판감소증 ', C.white, 700], [`${fmtInt(NIR.a)}건`, C.white, 800]], [['Thrombocytopenia ', C.white, 700], [`${fmtInt(NIR.a)} reports`, C.white, 800]]), x, 628, { size: 26 })
+      text(`PRR ${NIR.prr.toFixed(2)} [${NIR.prr_lo.toFixed(2)}–${NIR.prr_hi.toFixed(2)}] · ROR₀₂₅ ${NIR.ror_lo.toFixed(2)} · IC₀₂₅ ${NIR.ic025.toFixed(2)}`, x, 666, { size: 20, weight: 600, fam: MONO, color: C.text, maxW: 820 })
+      text(tr('ROR₀₂₅ = 보고 오즈비(ROR) 하한, 1보다 크면 불균형 · IC₀₂₅ = 정보 성분(IC) 하한, 0보다 크면 불균형', 'ROR₀₂₅ = reporting odds ratio lower bound (> 1: disproportionate) · IC₀₂₅ = information component lower bound (> 0)'), x, 694, { size: 14, weight: 500, color: C.t3, maxW: 820 })
     })
     withA(seg(lt, 5.4, 5.9), () => {
-      const w = chip(x, 728, NIR.sdr ? tr('SDR · 불균형 보고 신호', 'SDR · disproportionate reporting') : tr('SDR 아님', 'No SDR'), { kind: 'mag', size: 18, h: 38 })
-      text(tr('신호 검토를 시작하는 단서입니다 · EU GVP Module IX', 'A cue to start signal review · EU GVP Module IX'), x + w + 16, 754, { size: 17, weight: 500, color: C.t3, maxW: 820 - w - 16 })
+      const w = chip(x, 712, NIR.sdr ? tr('SDR · 불균형 보고 신호', 'SDR · disproportionate reporting') : tr('SDR 아님', 'No SDR'), { kind: 'mag', size: 18, h: 38 })
+      text(tr('신호 검토를 시작하는 단서입니다 · EU GVP Module IX', 'A cue to start signal review · EU GVP Module IX'), x + w + 16, 738, { size: 17, weight: 500, color: C.t3, maxW: 820 - w - 16 })
     })
-    withA(seg(lt, 6.1, 6.7), () => {
-      text(tr('이제 질문이 바뀝니다.', 'Now the question changes.'), x, 846, { size: 28, weight: 700, color: C.white })
-      text(tr('이 보고는 누가, 얼마나 빨리 봐야 합니까?', 'Who needs to see this report, and how fast?'), x, 886, { size: 28, weight: 700, color: C.cyan, maxW: tr(0, 820) })
+    // STEP 2 가 필요한 이유: 보고가 너무 많아, 사람이 먼저 봐야 할 것을 골라야 합니다(화면 맨 아래 가로 강조 띠)
+    const qa = seg(lt, 6.1, 6.6)
+    if (qa > 0) withA(qa, () => {
+      const by = 784, bh = 168
+      X.save(); X.translate(0, (1 - qa) * 16)
+      panel(120, by, 1680, bh, { r: 18, fill: 'rgba(8,30,40,0.92)', stroke: C.cyan, lw: 2, glow: 'rgba(55,230,255,0.35)' })
+      brackets(110, by - 10, 1700, bh + 20, 24, C.cyan, 0.9 * qa, 3)
+      // 같은 기준의 숫자만 씁니다: 모든 약 · 하루 평균(한 분기 보고 수 ÷ 91일, 백 단위 반올림), 니라파립 · 출시 후 누적
+      const perDay = Math.round(FV.ov.q_reports / 91 / 100) * 100, n = Math.floor(NIR.cases / 10000)
+      const L1 = tr([['FDA에는 하루 평균 ', C.white], [`약 ${fmtInt(perDay)}건`, C.magenta], ['의 부작용 보고가 들어옵니다.', C.white]],
+        [['About ', C.white], [fmtInt(perDay), C.magenta], [' adverse-event reports reach the FDA every day.', C.white]])
+      const L2 = tr([['니라파립 한 약에만 출시 후 ', C.white], [`${n}만 건이 넘는`, C.magenta], [' 부작용 보고가 쌓였습니다.', C.white]],
+        [['Niraparib alone has ', C.white], [`over ${fmtInt(n * 10000)}`, C.magenta], [' reports since launch.', C.white]])
+      rich(L1, 960, by + 48, { size: 30, weight: 700, align: 'center', maxW: 1560 })
+      rich(L2, 960, by + 92, { size: 30, weight: 700, align: 'center', maxW: 1560 })
+      const b1 = tr('그중 사람이 먼저 봐야 할 중대 사례를 골라냅니다', 'picks the serious cases people must see first')
+      const wb = measure(b1, 26, 700, SANS), wc = chipW('STEP 2 · FlyVigilance', 17, MONO, 36), gap = 18, aw = 40
+      let x0 = 960 - (aw + gap + wc + gap + wb) / 2
+      arrow(x0, by + 132, x0 + aw, by + 132, C.cyan, 1, 3, 11); x0 += aw + gap
+      chip(x0, by + 114, 'STEP 2 · FlyVigilance', { kind: 'mag', size: 17, h: 36 }); x0 += wc + gap
+      text(b1, x0, by + 141, { size: 26, weight: 700, color: C.cyan })
+      X.restore()
     })
-    text(tr('STEP 1은 시판 전 후보 물질을, STEP 2는 시판 후 허가 약물을 봅니다 · 데모는 두 단계를 같은 약물로 잇고, 두 단계 모두 다른 약물에 그대로 씁니다', 'STEP 1 covers pre-market candidates; STEP 2 covers approved, marketed drugs · The demo links both steps with one drug; both work unchanged for any other drug'),
-      960, 946, { size: 16, weight: 500, color: C.t3, align: 'center', a: seg(lt, 6.6, 7.2), maxW: 1680 })
+    text(tr('STEP 1은 시판 전 후보 물질을, STEP 2는 시판 후 허가 약물을 봅니다 · 데모는 두 단계를 니라파립으로 잇고, 두 단계 모두 다른 약물에 그대로 씁니다', 'STEP 1 covers pre-market candidates; STEP 2 covers approved, marketed drugs · The demo links both steps with one drug; both work unchanged for any other drug'),
+      960, 980, { size: 14, weight: 500, color: C.t3, align: 'center', a: seg(lt, 6.6, 7.2), maxW: 1680 })
   }
   { const t = S0.bridge; cue(t, 'whoosh', { d: 0.8 }); cue(t + 0.5, 'pulse'); cue(t + 1.9, 'riser', { d: 1.2 }); cue(t + 3.1, 'glitch', { d: 0.3 }); cue(t + 3.1, 'boom', { g: 1, big: 1 })
-    cue(t + 3.5, 'count', { d: 1.3 }); cue(t + 4.7, 'count', { d: 1.0 }); cue(t + 5.4, 'lock'); cue(t + 6.1, 'sweep', { d: 1.4 }) }
+    cue(t + 1.0, 'count', { d: 1.2 }); cue(t + 2.4, 'count', { d: 1.2 }); cue(t + 5.4, 'lock'); cue(t + 6.1, 'sweep', { d: 1.4 }) }
 
   // ---------------- 05 STEP 2 · FlyVigilance 흐름 ----------------
   function sFlow(lt) {
@@ -1036,7 +1251,7 @@
   }
   function sMeasure(lt) {
     eyebrow(`${NUM.measure} · MEASURED · OUTCOME-BLIND`, C.amber, lt)
-    headline(tr([['결과 코드를 가리고, ', C.white], ['같은 사례로', C.amber], [' 쟀습니다', C.white]], [['Outcomes blinded, measured on ', C.white], ['the same cases', C.amber]]), lt, 120, 226, 54)
+    headline(tr([['결과 코드를 가리고 ', C.white], ['같은 사례로', C.amber], [' 비교했습니다', C.white]], [['Outcomes blinded, measured on ', C.white], ['the same cases', C.amber]]), lt, 120, 226, 54)
     const B = FV.blind, S = B.serious
     if (B.fallback) chip(1800, 128, tr('대체값 · bench.json 재측정 전', 'Fallback values · before bench.json re-run'), { kind: 'jev', size: 15, h: 32, align: 'right', a: seg(lt, 0.6, 1.0) })
     withA(seg(lt, 0.9, 1.4), () => {
@@ -1050,7 +1265,7 @@
       const x = 120, y = 364
       X.save(); X.translate(0, (1 - ka) * 24)
       panel(x, y, 1680, 282, { r: 20 })
-      text(tr('검토에 도달한 중대 사례', 'Serious cases that reached review'), x + 30, y + 56, { size: 30, weight: 800, color: C.white })
+      text(tr('검토 대상으로 올라간 중대 사례', 'Serious cases sent to review'), x + 30, y + 56, { size: 30, weight: 800, color: C.white })
       text(tr(`중대 ${S}건이 사람 우선 검토나 System-2 검토·추가정보 요청까지 간 수`, `How many of ${S} serious cases got human-first review, System-2 review or a follow-up request`), x + 30, y + 92, { size: 17, weight: 500, color: C.t3 })
       pChip(x + 1650, y + 26, B.p.unreviewed, seg(lt, 3.3, 3.8))
       const bx = x + 330, bw = 1000
@@ -1097,9 +1312,9 @@
       })
     })
     withA(seg(lt, 7.6, 8.2), () => {
-      rich(tr([['사람이 먼저 볼 양은 ', C.t2, 600], [`${fmtInt(B.base.human)} → ${fmtInt(B.fv.human)}건`, C.white, 800], ['으로 줄고, 검토에 닿은 중대 사례는 ', C.t2, 600],
+      rich(tr([['사람이 먼저 볼 양은 ', C.t2, 600], [`${fmtInt(B.base.human)} → ${fmtInt(B.fv.human)}건`, C.white, 800], ['으로 줄고, 검토 대상으로 올라간 중대 사례는 ', C.t2, 600],
         [`${baseReach} → ${fvReach}건`, C.cyan, 800], ['으로 늘었습니다', C.t2, 600]],
-        [['Human-first workload fell ', C.t2, 600], [`${fmtInt(B.base.human)} → ${fmtInt(B.fv.human)}`, C.white, 800], [', while serious cases reaching review rose ', C.t2, 600], [`${baseReach} → ${fvReach}`, C.cyan, 800]]), 120, 950, { size: 22, maxW: 1680 })
+        [['Human-first workload fell ', C.t2, 600], [`${fmtInt(B.base.human)} → ${fmtInt(B.fv.human)}`, C.white, 800], [', while serious cases sent to review rose ', C.t2, 600], [`${baseReach} → ${fvReach}`, C.cyan, 800]]), 120, 950, { size: 22, maxW: 1680 })
     })
   }
   { const t = S0.measure; cue(t, 'whoosh', { d: 0.9 }); cue(t + 0.3, 'pad', { d: 7, note: 3 }); cue(t + 1.5, 'hit', { g: 0.6 }); cue(t + 1.9, 'sweep', { d: 1.3 }); cue(t + 3.3, 'lock')
@@ -1191,7 +1406,7 @@
   const TYPE_COL = { small: C.cyan, antibody: C.violet, protein: C.blue, other: '#6c7aa8' }
   function sPanel(lt) {
     eyebrow(`${NUM.panel} · STEP 1 · DRUG PANEL · REDOCKING`, C.cyan, lt, 120, 150)
-    headline(tr([['후보 하나에서 ', C.white], ['약물 패널', C.cyan], ['로 넓힙니다', C.white]], [['From one candidate to a ', C.white], ['drug panel', C.cyan]]), lt, 120, 214, 46)
+    headline(tr([['검증 대상을 ', C.white], ['약물 패널', C.cyan], ['로 넓힙니다', C.white]], [['Extending the checks to a ', C.white], ['drug panel', C.cyan]]), lt, 120, 214, 46)
     text(tr(`FAERS 데모 사례 ${PN.n_cases}건의 주의심약물 ${PN.n_suspects}종 중 상위 ${PN.rows.length}종(화면에는 ${Math.min(22, PN.rows.length)}종) · 분자 종류와 기전은 ChEMBL, 재도킹은 DiffDock NIM 실측입니다`,
       `Top ${PN.rows.length} of ${PN.n_suspects} suspect drugs in ${PN.n_cases} FAERS demo cases (${Math.min(22, PN.rows.length)} shown) · molecule type and mechanism from ChEMBL; redocking measured with DiffDock NIM`),
       120, 260, { size: 18, weight: 500, color: C.t2, a: seg(lt, 0.5, 1.0), maxW: 1680 })
@@ -1259,7 +1474,7 @@
     ['DuckDB · computed in SQL · models cannot change the numbers', `SDR table for ${fmtInt(WH.drugs ?? 0)} drugs`, `${fmtInt(WH.serious)} serious cases`])
   function sWarehouse(lt) {
     eyebrow(`${NUM.warehouse} · STEP 2 · FLYVIGILANCE · FAERS WAREHOUSE`, C.magenta, lt)
-    headline(tr([['FDA FAERS ', C.white], [`${WH.quarters}개 분기`, C.magenta], ['를 한 곳에 쌓았습니다', C.white]], [['FDA FAERS: ', C.white], [`${WH.quarters} quarters`, C.magenta], [' in one warehouse', C.white]]), lt, 120, 226, 54)
+    headline(tr([['FDA FAERS ', C.white], [`${WH.quarters}개 분기`, C.magenta], ['를 하나의 데이터베이스로 구축했습니다', C.white]], [['FDA FAERS: ', C.white], [`${WH.quarters} quarters`, C.magenta], [' in one database', C.white]]), lt, 120, 226, 54)
     const stats = [[tr('원보고', 'Raw reports'), WH.raw, tr('분기 파일 원본 · 버전 포함', 'quarterly files as-is · all versions')], [tr('중복 제거 사례', 'Deduplicated cases'), WH.cases, tr('caseid 최신 버전 · FDA 삭제 목록 반영', 'latest caseid version · FDA deletions applied')],
       [tr('약물–반응 쌍', 'Drug–reaction pairs'), WH.pairs, 'PRR · ROR · χ² · IC₀₂₅ (SQL)'], [tr('3중 기준 SDR', 'Triple-criteria SDRs'), WH.sdr, 'Evans ∧ ROR₀₂₅ > 1 ∧ IC₀₂₅ > 0']]
     stats.forEach(([l, v, sub], i) => {
@@ -1301,7 +1516,7 @@
   // ---------------- STEP 2 · 실제 사례 한 건 ----------------
   function sTriage(lt) {
     eyebrow(tr(`${NUM.triage} · STEP 2 · LIVE TRIAGE · 실제 FAERS 사례`, `${NUM.triage} · STEP 2 · LIVE TRIAGE · REAL FAERS CASE`), C.amber, lt, 120, 150)
-    headline(tr([['실제 사례 한 건이 ', C.white], [`${(TR.jev_ms / 1000).toFixed(1)}초`, C.amber], ['에 경로를 받습니다', C.white]], [['One real case, routed in ', C.white], [`${(TR.jev_ms / 1000).toFixed(1)} s`, C.amber]]), lt, 120, 214, 46)
+    headline(tr([['실제 사례 한 건을 ', C.white], [`${(TR.jev_ms / 1000).toFixed(1)}초`, C.amber], [' 만에 분류합니다', C.white]], [['One real case, classified in ', C.white], [`${(TR.jev_ms / 1000).toFixed(1)} s`, C.amber]]), lt, 120, 214, 46)
     // A. 사례 카드
     withA(seg(lt, 0.5, 1.0), () => {
       panel(120, 262, 470, 668, { r: 22, top: C.cyan })
@@ -1552,7 +1767,7 @@
   const yearOf = (iso) => { const [y, m, d] = iso.split('-').map(Number); const t0 = Date.UTC(y, 0, 1), t1 = Date.UTC(y + 1, 0, 1); return y + (Date.UTC(y, m - 1, d) - t0) / (t1 - t0) }
   function sTime(lt) {
     eyebrow(tr(`${NUM.timemachine} · SIGNAL TIME MACHINE · 분기별 재계산`, `${NUM.timemachine} · SIGNAL TIME MACHINE · QUARTERLY RECOMPUTE`), C.amber, lt, 120, 150)
-    headline(tr([['FDA 조치 ', C.white], ['이전에', C.amber], [' SDR이 섰는지, 분기마다 다시 계산했습니다', C.white]], [['Did the SDR appear ', C.white], ['before', C.amber], [' FDA action? Recomputed every quarter', C.white]]), lt, 120, 214, 46)
+    headline(tr([['FDA 조치 ', C.white], ['이전에', C.amber], [' 신호가 나타났는지 분기마다 다시 계산했습니다', C.white]], [['Did the SDR appear ', C.white], ['before', C.amber], [' FDA action? Recomputed every quarter', C.white]]), lt, 120, 214, 46)
     const M = BT.main, S = M.series, n = S.length
     const px0 = 250, px1 = 1130, py0 = 810, py1 = 420
     const yr0 = 2013.0, yr1 = 2013.0 + (n - 1) * 0.25
@@ -2065,7 +2280,7 @@
       path: ['brand', 'listed', 'ev'], zoom: ['action', 'tier'], call: tr(`action ${C3.action ?? ''} · tier ${C3.tier ?? ''} · ${C3.brand ?? ''} 라벨 기재 · 근거 ID ${C3.n_ev_tri ?? ''}개`, `action ${C3.action ?? ''} · tier ${C3.tier ?? ''} · on the ${C3.brand ?? ''} label · ${C3.n_ev_tri ?? ''} evidence IDs`) },
     cli_grade: { word: 'GRADE', sub: tr('라벨 · 신호 · 문헌', 'Label · signal · literature'), col: '#f7a8ef', ink: C.magenta, title: 'zsh — flygate grade NIRAPARIB thrombocytopenia',
       path: ['summary', 'prr', 'ev'], zoom: ['grade', 'grade_name', 'class'], call: tr(`등급 ${C3.grade ?? ''} · ${C3.grade_name ?? ''} · ${C3.pv_class ?? ''} · PRR ${f2(C3.prr)} · 근거 ID ${C3.n_ev_grade ?? ''}개`, `grade ${C3.grade ?? ''} · ${C3.grade_name ?? ''} · ${C3.pv_class ?? ''} · PRR ${f2(C3.prr)} · ${C3.n_ev_grade ?? ''} evidence IDs`) },
-    cli_critic: { word: 'CRITIC', sub: tr('근거를 넘으면 반려', 'Beyond evidence? Rejected'), col: '#ff9ea5', ink: C.red, title: 'zsh — flygate critic agent/examples/claims_niraparib.json',
+    cli_critic: { word: 'CRITIC', sub: tr('근거 없으면 반려', 'Unsupported? Rejected'), col: '#ff9ea5', ink: C.red, title: 'zsh — flygate critic agent/examples/claims_niraparib.json',
       path: ['verdict', 'issues', 'ev'], zoom: ['safe', 'flagged'], call: tr(`verdict: ${C3.verdict ?? ''} · 가드 반려 ${(C3.flagged || []).join(' · ')} · Nemotron Safety Guard`, `verdict: ${C3.verdict ?? ''} · guard flagged ${(C3.flagged || []).join(' · ')} · Nemotron Safety Guard`) },
     cli_dock: { word: 'DOCK', sub: tr('DiffDock NIM 실시간', 'DiffDock NIM, live'), col: '#8fe9ff', ink: C.cyan, title: 'zsh — flygate discover --live',
       path: ['endpoint', 'conf', 'ev'], zoom: ['status', 'run'], call: tr(`status ${C3.dock_status ?? ''} · 포즈 ${C3.dock_poses ?? ''}개 · 최고 신뢰도 ${f2(C3.dock_conf, 3)} · 실행 ${C3.dock_s ?? ''}초`, `status ${C3.dock_status ?? ''} · ${C3.dock_poses ?? ''} poses · top confidence ${f2(C3.dock_conf, 3)} · ${C3.dock_s ?? ''} s run`) },
@@ -2312,6 +2527,20 @@
     }
   }
   cliCues()
+  // 02 문제 · 03 에이전트 장면(새 장면)의 효과음: 내레이션 박자에 맞춰 적습니다
+  function introCues() {
+    const bt = (sid, k) => SCN[sid].t0 + BT0(sid, k)
+    if (SCN.problem) { const t = SCN.problem.t0; cueN(t, 'whoosh', { d: 0.8 }); cueN(bt('problem', 1), 'hit', { g: 0.7 }); cueN(bt('problem', 2) + 0.3, 'count', { d: 1.3 }); cueN(bt('problem', 4), 'hit', { g: 0.9 }); cueN(bt('problem', 4) + 0.1, 'boom', { g: 0.5 }) }
+    if (SCN.solution) {
+      const s = SCN.solution; cueN(s.t0, 'whoosh', { d: 0.8 }); cueN(s.t0 + 0.2, 'pad', { d: s.t1 - s.t0 - 0.4, note: 3 })
+      ;[1, 2, 3, 4].forEach((k) => cueN(bt('solution', k), 'tick', { f: 1.2 + k * 0.1 })); cueN(bt('solution', 5) + 0.2, 'count', { d: 1.2 }); cueN(bt('solution', 6), 'lock')
+    }
+    if (SCN.target) {
+      const s = SCN.target; cueN(s.t0, 'whoosh', { d: 0.8 }); cueN(s.t0 + 0.3, 'sweep', { d: 1.6 })
+      ;[2, 3, 4].forEach((k) => cueN(bt('target', k), 'hit', { g: 0.6 }))
+    }
+  }
+  introCues()
   // CLI 장면 사이의 글리치 컷: 경계 ±0.14초에 가로 조각이 밀리고 색이 갈라집니다
   const CLI_CUTS = []   // 최종본: CLI 장면 사이의 색 글리치는 쓰지 않습니다(바로 자릅니다)
   let GLC = null
@@ -2345,7 +2574,7 @@
     'api.fda.gov': tr('openFDA 라벨', 'openFDA labels'), 'eutils.ncbi.nlm.nih.gov': 'PubMed', 'pubmed.ncbi.nlm.nih.gov': 'PubMed', 'build.nvidia.com': 'NVIDIA NIM' }
   function sAgent(lt) {
     eyebrow(`${NUM.agent} · ALWAYS ON · NEMOCLAW`, C.nv, lt, 120, 150)
-    headline(tr([['NemoClaw로 ', C.white], ['늘 켜 두고', C.nvl], [', OpenShell 안에서 실행합니다', C.white]], [['Always on', C.nvl], [' with NemoClaw, running inside OpenShell', C.white]]), lt, 120, 214, 46)
+    headline(tr([['NemoClaw로 ', C.white], ['OpenShell 샌드박스', C.nvl], [' 안에서 항상 실행합니다', C.white]], [['Runs continuously with NemoClaw inside ', C.white], ['an OpenShell sandbox', C.nvl]]), lt, 120, 214, 46)
     withA(seg(lt, 0.6, 1.2), () => {
       panel(120, 262, 1120, 668, { r: 24, fill: 'rgba(8,20,10,0.55)', stroke: 'rgba(118,185,0,0.75)', lw: 2, glow: 'rgba(118,185,0,0.25)' })
       text(tr('NVIDIA OpenShell 샌드박스', 'NVIDIA OpenShell sandbox'), 150, 304, { size: 24, weight: 800, color: C.nvl })
@@ -2621,19 +2850,11 @@
     })
   }
   // 카메라: 장면마다 느리게 밀어 들어가며(1.00 → 1.03~1.055) 조금씩 흘러갑니다. 초점은 강조 틀 쪽으로 살짝 기웁니다.
-  function camera(s, idx, T, lt) {
-    const d = s.t1 - s.t0, u = (T - s.t0) / d
-    const Z = clamp(0.0036 * d, 0.03, 0.055)
-    const k = 1 + Z * u
-    const dir = idx % 2 ? -1 : 1
-    let fx = 960 + dir * 110, fy = 540
-    const f = focusAt(s, lt)
-    if (f) { fx = lerp(fx, lerp(960, f.x + f.w / 2, 0.35), f.a); fy = lerp(fy, lerp(540, f.y + f.h / 2, 0.35), f.a) }
-    const dx = -dir * 20 * (u - 0.5), dy = ((idx % 3) - 1) * 10 * (u - 0.5)
-    X.translate(fx + dx, fy + dy); X.scale(k, k); X.translate(-fx, -fy)
-  }
+  // 최종본: 장면마다 천천히 밀고 들어가던 카메라(1.03~1.055배 확대 · 좌우 흐름 · 강조 틀 쪽 기울기)를 끕니다.
+  // 장면이 길어지면서 화면 전체가 부풀어 보였고, 차트 · 카운터 · 입자가 이미 화면을 움직이게 합니다
+  function camera() {}
 
-  const DRAW = { intro: sIntro, problem: sProblem, disc: sDisc, panel: sPanel, bridge: sBridge, warehouse: sWarehouse, flow: sFlow, triage: sTriage, korean: sKorean,
+  const DRAW = { intro: sIntro, problem: sProblem, solution: sSolution, target: sTarget, disc: sDisc, panel: sPanel, bridge: sBridge, warehouse: sWarehouse, flow: sFlow, triage: sTriage, korean: sKorean,
     signals: sSignals, timemachine: sTime, measure: sMeasure, validated: sValidated, nvskills: sNvSkills, reviewed: sReviewed, arch: sArch, agent: sAgent, cli_open: sCliOpen, cli_same: sCliSame, cli_line: sCliLine, close: sClose }
   CMD_IDS.forEach((sid) => { DRAW[sid] = (lt, T) => sCmd(sid, lt, T) })
 
@@ -2774,10 +2995,22 @@
   const clock = document.getElementById('clock'), scrub = document.getElementById('scrub'), pp = document.getElementById('pp')
   scrub.max = DUR
   const mmss = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`
+  // 내레이션판: 페이지 안에 든 음원(D.audio, AAC)을 재생하고, 화면 시각을 음원 시각에 맞춥니다
+  const AUD = D.audio && !PAUSED ? new Audio('data:audio/mp4;base64,' + D.audio) : null
+  if (AUD) {
+    playing = false; pp.textContent = '▶'
+    const b = document.createElement('button')
+    b.textContent = D.lang === 'en' ? '▶ Play with narration' : '▶ 내레이션 켜고 보기'
+    b.style.cssText = 'position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:20;font:700 24px system-ui,sans-serif;padding:18px 34px;border:0;border-radius:40px;background:#76b900;color:#04060c;cursor:pointer;box-shadow:0 10px 40px rgba(0,0,0,.6)'
+    b.onclick = () => { b.remove(); AUD.currentTime = T; AUD.play(); playing = true; pp.textContent = '❚❚' }
+    document.body.appendChild(b)
+    AUD.onended = () => { playing = false; pp.textContent = '▶' }
+  }
   function frame(now) {
     const dt = (now - last) / 1000; last = now
     if (!manual) {
-      if (playing) T = Math.min(DUR, T + dt)
+      if (AUD && !AUD.paused) T = Math.min(DUR, AUD.currentTime)
+      else if (playing && !AUD) T = Math.min(DUR, T + dt)
       render(T)
       clock.textContent = `${mmss(T)} / ${mmss(DUR)}`; scrub.value = T
       if (T >= DUR && playing) { playing = false; pp.textContent = '▶' }
@@ -2793,15 +3026,18 @@
   }
   addEventListener('resize', fit); fit()
   pp.textContent = playing ? '❚❚' : '▶'
-  pp.onclick = () => { manual = false; playing = !playing; if (T >= DUR) T = 0; pp.textContent = playing ? '❚❚' : '▶' }
-  scrub.oninput = () => { manual = false; T = parseFloat(scrub.value) }
+  pp.onclick = () => {
+    manual = false; playing = !playing; if (T >= DUR) T = 0; pp.textContent = playing ? '❚❚' : '▶'
+    if (AUD) { if (playing) { AUD.currentTime = T; AUD.play() } else AUD.pause() }
+  }
+  scrub.oninput = () => { manual = false; T = parseFloat(scrub.value); if (AUD) AUD.currentTime = T }
   addEventListener('keydown', (e) => {
     if (e.code === 'Space') { e.preventDefault(); pp.click() }
-    if (e.code === 'ArrowRight') { manual = false; T = Math.min(DUR, T + 5) }
-    if (e.code === 'ArrowLeft') { manual = false; T = Math.max(0, T - 5) }
+    if (e.code === 'ArrowRight') { manual = false; T = Math.min(DUR, T + 5); if (AUD) AUD.currentTime = T }
+    if (e.code === 'ArrowLeft') { manual = false; T = Math.max(0, T - 5); if (AUD) AUD.currentTime = T }
   })
   const ch = document.getElementById('chapters')
-  SCENES.forEach((s) => { const sp = document.createElement('span'); sp.textContent = s.name; sp.onclick = () => { manual = false; T = s.t0 + 0.01 }; ch.appendChild(sp) })
+  SCENES.forEach((s) => { const sp = document.createElement('span'); sp.textContent = s.name; sp.onclick = () => { manual = false; T = s.t0 + 0.01; if (AUD) AUD.currentTime = T }; ch.appendChild(sp) })
   // 프레임 단위 렌더링(영상 출력용): 루프를 멈추고 지정 시점을 그립니다
   const renderAt = (t) => { manual = true; playing = false; T = t; render(t) }
   window.__reel = { seek: (t) => { manual = false; T = t; playing = false }, play: () => { manual = false; playing = true }, renderAt, DUR,
