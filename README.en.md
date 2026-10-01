@@ -15,6 +15,15 @@
   <a href="#07--build--run">Quickstart</a>
 </p>
 
+<p align="center"><strong>▶ 1-minute intro video</strong> (1:09 · Korean narration and captions · turn the sound on)</p>
+
+https://github.com/user-attachments/assets/78e8f4c9-f1d6-4576-8374-70f52cc3271e
+
+<p align="center">
+  <a href="https://github.com/Team-FlyGate/Project-FlyGate/releases/download/v4.3/FlyGate_intro_1min_v1.0.0.mp4">Download 1080p MP4</a> &nbsp; · &nbsp;
+  <a href="https://flygate.kr/showreel/FlyGate_intro_1min_vertical_v1.0.0.html">Vertical (Shorts · Reels) ↗</a>
+</p>
+
 <p align="center">
   <a href="https://flygate.kr/showreel/FlyGate_showreel_v4.3.0-en.mp4"><img src="docs/images/flygate-showreel-preview-en_v1.0.0.webp" width="100%" alt="FlyGate 5-minute intro video preview — click to play the narrated video (4 min 47 s)"></a>
 </p>
