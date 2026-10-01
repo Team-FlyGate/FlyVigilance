@@ -462,10 +462,13 @@
   const cue = (t, type, p = {}) => CUES.push({ t: +t.toFixed(3), type, ...p })
 
   // ---------- 공통 요소 ----------
-  function eyebrowT(s, color, lt) { typeText(s, L.tx, L.ey, inv(0.05, 0.6, lt), { size: WIDE ? 24 : 24, color, track: 5, weight: 600, align: 'center' }) }
+  // 제목 · 머리말이 글자 칸(L.tw)을 넘으면 글자 크기를 줄입니다(영어 문장이 한국어보다 깁니다)
+  function eyebrowT(s, color, lt) { const sz = Math.min(24, 24 * L.tw / Math.max(1, measure(s, 24, 600, MONO, 5))); typeText(s, L.tx, L.ey, inv(0.05, 0.6, lt), { size: sz, color, track: 5, weight: 600, align: 'center' }) }
   function headT(p1, p2, lt) {
-    riseParts(p1, L.tx, L.h1, (lt - 0.1) * 2.2, { size: L.hs, weight: 800, stagger: 0.02, align: 'center' })
-    if (p2) riseParts(p2, L.tx, L.h2, (lt - 0.35) * 2.2, { size: L.hs, weight: 800, stagger: 0.02, align: 'center' })
+    const wOf = (p) => (p ? p.reduce((u, q) => u + measure(q[0], L.hs, 800), 0) : 0)
+    const sz = Math.min(L.hs, L.hs * L.tw / Math.max(1, wOf(p1), wOf(p2)))
+    riseParts(p1, L.tx, L.h1, (lt - 0.1) * 2.2, { size: sz, weight: 800, stagger: 0.02, align: 'center' })
+    if (p2) riseParts(p2, L.tx, L.h2, (lt - 0.35) * 2.2, { size: sz, weight: 800, stagger: 0.02, align: 'center' })
   }
   function gateBars(cx, y0, y1, gap, a, glow = 26, col = C.cyan) {
     if (GA * a <= 0.003) return

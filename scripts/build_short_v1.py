@@ -94,6 +94,26 @@ def script(sec: int, k: dict) -> list[dict]:
     ]
 
 
+def script_en(k: dict) -> list[dict]:
+    """1분 소개 영상 영어판: 사용자가 쓴 한국어 대본(2026-09-30)을 뜻 그대로 옮겼습니다"""
+    return [
+        {"id": "hook", "step": "", "vo": [f"The US FDA receives about {k['perDay']:,} adverse-event reports on marketed drugs every day."]},
+        {"id": "problem", "step": "Problem", "marks": {"miss": "buried"},
+         "vo": ["Serious reactions, like deaths and hospitalizations, must be checked by a person, but with mechanical filtering they can get buried under countless reports and missed."]},
+        {"id": "intro", "step": "FlyGate", "marks": {"conn": "fruit-fly", "fast": "fast judgment"},
+         "vo": ["FlyGate applies the structure of the fruit-fly brain connectome and a fast judgment model to verify, on evidence, everything from a new drug's target binding to its side effects after launch."]},
+        {"id": "step1", "step": "STEP 1", "vo": ["During drug development, FlyGate uses NVIDIA BioNeMo's OpenFold3, DiffDock and Boltz-2 to predict how a drug binds its target protein."]},
+        {"id": "gate", "step": "STEP 2", "marks": {"judge": "seven", "nemo": "NVIDIA Nemotron"},
+         "vo": [f"After launch, FlyGate's fast, efficient judgment model answers seven questions for every adverse-event report in {k['judgeSec']} seconds, and when expert review is needed, NVIDIA Nemotron evaluates it with cited evidence."]},
+        {"id": "proof", "step": "Measured", "marks": {"missed": "missed", "over": "Unimportant"},
+         "vo": [f"On {k['n']} real reports, mechanical filtering missed {k['missB']} serious cases; FlyGate missed only {k['missF']}. "
+                f"Unimportant cases that were not filtered out also fell from {k['overB']} to {k['overF']}."]},
+        {"id": "stack", "step": "CLI", "marks": {"cmd": "one command"},
+         "vo": ["Our team built all of this into the FlyGate CLI, so each step runs with one command inside an NVIDIA NemoClaw sandbox."]},
+        {"id": "cta", "step": "", "vo": ["From molecule to patient, evidence before inference. FlyGate."]},
+    ]
+
+
 def sub_text(vo: str) -> str:
     return vo.replace("플라이게이트", "FlyGate")
 
@@ -102,12 +122,12 @@ GAP = 0.15   # 한 장면 안 문장 사이 쉼
 SUB_MAX = 42  # 자막 한 장에 넣는 글자 수(46px 두 줄). 넘으면 쉼표, 그다음 띄어쓰기에서 나눕니다
 
 
-def sub_split(t: str) -> list[tuple[float, float, str]]:
+def sub_split(t: str, most: int | None = None) -> list[tuple[float, float, str]]:
     """자막을 (시작 비율, 끝 비율, 글) 목록으로 나눕니다. 모든 장이 SUB_MAX 자 이하가 될 때까지
     가운데에 가까운 쉼표에서, 쉼표가 없으면 가운데에 가까운 띄어쓰기에서 나눕니다. 비율은 글자 수로 셉니다"""
     def cut(a: int, b: int) -> list[tuple[int, int]]:
         seg = t[a:b]
-        if len(seg.strip()) <= SUB_MAX:
+        if len(seg.strip()) <= (most or SUB_MAX):
             return [(a, b)]
         mid = (b - a) / 2
         inner = lambda ks: [k for k in ks if 0 < k < len(seg) and seg[:k].strip() and seg[k:].strip()]
@@ -120,7 +140,7 @@ def sub_split(t: str) -> list[tuple[float, float, str]]:
     return [(a / n, b / n, t[a:b].strip()) for a, b in cut(0, n)]
 
 
-def timeline(scenes: list[dict], durs: list[list[float]], sec: int | None) -> dict:
+def timeline(scenes: list[dict], durs: list[list[float]], sec: int | None, lang: str = "ko") -> dict:
     lead, tail = LEAD, TAIL
     speech = sum(sum(d) + GAP * (len(d) - 1) for d in durs)
     # 목표 길이를 넘으면 쉼부터 줄입니다(말은 그대로 둡니다). 목표가 없으면(1분 소개 영상) 쉼을 그대로 둡니다
@@ -153,9 +173,10 @@ def timeline(scenes: list[dict], durs: list[list[float]], sec: int | None) -> di
         out.append({"id": s["id"], "step": s["step"], "t0": round(t, 3), "t1": round(t1, 3), "va": va, "vb": vb, "vs": vs, "vo": s["vo"], "marks": marks})
         for n, (line, (x, y)) in enumerate(zip(s["vo"], vs)):
             end = y + (0.4 if last and n == len(vs) - 1 else (GAP * 0.8 if n < len(vs) - 1 else tail * 0.8))
-            for p0, p1, txt in sub_split(sub_text(line)):
+            for p0, p1, txt in sub_split(sub_text(line), 72 if lang == "en" else None):
                 # '한 줄' · '두 가지' 같은 관형사와 뒤 낱말은 자막 줄바꿈에서 떨어지지 않게 붙입니다(줄 바꿈은 보통 띄어쓰기에서만 합니다)
-                txt = re.sub(r"(?<!\S)(한|두|세|네|일곱) (?=\S)", "\\1\u00a0", txt)
+                if lang == "ko":
+                    txt = re.sub(r"(?<!\S)(한|두|세|네|일곱) (?=\S)", "\\1\u00a0", txt)
                 subs.append([round(t + x - 0.05 + (y - x) * p0, 3), round(t + (x + (y - x) * p1 if p1 < 1 else end), 3), txt])
         t = t1
     return {"dur": round(t, 3), "scenes": out, "subs": subs}
@@ -168,9 +189,10 @@ def write_html(path: pathlib.Path, data: dict):
 
 # 영상 이름 → (목표 길이, 규격별 출력 파일). 15 · 30초판은 세로만, 1분 소개 영상은 가로 · 세로 두 가지입니다
 SPECS = {
-    "15": (15, {"vertical": "FlyGate_short_15s_v{v}.html"}),
-    "30": (30, {"vertical": "FlyGate_short_30s_v{v}.html"}),
-    "1min": (None, {"wide": "FlyGate_intro_1min_v{v}.html", "vertical": "FlyGate_intro_1min_vertical_v{v}.html"}),
+    "15": (15, {"vertical": "FlyGate_short_15s_v{v}.html"}, "ko"),
+    "30": (30, {"vertical": "FlyGate_short_30s_v{v}.html"}, "ko"),
+    "1min": (None, {"wide": "FlyGate_intro_1min_v{v}.html", "vertical": "FlyGate_intro_1min_vertical_v{v}.html"}, "ko"),
+    "1min-en": (None, {"wide": "FlyGate_intro_1min_v{v}-en.html", "vertical": "FlyGate_intro_1min_vertical_v{v}-en.html"}, "en"),
 }
 SHOTS = {"start": "web/public/media/cli/v2.0.0/01-start.png", "result": "web/public/media/cli/v2.0.0/04-result.png"}   # FlyGate CLI 메인 화면 · 실행 결과(실제 캡처)
 
@@ -187,11 +209,11 @@ def shots() -> dict:
     return out
 
 
-def script_md(name: str, sec: int | None, tl: dict, k: dict, files: dict) -> str:
+def script_md(name: str, sec: int | None, tl: dict, k: dict, files: dict, lang: str = "ko") -> str:
     rows = "\n".join(f"| {s['id']} | {s['t0']:.1f}–{s['t1']:.1f}초 | {' '.join(s['vo'])} |" for s in tl["scenes"][1:])
     vids = " · ".join(f"`web/public/showreel/{f.format(v=VERSION)}` ({'1920×1080' if fm == 'wide' else '1080×1920'})" for fm, f in files.items())
     return (f"# FlyGate {'1분 소개 영상' if sec is None else f'세로 숏폼 {sec}초'} v{VERSION} 대본\n\n"
-            f"- 영상: {vids} · 30fps · 음원 `scripts/reel/narrated/{name}-ko-puck.m4a`\n"
+            f"- 영상: {vids} · 30fps · 음원 `scripts/reel/narrated/{name}-{lang}-puck.m4a`{' · 영어 내레이션' if lang == 'en' else ''}\n"
             f"- **총 길이 {tl['dur']:.1f}초** · 내레이션 Gemini TTS({T.MODEL}) Puck · 빌더 `scripts/build_short_v1.py`\n"
             f"- 수치(저장소 JSON): FDA 한 분기 {k['q']:,}건(하루 평균 약 {k['perDay']:,}건) · 결과 코드를 가린 FAERS 실제 사례 {k['n']}건 · "
             f"놓친 중대 사례 {k['missB']} → {k['missF']} · 걸러지지 않은 비중대 사례 {k['overB']} → {k['overF']} · 재도킹 RMSD {k['rmsd']} Å · 결합 세기 순위 상관 {k['rho']}({k['nBench']}종)\n"
@@ -199,15 +221,16 @@ def script_md(name: str, sec: int | None, tl: dict, k: dict, files: dict) -> str
 
 
 def build(name: str, d: dict, k: dict):
-    sec, files = SPECS[name]
-    scenes = script(sec or 60, k)
-    texts = [[N.tts_text(v, LANG) for v in s["vo"]] for s in scenes]
-    N.batch_clips([t for ts in texts for t in ts], VOICE, LANG)
-    paths = [[N.clip(t, VOICE, LANG) for t in ts] for ts in texts]
+    sec, files, lang = SPECS[name]
+    base = name.removesuffix("-en")
+    scenes = script_en(k) if lang == "en" else script(sec or 60, k)
+    texts = [[N.tts_text(v, lang) for v in s["vo"]] for s in scenes]
+    N.batch_clips([t for ts in texts for t in ts], VOICE, lang)
+    paths = [[N.clip(t, VOICE, lang) for t in ts] for ts in texts]
     durs = [[N.wav_dur(p) for p in ps] for ps in paths]
-    tl = timeline(scenes, durs, sec)
+    tl = timeline(scenes, durs, sec, lang)
     print(f"{name} · speech {sum(map(sum, durs)):.1f} s · total {tl['dur']:.2f} s · " + " · ".join(f"{s['id']} {s['t1'] - s['t0']:.1f}" for s in tl["scenes"]))
-    data = {"lang": LANG, "k": k, "disc": {"of3": d["disc"]["of3"]}, "brain": d["brain"], "tl": tl}
+    data = {"lang": lang, "k": k, "disc": {"of3": d["disc"]["of3"]}, "brain": d["brain"], "tl": tl}
     if any(s["id"] == "stack" for s in scenes):
         data["shots"] = shots()
     td = pathlib.Path(tempfile.mkdtemp())
@@ -235,7 +258,7 @@ def build(name: str, d: dict, k: dict):
         w.setnchannels(2); w.setsampwidth(2); w.setframerate(N.MIX_SR)
         w.writeframes((np.clip(mix, -1, 1) * 32767).astype(np.int16).tobytes())
     N.NARR_DIR.mkdir(parents=True, exist_ok=True)
-    hi = N.NARR_DIR / f"{name}-ko-puck.m4a"
+    hi = N.NARR_DIR / f"{base}-{lang}-puck.m4a"
     subprocess.run(["ffmpeg", "-y", "-v", "error", "-i", str(wav), "-t", f"{tl['dur']:.3f}", "-c:a", "aac", "-b:a", "192k", str(hi)], check=True)
     lo = td / "embed.m4a"
     subprocess.run(["ffmpeg", "-y", "-v", "error", "-i", str(wav), "-t", f"{tl['dur']:.3f}", "-c:a", "aac", "-b:a", "96k", "-movflags", "+faststart", str(lo)], check=True)
@@ -244,7 +267,7 @@ def build(name: str, d: dict, k: dict):
         out = B.PUB / "showreel" / fname.format(v=VERSION)
         write_html(out, dict(data, fmt=fmt))
         print(f"wrote {out.relative_to(ROOT)} ({out.stat().st_size // 1024} KB)")
-    (N.NARR_DIR / f"{name}-ko-puck.script.md").write_text(script_md(name, sec, tl, k, files))
+    (N.NARR_DIR / f"{base}-{lang}-puck.script.md").write_text(script_md(base, sec, tl, k, files, lang))
 
 
 def main():
